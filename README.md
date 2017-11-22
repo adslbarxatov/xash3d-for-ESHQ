@@ -56,6 +56,10 @@ Unfortunately, we cannot fix some bugs yet:
 
 3. 'func_door_rotating' bug: incorrect collision if door has 'Ox' and/or 'Oy' flags.
 
+4. Engine sometime fails on maps with high NPC activity and/or high blood level.
+
 But we believe that it is not serious problem for now.
 #
+This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax).
 
+This assembly is enough to launch Half-Life (WON) and some compatible mods.
