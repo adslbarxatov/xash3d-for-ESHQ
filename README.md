@@ -1,5 +1,5 @@
-# xash3d for ESHQ
-xash3d engine [v43/0.91 (rev 3737)] adaptation for ESHQ mod
+# Xash3d for ESHQ
+Xash3d engine [v43/0.91 (rev 3737)] adaptation for ESHQ mod
 #
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
@@ -63,3 +63,6 @@ But we believe that it is not serious problem for now.
 This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax).
 
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
+
+This assembly is a fork of original Xash3D engine with the same license.
+
