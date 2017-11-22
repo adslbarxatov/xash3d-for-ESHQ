@@ -1,0 +1,3059 @@
+////////////////////////////////////////////////////////////////////////
+//
+// Half-Life game definition file (.fgd)
+//
+// version 3.1.0.0
+// - updated with studio() references to enable model display in 3D view
+//
+// - translation and names improvement expected
+////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
+//
+// Worldspawn
+//
+////////////////////////////////////////////////////////////////////////
+
+@SolidClass = worldspawn : "World entity"
+[
+	message(string) : "Описание карты / Заголовок"
+	skyname(string) : "Название текстуры skybox'а"
+	MaxRange(string) : "Макс. видимая дистация" : "2000"
+	chaptertitle(string) : "Название главы игры"
+	newunit(choices) : "Очищать предыд. уровни" : 0 = 
+	[
+		0 : "Нет"
+		1 : "Да"
+	]
+	startdark(choices) : "Уровень проявл. из темноты" : 0 =
+	[	
+		0 : "Нет"
+		1 : "Да"
+	]
+	gametitle(choices) : "Показывать лого игры" : 0 = 
+	[	
+		0 : "Нет"
+		1 : "Да"
+	]
+	WaveHeight(string) : "Стандартная высота волн" : "0.1"
+	light(integer) : "Стандартная яркость освещения"
+	sounds(integer) : "Проигрываемый CD-трек" : 1
+	mapteams(string) : "Список команд"
+	defaultteam(choices) : "Стандартная команда" : 0 = 
+	[
+		0 : "С наименьшим числом игроков"
+		1 : "Первая по порядку"
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Базовые классы
+//
+////////////////////////////////////////////////////////////////////////
+
+
+@BaseClass = Sequence
+[
+	sequence(integer) : "Сцена анимации"
+]
+
+@BaseClass = ZHLT
+[
+	zhlt_lightflags(choices) : "Тип освещения для ZHLT" : 0 =
+	[
+		0 : "Стандарт"
+		1 : "Упрощённое освещение"
+		2 : "Непрозрачный объект"
+		3 : "Непрозрачность + упрощённое освещение"
+		6 : "Непрозрачность + освещение арки"
+	]
+	light_origin(string) : "Объект, отбрасывающий тень"
+]
+
+@BaseClass = ZHLT_point
+[
+	_fade(string) : "Коэф. затемн. для ZHLT" : "1.0"
+	_falloff(choices) : "Коэф. затух. для ZHLT" : 0 =
+	[
+		0 : "Стандартный"
+		1 : "Обратный линейный"
+		2 : "Обратный квадратичный"
+	]
+]
+
+@BaseClass = Appearflags
+[
+	spawnflags(Flags) =
+	[
+		2048 : "Не в deathmatch" : 0
+	]
+]
+
+@BaseClass = Angles
+[
+	angles(string) : "Наклон, поворот, уклон (y, z, x)" : "0 0 0"
+]
+
+@BaseClass size (-16 -16 -16, 16 16 16) color (0 0 200) base(Appearflags, Angles) = Ammo
+[
+]
+
+@BaseClass = Targetname
+[
+	targetname(target_source) : "Имя объекта"
+]
+
+@BaseClass = Target
+[
+	target(target_destination) : "Целевой объект"
+]
+
+@BaseClass size (-16 -16 -16, 16 16 16) color (0 0 255) base(Targetname, Appearflags, Angles) = Weapon
+[
+]
+
+@BaseClass size (-16 -16 -16, 16 16 16) color (0 128 128) base(Targetname, Appearflags, Angles) = Item
+[
+]
+
+@BaseClass = Global
+[
+	globalname(string) : "Глобальное имя (globalname)"
+]
+
+@BaseClass base(Target) = Targetx
+[
+	delay(string) : "Пауза до срабатывания" : "0"
+	killtarget(target_destination) : "Уничтожаемый объект"
+]
+
+@BaseClass = RenderFxChoices
+[
+	renderfx(choices) :"Эффект отображения" : 0 =
+	[
+		0: "Нет"
+		1: "Медленная пульсация"
+		2: "Быстрая пульсация"
+		3: "Медленная протяжённая пульсация"
+		4: "Быстрая протяжённая пульсация"
+		5: "Медленное исчезновение"
+		6: "Быстрое исчезновение"
+		7: "Медленное возникновение"
+		8: "Быстрое возникновение"
+		9: "Медленный стробоскоп"
+		10: "Быстрый стробоскоп"
+		11: "Очень быстрый стробоскоп"
+		12: "Медленное мерцание"
+		13: "Быстрое мерцание"
+		14: "Постоянное свечение"
+		15: "Искажение"
+		16: "Искажение + исчезновение"
+	]
+]
+
+@BaseClass = RenderModeChoices
+[
+	rendermode(choices) : "Режим отображения" : 0 =
+	[
+		0: "Обычный"
+		1: "Цвет"
+		2: "Текстура"
+		3: "Свечение"
+		4: "Объект с маской"
+		5: "Текстура с маской"
+	]
+]
+
+@BaseClass = RenderParams
+[
+	renderamt(integer) : "Интенс. отображения" : 0
+	rendercolor(color255) : "Цвет отображения" : "0 0 0"
+]
+
+@BaseClass base (RenderModeChoices, RenderParams, RenderFxChoices) = RenderFields
+[
+]
+
+@BaseClass base(Appearflags, Angles) size(-16 -16 -36, 16 16 36) color(0 255 0) = PlayerClass
+[
+]
+
+@BaseClass base(Appearflags, Angles) color(128 64 64) = DeadMonster
+[
+]
+
+@BaseClass base(Target, Targetname, RenderFields, Angles) color (255 0 0) = Monster
+[
+	TriggerTarget(string) : "Цель для триггера"
+	TriggerCondition(choices) : "Условие для триггера" : 0 =
+	[
+		0 : "Триггер отключён"
+		1 : "Увидеть игрока"
+		2 : "Получить урон"
+		3 : "Получить 50% урона"
+		4 : "Смерть"
+		7 : "Слышно состояние карты"
+		8 : "Слышно игрока"
+		9 : "Слышно командира"
+		10: "See Player Unconditional"
+		11: "See Player, Not In Combat"
+	]
+	spawnflags(Flags) =
+	[
+		1 : "Ждать видимости" : 0
+		2 : "Молчать" : 0
+		4 : "Применять clip" : 0
+		16: "Подавлять ИИ" : 0
+		128: "Ждать скрипта" : 0
+		256: "Не слушаться игрока" : 0
+		512: "Убирать труп" : 0
+	]
+]
+
+@BaseClass = TalkMonster
+[
+	UseSentence(String) : "Ответ при обращении"
+	UnUseSentence(String) : "Ответ при покидании"
+]
+
+@BaseClass base(Targetname, Angles) size(-16 -16 -16, 16 16 16) color (255 0 0) = gibshooterbase
+[
+	m_iGibs(integer) : "Количество фрагментов" : 10
+	delay(string) : "Пауза между фрагментами" : "0"
+	m_flVelocity(integer) : "Скорость фрагментов" : 200
+	m_flVariance(string) : "Разброс траекторий" : "0.15"
+	m_flGibLife(string) : "Время жизни фрагментов" : "5"
+	spawnflags(flags) =
+	[
+		1 : "Разрешены повторы" : 0
+	]
+]
+
+@BaseClass = Light
+[
+	_light(color255) : "Цвет и яркость" : "255 255 128 100"
+	style(choices) : "Тип свечения" : 0 =
+	[
+		0 : "Обычное"
+		10: "Хаотичное мерцание"
+		1 : "Мерцание 1"
+		6 : "Мерцание 2"
+		3 : "Мигание 1"
+		7 : "Мигание 2"
+		8 : "Мигание 3"
+		4 : "Быстрый стробоскоп"
+		9 : "Медленный стробоскоп"
+		5 : "Мягкая пульсация"
+		2 : "Медленная протяжённая пульсация"
+		11: "Медленная негаснущая пульсация"
+	]
+	pattern(string) : "Шаблон свечения"
+]
+
+@BaseClass base(Targetname, Global) = Breakable
+[
+	health(integer) : "Прочность" : 100
+	material(choices) :"Материал" : 0 =
+	[
+		0: "Стекло"
+		1: "Дерево"
+		2: "Металл"
+		4: "Бетон"
+		5: "Пластик"
+		8: "Камни"
+		3: "Плоть"
+		6: "Компьютер"
+		7: "Ударопрочное стекло"
+	]
+	explodemagnitude(integer) : "Сила взрыва" : 0
+	spawnobject(choices) : "Создавать при разрушении" : 0 =
+	[
+		0: "Ничего"
+		1: "Аккумулятор"
+		2: "Аптечку"
+		22: "Монтировку"
+		3: "Пистолет 9 мм"
+		4: "Патроны 9 мм"
+		12: "357"
+		13: "Патроны для 357"
+		5: "Автомат"
+		6: "Патроны для автомата"
+		7: "Гранаты для автомата"
+		8: "Обрез"
+		9: "Патроны для обреза"
+		10: "Арбалет"
+		11: "Дротики для арбалета"
+		14: "РПГ"
+		15: "Заряд для РПГ"
+		16: "Заряд для гауссовой пушки"
+		17: "Ручную гранату"
+		18: "Лазерную мину"
+		19: "Радиогранату"
+		20: "Снарка"
+		21: "Улей"
+	]
+	explosion(choices) : "Направление обломков" : 0 =
+	[
+		0: "Случайное"
+		1: "От источника взрыва"
+	]
+	gibmodel(studio) : "Модель обломка"
+	target(target_destination) : "Цель при разрушении"
+	delay(string) : "Пауза перед вызовом цели" : "0"
+]
+
+@BaseClass base(Appearflags, Targetname, RenderFields, Global, Angles) = Door
+[
+	speed(integer) : "Скорость" : 100
+	movesnd(choices) : "Звук движения" : 0 =
+	[
+		0: "Нет"
+		1: "Электропривод (большой)"
+		11: "Электропривод (малый)"
+		5: "Пневматика (малая)"
+		3: "Пневматика (большая)"
+		4: "Вакуум"
+		6: "Ворота на роликах"
+		7: "Электродвигатель"
+		2: "Электродвигатель 2"
+		12: "Шестерни"
+		8: "Металлическая сетка"
+		9: "Скрип 1"
+		10: "Скрип 2"
+	]
+	stopsnd(choices) : "Звук открытия" : 0 =
+	[
+		0: "Нет"
+		4: "Металл (малая)"
+		1: "Металл (средняя)"
+		6: "Металл (большая)"
+		3: "Металл (затвор)"
+		5: "Пневматика (малая)"
+		9: "Пневматика (затвор)"
+		7: "Электродвигатель"
+		11: "Электродвигатель 2"
+		12: "Шестерни"
+		2: "Решётка"
+		8: "Металлическая сетка"
+		10: "Замок закрыт"
+	]
+	stop2snd(choices) : "Звук закрытия" : 0 =
+	[
+		-1: "Нет"
+		0: "= звуку открытия"
+		4: "Металл (малая)"
+		1: "Металл (средняя)"
+		6: "Металл (большая)"
+		3: "Металл (затвор)"
+		5: "Пневматика (малая)"
+		9: "Пневматика (затвор)"
+		7: "Электродвигатель"
+		11: "Электродвигатель 2"
+		12: "Шестерни"
+		2: "Решётка"
+		8: "Металлическая сетка"
+		10: "Замок закрыт"
+	]
+	locked_sound(choices) : "Звук блокировки" : 0 =
+	[
+		0: "Нет"
+		10: "Доступ запрещён 1"
+		11: "Доступ запрещён 2"
+		8: "Доступ запрещён 3"
+		2: "Доступ запрещён 4"
+		12: "Замок закрыт"
+	]
+	unlocked_sound(choices) : "Звук разблокировки" : 0 =
+	[
+		0: "Нет"
+		1: "Запуск"
+		3: "Доступ разрешён"
+		4: "Электрозамок 1"
+		5: "Электрозамок 2"
+		6: "Электрозамок 3"
+		9: "Ключ-карта (успех)"
+		7: "Ключ-карта (отказ)"
+		10: "Доступ запрещён 1"
+		8: "Доступ запрещён 3"
+		13: "Замок открыт"
+	]
+	wait(integer) : "Пауза перед закрытием" : -1
+	lip(integer) : "Отступ при смещении" : 4
+	dmg(integer) : "Урон при столкновении" : 0
+	target(target_destination) : "Целевой объект"
+	delay(integer) : "Пауза перед срабатыванием"
+	health(integer) : "Прочность на открытие" : 0
+	spawnflags(flags) =
+	[
+		1 : "Сначала откр." : 0
+		4 : "Не работает" : 0
+		8: "Нематериальна" : 0
+		32: "Упр. вручную" : 0
+		256:"Откр. 'исп-ем'" : 0
+		512: "Монстры не могут" : 0
+	]
+	netname(string) : "Цель при закрытии"
+	message(string) : "Сообщение при срабатывании"
+	locked_sentence(choices) : "Сообщение блокировки" : 0 =
+	[
+		0: "Нет"
+		1: "Общий отказ доступа"
+		2: "Служба безопасности"
+		3: "Противоударная защита"
+		4: "Противопожарная защита"
+		5: "Химическая защита"
+		6: "Радиационная защита"
+		7: "Биологическая защита"
+		8: "Служебное помещение"
+		9: "Дверь повреждена"
+	]
+	unlocked_sentence(choices) : "Сообщение разблокировки" : 0 =
+	[
+		0: "Нет"
+		1: "Общий отказ доступа"
+		2: "Служба безопасности"
+		3: "Противоударная защита"
+		4: "Противопожарная защита"
+		5: "Химическая защита"
+		6: "Радиационная защита"
+		7: "Биологическая защита"
+		8: "Служебное помещение"
+	]
+	killtarget(target_destination) : "Уничтожаемый объект"
+	master(string) : "Multisource name"
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@BaseClass base(Targetname, Target, RenderFields, Global, Angles) = BaseTank
+[
+	spawnflags(flags) =
+	[
+		1 : "Сначала вкл" : 0
+		16: "Стрелять в цель" : 0
+		32: "Управляемый" : 0
+	]
+	yawrate(string) : "Скорость поворота" : "30"
+	yawrange(string) : "Диапазон поворота" : "180"
+	yawtolerance(string) : "Yaw tolerance" : "15"
+	pitchrate(string) : "Скорость наклона" : "0"
+	pitchrange(string) : "Диапазон наклона" : "0"
+	pitchtolerance(string) : "Pitch tolerance" : "5"
+	barrel(string) : "Радиус огран. сферы" : "0"
+	barrely(string) : "Центр сферы, y" : "0"
+	barrelz(string) : "Центр сферы, z" : "0"
+	rotatesound(sound) : "Звук поворота"
+	firerate(string) : "Скорость стрельбы" : "10"
+	bullet_damage(string) : "Урон от каждой пули" : "1"
+	persistence(string) : "Время стрельбы 'вдогонку'" : "1"
+	firespread(choices) : "Точность" : 0 =
+	[
+		0: "Точно"
+		1: "Малый конус"
+		2: "Средний конус"
+		3: "Большой конус"
+		4: "Огромный конус"
+	]
+	minRange(string) : "Мин. зоны срабатывания" : "0"
+	maxRange(string) : "Макс. зоны срабатывания" : "0"
+	spritesmoke(sprite) : "Спрайт дыма от стрельбы"
+	spriteflash(sprite) : "Спрайт огня от стрельбы"
+	spritescale(string) : "Масштаб спрайта" : "1"
+	master(string) : "Multisource name"
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@BaseClass = PlatSounds
+[
+	movesnd(choices) : "Звук движения" : 0 =
+	[
+		0: "Нет"
+		3: "Малый лифт 1"
+		5: "Малый лифт 2"
+		12: "Малый лифт 3"
+		4: "Малый лифт 4 (новый)"
+		11: "Старый лифт"
+		1: "Большой лифт 1"
+		2: "Большой лифт 2"
+		8: "Большой лифт 3 (новый)"
+		6: "Лебёдочный лифт 1"
+		7: "Лебёдочный лифт 2"
+		9: "Рельсовая платформа 1"
+		10: "Рельсовая платформа 2"
+		13: "Странный лифт"
+		14: "Гравидвигатель"
+	]
+	stopsnd(choices) : "Звук остановки" : 0 = 
+	[
+		0: "Нет"
+		8: "Малый лифт 1"
+		2: "Малый лифт 2 (новый)"
+		7: "Старый лифт"
+		1: "Большой лифт 1"
+		9: "Большой лифт 2"
+		4: "Большой лифт 3 (новый)"
+		3: "Лебёдочный лифт"
+		5: "Рельсовая платформа 1"
+		6: "Рельсовая платформа 2"
+		10: "Гравидвигатель"
+	]
+	volume(string) : "Громкость (0.0 - 1.0)" : "0.8"
+]
+
+@BaseClass base(Targetname, RenderFields, Global, PlatSounds) = Trackchange
+[
+	height(integer) : "Высота подъёма/спуска" : 0
+	spawnflags(flags) =
+	[
+		1: "Автоактивация" : 0
+		2: "Relink track" : 0
+		8: "Начинать снизу" : 0
+		16: "Только поворот" : 0
+		64: "По оси Ox" : 0
+		128: "По оси Oy" : 0
+	]
+	rotation(integer) : "Угол поворота" : 0
+	train(target_destination) : "Целевой train"
+	toptrack(target_destination) : "Верхний track"
+	bottomtrack(target_destination) : "Нижний track"
+	speed(integer) : "Скорость" : 30
+]
+
+@BaseClass base(Target, Targetname) = Trigger
+[
+	delay(string) : "Пауза перед срабатыванием" : "0"
+	spawnflags(flags) =
+	[
+		1: "Монстры могут" : 0
+		2: "Игроки не могут" : 0
+		4: "Pushable могут": 0
+	]
+	message(string) : "Сообщение (и звук)"
+	killtarget(target_destination) : "Уничтожаемый объект"
+	netname(target_destination) : "Сетевое имя цели"
+	master(string) : "Multisource name"
+	sounds(choices) : "Стиль звука" : 0 =
+	[
+		0 : "Нет"
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Entities
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Targetname, Targetx, Angles) size(-16 -16 0, 16 16 72) color(255 0 255) iconsprite("fgd/half-life/sprites/aiscripted_sequence.spr")= aiscripted_sequence:"AI Scripted Sequence"
+[
+	m_iszEntity(string) : "Целевой монстр"
+	m_iszPlay(string) : "Анимация действия"
+	m_flRadius(integer) : "Радиус действия" : 200
+	m_flRepeat(integer) : "Пауза до повтора" : 0
+	m_fMoveTo(Choices) : "Движение на позицию" : 0 =
+	[
+		0 : "Нет"
+		1 : "Шаг"
+		2 : "Бег"
+		4 : "Телепортация"
+		5 : "Поворот к позиции"
+	]
+	m_iFinishSchedule(Choices) : "Поведение после выполнения" : 0 =
+	[
+		0 : "Стандартный ИИ"
+		1 : "Ожидание"
+	]
+	spawnflags(flags) =
+	[
+		4 : "Разрешены повторы" : 0
+		8 : "Оставлять труп" : 0
+	]
+]
+
+@PointClass iconsprite("fgd/half-life/sprites/speaker.spr") base(Targetname) = ambient_generic : "Universal Ambient"
+[
+	message(sound) : "Звук" : "ambience/wind2.wav"
+	health(integer) : "Громкость" : 5
+	pitch(integer) : "Частота" : 100
+	volstart(integer) : "Начальная громкость" : 0
+	fadein(integer) : "Время входа (0-100)" : 0
+	fadeout(integer) : "Время затихания (0-100)" : 0
+	pitchstart(integer) : "Начальная частота" : 100
+	spinup(integer) : "Время разгона (0-100)" : 0
+	spindown(integer) : "Время затухания (0-100)" : 0
+	preset(choices) :"Эффект звука" : 0 =
+	[
+		0: "Нет"
+		1: "Огромная машина"
+		2: "Большая машина"
+		3: "Машина"
+		4: "Медленное восстановление"
+		5: "Обычное восстановление"
+		6: "Быстрое восстановление"
+		7: "Медленная пульсация"
+		8: "Обычная пульсация"
+		9: "Быстрая пульсация"
+		10: "Медленная осцилляция"
+		11: "Обычная осцилляция"
+		12: "Быстрая осцилляция"
+		13: "Гранж"
+		14: "Очень низкие частоты"
+		15: "Низкие частоты"
+		16: "Высокие частоты"
+		17: "Очень высокие частоты"
+		18: "Скрим"
+		19: "Осциллирующий разгон/затухание"
+		20: "Пульсирующий разгон/затухание"
+		21: "Случайные скачки"
+		22: "Случайные скачки (быстро)"
+		23: "Разгон"
+		24: "Инопланетный 1"
+		26: "Инопланетный 2"
+		25: "Странный 1"
+		27: "Странный 2"
+	]
+	lfotype(choices) : "LFO type" : 0 =
+	[
+		0: "Обычный"
+		1: "Квадратичный"
+		2: "Треугольный"
+		3: "Случайный"
+	]
+	lforate(integer) : "LFO rate (0-1000)" : 0
+	lfomodpitch(integer) : "LFO mod pitch (0-100)" : 0
+	lfomodvol(integer) : "LFO mod vol (0-100)" : 0
+	cspinup(integer) : "Incremental spinup count" : 0
+	spawnflags(flags) =
+	[
+		1 : "Слышен везде" : 0
+		2 : "Малый радиус" : 0
+		4 : "Средний радиус" : 0
+		8 : "Большой радиус" : 0
+		16 : "Сначала выкл.":0
+		32 : "Вкл. вм. перекл.":0
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Аммуниция
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Ammo, Targetx) studio("models/w_9mmclip.mdl") = ammo_9mmclip : "9mm Pistol Ammo"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_9mmarclip.mdl") = ammo_9mmAR : "9mm Assault Rifle Ammo"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_chainammo.mdl") = ammo_9mmbox : "box of 200 9mm shells"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_argrenade.mdl") = ammo_ARgrenades : "Assault Grenades"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_shotshell.mdl") = ammo_buckshot : "Shotgun Ammo"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_357ammobox.mdl") = ammo_357 : "357 Ammo"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_rpgammo.mdl") = ammo_rpgclip : "RPG Ammo"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_gaussammo.mdl") = ammo_gaussclip : "Gauss Gun Ammo"
+[
+]
+
+@PointClass base(Ammo, Targetx) studio("models/w_crossbow_clip.mdl") = ammo_crossbow : "Crossbow Ammo"
+[
+]
+
+@SolidClass base(Target, RenderFields, ZHLT) = button_target : "Target Button"
+[
+	spawnflags(flags) =
+	[
+		1: "Акт. 'исп-ем'" : 0
+		2: "Сначала вкл." : 0
+	]
+	master(string) : "Multisource name"
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Спрайты
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Targetname, Angles, RenderFields, Sequence) size(-16 -16 0, 16 16 32) color (192 192 192) studio() = cycler : "Monster Cycler"
+[
+	model(studio) : "Модель"
+	body(Integer) : "Субмодель" : 0
+	skin(Integer) : "Вид" : 0
+	material(choices) :"Материал" : 0 =
+	[
+		0: "Стекло"
+		1: "Дерево"
+		2: "Металл"
+		4: "Бетон"
+		5: "Пластик"
+		8: "Камни"
+		3: "Плоть"
+		6: "Компьютер"
+		7: "Ударопрочное стекло"
+	]
+	MinPoint(string) : "Мин. точка размера" : "-16 -16 0"
+	MaxPoint(string) : "Макс. точка размера" : "16 16 32"
+	spawnflags(Flags) =
+	[
+		8: "Нематериален" : 0
+	]
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 32) color (0 0 255) studio("fgd/half-life/models/cycler_weapon.mdl") = cycler_weapon : "Weapon Cycler"
+[
+	model(studio) : "Модель"
+]
+
+@PointClass sprite() base(Targetname, RenderFields, Angles) size(-16 -16 -16, 16 16 16) color (192 192 192) = cycler_wreckage : "Wreckage"
+[
+	framerate(string) : "Кадров в сеунду" : "10"
+	model(sprite) : "Спрайт" : "sprites/fire.spr"
+	scale(string) : "Масштаб спрайта" : "1.0"
+	spawnflags(flags) =
+	[
+		32: "Упр. вручную" : 0
+		64: "Сначала вкл." : 0
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Эффекты
+//
+////////////////////////////////////////////////////////////////////////
+
+@BaseClass = BeamStartEnd
+[
+	LightningStart(target_destination) : "Начальный объект"
+	LightningEnd(target_destination) : "Конечный объект"
+]
+
+@PointClass base(Targetname, BeamStartEnd, RenderParams, RenderFxChoices) color (0 128 255) = env_beam : "Energy Beam Effect"
+[
+	Radius(integer) : "Радиус шума" : 256
+	life(string) : "Время жизни (0 - беск.)" : "0"
+	StrikeTime(string) : "Время до повтора" : "1"
+	BoltWidth(integer) : "Толщина луча" : 20
+	NoiseAmplitude(integer) : "Сила дребезга" : 0
+	texture(sprite) : "Спрайт" : "sprites/laserbeam.spr"
+	TextureScroll(integer) : "Скорость движения" : 35
+	framerate(integer) : "Кадров в секунду" : 0
+	framestart(integer) : "Начальный кадр" : 0
+	damage(string) : "Урон в секунду" : "0"
+	spawnflags(flags) =
+	[
+		1 : "Сначала вкл." : 0
+		2 : "Упр. вручную" : 0
+		4 : "Случайные цели" : 0
+		8 : "Кольцевой луч" : 0
+		16: "Искры в начале" : 0
+		32: "Искры в конце" : 0
+		64: "След в конце" : 0
+		128: "Затухание к началу" : 0
+		256: "Затухание к концу" : 0
+	]
+]
+
+@PointClass base(Targetname, Angles) size (-16 -16 -16, 16 16 16) color (128 255 0) = env_beverage : "Beverage Dispenser"
+[
+	health(integer) : "Количество" : 10
+	skin(choices) : "Вид" : 0 =
+	[
+		0 : "Coca-Cola"
+		1 : "Sprite"
+		2 : "Диетическая Кола"
+		3 : "Апельсин"
+		4 : "Surge"
+		5 : "Moxie"
+		6 : "Случайный"
+	]
+]
+
+@PointClass base(Targetname, Angles) size(-16 -16 -16, 16 16 16) color (255 0 0) = env_blood : "Blood Effects"
+[
+	bcolor(choices) : "Цвет крови" : 1 =
+	[
+		0 : "Жёлтая"
+		1 : "Красная"
+		2 : "Зелёная"
+	]
+	amount(string) : "Количество (соотв. урону)" : "100"
+	spawnflags(flags) =
+	[
+		1: "Случ. направление" : 0
+		2: "Струя" : 0
+		4: "От игрока" : 0
+		8: "Следы" : 0
+	]
+]
+
+@SolidClass base(Targetname) = env_bubbles : "Bubble Volume"
+[
+	density(integer) : "Количество" : 5
+	frequency(integer) : "Частота генерации" : 1
+	current(integer) : "Скорость" : 0
+	spawnflags(Flags) =
+	[
+		1 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Targetname) color (200 0 0) iconsprite("fgd/half-life/sprites/env_explosion.spr") = env_explosion : "Explosion"
+[
+	iMagnitude(Integer) : "Мощность" : 100
+	spawnflags(flags) =
+	[
+		1: "Без урона" : 0
+		2: "Разрешены повторы" : 0
+		4: "Без огня" : 0
+		8: "Без дыма" : 0
+		16: "Без следов" : 0
+		32: "Без искр" : 0
+	]
+]
+
+@PointClass base(Targetname) = env_global : "Global State"
+[
+	globalstate(string) : "Изменяемая переменная"
+	triggermode(choices) : "Состояние" : 0 =
+	[
+		0 : "Выключить"
+		1 : "Включить"
+		2 : "Убить"
+		3 : "Переключить"
+	]
+	initialstate(choices) : "Начальное состояние" : 0 =
+	[
+		0 : "Выключено"
+		1 : "Включено"
+		2 : "Убито"
+	]
+	spawnflags(flags) =
+	[
+		1 : "Задавать нач. сост." : 0
+	]
+]
+
+@PointClass base(Targetname, RenderFields) color(255 255 128) sprite() = env_glow : "Light Glow/Haze"
+[
+	model(sprite) : "Спрайт" : "sprites/glow01.spr"
+	scale(integer) : "Масштаб" : 1
+]
+
+@PointClass base(Targetname, RenderParams) color (128 0 255) iconsprite("fgd/half-life/sprites/env_fade.spr") = env_fade : "Screen Fade"
+[
+	spawnflags(flags) =
+	[
+		1: "Наоборот" : 0
+		2: "Исп. цвет" : 0
+		4: "Только игрок" : 0
+	]
+	duration(string) : "Длительность перехода" : "3"
+	holdtime(string) : "Длительность эффекта" : "3"
+]
+
+@PointClass base(Targetname) size(-16 -16 -16, 16 16 16) color (192 192 192) = env_funnel : "Large Portal Funnel"
+[
+	spawnflags(flags) =
+	[
+		1: "Наоборот" : 0
+	]
+]
+
+@PointClass base(Targetname, RenderParams, RenderFxChoices, Angles) color (0 128 255) = env_laser : "Laser Beam Effect"
+[
+	LaserTarget(target_destination) : "Цель"
+	width(integer) : "Толщина" : 20
+	NoiseAmplitude(integer) : "Сила дребезга" : 0
+	texture(sprite) : "Спрайт" : "sprites/laserbeam.spr"
+	EndSprite(sprite) : "Спрайт на конце"
+	TextureScroll(integer) : "Скорость движения (0 - 100)" : 35
+	framestart(integer) : "Начальный кадр" : 0
+	damage(string) : "Урон в секунду" : "100"
+	spawnflags(flags) =
+	[
+		1 : "Сначала вкл." : 0
+		16: "Искры в начале" : 0
+		32: "Искры в конце" : 0
+		64: "След в конце" : 0
+	]
+]
+
+@PointClass base(Targetname, Target) = env_message : "HUD Text Message"
+[
+	message(string) : "Имя сообщения"
+	messagesound(sound) : "Звук. эффект"
+	messagevolume(string) : "Громкость" : "10"
+	messageattenuation(choices) : "Радиус звука" : 0 =
+	[
+		0 : "Малый"
+		1 : "Средний"
+		2 : "Большой"
+		3 : "Слышно везде"
+	]
+	spawnflags(flags) =
+	[
+		1: "Не повторять" : 0
+		2: "Все игроки" : 0
+	]
+]
+
+@PointClass base(Targetname, Target, RenderFields) iconsprite("fgd/half-life/sprites/env_render.spr") = env_render : "Render Controls"
+[
+	spawnflags(flags) =
+	[
+		1: "Не исп. эффект" : 0
+		2: "Не исп. интенс." : 0
+		4: "Не исп. режим" : 0
+		8: "Не исп. цвет" : 0
+	]
+]
+
+@PointClass base(Targetname) color (200 128 128) iconsprite("fgd/half-life/sprites/env_shake.spr") = env_shake : "Screen Shake"
+[
+	spawnflags(flags) =
+	[
+		1: "Все игроки" : 0
+	]
+	amplitude(string) : "Амплитуда" : "4"
+	radius(string) : "Радиус" : "200"
+	duration(string) : "Длительность" : "3"
+	frequency(string) : "Сила вибрации" : "1.5"
+]
+
+@PointClass base(gibshooterbase, RenderFields) iconsprite("fgd/half-life/sprites/env_shooter.spr") = env_shooter : "Model Shooter"
+[
+	shootmodel(studio) : "Спрайт или модель"
+	shootsounds(choices) :"Звук материала" : -1 =
+	[
+		-1: "Нет"
+		0: "Стекло"
+		1: "Дерево"
+		2: "Металл"
+		4: "Бетон/камень"
+		3: "Плоть"
+	]
+	scale(string) : "Масштаб спрайта" : "1"
+	skin(integer) : "Вариант анимации" : 0
+]
+
+@PointClass size (-32 -32 -32, 32 32 32) iconsprite("fgd/half-life/sprites/env_sound.spr") = env_sound : "DSP Sound"
+[
+	radius(integer) : "Радиус активации" : 125
+	roomtype(Choices) : "Тип комнаты" : 0 =
+	[
+		0 : "Обычный/без эффекта"
+		1 : "Общий"
+		
+		17: "Бетон (малый)"
+		18: "Бетон (средний)"
+		19: "Бетон (большой)"
+
+		2 : "Металл (малый)"
+		3 : "Металл (средний)"
+		4 : "Металл (большой)"
+	
+		23: "Пещера (малая)"
+		24: "Пещера (средняя)"
+		25: "Пещера (большая)"
+
+		14: "Под водой 1"
+		15: "Под водой 2"
+		16: "Под водой 3"
+
+		5 : "Туннель (малый)"
+		6 : "Туннель (средний)"
+		7 : "Туннель (большой)"
+	
+		8 : "Кабинет (малый)"
+		9 : "Кабинет (средний)"
+		10: "Кабинет (большой)"
+
+		11: "Насыщенный (малый)"
+		12: "Насыщенный (средний)"
+		13: "Насыщенный (большой)"
+
+		20: "Ангар 1"
+		21: "Ангар 2"
+		22: "Ангар 3"
+
+		26: "Странный 1"
+		27: "Странный 2"
+		28: "Странный 3"
+	]
+]
+
+@PointClass base(Targetname, Angles) color (255 224 192) iconsprite("fgd/half-life/sprites/env_spark.spr") = env_spark : "Spark"
+[
+	MaxDelay(string) : "Макс. задержка" : "0"
+	spawnflags(flags) =
+	[
+		32: "Упр. вручную" : 0
+		64: "Сначала вкл." : 0
+	]
+]
+
+@PointClass base(Targetname, RenderFields, Angles, Sequence) size(-16 -16 -16, 16 16 16) color (192 192 192) sprite() = env_sprite : "Sprite Effect"
+[
+	framerate(string) : "Кадров в секунду" : "10.0"
+	model(sprite) : "Спрайт"
+	body(Integer) : "Субмодель" : 0
+	skin(Integer) : "Вид" : 0
+	scale(string) : "Масштаб" : "1"
+	spawnflags(flags) =
+	[
+		1: "Сначала вкл." : 0
+		2: "Не повторять" : 0
+	]
+]
+
+@SolidClass base(Breakable, RenderFields, ZHLT) = func_breakable : "Breakable Object"
+[
+	spawnflags(flags) =
+	[
+		1 : "Акт. триггером" : 0
+		2 : "Акт. касанием" : 0
+		4 : "Акт. давлением" : 0
+		256: "Мом. акт. ломом" : 0
+	]
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Global, Targetname, Target, RenderFields, Angles, ZHLT) = func_button : "Button"
+[
+	speed(integer) : "Скорость" : 50
+	lip(integer) : "Отступ при смещении" : 0
+	sounds(choices) : "Звук" : 0 =
+	[
+		0: "Нет"
+		1: "Запуск"
+		3: "Доступ разрешён"
+		4: "Электрозамок 1"
+		5: "Электрозамок 2"
+		6: "Электрозамок 3"
+		9: "Ключ-карта (успех)"
+		7: "Ключ-карта (отказ)"
+		10: "Доступ запрещён 1"
+		11: "Доступ запрещён 2"
+		8: "Доступ запрещён 3"
+		2: "Доступ запрещён 4"
+		14: "Выключатель"
+	]
+	wait(integer) : "Пауза до возврата (-1 - беск.)" : 3
+	delay(string) : "Пауза до срабатывания" : "0"
+	locked_sound(choices) : "Звук блокировки" : 0 =
+	[
+		0: "Нет"
+		10: "Доступ запрещён 1"
+		11: "Доступ запрещён 2"
+		8: "Доступ запрещён 3"
+		2: "Доступ запрещён 4"
+		12: "Замок закрыт"
+	]
+	unlocked_sound(choices) : "Звук разблокировки" : 0 =
+	[
+		0: "Нет"
+		1: "Запуск"
+		3: "Доступ разрешён"
+		4: "Электрозамок 1"
+		5: "Электрозамок 2"
+		6: "Электрозамок 3"
+		9: "Ключ-карта (успех)"
+		7: "Ключ-карта (отказ)"
+		10: "Доступ запрещён 1"
+		8: "Доступ запрещён 3"
+		13: "Замок открыт"
+		14: "Выключатель"
+	]
+	health(integer) : "Прочность на срабатывание" : 0
+	spawnflags(flags) =
+	[
+		1: "Неподвижна" : 0
+		32: "Упр. вручную" : 0
+		64: "Искры" : 0
+		256:"Акт. касанием": 0
+	]
+	locked_sentence(choices) : "Сообщение блокировки" : 0 =
+	[
+		0: "Нет"
+		1: "Общий отказ доступа"
+		2: "Служба безопасности"
+		3: "Противоударная защита"
+		4: "Противопожарная защита"
+		5: "Химическая защита"
+		6: "Радиационная защита"
+		7: "Биологическая защита"
+		8: "Служебное помещение"
+		9: "Дверь повреждена"
+	]
+	unlocked_sentence(choices) : "Сообщение разблокировки" : 0 =
+	[
+		0: "Нет"
+		1: "Общий отказ доступа"
+		2: "Служба безопасности"
+		3: "Противоударная защита"
+		4: "Противопожарная защита"
+		5: "Химическая защита"
+		6: "Радиационная защита"
+		7: "Биологическая защита"
+		8: "Служебное помещение"
+	]
+	master(string) : "Multisource name"
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Global,RenderFields, Targetname, Angles, ZHLT) = func_conveyor : "Conveyor Belt"
+[
+	spawnflags(flags) =
+	[
+		1 : "Не толкает" : 0
+		2 : "Нематериален" : 0
+	]
+	speed(string) : "Скорость" : "100"
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Door, ZHLT) = func_door : "Basic door"
+[
+]
+
+@SolidClass base(Door, ZHLT) = func_door_rotating : "Rotating door"
+[
+	spawnflags(flags) =
+	[
+		2 : "Обр. напр." : 0
+		16: "Одно напр." : 0
+		64: "По оси Ox" : 0
+		128: "По оси Oy" : 0
+	]
+	distance(integer) : "Угол поворота" : 90
+]
+
+@SolidClass base(Appearflags, RenderFields, ZHLT) = func_friction : "Surface with a change in friction"
+[
+	modifier(integer) : "Процент от нормы" : 50
+]
+
+@SolidClass base(Targetname, RenderFields, Global, ZHLT) = func_guntarget : "Moving platform"
+[
+	target(target_source) : "Первая точка пути"
+	speed(integer) : "Скорость" : 100
+	health(integer) : "Прочность" : 50
+	message(target_source) : "Сообщение при уроне"
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Global, RenderFields, ZHLT) = func_healthcharger: "Wall health recharger"
+[
+	// dmdelay(integer) : "Пауза до перезагрузки" : 0
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, RenderFields, ZHLT) = func_illusionary : "Fake Wall/Light"
+[
+	skin(choices) : "Материал" : -1 =
+	[
+		-1: "Нет"
+		-7: "Вода"
+	]
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname) = func_ladder : "Ladder"
+[
+]
+
+@SolidClass base(Targetname) = func_monsterclip : "Monster clip brush"
+[
+]
+
+@SolidClass base(Targetname) = func_mortar_field : "Mortar Field"
+[
+	m_flSpread(integer) : "Радиус разброса" : 64
+	m_iCount(integer) : "Число бомб за удар" : 1
+	m_fControl(Choices) : "Прицеливание" : 0 =
+	[
+		0 : "Случайное"
+		1 : "В инициатора"
+		2 : "Управляемое"
+	]
+	m_iszXController(target_destination) : "Контроллер оси Ox"
+	m_iszYController(target_destination) : "Контроллер оси Oy"
+]
+
+@SolidClass base(Global, Appearflags, Targetname, RenderFields, Angles, ZHLT) = func_pendulum : "Swings back and forth"
+[
+	speed(integer) : "Скорость" : 100
+	distance(integer) : "Угол отклонения" : 20
+	damp(integer) : "Сила торможения (0 - 1000)" : 0
+	dmg(integer) : "Урон" : 0
+	spawnflags(flags) =
+	[
+		1: "Сначала вкл." : 0
+		8: "Нематериален" : 0
+		16: "Автовозврат" : 0
+		64: "По оси Ox" : 0
+		128: "По оси Oy" : 0
+	]
+	_minlight(integer) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, Global, RenderFields, PlatSounds, ZHLT) = func_plat : "Elevator"
+[
+	spawnflags(Flags) =
+	[
+		1: "Упр. вручную" : 0
+	]
+	height(integer) : "Высота подъёма/спуска" : 0
+	speed(integer) : "Скорость" : 50
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, Global, RenderFields, PlatSounds, Angles, ZHLT) = func_platrot : "Moving Rotating platform"
+[
+	spawnflags(Flags) =
+	[
+		1: "Упр. вручную" : 0
+		64: "По оси Ox" : 0
+		128: "По оси Oy" : 0
+	]
+	speed(integer) : "Скорость поворота" : 50
+	height(integer) : "Высота подъёма/спуска" : 0
+	rotation(integer) : "Угол поворота" : 0
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Breakable, RenderFields, ZHLT) = func_pushable : "Pushable object"
+[
+	friction(integer) : "Тяжесть (0 - 400)" : 100
+	buoyancy(integer) : "Плавучесть" : 20
+	_minlight(string) : "Мин. уровень освещения"
+	spawnflags(flags) =
+	[
+		128: "Можно сломать" : 0
+	]
+]
+
+@SolidClass base(Global,RenderFields, ZHLT) = func_recharge: "Battery recharger"
+[
+	// dmdelay(integer) : "Пауза до перезагрузки" : 0
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, Global, RenderFields, Angles, ZHLT) = func_rot_button : "RotatingButton"
+[
+	target(target_destination) : "Целевой объект"
+	speed(integer) : "Скорость" : 50
+	sounds(choices) : "Звук" : "21" =
+	[
+		21: "Скрип"
+		22: "Скрип + выброс газа"
+		23: "Длинный скрип"
+		24: "Рычаг"
+		25: "Газовая заслонка"
+	]
+	wait(integer) : "Пауза до возврата" : 3
+	delay(string) : "Пауза до срабатывания" : "0"
+	distance(integer) : "Угол поворота" : 90
+	health(integer) : "Прочность на активацию" : 0
+	spawnflags(flags) =
+	[
+		1 : "Нематериальна" : 0
+		2 : "Обр. напр." : 0
+		32: "Упр. вручную" : 0
+		64: "По оси Ox" : 0
+		128: "По оси Oy" : 0
+		256:"Акт. касанием": 0
+	]
+	changetarget(target_destination) : "Новая цель целевого объекта"
+	master(string) : "Multisource name"
+	_minlight(integer) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, Global, RenderFields, Angles, ZHLT) = func_rotating : "Rotating Object"
+[
+	speed(integer) : "Скорость вращения" : 100
+	volume(integer) : "Громкость звука" : 5
+	fanfriction(integer) : "Процент трения" : 20
+	dmg(integer) : "Урон" : 0
+	sounds(choices) : "Звук" : 0 =
+	[
+		0 : "Нет"
+		1 : "Малый вентилятор 1"
+		4 : "Малый вентилятор 2"
+		5 : "Малый вентилятор 3"
+		2 : "Средний вентилятор"
+		3 : "Большой вентилятор"
+	]
+	spawnorigin(string) : "Точка возврата после расчёта освещения" : "0 0 0"
+	spawnflags(flags) =
+	[
+		1 : "Сначала вкл." : 0
+		2 : "Наоборот" : 0
+		4 : "По оси Ox" : 0
+		8 : "По оси Oy" : 0
+		16: "Разгон/тормоз" : 0
+		32: "Наносит урон" : 0
+		64: "Нематериален" : 0
+		128: "Малый радиус звука" : 0
+		256: "Средний радиус звука" : 0
+		512: "Большой радиус звука" : 0
+	]
+	message(sound) : "Сообщение"
+	_minlight(integer) : "Мин. уровень освещения"
+]
+
+@SolidClass base(BaseTank, ZHLT) = func_tank : "Brush Gun Turret"
+[
+	bullet(choices) : "Вид пуль" : 0 =
+	[
+		0: "Не задан"
+		1: "9 мм"
+		2: "MP5"
+		3: "12 мм"
+	]
+]
+
+@SolidClass = func_tankcontrols : "Tank controls"
+[
+	target(target_destination) : "Управляемый tank"
+]
+
+@SolidClass base(BaseTank, ZHLT) = func_tanklaser : "Brush Laser Turret"
+[
+	laserentity(target_source) : "Целевой laser"
+]
+
+@SolidClass base(BaseTank, ZHLT) = func_tankrocket : "Brush Rocket Turret"
+[
+]
+
+@SolidClass base(BaseTank, ZHLT) = func_tankmortar : "Brush Mortar Turret"
+[
+	iMagnitude(Integer) : "Сила взрыва" : 100
+]
+
+@SolidClass base(Trackchange, ZHLT) = func_trackautochange : "Automatic track changing platform"
+[
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Trackchange, ZHLT) = func_trackchange : "Train track changing platform"
+[
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, Global, RenderFields, ZHLT) = func_tracktrain : "Track Train"
+[
+	target(target_destination) : "Первая точка пути"
+	startspeed(integer) : "Начальная скорость" : 0
+	speed(integer) : "Скорость движения" : 50
+	sounds(choices) : "Звук" : 0 =
+	[
+		0: "Нет"
+		1: "Поезд 1"
+		2: "Поезд 2"
+		3: "Поезд 3"
+		4: "Поезд 4"
+		5: "Поезд 5"
+		6: "Поезд 6"
+	]
+	volume(integer) : "Громкость звука" : 5
+	wheels(integer) : "Расстояние между колёсами" : 64
+	height(integer) : "Высота над трассой" : 0
+	dmg(integer) : "Урон" : 0
+	bank(string) : "Уклон на поворотах" : "0"
+	spawnflags(flags) =
+	[
+		1 : "Без наклонов" : 0
+		2 : "Автономный" : 0
+		8 : "Нематериальный" : 0
+	]
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass = func_traincontrols : "Train Controls"
+[
+	target(target_destination) : "Целевой train"
+]
+
+@SolidClass base(Targetname, Global, RenderFields, PlatSounds, ZHLT) = func_train : "Moving platform"
+[
+	target(target_source) : "Первая точка пути"
+	speed(integer) : "Скорость движения" : 50
+	avelocity(string) : "Скорость поворотов"
+	dmg(integer) : "Урон" : 0
+	spawnflags(flags) =
+	[
+		8 : "Нематериален" : 0
+		16 : "Малый радиус" : 0
+		32 : "Средний радиус" : 0
+		64 : "Большой радиус" : 0
+		128 : "Огромный радиус" : 0
+	]
+	skin(integer) : "Материал" : 0
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(Targetname, Appearflags, RenderFields, Global, ZHLT) = func_wall : "Wall"
+[
+	_minlight(string) : "Мин. уровень освещения"
+]
+
+@SolidClass base(func_wall) = func_wall_toggle : "Toggleable geometry"
+[
+	spawnflags(flags) =
+	[
+		1 : "Сначала невидима" : 0
+	]
+]
+
+@SolidClass base(Door, ZHLT) = func_water : "Liquid"
+[
+	spawnflags(flags) =
+	[
+		1 : "Сначала откр." : 0
+		256:"Акт. 'исп-ем'" : 0
+	]
+	skin(choices) : "Материал" : -3 =
+	[
+		-3: "Вода"
+		-4: "Яд. жижа"
+		-5: "Лава"
+		-19: "Туман"
+	]
+	WaveHeight(string) : "Высота волн" : "0.1"
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Игровые entity
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Targetname, Targetx) = game_counter : "Fires when it hits limit"
+[
+	spawnflags(flags) =
+	[
+		1: "Удалить после акт." : 0
+		2: "Сброс после акт." : 0
+	]
+	master(string) : "Multisource/Team_master"
+	frags(integer) : "Начальное значение" : 0
+	health(integer) : "Порог срабатывания" : 10
+]
+
+@PointClass base(Targetname, Target) = game_counter_set : "Sets a game_counter"
+[
+	spawnflags(flags) =
+	[
+		1: "Удалить после акт." : 0
+	]
+	master(string) : "Multisource/Team_master"
+	frags(integer) : "Новое значение" : 10
+]
+
+@PointClass base(Targetname) iconsprite("fgd/half-life/sprites/game_end.spr") = game_end : "End this multiplayer game"
+[
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname) = game_player_equip : "Initial player equipment"
+[
+	spawnflags(flags) =
+	[
+		1: "Акт. 'исп-ем'" : 0
+	]
+	master(string) : "Целевой team_master"
+]
+
+@PointClass base(Targetname) = game_player_hurt : "Hurts player who fires"
+[
+	dmg(string) : "Применяемый урон" : "25"
+	spawnflags(flags) =
+	[
+		1: "Удалить после акт." : 0
+	]
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname) = game_player_set_health : "Sets players armor and health"
+[
+	dmg(string) : "Новое значение (> 100 уст. броню)" : "200"
+	spawnflags(flags) =
+	[
+		1: "Удалить после акт." : 0
+	]
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname) = game_player_team : "Allows player to change teams"
+[
+	spawnflags(flags) =
+	[
+		1 : "Удалить после акт." : 0
+		2 : "Убить игрока" : 0
+		4 : "Ост. фрагменты" : 0
+	]
+	target(string) : "Новый team_master"
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname) = game_score : "Award/Deduct Points"
+[
+	spawnflags(flags) =
+	[
+		1: "Разр. отриц." : 0
+		2: "Командные очки" : 0
+	]
+
+	points(integer) : "Число очков" : 1
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname, Targetx) = game_team_master : "Team based master/relay"
+[
+	spawnflags(flags) =
+	[
+		1: "Удалить после акт." : 0
+	]
+	triggerstate(choices) : "Состояние" : 0 =
+	[
+		0: "Выключить"
+		1: "Включить"
+		2: "Переключить"
+	]
+	teamindex(integer) : "Индекс команды (-1 - нет)" : -1
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname, Targetx) = game_team_set : "Sets team of team_master"
+[
+	spawnflags(flags) =
+	[
+		1: "Удалить после акт." : 0
+	]
+	master(string) : "Multisource/Team_master"
+]
+
+@PointClass base(Targetname, Target) iconsprite("fgd/half-life/sprites/game_text.spr") = game_text : "HUD Text Message"
+[
+	spawnflags(flags) =
+	[
+		1: "Всем игрокам" : 0
+	]
+	message(string) : "Текст сообщения"
+	x(string) : "X (0.0 - 1.0, -1 - центр)" : "-1"
+	y(string) : "Y (0.0 - 1.0, -1 - центр)" : "-1"
+	effect(Choices) : "Эффект отображения" : 0 =
+	[
+		0 : "Плавный вход/выход"
+		1 : "Титры"
+		2 : "Сканер"
+	]
+	color(color255) : "Основной цвет" : "255 128 0"
+	color2(color255) : "Дополн. цвет" : "0 128 255"
+	fadein(string) : "Время появления/скана символа" : "1"
+	fadeout(string) : "Время затухания" : "1"
+	holdtime(string) : "Время отображения" : "3"
+	fxtime(string) : "Время скана" : "0.25"
+	channel(choices) : "Канал" : 1 =
+	[
+		1 : "1"
+		2 : "2"
+		3 : "3"
+		4 : "4"
+	]
+	master(string) : "Multisource name"
+]
+
+@SolidClass base(Targetname) = game_zone_player : "Player Zone brush"
+[
+	intarget(target_destination) : "Target для игроков внутри"
+	outtarget(target_destination) : "Target для игроков снаружи"
+	incount(target_destination) : "Counter для игроков внутри"
+	outcount(target_destination) : "Counter для игроков снаружи"
+	// master(string) : "Multisource/team_master"
+]
+
+@PointClass base(gibshooterbase) iconsprite("fgd/half-life/sprites/gibshooter.spr") = gibshooter : "Gib Shooter"
+[
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Информационные entity
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass decal() base(Targetname, Appearflags) = infodecal : "Decal"
+[
+	texture(decal) : "Текстура декали"
+]
+
+@PointClass base(Targetname) size(-8 -8 0, 8 8 8) color(255 255 0) = info_bigmomma : "Big Mamma Node"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Бежать на точку" : 0
+		2 : "Ждать бескон." : 0
+	]
+	target(target_destination) : "Следующая точка пути"
+	radius(string) : "Радиус" : "0"
+	reachdelay(string) : "Время задержки" : "0"
+	reachtarget(target_destination) : "Целевой объект"
+	reachsequence(string) : "Sequence во время задержки"
+	health(string) : "Здоровье на точке"
+	presequence(string) : "Sequence перед задержкой"
+	killtarget(target_destination) : "Уничтожаемый объект"
+]
+
+@PointClass base(Target, Angles) = info_intermission : "Intermission Spot"
+[
+]
+
+@PointClass base(Targetname) size (-16 -16 -36, 16 16 36) color(0 255 0) = info_landmark : "Transition Landmark"
+[
+]
+
+@PointClass size(-8 -8 0, 8 8 8) color (255 255 0) = info_node : "ai node"
+[
+]
+
+@PointClass size(-8 -8 -8, 8 8 8) color(255 255 0) = info_node_air : "ai air node"
+[
+]
+
+@PointClass base(Targetname) = info_null : "info_null (spotlight target)"
+[
+]
+
+@PointClass base(PlayerClass) studio("models/player/gordon/gordon.mdl") = info_player_coop : "Player cooperative start"
+[
+]
+
+@PointClass base(PlayerClass) studio("models/player/helmet/helmet.mdl") = info_player_deathmatch : "Player deathmatch start"
+[
+	target(target_destination) : "Целевой объект"
+	master(string) : "Multisource name"
+]
+
+@PointClass base(PlayerClass) studio("models/player.mdl") = info_player_start : "Player 1 start"
+[
+]
+
+@PointClass base(Targetname) size(-8 -8 -8, 8 8 8) color(255 128 0) iconsprite("fgd/half-life/sprites/info_target.spr") = info_target : "Beam Target"
+[
+]
+
+@PointClass base(PlayerClass, Targetname) size(-16 -16 0, 16 16 72) = info_teleport_destination : "Teleport destination"
+[
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Предметы
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Item, Targetx) studio("models/w_oxygen.mdl") = item_airtank : "Oxygen tank"
+[
+]
+
+@PointClass base(Item, Targetx) studio("models/w_antidote.mdl") = item_antidote : "Poison antidote"
+[
+]
+
+@PointClass base(Item, Targetx) studio("models/w_battery.mdl") = item_battery : "HEV battery"
+[
+]
+
+@PointClass base(Item, Targetx) studio("models/w_medkit.mdl") = item_healthkit : "Small Health Kit"
+[
+]
+
+@PointClass base(Item, Targetx) studio("models/w_key.mdl") = item_key : "Door key"
+[
+	spawnflags(Flags) =
+	[
+		2 : "Ключ-карта" : 0
+	]
+]
+
+@PointClass base(Item, Targetx) studio("models/w_longjump.mdl") = item_longjump : "Longjump Module"
+[
+]
+
+@PointClass base(Item, Targetx) studio("models/w_security.mdl") = item_security : "Security card"
+[
+]
+
+@PointClass base(Item, Targetx) studio("models/w_suit.mdl") = item_suit : "HEV Suit"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Быстрая активация" : 0
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Освещение
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass iconsprite("fgd/half-life/sprites/lightbulb.spr") base(Target, Targetname, Light, ZHLT_point) = light : "Invisible lightsource"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass iconsprite("fgd/half-life/sprites/lightbulb.spr") base(Targetname, Target, Light, Angles, ZHLT_point) = light_spot : "Spotlight"
+[
+	_cone(integer) : "Внутренний конус" : 30
+	_cone2(integer) : "Внешний конус" : 45
+	pitch(integer) : "Угол падения" : -90
+	_sky(choices) : "Свет с неба" : 0 =
+	[
+		0 : "Нет"
+		1 : "Да"
+	]
+	spawnflags(Flags) =
+	[
+		1 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Targetname, Angles, ZHLT_point) iconsprite("fgd/half-life/sprites/lightenvironment.spr") = light_environment : "Environment"
+[
+	pitch(integer) : "Угол падения" : 0
+	_light(color255) : "Цвет и яркость" : "255 255 128 200"
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Momentary door
+//
+////////////////////////////////////////////////////////////////////////
+
+@SolidClass base(Door, ZHLT) = momentary_door : "Momentary/Continuous door"
+[
+	spawnflags(flags) =
+	[
+		1 : "Сначала откр." : 0
+	]
+]
+
+@SolidClass base(Targetname, Target, Angles, RenderFields, ZHLT) = momentary_rot_button : "Direct wheel control"
+[
+	speed(integer) : "Скорость" : 50
+	sounds(choices) : "Звук" : 0 =
+	[
+		0: "Нет"
+		21: "Скрип"
+		22: "Скрип + выброс газа"
+		23: "Длинный скрип"
+		24: "Рычаг"
+		25: "Газовая заслонка"
+		1: "Запуск"
+		3: "Доступ разрешён"
+		4: "Электрозамок 1"
+		5: "Электрозамок 2"
+		6: "Электрозамок 3"
+		9: "Ключ-карта (успех)"
+		7: "Ключ-карта (отказ)"
+		8: "Доступ запрещён 3"
+		2: "Доступ запрещён 4"
+	]
+	distance(integer) : "Угол поворота" : 90
+	returnspeed(integer) : "Скорость автовозврата" : 0
+	spawnflags(flags) =
+	[
+		1: "Все кнопки вместе" : 0
+		2: "Автономный" : 0
+		16: "Автовозврат" : 0
+		64: "По оси Ox" : 0
+		128: "По оси Oy" : 0
+	]
+	master(string) : "Multisource name"
+	_minlight(integer) : "Мин. уровень освещения"
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Монстры
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 72) studio("models/controller.mdl") = monster_alien_controller : "Controller"
+[
+]
+
+@PointClass base(Monster, Sequence) size (-32 -32 0, 32 32 64) studio("models/agrunt.mdl") = monster_alien_grunt : "Alien Grunt"
+[
+	netname(string) : "Название команды"
+	spawnflags(Flags) =
+	[
+		32 : "Лидер команды" : 0
+	]
+]
+
+@PointClass base(Monster, Sequence) size(-16 -16 0, 16 16 72) studio("models/islave.mdl") = monster_alien_slave : "Vortigaunt"
+[
+	netname(string) : "Название команды"
+	spawnflags(Flags) =
+	[
+		32 : "Лидер команды" : 0
+		64 : "Игнор. игрока" : 0
+	]
+]
+
+@PointClass base(Monster) size(-360 -360 -172, 360 360 8) studio("models/apache.mdl") = monster_apache : "Apache"
+[
+	spawnflags(Flags) =
+	[
+		8 : "Без урона" : 0
+		64 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Monster) size(-16 -16 0, 16 16 36) studio("models/baby_headcrab.mdl") = monster_babycrab : "Baby Headcrab"
+[
+]
+
+@PointClass base(RenderFields) size(-16 -16 -36, 16 16 0) studio("models/barnacle.mdl") = monster_barnacle : "Barnacle Monster"
+[
+]
+
+@PointClass base(Monster, TalkMonster, Sequence) size(-16 -16 0, 16 16 72) studio("models/barney.mdl") = monster_barney : "Barney"
+[
+]
+
+@PointClass base(DeadMonster, RenderFields) size(-16 -16 0, 16 16 72) = monster_barney_dead : "Dead Barney"
+[
+	pose(Choices) : "Поза" : 0 =
+	[
+		0 : "На спине"
+		1 : "На боку"
+		2 : "На животе"
+	]
+	skin(choices) : "Вид" : 0 =
+	[
+		0 : "Обычный"
+		1 : "Обгоревший"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size(-16 -16 0, 16 16 72) = monster_barney_burned : "Burned Barney"
+[
+	pose(Choices) : "Поза" : 0 =
+	[
+		0 : "На спине"
+		1 : "На боку"
+		2 : "На животе"
+	]
+]
+
+@PointClass base(Monster, Sequence) size (-96 -96 0, 96 96 192) studio("models/big_mom.mdl") = monster_bigmomma : "Big Mamma"
+[
+	netname(string) : "Первая точка пути"
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 72) studio("models/floater.mdl") = monster_bloater : "Bloater"
+[
+]
+
+@PointClass base(Monster, Sequence) size (-32 -32 0, 32 32 64) studio("models/bullsquid.mdl") = monster_bullchicken : "BullChicken"
+[
+]
+
+@PointClass base(Monster) size (-4 -4 0, 4 4 8) studio("models/roach.mdl") = monster_cockroach : "Cockroach"
+[
+]
+
+@PointClass base(Monster) size (-16 -16 0, 16 16 16) studio("models/aflock.mdl") = monster_flyer_flock : "Flock of Flyers"
+[
+	iFlockSize(Integer) : "Число птиц" : 2
+	flFlockRadius(Integer) : "Радиус стаи" : 64
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 72) studio() = monster_furniture : "Monster Furniture"
+[
+	model(studio) : "Модель"
+]
+
+@PointClass base(Monster, Sequence) size (-32 -32 0, 32 32 128) studio("models/garg.mdl") = monster_gargantua : "Gargantua"
+[
+]
+
+@PointClass base(Monster, RenderFields, Sequence) size (-16 -16 -36, 16 16 36) studio() = monster_generic : "Generic Script Monster"
+[
+	bcolor(choices) : "Цвет крови" : 1 =
+	[
+		0 : "Жёлтая"
+		1 : "Красная"
+		2 : "Зелёная"
+	]
+	spawnflags(Flags) =
+	[
+		4 : "Нематериален" : 0
+	]
+	model(studio) : "Модель"
+	body(Integer) : "Субмодель" : 0
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 72) studio("models/gman.mdl") = monster_gman : "G-Man"
+[
+	skin(choices) : "Вид" : 0 =
+	[
+		0 : "Обычный"
+		1 : "Белый"
+	]
+	spawnflags(Flags) =
+	[
+		32 : "Смертный" : 0
+	]
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 72) studio("models/hgrunt.mdl") = monster_grunt_repel : "Human Grunt (Repel)"
+[
+]
+
+@PointClass base(Targetx, RenderFields) color (255 0 0) studio("models/w_grenade.mdl") = monster_handgrenade : "Live Handgrenade"
+[
+]
+
+@PointClass base(Monster) size (-16 -16 0, 16 16 36) studio("models/headcrab.mdl") = monster_headcrab : "Head Crab"
+[
+]
+
+@PointClass base(DeadMonster, Appearflags, RenderFields, Angles) size(-16 -16 0, 16 16 72) = monster_hevsuit_dead : "Dead HEV Suit"
+[
+	pose(choices) : "Поза" : 0 =
+	[
+		0 : "На боку"
+		2 : "На животе"
+		1 : "Сидя"
+		3 : "На столе"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size(-16 -16 0, 16 16 72) = monster_hgrunt_dead : "Dead Human Grunt"
+[
+	pose(choices) : "Поза" : 0 =
+	[
+		1 : "На боку"
+		0 : "На животе"
+		2 : "Сидя"
+	]
+	body(choices) : "Субмодель" : 0 =
+	[
+		2 : "Солдат без автомата"
+		0 : "Солдат с автоматом"
+		3 : "Командир без автомата"
+		1 : "Командир с автоматом"
+	]
+	skin(choices) : "Вид" : 0 =
+	[
+		0 : "Светлая кожа"
+		1 : "Тёмная кожа"
+		2 : "Обгоревший"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size(-16 -16 0, 16 16 72) = monster_hgrunt_burned : "Burned Human Grunt"
+[
+	pose(choices) : "Поза" : 0 =
+	[
+		1 : "На боку"
+		0 : "На животе"
+		2 : "Сидя"
+	]
+	body(choices) : "Субмодель" : 0 =
+	[
+		2 : "Солдат без автомата"
+		0 : "Солдат с автоматом"
+		3 : "Командир без автомата"
+		1 : "Командир с автоматом"
+	]
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 36) studio("models/houndeye.mdl") = monster_houndeye : "Houndeye"
+[
+	netname(string) : "Название команды"
+	spawnflags(Flags) =
+	[
+		32 : "Лидер команды" : 0
+	]
+]
+
+@PointClass base(Monster, Sequence) size (-16 -16 0, 16 16 72) studio("models/hassassin.mdl") = monster_human_assassin : "Human Assassin"
+[
+]
+
+@PointClass base(Monster) size (-16 -16 0, 16 16 72) studio("models/hgrunt.mdl") = monster_human_grunt : "Human Grunt"
+[
+	spawnflags(flags) =
+	[
+		32 : "Лидер команды" : 0
+	]
+	netname(string) : "Название команды"
+	weapons(choices) : "Оружие" : 1 =
+	[
+		1 : "Автомат 9 мм"
+		3 : "Автомат 9 мм + РГ"
+		5 : "Автомат 9 мм + ПСГ"
+		8 : "Обрез"
+		10 : "Обрез + РГ"
+	]
+	sequence(choices) : "Сцена анимации" : 11 =
+	[
+		0 : "walk1"
+		1 : "run"
+		2 : "victorydance"
+		3 : "cower"
+		4 : "smflinch"
+		5 : "leftlegsmflinch"
+		6 : "rightlegsmflinch"
+		7 : "rightarmflinch"
+		8 : "leftarmflinch"
+		9 : "launchgrenade"
+		10 : "throwgrenade"
+		11 : "idle1"
+		12 : "idle2"
+		13 : "combatidle"
+		14 : "frontkick"
+		15 : "crouching_idle"
+		16 : "crouching_wait"
+		17 : "crouching_mp5"
+		18 : "standing_mp5"
+		19 : "reload_mp5"
+		20 : "crouching_shotgun"
+		21 : "standing_shotgun"
+		22 : "reload_shotgun"
+		23 : "advance_signal"
+		24 : "flank_signal"
+		25 : "retreat_signal"
+		26 : "drop_grenade"
+		27 : "limpingwalk"
+		28 : "limpingrun"
+		29 : "180L"
+		30 : "180R"
+		31 : "strafeleft"
+		32 : "straferight"
+		33 : "dieback1"
+		34 : "dieforward"
+		35 : "diesimple"
+		36 : "diebackwards"
+		37 : "dieheadshot"
+		38 : "diegutshot"
+		39 : "barnacled1"
+		40 : "barnacled2"
+		41 : "barnacled3"
+		42 : "barnacled4"
+		43 : "dead_on_stomach"
+		44 : "deadstomach"
+		45 : "deadside"
+		46 : "deadsitting"
+		47 : "repel_jump"
+		48 : "repel_repel"
+		49 : "repel_shoot"
+		50 : "repel_land"
+		51 : "repel_die"
+		52 : "dragholeidle"
+		53 : "draghole"
+		54 : "bustwall"
+		55 : "hoprail"
+		56 : "converse1"
+		57 : "converse2"
+		58 : "startleleft"
+		59 : "startleright"
+		60 : "divecover"
+		61 : "defuse"
+		62 : "corner1"
+		63 : "corner2"
+		64 : "stonetoss"
+		65 : "cliffdie"
+		66 : "diveaside_idle"
+		67 : "diveaside"
+		68 : "kneeldive_idle"
+		69 : "kneeldive"
+		70 : "WM_button"
+		71 : "WM_moatjump"
+		72 : "bustwindow"
+		73 : "dragleft"
+		74 : "dragright"
+		75 : "trackwave"
+		76 : "trackdive"
+		77 : "flyback"
+		78 : "impaled"
+		79 : "jumptracks"
+		80 : "pipetoss"
+		81 : "plunger"
+	]
+]
+
+@PointClass base(Monster, Sequence) size(-32 -32 0, 32 32 64) studio("models/icky.mdl") = monster_ichthyosaur : "Ichthyosaur"
+[
+]
+
+@PointClass base(Monster) size(-8 -8 0, 8 8 8) studio("models/leech.mdl") = monster_leech : "Leech"
+[
+]
+
+@PointClass base(Monster) size(-16 -16 -32, 16 16 32) studio("models/miniturret.mdl") = monster_miniturret : "Mini Auto Turret"
+[
+	orientation(choices) : "Ориентация" : 0 =
+	[
+		0 : "На полу"
+		1 : "На потолке"
+	]
+	spawnflags(flags) =
+	[
+		32 : "Автозапуск" : 0
+		64 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Monster, Sequence) size(-192 -192 0, 192 192 384) studio("models/nihilanth.mdl") = monster_nihilanth : "Nihilanth"
+[
+]
+
+@PointClass base(Monster) size(-480 -480 -112, 480 480 24) studio("models/osprey.mdl") = monster_osprey : "Osprey"
+[
+	spawnflags(Flags) = 
+	[
+		64 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Monster) size(-8 -8 0, 8 8 16) studio("models/bigrat.mdl") = monster_rat : "Rat"
+[
+]
+
+@PointClass base(Targetx, RenderFields) color (255 0 0) studio("models/w_satchel.mdl") = monster_satchelcharge : "Live Satchel Charge"
+[
+]
+
+@PointClass base(Monster, TalkMonster) size(-16 -16 0, 16 16 72) studio("models/scientist.mdl") = monster_scientist : "Scared Scientist"
+[
+	body(Choices) : "Субмодель" : -1 =
+	[
+		-1 : "Случайная"
+		0 : "В очках"
+		1 : "Старый"
+		2 : "Темнокожий"
+		3 : "Молодой"
+	]
+	sequence(Choices) : "Сцена анимации" : 13 =
+	[
+		0 : "walk"
+		1 : "walk_scared"
+		2 : "run"
+		3 : "run1"
+		4 : "run2"
+		5 : "180_Left"
+		6 : "180_Right"
+		7 : "flinch"
+		8 : "flinch1"
+		9 : "laflinch"
+		10 : "raflinch"
+		11 : "llflinch"
+		12 : "rlflinch"
+		13 : "idle1"
+		14 : "idle3"
+		15 : "idle4"
+		16 : "idle5"
+		17 : "idle6"
+		18 : "idle7"
+		19 : "crouchstand"
+		20 : "crouch_idle"
+		21 : "crouch_idle2"
+		22 : "crouch_idle3"
+		23 : "crouch_idle3"
+		24 : "panic"
+		25 : "fear1"
+		26 : "fear2"
+		27 : "eye_wipe"
+		28 : "pull_needle"
+		29 : "return_needle"
+		30 : "give_shot"
+		31 : "diesimple"
+		32 : "dieforward"
+		33 : "dieforward1"
+		34 : "diebackward"
+		35 : "headshot"
+		36 : "gutshot"
+		37 : "lying_on_back"
+		38 : "lying_on_stomach"
+		39 : "dead_sitting"
+		40 : "dead_table1"
+		41 : "dead_table2"
+		42 : "dead_table3"
+		43 : "barnacled1"
+		44 : "barnacled2"
+		45 : "barnacled3"
+		46 : "barnacled4"
+		47 : "console"
+		48 : "checktie"
+		49 : "dryhands"
+		50 : "tieshoe"
+		51 : "whiteboard"
+		52 : "studycart"
+		53 : "lean"
+		54 : "pondering"
+		55 : "pondering2"
+		56 : "pondering3"
+		57 : "buysoda"
+		58 : "pause"
+		59 : "yes"
+		60 : "no"
+		61 : "push_button"
+		62 : "converse1"
+		63 : "converse2"
+		64 : "retina"
+		65 : "talkleft"
+		66 : "talkright"
+		67 : "deskidle"
+		68 : "coffee"
+		69 : "franticbutton"
+		70 : "startle"
+		71 : "sitlookleft"
+		72 : "sitlookright"
+		73 : "sitscared"
+		74 : "sitting2"
+		75 : "sitting3"
+		76 : "cprscientist"
+		77 : "cprscientistrevive"
+		78 : "cowering_in_corner"
+		79 : "sstruggleidle"
+		80 : "sstruggle"
+		81 : "headcrabbed"
+		82 : "c1a0_catwalkidle"
+		83 : "c1a0_catwalk"
+		84 : "ceiling_dangle"
+		85 : "ventpull1"
+		86 : "ventpull2"
+		87 : "ventpullidle1"
+		88 : "ventpullidle2"
+		89 : "sitidle"
+		90 : "sitstand"
+		91 : "keypad"
+		92 : "panic1"
+		93 : "lookwindow"
+		94 : "wave"
+		95 : "pulldoor"
+		96 : "beatdoor"
+		97 : "fallingloop"
+		98 : "crawlwindow"
+		99 : "divewindow"
+		100 : "locked_door"
+		101 : "push_button2"
+		102 : "unlock_door"
+		103 : "quicklook"
+		104 : "handrailidle"
+		105 : "handrail"
+		106 : "hanging_idle"
+		107 : "fall"
+		108 : "scientist_get_pulled"
+		109 : "hanging_idle2"
+		110 : "fall_elevator"
+		111 : "scientist_idlewall"
+		112 : "ickyjump_sci"
+		113 : "haulscientist"
+		114 : "c1a4_wounded_idle"
+		115 : "c1a4_dying_speech"
+		116 : "tentacle_grab"
+		117 : "helicack"
+		118 : "windive"
+		119 : "onguard"
+		120 : "seeya"
+		121 : "rocketcrawl"
+		122 : "portal"
+		123 : "gluonshow"
+		124 : "crouch"
+		125 : "kneel"
+		126 : "dead_hang"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size (-16 -16 0, 16 16 72) = monster_scientist_dead : "Dead Scientist"
+[
+	body(choices) : "Субмодель" : -1 =
+	[
+		-1 : "Случайная необгоревшая"
+		0 : "В очках"
+		1 : "Старый"
+		2 : "Темнокожий"
+		3 : "Молодой"
+		4 : "Обгоревший"
+	]
+	pose(choices) : "Поза" : 0 =
+	[
+		0 : "На спине"
+		1 : "На животе"
+		2 : "Сидя"
+		3 : "Висит"
+		4 : "У стола, сидя"
+		5 : "На столе, на спине"
+		6 : "На столе, на животе"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size (-16 -16 0, 16 16 72) = monster_scientist_burned : "Burned Scientist"
+[
+	pose(choices) : "Поза" : 0 =
+	[
+		0 : "На спине"
+		1 : "На животе"
+		2 : "Сидя"
+		3 : "Висит"
+		4 : "У стола, сидя"
+		5 : "На столе, на спине"
+		6 : "На столе, на животе"
+	]
+]
+
+@PointClass base(Monster) size(-16 -16 24, 16 16 72) studio("models/scientist.mdl") = monster_sitting_scientist : "Sitting Scientist"
+[
+	body(choices) : "Субмодель" : -1 =
+	[
+		-1 : "Случайная"
+		0 : "В очках"
+		1 : "Старый"
+		2 : "Темнокожий"
+		3 : "Молодой"
+	]
+	sequence(choices) : "Сцена анимации" : 73 =
+	[
+		71 : "Сидя, взгляд налево"
+		72 : "Сидя, взгляд направо"
+		73 : "Сидя 1"
+		74 : "Сидя 2"
+		75 : "Сидя 3"
+	]
+]
+
+@PointClass base(Monster) size(-16 -16 0, 16 16 72) studio("models/sentry.mdl") = monster_sentry : "Sentry Turret Gun"
+[
+	spawnflags(Flags) =
+	[
+		32 : "Автозапуск" : 0
+		64 : "Сначала выкл." : 0
+	]
+]
+@PointClass base(Monster) size(-16 -16 0, 16 16 36) studio("models/w_squeak.mdl") = monster_snark : "Armed Snark"
+[
+]
+
+@PointClass base(Monster) size(-32 -32 0, 32 32 64) studio("models/tentacle2.mdl") = monster_tentacle : "Tentacle Arm"
+[
+	sweeparc(integer) : "Угол размаха" : 130
+	sound(choices) : "Звук ударов" : -1 =
+	[
+		-1 : "Нет"
+		0 : "Шахта"
+		1 : "Песок"
+		2 : "Вода"
+	]
+]
+
+@PointClass base(Monster) = monster_tripmine : "Active Tripmine"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Сначала вкл." : 0
+	]
+]
+
+@PointClass base(Monster) size(-32 -32 -32, 32 32 32) studio("models/turret.mdl") = monster_turret : "Auto Turret"
+[
+	orientation(choices) : "Ориентация" : 0 =
+	[
+		0 : "На полу"
+		1 : "На потолке"
+	]
+	spawnflags(flags) =
+	[
+		32 : "Автозапуск" : 0
+		64 : "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Monster) size (-16 -16 0, 16 16 72) studio("models/zombie.mdl") = monster_zombie : "Scientist Zombie"
+[
+	skin(choices) : "Вид" : 0 =
+	[
+		0 : "Обычный"
+		1 : "Обгоревший"
+	]
+	sequence(choices) : "Сцена анимации" : 0 =
+	[
+		0 : "idle1"
+		1 : "turnleft"
+		2 : "turnright"
+		3 : "flinchsmall"
+		4 : "flinch"
+		5 : "bigflinch"
+		6 : "getup"
+		7 : "falling"
+		8 : "attack1"
+		9 : "attack2"
+		10 : "walk"
+		11 : "laflinch"
+		12 : "raflinch"
+		13 : "llflinch"
+		14 : "rlflinch"
+		15 : "dieheadshot"
+		16 : "dieheadshot2"
+		17 : "diesimple"
+		18 : "diebackward"
+		19 : "dieforward"
+		20 : "pause"
+		21 : "busting_through_wall"
+		22 : "kick_punch_wall"
+		23 : "bust_window"
+		24 : "soda"
+		25 : "slideidle"
+		26 : "slidewall"
+		27 : "ventclimbidle"
+		28 : "ventclimb"
+		29 : "deadidle"
+		30 : "deadwall"
+		31 : "freakdie"
+		32 : "freak"
+		33 : "eatbodytable"
+		34 : "eatbody"
+		35 : "eatbodystand"
+		36 : "ripdoor"
+		37 : "zombie_pull_scientist"
+		38 : "zombie_eating"
+		39 : "eat_to_stand"
+		40 : "vent_zidle"
+		41 : "vent_c1a3"
+		42 : "haulzombie"
+		43 : "c2a3_snack_getup"
+		44 : "left_tug"
+		45 : "left_tug_idle"
+		46 : "right_tug"
+		47 : "right_tug_idle"
+		48 : "dead_back"
+		49 : "dead_stomach"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size(-16 -16 0, 16 16 72) = monster_zombie_dead : "Dead Zombie"
+[
+	pose(Choices) : "Поза" : 0 =
+	[
+		0 : "На спине"
+		1 : "На животе"
+	]
+	skin(choices) : "Вид" : 0 =
+	[
+		0 : "Обычный"
+		1 : "Обгоревший"
+	]
+]
+
+@PointClass base(DeadMonster, RenderFields) size(-16 -16 0, 16 16 72) = monster_zombie_burned : "Burned Zombie"
+[
+	pose(Choices) : "Поза" : 0 =
+	[
+		0 : "На спине"
+		1 : "На животе"
+	]
+]
+
+@PointClass base(Targetname, Angles) size (-16 -16 0, 16 16 32) studio("fgd/half-life/models/monstermaker.mdl") = monstermaker : "Monster Maker"
+[
+	target(string) : "Цель при срабатывании"
+	monstertype(string) : "Тип монстров"
+	monstercount(integer) : "Количество экземпляров" : -1
+	delay(string) : "Задержка (-1 - пока жив предыд.)" : "5"
+	m_imaxlivechildren(integer) : "Макс. живых (-1 - беск.)" : -1
+	netname(string) : "Имена экземпляров"
+	spawnflags(Flags) =
+	[
+		1 : "Сначала вкл." : 0
+	// 2 : "PVS On/Off" : 0  // not implemented
+		4 : "Постоянная генерация" : 0
+		8 : "Применять monsterclip" : 0
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Управление
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Targetname) color (128 255 128) iconsprite("fgd/half-life/sprites/multi_manager.spr") = multi_manager : "MultiTarget Manager"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Разрешены повторы" : 0
+	]
+]
+
+@PointClass base(Targetname, Target) color(128 255 128) iconsprite("fgd/half-life/sprites/multisource.spr") = multisource : "Multisource"
+[
+	globalstate(string) : "Изменяемая переменная"
+]
+
+@PointClass base(Targetname, Angles) size (-8 -8 0, 8 8 8) color(255 255 0) = path_corner : "Moving platform stop"
+[
+	spawnflags(Flags) =
+	[
+		1: "Ждать реактивации" : 0
+		2: "Телепортация" : 0
+		4: "Не повт. акт." : 0
+	]
+	target(target_destination) : "След. точка пути"
+	message(target_destination) : "Цель при достижении"
+	wait(integer) : "Задержка" : 0
+	speed(integer) : "Новая скорость" : 0
+	yaw_speed(integer) : "Новая скорость поворота" : 0
+]
+
+@PointClass base(Targetname, Angles) size (-8 -8 0, 8 8 8) color (255 255 0) = path_track : "Train Track Path"
+[
+	spawnflags(Flags) =
+	[
+		1: "Выключена" : 0
+		2: "Не повт. акт." : 0
+		4: "Разворот" : 0
+		8: "Выкл. train" : 0
+	]
+	target(target_destination) : "След. точка пути"
+	message(target_destination) : "Цель при достижении"
+	altpath(target_destination) : "Точка альтернативного пути"
+	netname(target_destination) : "Цель при остановке"
+	speed(integer) : "Новая скорость" : 0
+]
+
+@PointClass base(Targetname, RenderParams) = player_loadsaved : "Load Auto-Saved game"
+[
+	duration(string) : "Длит. перехода" : "3"
+	holdtime(string) : "Длит. эффекта" : "3"
+	messagetime(string) : "Время отобр. сообщения" : "0"
+	message(string) : "Сообщение"
+	loadtime(string) : "Пауза до рестарта" : "0"
+	spawnflags(Flags) =
+	[
+		1: "Убить игрока" : 1
+	]
+]
+
+@PointClass base(Targetname) = player_weaponstrip : "Strips player's weapons"
+[
+]
+
+@PointClass base(Targetname, Targetx) size (-16 -16 0, 16 16 72) color(0 128 255) iconsprite("fgd/half-life/sprites/scripted_sentence.spr") = scripted_sentence : "Scripted Sentence"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Не повт. акт." : 0
+		2 : "Только вызванные" : 0
+		4 : "Принудительно" : 0
+		8 : "Разр. другим говорить" : 0
+	]
+	sentence(string) : "Сообщение"
+	entity(string) : "Тип спикера"
+	duration(string) : "Время сообщения" : "3"
+	radius(integer) : "Радиус действия" : 200
+	refire(string) : "Пауза до рестарта" : "3"
+	listener(string) : "Тип слушателя"
+	volume(string) : "Громкость звука" : "10"
+	attenuation(choices) : "Радиус звука" : 0 =
+	[
+		0 : "Малый радиус"
+		1 : "Средний радиус"
+		2 : "Большой радиус"
+		3 : "Слышно везде"
+	]
+]
+
+@PointClass base(Targetname, Targetx, Angles) size (-16 -16 0, 16 16 72) color(0 128 255) studio("fgd/half-life/models/scripted_sequence.mdl") = scripted_sequence : "Scripted Sequence"
+[
+	m_iszEntity(string) : "Целевой монстр/экз."
+	m_iszPlay(string) : "Анимация действия"
+	m_iszIdle(string) : "Анимация простоя"
+	m_flRadius(integer) : "Радиус действия" : 200
+	m_flRepeat(integer) : "Пауза до повтора" : 0
+	m_fMoveTo(Choices) : "Движение на позицию" : 0 =
+	[
+		0 : "Нет"
+		1 : "Шаг"
+		2 : "Бег"
+		4 : "Телепортация"
+		5 : "Поворот к позиции"
+	]
+	spawnflags(Flags) =
+	[
+		4 : "Разр. повторы" : 0
+		8 : "Оставлять труп" : 0
+		32: "Не прерывать" : 0
+		64: "Подавлять ИИ" : 0
+		128: "Ресинхр. ИИ" : 0
+	]
+]
+
+@PointClass base(Targetname) iconsprite("fgd/half-life/sprites/speaker.spr") = speaker : "Announcement Speaker"
+[
+	preset(choices) :"Группа объявлений" : 0 =
+	[
+		0: "None"
+		1: "C1A0"
+		2: "C1A1"
+		3: "C1A2"
+		4: "C1A3"
+		5: "C1A4"
+		6: "C2A1"
+		7: "C2A2"
+		// 8: "C2A3"
+		9: "C2A4"
+		// 10: "C2A5"
+		11: "C3A1"
+		12: "C3A2"
+	]
+	message(string) : "Имя группы сообщений"
+	health(integer) : "Громкость звука" : 5
+	spawnflags(flags) =
+	[
+		1: "Сначала выкл." : 0
+	]
+]
+
+@PointClass base(Targetname) iconsprite("fgd/half-life/sprites/speaker.spr") = target_cdaudio : "CD Audio Target"
+[
+	health(choices) : "Трек #" : -1 =
+	[
+		-1 : "Нет"
+		1 : "Трек 1"
+		2 : "Трек 2"
+		3 : "Трек 3"
+		4 : "Трек 4"
+		5 : "Трек 5"
+		6 : "Трек 6"
+		7 : "Трек 7"
+		8 : "Трек 8"
+		9 : "Трек 9"
+		10 : "Трек 10"
+		11 : "Трек 11"
+		12 : "Трек 12"
+		13 : "Трек 13"
+		14 : "Трек 14"
+		15 : "Трек 15"
+		16 : "Трек 16"
+		17 : "Трек 17"
+		18 : "Трек 18"
+		19 : "Трек 19"
+		20 : "Трек 20"
+		21 : "Трек 21"
+		22 : "Трек 22"
+		23 : "Трек 23"
+		24 : "Трек 24"
+		25 : "Трек 25"
+		26 : "Трек 26"
+		27 : "Трек 27"
+		28 : "Трек 28"
+		29 : "Трек 29"
+		30 : "Трек 30"
+	]
+	radius(string) : "Радиус звука"
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Триггеры
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Targetx) color (0 255 0) iconsprite("fgd/half-life/sprites/trigger_auto.spr") = trigger_auto : "AutoTrigger"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Удалить после акт." : 0
+	]
+	triggerstate(choices) : "Состояние" : 1 =
+	[
+		0 : "Выключить"
+		1 : "Включить"
+		2 : "Переключить"
+	]
+	globalstate(string) : "Используемая переменная"
+]
+
+@SolidClass base(Targetname) = trigger_autosave : "AutoSave Trigger"
+[
+	master(string) : "Multisource name"
+]
+
+@PointClass base(Targetx, Targetname, Angles) color (0 255 0) iconsprite("fgd/half-life/sprites/trigger_camera.spr") = trigger_camera : "Trigger Camera"
+[
+	wait(integer) : "Время задержки" : 10
+	moveto(string) : "Первая точка пути"
+	spawnflags(flags) =
+	[
+		1: "Обзор от игрока" : 0
+		2: "Следовать за игроком" : 0
+		4: "Блокировать игрока" : 0
+	]
+	speed(string) : "Начальная скорость" : "0"
+	acceleration(string) : "Ускорение" : "500"
+	deceleration(string) : "Торможение" : "500"
+]
+
+@SolidClass base(Targetname) = trigger_cdaudio : "Trigger CD Audio"
+[
+	health(choices) : "Трек #" : -1 =
+	[
+		-1 : "Нет"
+		1 : "Трек 1"
+		2 : "Трек 2"
+		3 : "Трек 3"
+		4 : "Трек 4"
+		5 : "Трек 5"
+		6 : "Трек 6"
+		7 : "Трек 7"
+		8 : "Трек 8"
+		9 : "Трек 9"
+		10 : "Трек 10"
+		11 : "Трек 11"
+		12 : "Трек 12"
+		13 : "Трек 13"
+		14 : "Трек 14"
+		15 : "Трек 15"
+		16 : "Трек 16"
+		17 : "Трек 17"
+		18 : "Трек 18"
+		19 : "Трек 19"
+		20 : "Трек 20"
+		21 : "Трек 21"
+		22 : "Трек 22"
+		23 : "Трек 23"
+		24 : "Трек 24"
+		25 : "Трек 25"
+		26 : "Трек 26"
+		27 : "Трек 27"
+		28 : "Трек 28"
+		29 : "Трек 29"
+		30 : "Трек 30"
+	]
+]
+
+@SolidClass = trigger_changelevel : "Trigger: Change level"
+[
+	targetname(string) : "Name"
+	map(string) : "Новая карта"
+	landmark(string) : "Имя landmark"
+	changetarget(target_destination) : "Новая цель целевого объекта"
+	changedelay(string) : "Пауза перед сменой цели" : "0"
+	spawnflags(flags) =
+	[
+		1: "Без паузы" : 0
+		2: "Акт. триггером" : 0
+	]
+]
+
+@PointClass base(Targetx, Targetname) color (0 255 0) iconsprite("fgd/half-life/sprites/trigger_ct.spr") = trigger_changetarget : "Trigger Change Target"
+[
+	m_iszNewTarget(string) : "Новая цель целевого объекта"
+]
+
+@SolidClass base(Trigger, Targetname) = trigger_counter : "Trigger counter"
+[
+	spawnflags(flags) =
+	[
+		1 : "Без сообщений" : 0
+	]
+	master(string) : "Multisource name"
+	count(integer) : "Порог срабатывания" : 3
+]
+
+@SolidClass base(Targetname) = trigger_endsection : "EndSection Trigger"
+[
+	section(string) : "Тип заверш. игры"
+	spawnflags(flags) =
+	[
+		1: "Акт. триггером" : 0
+	]
+]
+
+@SolidClass base(Trigger) = trigger_gravity : "Trigger Gravity"
+[
+	gravity(integer) : "Коэффициент" : 1
+]
+
+@SolidClass base(Targetname,Target) = trigger_hurt : "Trigger player hurt"
+[
+	spawnflags(flags) =
+	[
+		1: "Не повторять" : 0
+		2: "Сначала выкл." : 0
+		8: "Игнор. игроков" : 0
+		16:"Только с игроком" : 0
+		32:"Только игрок" : 0
+	]
+	damagetype(choices) : "Тип урона" : 0 =
+	[
+		0 : "Общий"
+		8 : "Горение"
+		16 : "Замораживание"
+		32 : "Падение"
+		256 : "Удар током"
+		16384: "Нехватка воздуха"
+		262144 : "Радиация"
+		1 : "Сдавливание"
+		2 : "Пулевое ранение"
+		4 : "Порезы"
+		64 : "Ударная волна"
+		128 : "Перелом"
+		512 : "Оглушение"
+		1024 : "Поражение лазером"
+		32768 : "Паралич"
+		65536 : "Паралитический газ"
+		131072 : "Яд"
+		1048576 : "Химические ожоги"
+		524288 : "Подача воздуха"
+		2097152 : "Слабое горение"
+		4194304 : "Слабое замораживание"
+	]
+	dmg(integer) : "Урон" : 25
+	delay(string) : "Пауза до срабатывания" : "0"
+	master(string) : "Multisource name"
+]
+
+@SolidClass base(Angles) = trigger_monsterjump : "Trigger monster jump"
+[
+	speed(integer) : "Скорость прыжка" : 40
+	height(integer) : "Высота прыжка" : 128
+	master(string) : "Multisource name"
+]
+
+@SolidClass base(Trigger) = trigger_multiple : "Trigger: Activate multiple"
+[
+	wait(integer) : "Пауза до рестарта" : 1
+]
+
+@SolidClass base(Trigger) = trigger_once : "Trigger: Activate once"
+[
+]
+
+@SolidClass = trigger_sound : "Trigger: Change sound style"
+[
+	roomtype(Choices) : "Тип комнаты" : 0 =
+	[
+		0 : "Обычный/без эффекта"
+		1 : "Общий"
+		
+		17: "Бетон (малый)"
+		18: "Бетон (средний)"
+		19: "Бетон (большой)"
+
+		2 : "Металл (малый)"
+		3 : "Металл (средний)"
+		4 : "Металл (большой)"
+	
+		23: "Пещера (малая)"
+		24: "Пещера (средняя)"
+		25: "Пещера (большая)"
+
+		14: "Под водой 1"
+		15: "Под водой 2"
+		16: "Под водой 3"
+
+		5 : "Туннель (малый)"
+		6 : "Туннель (средний)"
+		7 : "Туннель (большой)"
+	
+		8 : "Кабинет (малый)"
+		9 : "Кабинет (средний)"
+		10: "Кабинет (большой)"
+
+		11: "Насыщенный (малый)"
+		12: "Насыщенный (средний)"
+		13: "Насыщенный (большой)"
+
+		20: "Ангар 1"
+		21: "Ангар 2"
+		22: "Ангар 3"
+
+		26: "Странный 1"
+		27: "Странный 2"
+		28: "Странный 3"
+	]
+]
+
+@SolidClass base(Trigger, Angles) = trigger_push : "Trigger player push"
+[
+	spawnflags(flags) =
+	[
+		1: "Не повторять" : 0
+		2: "Сначала выкл." : 0
+	]
+	speed(integer) : "Скорость движения" : 50
+]
+
+@PointClass base(Targetname, Targetx) color (0 255 0) iconsprite("fgd/half-life/sprites/trigger_relay.spr") = trigger_relay : "Trigger Relay"
+[
+	spawnflags(flags) =
+	[
+		1: "Удалять после акт." : 0
+	]
+	triggerstate(choices) : "Состояние" : 1 =
+	[
+		0: "Выключить"
+		1: "Включить"
+		2: "Переключить"
+	]
+]
+
+@SolidClass base(Trigger) = trigger_teleport : "Trigger teleport"
+[
+	spawnflags(flags) =
+	[
+		8: "Сохр. напр. взгляда и скорость" : 0
+	]
+]
+
+@SolidClass base(Targetname) = trigger_transition : "Trigger: Select Transition Area"
+[
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Оружие
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Weapon, Targetx) studio("models/w_crowbar.mdl") = weapon_crowbar : "Crowbar"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_9mmhandgun.mdl") = weapon_9mmhandgun : "9mm Handgun"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_357.mdl") = weapon_357 : "357 Handgun"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_9mmar.mdl") = weapon_9mmAR : "9mm Assault Rifle"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_shotgun.mdl") = weapon_shotgun : "Shotgun"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_rpg.mdl") = weapon_rpg : "RPG"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_gauss.mdl") = weapon_gauss : "Gauss Gun"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_crossbow.mdl") = weapon_crossbow : "Crossbow"
+[
+	sequence(choices) : "Положение" : 0 =
+	[
+		0 : "Обычное"
+		1 : "Реалистичное"
+	]
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_egon.mdl") = weapon_egon : "Egon Gun"
+[
+]
+
+@PointClass base(Weapon, Targetx) = weapon_tripmine : "Tripmine Ammo"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_satchel.mdl") = weapon_satchel : "Satchel Charge Ammo"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_grenade.mdl") = weapon_handgrenade : "Handgrenade Ammo"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_squeak.mdl") = weapon_snark : "Squeak Grenade"
+[
+]
+
+@PointClass base(Weapon, Targetx) studio("models/w_hgun.mdl") = weapon_hornetgun : "Hornet Gun"
+[
+]
+
+@PointClass base(Ammo) studio("models/w_chainammo.mdl") = weaponbox : "Weapon/Ammo Container"
+[
+]
+
+@PointClass base(Weapon, Targetx) = world_items : "World Items"
+[
+	type(choices) :"Тип объекта" : 42 =
+	[
+		42: "Противоядие"
+		43: "Ключ-карта"
+		44: "Аккумулятор"
+		45: "Защитный костюм"
+	]
+]
+
+////////////////////////////////////////////////////////////////////////
+//
+// Xen
+//
+////////////////////////////////////////////////////////////////////////
+
+@PointClass base(Target, Targetname, RenderFields, Angles) size (-16 -16 0, 16 16 64) studio("models/light.mdl") = xen_plantlight : "Xen Plant Light"
+[
+]
+
+@PointClass base(Targetname, RenderFields, Angles) size (-8 -8 0, 8 8 32) studio("models/hair.mdl") = xen_hair : "Xen Hair"
+[
+	spawnflags(Flags) =
+	[
+		1 : "Синхронное движение" : 0
+	]
+]
+
+@PointClass base(Targetname, RenderFields, Angles) size (-24 -24 0, 24 24 188) studio("models/tree.mdl") = xen_tree : "Xen Tree"
+[
+]
+
+@PointClass base(Targetname, RenderFields, Angles) size (-16 -16 0, 16 16 64) studio("models/fungus(small).mdl") = xen_spore_small : "Xen Spore (small)"
+[
+]
+
+@PointClass base(Targetname, RenderFields, Angles) size (-40 -40 0, 40 40 120) studio("models/fungus.mdl") = xen_spore_medium : "Xen Spore (medium)"
+[
+]
+
+@PointClass base(Targetname, RenderFields, Angles) size (-90 -90 0, 90 90 220) studio("models/fungus(large).mdl") = xen_spore_large : "Xen Spore (large)"
+[
+]
