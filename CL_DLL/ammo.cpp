@@ -444,19 +444,19 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 		PlaySound( "common/wpn_hudon.wav", 1 );
 		p = GetFirstPos( iSlot );
 
-		/* ÃÃ²Ã  Ã·Ã Ã±Ã²Ã¼ Ã¯Ã¥Ã°Ã¥Ã±Ã²Ã°Ã®Ã¥Ã­Ã  Ã¯Ã®Ã¤ Ã±Ã¢Ã¥Ã°ÃµÃ¡Ã»Ã±Ã²Ã°Ã³Ã¾ Ã±Ã¬Ã¥Ã­Ã³ Ã®Ã°Ã³Ã¦Ã¨Ã¿ (ÃªÃ Ãª Ã¢ HL2) */
-		WEAPON *p2, *p3 = gHUD.m_Ammo.m_pWeapon;	// Ã„Ã¥Ã©Ã±Ã²Ã¢Ã³Ã¾Ã¹Ã¥Ã¥ Ã®Ã°Ã³Ã¦Ã¨Ã¥
+		/* Ýòà ÷àñòü ïåðåñòðîåíà ïîä ñâåðõáûñòðóþ ñìåíó îðóæèÿ (êàê â HL2) */
+		WEAPON *p2, *p3 = gHUD.m_Ammo.m_pWeapon;	// Äåéñòâóþùåå îðóæèå
 
 		if ( p && fastSwitch ) // check for fast weapon switch mode
 			{
-			// Ã…Ã±Ã«Ã¨ Ã¥Ã±Ã²Ã¼ Ã¤Ã°Ã³Ã£Ã®Ã¥ Ã®Ã°Ã³Ã¦Ã¨Ã¥ Ã±Ã«Ã¥Ã¤Ã®Ã¬ Ã§Ã  Ã²Ã¥ÃªÃ³Ã¹Ã¨Ã¬, Ã¢Ã»Ã¡Ã°Ã Ã²Ã¼ Ã¥Ã£Ã® (Ã¯Ã°Ã¨ Ã³Ã±Ã«Ã®Ã¢Ã¨Ã¨, Ã·Ã²Ã® Ã­Ã¥ Ã¡Ã»Ã« Ã¢Ã»Ã¡Ã°Ã Ã­ Ã¤Ã°Ã³Ã£Ã®Ã© Ã±Ã«Ã®Ã²)
+			// Åñëè åñòü äðóãîå îðóæèå ñëåäîì çà òåêóùèì, âûáðàòü åãî (ïðè óñëîâèè, ÷òî íå áûë âûáðàí äðóãîé ñëîò)
 			if ((p3) && (p2 = GetNextActivePos (p3->iSlot, p3->iSlotPos)) && (iSlot == p3->iSlot))
 				{	
 				ServerCmd( p2->szName );
 				g_weaponselect = p2->iId;
 				return;
 				}
-			// Ã‚ Ã¯Ã°Ã®Ã²Ã¨Ã¢Ã­Ã®Ã¬ Ã±Ã«Ã³Ã·Ã Ã¥ Ã¢Ã§Ã¿Ã²Ã¼ Ã¯Ã¥Ã°Ã¢Ã®Ã¥ Ã¨Ã§ Ã±Ã¯Ã¨Ã±ÃªÃ 
+			// Â ïðîòèâíîì ñëó÷àå âçÿòü ïåðâîå èç ñïèñêà
 			else
 				{
 				ServerCmd( p->szName );
