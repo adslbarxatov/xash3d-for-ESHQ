@@ -290,6 +290,7 @@ void CApache :: DyingThink( void )
 		pev->nextthink = gpGlobals->time + 0.2;
 		return;
 	}
+	// Упал
 	else
 	{
 		Vector vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
@@ -404,6 +405,11 @@ void CApache :: DyingThink( void )
 
 		SetThink (&CBaseEntity::SUB_Remove);
 		pev->nextthink = gpGlobals->time + 0.1;
+
+		// Заставляем apache вызывать цель triggertarget
+		pev->deadflag = DEAD_DYING;
+		FCheckAITrigger();
+		pev->deadflag = DEAD_NO;
 	}
 }
 
