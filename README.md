@@ -3,7 +3,7 @@ Xash3d engine [v43/0.91 (rev 3737)] adaptation for ESHQ mod
 #
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
-Modification based on old (at least 2 years ago) version of engine and may contain old bugs. But some new features
+Modification based on old (from 2015) version of engine and may contain old bugs. But some new features
 may be useful for developers with the same mods plots.
 #
 Main changes touch client and server libraries, not engine core and menu.
@@ -20,7 +20,7 @@ Main changes touch client and server libraries, not engine core and menu.
 
 6. Our doors (momentary, rotating and simple) have different fields for 'Just opened' and 'Just closed' sounds. We are planning to split 'Opening' sound to 'Opening' and 'Closing'. But now it is not necessary. Also we have fixed some bugs (basically, around 'Starts open' flag) and expanded list of sounds (not only replaced exist ones). Finally, our doors are not play 'locked' sounds when opened.
 
-7. Our turrets can trigger something on death.
+7. Our turrets and apaches can trigger something on death.
 
 8. Breakables can spawn crowbars (why it was not so?).
 
@@ -48,6 +48,8 @@ Main changes touch client and server libraries, not engine core and menu.
 
 20. Our game_end entity works correctly (ends the game), and player_loadsaved can 'kill' player (so you don't need trigger_hurt or some other 'frozing' method).
 
+21. Wood, glass and snow textures got own sounds for player steps.
+
 Unfortunately, we cannot fix some bugs yet:
 
 1. 'momentary_rot_button' bug: infinite cycle for loopable door sounds.
@@ -56,7 +58,7 @@ Unfortunately, we cannot fix some bugs yet:
 
 3. 'func_door_rotating' bug: incorrect collision if door has 'Ox' and/or 'Oy' flags.
 
-4. Engine sometime fails on maps with high NPC activity and/or high blood level.
+4. Engine sometime fails on maps with high NPC activity and/or high blood level (probably, comes from bullsquid code; probably, fixed).
 
 But we believe that it is not serious problem for now.
 #
