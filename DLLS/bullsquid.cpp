@@ -539,7 +539,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			// we should be able to read the position of bones at runtime for this info.
 			vecSpitOffset = ( gpGlobals->v_right * 8 + gpGlobals->v_forward * 37 + gpGlobals->v_up * 23 );		
 			vecSpitOffset = ( pev->origin + vecSpitOffset );
-			if (m_hEnemy)	// ¬ некоторых случа€х сюда почему-то попадает m_hEnemy == NULL. ќбрабатываем этот случай
+			if (m_hEnemy)	// ¬ некоторых случа€х сюда попадает m_hEnemy == NULL. ќбрабатываем этот случай
 				{
 				vecSpitDir = ( ( m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs ) - vecSpitOffset ).Normalize();
 				}
@@ -547,6 +547,8 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				{
 				vecSpitDir.x = vecSpitDir.y = vecSpitDir.z = 0;
 				}
+			// Ёто, в частности, случилось тогда, когда зомби был разломан на потроха до того, как плевок буллсквида
+			// долетел до него
 
 			vecSpitDir.x += RANDOM_FLOAT( -0.05, 0.05 );
 			vecSpitDir.y += RANDOM_FLOAT( -0.05, 0.05 );
