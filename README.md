@@ -8,7 +8,7 @@ may be useful for developers with the same mods plots.
 #
 Main changes touch client and server libraries, not engine core and menu.
 
-1. We have fix some known bugs (like non-rotating func_rotating) for which we had enough mind and time.
+1. We have fix some known bugs (like non-rotating func_rotating; crashes at killed scientists sentences, etc) for which we had enough mind and time.
 
 2. We have added entity trigger_sound that replaces env_sound. It works as well as trigger_multiple (with hardcoded 'wait' value - 1 s). We cannot understand, why there was no brush entities to set sound effect. Spherical env_sound has very weird and unpredictable behaviour, and it is difficult to apply it in cases like long narrow building entrances (f.e., partially opened gates). This situation really needs two brushes - before and after the gate - to trigger sound effects.
 
@@ -22,7 +22,7 @@ Main changes touch client and server libraries, not engine core and menu.
 
 7. Our turrets and apaches can trigger something on death.
 
-8. Breakables can spawn crowbars (why it was not so?).
+8. Breakables can spawn crowbars (why it was not so?) and gauss gun clips.
 
 9. Our ambient_generic (and all entities that can sound) has more accurate sound radius (minimal as default).
 
@@ -50,6 +50,10 @@ Main changes touch client and server libraries, not engine core and menu.
 
 21. Wood, glass and snow textures got own sounds for player steps.
 
+22. Our 'cycler' can trigger its target.
+
+
+
 Unfortunately, we cannot fix some bugs yet:
 
 1. 'momentary_rot_button' bug: infinite cycle for loopable door sounds.
@@ -57,8 +61,6 @@ Unfortunately, we cannot fix some bugs yet:
 2. 'func_pushable' bug: totally incorrect collision box.
 
 3. 'func_door_rotating' bug: incorrect collision if door has 'Ox' and/or 'Oy' flags.
-
-4. Engine sometime fails on maps with high NPC activity and/or high blood level (probably, comes from bullsquid code; probably, fixed).
 
 But we believe that it is not serious problem for now.
 #
