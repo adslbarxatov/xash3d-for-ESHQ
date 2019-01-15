@@ -17,7 +17,8 @@ namespace ESHQSetupStub
 		private const int tailsSize = (int)(scale * 0.3);
 
 		private const int frameSpeed = 6;
-		private const string logoString = "ESHQ";
+		private const string logoString1 = "ESHQ",
+			logoString2 = "ES:FA";
 
 		// Переменные
 		private byte phase1 = 1, phase2 = 1;	// Текущие фазы отрисовки
@@ -70,7 +71,7 @@ namespace ESHQSetupStub
 			g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixelGridFit;	// Убирает ауру на буквах в Win8
 
 			logoFont = new Font ("Lucida Sans Unicode", fontSize);
-			logoSize = g.MeasureString (logoString, logoFont);
+			logoSize = g.MeasureString (logoString1, logoFont);
 
 			// Установка начальных позиций
 			point1 = new Point (-(int)scale, (this.Height - (int)scale) / 2);	// Горизонтальная
@@ -240,9 +241,15 @@ namespace ESHQSetupStub
 			else if (arc1 >= -90.0)
 				{
 				// Отображение текста
-				g.DrawString (logoString.Substring (0, (int)(logoString.Length * Sinus (-arc1))),
+				/*g.DrawString (logoString1.Substring (0, (int)(logoString1.Length * Sinus (-arc1))),
 					logoFont, foreBrush, this.Width - (this.Width - logo.Width) / 4 - logoSize.Width,
-					(this.Height - logoSize.Height * 0.9f) / 2);
+					(this.Height - logoSize.Height * 0.9f) / 2.0f);*/
+				g.DrawString (logoString1.Substring (0, (int)(logoString1.Length * Sinus (-arc1))),
+					logoFont, foreBrush, this.Width - (this.Width - logo.Width) / 4 - logoSize.Width,
+					this.Height / 2 - logoSize.Height * 0.7f);
+				g.DrawString (logoString2.Substring (0, (int)(logoString2.Length * Sinus (-arc1))),
+					logoFont, foreBrush, this.Width - (this.Width - logo.Width) / 4 - logoSize.Width,
+					this.Height / 2);
 				}
 			else
 				{
