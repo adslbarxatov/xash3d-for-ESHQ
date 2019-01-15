@@ -303,6 +303,8 @@ public:
 	float m_flVolume;
 	float m_pitch;
 	int	  m_sounds;
+	int	  isSpinningUpOrRunning;	// Поле исправляет баг, при котором, если сохранение выполнено в момент неполной
+									// остановки, при загрузке из сохранения поведение func_rotating меняется на разгон
 };
 
 TYPEDESCRIPTION	CFuncRotating::m_SaveData[] = 
@@ -311,7 +313,8 @@ TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
 	DEFINE_FIELD( CFuncRotating, m_flAttenuation, FIELD_FLOAT ),
 	DEFINE_FIELD( CFuncRotating, m_flVolume, FIELD_FLOAT ),
 	DEFINE_FIELD( CFuncRotating, m_pitch, FIELD_FLOAT ),
-	DEFINE_FIELD( CFuncRotating, m_sounds, FIELD_INTEGER )
+	DEFINE_FIELD( CFuncRotating, m_sounds, FIELD_INTEGER ),
+	DEFINE_FIELD( CFuncRotating, isSpinningUpOrRunning, FIELD_INTEGER )
 };
 
 IMPLEMENT_SAVERESTORE( CFuncRotating, CBaseEntity );
@@ -395,9 +398,7 @@ void CFuncRotating :: Spawn( )
 
 	// prevent divide by zero if level designer forgets friction!
 	if ( m_flFanFriction == 0 )
-	{
 		m_flFanFriction = 1;
-	}
 	
 	if ( FBitSet(pev->spawnflags, SF_BRUSH_ROTATE_Z_AXIS) )
 		pev->movedir = Vector(0,0,1);
@@ -506,7 +507,7 @@ void CFuncRotating :: Precache( void )
 		}
 	}
 	
-	if (pev->avelocity != g_vecZero )
+	if (isSpinningUpOrRunning)	// (pev->avelocity != g_vecZero)
 	{
 		// if fan was spinning, and we went through transition or save/restore,
 		// make sure we restart the sound.  1.5 sec delay is magic number. KDB
@@ -583,7 +584,6 @@ void CFuncRotating :: RampPitchVol (int fUp)
 
 	EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseRunning), 
 		fvol, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
-
 }
 
 //
@@ -607,6 +607,7 @@ void CFuncRotating :: SpinUp( void )
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseRunning), 
 			m_flVolume, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, FANPITCHMAX);
 		
+		isSpinningUpOrRunning = 1;
 		SetThink (&CFuncRotating::Rotate);
 		Rotate ();
 	} 
@@ -648,6 +649,7 @@ void CFuncRotating :: SpinDown( void )
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseRunning /* Stop */), 
 				0, 0, SND_STOP, m_pitch);
 
+		isSpinningUpOrRunning = 0;
 		SetThink (&CFuncRotating::Rotate);
 		Rotate();
 	} 
@@ -673,6 +675,7 @@ void CFuncRotating :: RotatingUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 		// fan is spinning, so stop it.
 		if ( pev->avelocity != g_vecZero )
 		{
+			isSpinningUpOrRunning = 0;
 			SetThink (&CFuncRotating::SpinDown);
 			//EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, (char *)STRING(pev->noiseStop), 
 			//	m_flVolume, m_flAttenuation, 0, m_pitch);
@@ -681,6 +684,7 @@ void CFuncRotating :: RotatingUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 		}
 		else// fan is not moving, so start it
 		{
+			isSpinningUpOrRunning = 1;
 			SetThink (&CFuncRotating::SpinUp);
 			EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char *)STRING(pev->noiseRunning), 
 				0.01, m_flAttenuation, 0, FANPITCHMIN);
@@ -693,6 +697,7 @@ void CFuncRotating :: RotatingUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 		if ( pev->avelocity != g_vecZero )
 		{
 			// play stopping sound here
+			isSpinningUpOrRunning = 0;
 			SetThink (&CFuncRotating::SpinDown);
 
 			// EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, (char *)STRING(pev->noiseStop), 
@@ -707,6 +712,7 @@ void CFuncRotating :: RotatingUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 				m_flVolume, m_flAttenuation, 0, FANPITCHMAX);
 			pev->avelocity = pev->movedir * pev->speed;
 
+			isSpinningUpOrRunning = 1;
 			SetThink (&CFuncRotating::Rotate);
 			Rotate();
 		}

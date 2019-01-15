@@ -121,6 +121,8 @@ const char *CHeadCrab::pIdleSounds[] =
 	"headcrab/hc_idle1.wav",
 	"headcrab/hc_idle2.wav",
 	"headcrab/hc_idle3.wav",
+	"headcrab/hc_idle4.wav",
+	"headcrab/hc_idle5.wav",
 };
 const char *CHeadCrab::pAlertSounds[] = 
 {

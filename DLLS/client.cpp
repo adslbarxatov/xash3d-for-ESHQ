@@ -692,7 +692,7 @@ void ClientPrecache( void )
 	
 	// PRECACHE_SOUND("player/pl_jumpland2.wav");		// UNDONE: play 2x step sound
 	
-	PRECACHE_SOUND("player/pl_fallpain2.wav");		
+	//PRECACHE_SOUND("player/pl_fallpain2.wav");		
 	PRECACHE_SOUND("player/pl_fallpain3.wav");		
 	
 	PRECACHE_SOUND("player/pl_step1.wav");		// Движение по бетону/незаданному материалу
@@ -766,9 +766,14 @@ void ClientPrecache( void )
 	PRECACHE_SOUND("player/pl_wade3.wav");
 	PRECACHE_SOUND("player/pl_wade4.wav");
 
-	PRECACHE_SOUND("debris/wood5.wav");			// hit wood texture
+	PRECACHE_SOUND("debris/wood5.wav");			// Удар по дереву
 	PRECACHE_SOUND("debris/wood6.wav");
 	PRECACHE_SOUND("debris/wood7.wav");
+
+	PRECACHE_SOUND("debris/tile1.wav");			// Удар по кафелю
+	PRECACHE_SOUND("debris/tile2.wav");
+	PRECACHE_SOUND("debris/tile3.wav");
+	PRECACHE_SOUND("debris/tile4.wav");
 
 	PRECACHE_SOUND("plats/train_use1.wav");		// use a train
 
@@ -783,6 +788,7 @@ void ClientPrecache( void )
 
 // player gib sounds
 	PRECACHE_SOUND("common/bodysplat.wav");		               
+	PRECACHE_SOUND("common/bodysplat2.wav");		               
 
 // player pain sounds
 	PRECACHE_SOUND("player/pl_pain2.wav");

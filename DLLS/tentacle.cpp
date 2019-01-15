@@ -15,9 +15,7 @@
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
 /*
-
-	h_tentacle.cpp - silo of death tentacle monster (half life)
-
+h_tentacle.cpp - silo of death tentacle monster (half life)
 */
 
 #include	"extdll.h"
@@ -29,8 +27,8 @@
 
 
 #define ACT_T_IDLE		1010
-#define ACT_T_TAP			1020
-#define ACT_T_STRIKE		1030
+#define ACT_T_TAP		1020
+#define ACT_T_STRIKE	1030
 #define ACT_T_REARIDLE	1040
 
 class CTentacle : public CBaseMonster

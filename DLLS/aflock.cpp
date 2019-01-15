@@ -171,6 +171,7 @@ void CFlockingFlyerFlock :: PrecacheFlockSounds( void )
 
 	PRECACHE_SOUND("boid/boid_idle1.wav" );
 	PRECACHE_SOUND("boid/boid_idle2.wav" );
+	PRECACHE_SOUND("boid/boid_idle3.wav" );
 }
 
 //=========================================================
@@ -258,10 +259,11 @@ void CFlockingFlyer :: MakeSound( void )
 	}
 
 	// make normal sound
-	switch ( RANDOM_LONG( 0, 1 ) )
+	switch ( RANDOM_LONG( 0, 2 ) )
 	{
 	case 0:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_idle1.wav", 1, ATTN_MEDIUM );	break;
 	case 1:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_idle2.wav", 1, ATTN_MEDIUM );	break;
+	case 2:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_idle3.wav", 1, ATTN_MEDIUM );	break;
 	}
 }
 

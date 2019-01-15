@@ -202,6 +202,9 @@ const char *CBreakable::pSoundsMetal[] =
 	"debris/metal1.wav",
 	"debris/metal2.wav",
 	"debris/metal3.wav",
+	"debris/metal4.wav",
+	"debris/metal5.wav",
+	"debris/metal6.wav",
 };
 
 const char *CBreakable::pSoundsConcrete[] = 
@@ -400,7 +403,6 @@ void CBreakable::DamageSound( void )
 	case matMetal:
 		rgpsz[0] = "debris/metal1.wav";
 		rgpsz[1] = "debris/metal3.wav";
-		rgpsz[2] = "debris/metal2.wav";
 		i = 2;
 		break;
 
@@ -828,7 +830,12 @@ IMPLEMENT_SAVERESTORE( CPushable, CBreakable );
 
 LINK_ENTITY_TO_CLASS( func_pushable, CPushable );
 
-char *CPushable :: m_soundNames[3] = { "debris/pushbox1.wav", "debris/pushbox2.wav", "debris/pushbox3.wav" };
+char *CPushable :: m_soundNames[3] = 
+	{ 
+	"debris/pushbox1.wav", 
+	"debris/pushbox2.wav", 
+	"debris/pushbox3.wav",
+	};
 
 
 void CPushable :: Spawn( void )
