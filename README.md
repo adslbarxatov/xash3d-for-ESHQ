@@ -1,5 +1,5 @@
-# Xash3d for ESHQ
-Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ mod
+# Xash3d for ESHQ / ES:FA v 6.3
+Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ /ES:FA mod v 6.3
 #
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
@@ -52,6 +52,8 @@ Main changes touch client and server libraries, not engine core and menu.
 
 22. Our 'cycler' can trigger its target.
 
+23. We have added a 'trigger_ramdom' entity that can randomly trigger targets from a specified list with specified probabilities. No more lasers needed!
+
 
 
 Unfortunately, we cannot fix some bugs yet:
@@ -64,7 +66,7 @@ Unfortunately, we cannot fix some bugs yet:
 
 But we believe that it is not serious problem for now.
 #
-This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax).
+This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax added).
 
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
 
