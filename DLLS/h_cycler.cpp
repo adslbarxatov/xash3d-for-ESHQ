@@ -310,15 +310,15 @@ int CCycler :: TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	{
 	if (m_animate)
 		{
-		pev->sequence++;
+		//pev->sequence++;	// Нахрена???
 
 		ResetSequenceInfo ();
 
-		if (m_flFrameRate == 0.0)
+		/*if (m_flFrameRate == 0.0)
 			{
 			pev->sequence = 0;
 			ResetSequenceInfo ();
-			}
+			}*/
 		pev->frame = 0;
 		}
 	else

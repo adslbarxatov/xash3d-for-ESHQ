@@ -2291,10 +2291,10 @@ void CTriggerCamera::Spawn( void )
 	pev->rendermode = kRenderTransTexture;
 
 	m_initialSpeed = pev->speed;
-	if ( m_acceleration == 0 )
+	/*if ( m_acceleration == 0 )
 		m_acceleration = 500;
 	if ( m_deceleration == 0 )
-		m_deceleration = 500;
+		m_deceleration = 500;*/		// Будем использовать нулевые значения для отмены ускорения
 }
 
 
@@ -2510,11 +2510,174 @@ void CTriggerCamera::Move()
 		}
 	}
 
-	if ( m_flStopTime > gpGlobals->time )
-		pev->speed = UTIL_Approach( 0, pev->speed, m_deceleration * gpGlobals->frametime );
-	else
-		pev->speed = UTIL_Approach( m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime );
+	if ((int)m_deceleration * (int)m_acceleration != 0)
+		{
+		if (m_flStopTime > gpGlobals->time)
+			pev->speed = UTIL_Approach (0, pev->speed, m_deceleration * gpGlobals->frametime);
+		else
+			pev->speed = UTIL_Approach (m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime);
+		}
 
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ((pev->movedir * pev->speed) * fraction) + (pev->velocity * (1-fraction));
 }
+
+//**********************************************************
+// Trigger random - when fired, will randomly fire one of up to 16 targets
+// FLAG:		THREAD (create clones when triggered)
+// FLAG:		CLONE (this is a clone for a threaded execution)
+
+#define MAX_RANDOM_RATE	10
+
+// Generic implementation
+class CTriggerRandom : public CBaseToggle
+	{
+public:
+	void KeyValue (KeyValueData *pkvd);
+	void Spawn (void);
+	void EXPORT ManagerThink (void);
+	void EXPORT ManagerUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+
+	BOOL HasTarget (string_t targetname);
+	
+	int ObjectCaps (void) 
+		{
+		return CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION;
+		}
+
+	virtual int Save (CSave &save);
+	virtual int Restore (CRestore &restore);
+
+	static	TYPEDESCRIPTION m_SaveData[];
+
+	int		m_cTargets;		// Targets in list
+	float	m_startTime;	// (probably, not needed)
+
+	// List of targets; for more or less probable events
+	// same targets will be added one or more times (up to MAX_RANDOM_RATE)
+	int		m_iTargetName [MAX_MULTI_TARGETS * MAX_RANDOM_RATE];
+
+private:
+	inline BOOL IsClone ( void )
+		{ 
+		return (pev->spawnflags & SF_MULTIMAN_CLONE) ? TRUE : FALSE; 
+		}
+	inline BOOL ShouldClone ( void ) 
+		{ 
+		if (IsClone())
+			return FALSE;
+
+		return (pev->spawnflags & SF_MULTIMAN_THREAD) ? TRUE : FALSE; 
+		}
+
+	CTriggerRandom *Clone (void);
+	};
+
+LINK_ENTITY_TO_CLASS (trigger_random, CTriggerRandom);
+
+TYPEDESCRIPTION	CTriggerRandom::m_SaveData[] = 
+	{
+	DEFINE_FIELD (CTriggerRandom, m_cTargets, FIELD_INTEGER),
+	DEFINE_FIELD (CTriggerRandom, m_startTime, FIELD_TIME),
+	DEFINE_ARRAY (CTriggerRandom, m_iTargetName, FIELD_STRING, MAX_MULTI_TARGETS * MAX_RANDOM_RATE),
+	};
+
+IMPLEMENT_SAVERESTORE (CTriggerRandom, CBaseToggle);
+
+// Creating a list of targets taking into account the probabilities
+void CTriggerRandom :: KeyValue (KeyValueData *pkvd)
+	{
+	if (m_cTargets < MAX_MULTI_TARGETS * MAX_RANDOM_RATE)
+		{
+		char tmp[128];
+
+		// Rendering a proportion value
+		int rate = atoi (pkvd->szValue);
+		if ((rate < 1) || (rate > MAX_RANDOM_RATE))
+			rate = 1;
+		
+		// Adding a target
+		UTIL_StripToken (pkvd->szKeyName, tmp);
+		for (int i = 0; i < rate; i++)
+			{
+			m_iTargetName[m_cTargets] = ALLOC_STRING (tmp);
+			m_cTargets++;
+			}
+		pkvd->fHandled = TRUE;
+		}
+	}
+
+// Initializing an entity
+void CTriggerRandom :: Spawn( void )
+	{
+	pev->solid = SOLID_NOT;
+	SetUse (&CTriggerRandom::ManagerUse);
+	SetThink (&CTriggerRandom::ManagerThink);
+	}
+
+BOOL CTriggerRandom :: HasTarget (string_t targetname)
+	{
+	for (int i = 0; i < m_cTargets; i++)
+		if (FStrEq (STRING(targetname), STRING(m_iTargetName[i])))
+			return TRUE;
+	
+	return FALSE;
+	}
+
+// Shooting target
+void CTriggerRandom :: ManagerThink (void)
+	{
+	float time;
+	time = gpGlobals->time - m_startTime;	// probably, not needed
+
+	// Shooting
+	// Due to different counts of same targets you will have different probabilities for them.
+	// Highest count - highest probability
+	FireTargets (STRING(m_iTargetName[RANDOM_LONG (0, m_cTargets - 1)]), m_hActivator, this, USE_TOGGLE, 0);
+
+	// Stand-by
+	SetThink (NULL);
+	if (IsClone ())
+		{
+		UTIL_Remove (this);
+		return;
+		}
+	SetUse (&CTriggerRandom::ManagerUse);	// Allow to re-use trigger
+	}
+
+// Cloning for multiplayer mode
+CTriggerRandom *CTriggerRandom::Clone (void)
+	{
+	CTriggerRandom *pMulti = GetClassPtr ((CTriggerRandom *)NULL);
+
+	edict_t *pEdict = pMulti->pev->pContainingEntity;
+	memcpy (pMulti->pev, pev, sizeof (*pev));
+	pMulti->pev->pContainingEntity = pEdict;
+
+	pMulti->pev->spawnflags |= SF_MULTIMAN_CLONE;
+	pMulti->m_cTargets = m_cTargets;
+	memcpy (pMulti->m_iTargetName, m_iTargetName, sizeof (m_iTargetName));
+
+	return pMulti;
+	}
+
+// Activating a trigger
+void CTriggerRandom :: ManagerUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+	{
+	// In multiplayer games, clone the MM and execute in the clone (like a thread)
+	// to allow multiple players to trigger the same multimanager
+	if (ShouldClone ())
+		{
+		CTriggerRandom *pClone = Clone ();
+		pClone->ManagerUse (pActivator, pCaller, useType, value);
+		return;
+		}
+
+	m_hActivator = pActivator;
+	m_startTime = gpGlobals->time;
+
+	SetUse (NULL);	// Disable use until target have fired
+
+	SetThink (&CTriggerRandom::ManagerThink);
+	pev->nextthink = gpGlobals->time;
+	}

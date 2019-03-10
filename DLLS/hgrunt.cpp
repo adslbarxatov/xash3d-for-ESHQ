@@ -294,8 +294,9 @@ void CHGrunt :: GibMonster ( void )
 		}
 		if ( pGun )
 		{
-			pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
-			pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+			// Чтобы в стенах реже застревали, снизим разброс
+			pGun->pev->velocity = Vector (RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (200, 300));
+			pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT (200, 400), 0 );
 		}
 	
 		if (FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ))
@@ -303,10 +304,21 @@ void CHGrunt :: GibMonster ( void )
 			pGun = DropItem( "ammo_ARgrenades", vecGunPos, vecGunAngles );
 			if ( pGun )
 			{
-				pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
-				pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 200, 400 ), 0 );
+				pGun->pev->velocity = Vector (RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (200, 300));
+				pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT (200, 400), 0 );
 			}
 		}
+
+		// Когда-нибудь разрешим солдату выбрасывать гранату при гибели
+		/*if (FBitSet (pev->weapons, HGRUNT_HANDGRENADE))
+		{
+			pGun = DropItem( "weapon_handgrenade", vecGunPos, vecGunAngles );
+			if ( pGun )
+			{
+				pGun->pev->velocity = Vector (RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (200, 300));
+				pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT (200, 400), 0 );
+			}
+		}*/
 	}
 
 	CBaseMonster :: GibMonster();
@@ -1020,7 +1032,7 @@ void CHGrunt :: Spawn()
 	}
 	m_cAmmoLoaded		= m_cClipSize;
 
-	if (RANDOM_LONG( 0, 99 ) < 80)
+	if (RANDOM_LONG( 0, 99 ) < 70)
 		pev->skin = 0;	// light skin
 	else
 		pev->skin = 1;	// dark skin
@@ -1032,7 +1044,7 @@ void CHGrunt :: Spawn()
 	else if (FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ))
 	{
 		SetBodygroup( HEAD_GROUP, HEAD_M203 );
-		pev->skin = 1; // alway dark skin
+		//pev->skin = 1; // alway dark skin	- нафига?
 	}
 
 	CTalkMonster::g_talkWaitTime = 0;
