@@ -36,8 +36,8 @@ typedef struct ref_params_s
 	int		paused;
 	int		spectator;
 	int		onground;
-	int		waterlevel;		// Туман
-	int		infog;
+	int		waterlevel;		
+	int		collectedItems;		// Собираемые объекты
 
 	vec3_t		simvel;
 	vec3_t		simorg;

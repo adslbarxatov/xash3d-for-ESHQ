@@ -129,7 +129,7 @@ typedef struct clientdata_s
 	vec3_t		punchangle;
 	int		flags;
 	int		waterlevel;
-	int		infog;			// Туман
+	int		collectedItems;			// Собираемые объекты
 	int		watertype;
 	vec3_t		view_ofs;
 	float		health;
