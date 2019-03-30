@@ -181,7 +181,7 @@ void DLLEXPORT HUD_TxferPredictionData ( struct entity_state_s *ps, const struct
 	ps->iStepLeft				= pps->iStepLeft;
 	ps->playerclass				= pps->playerclass;
 
-	pcd->infog					= ppcd->infog;		// Туман
+	pcd->collectedItems			= ppcd->collectedItems;		// Собираемые объекты
 	pcd->viewmodel				= ppcd->viewmodel;
 	pcd->m_iId					= ppcd->m_iId;
 	pcd->ammo_shells			= ppcd->ammo_shells;
