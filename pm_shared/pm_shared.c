@@ -89,7 +89,8 @@ typedef struct hull_s
 #define CHAR_TEX_DIRT		'D'
 #define CHAR_TEX_VENT		'V'
 #define CHAR_TEX_GRATE		'G'
-#define CHAR_TEX_TILE		'T'
+#define CHAR_TEX_TILES		'T'
+#define CHAR_TEX_RUBBER		'R'
 #define CHAR_TEX_SLOSH		'S'
 #define CHAR_TEX_WOOD		'W'
 #define CHAR_TEX_COMPUTER	'P'
@@ -489,7 +490,8 @@ int PM_MapTextureTypeStepType(char chTextureType)
 			return STEP_VENT;	
 		case CHAR_TEX_GRATE: 
 			return STEP_GRATE;	
-		case CHAR_TEX_TILE: 
+		case CHAR_TEX_TILES:	// Одинаковые
+		case CHAR_TEX_RUBBER:
 			return STEP_TILE;
 		case CHAR_TEX_SLOSH: 
 			return STEP_SLOSH;
@@ -656,7 +658,7 @@ void PM_UpdateStepSound( void )
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
 
-			case CHAR_TEX_TILE:	
+			case CHAR_TEX_TILES:	
 				fvol = fWalking ? 0.2 : 0.5;
 				pmove->flTimeStepSound = fWalking ? 400 : 300;
 				break;
@@ -667,6 +669,7 @@ void PM_UpdateStepSound( void )
 				break;
 
 			// Новые
+			case CHAR_TEX_RUBBER:
 			case CHAR_TEX_WOOD:
 			case CHAR_TEX_GLASS:
 			case CHAR_TEX_SNOW:
@@ -1587,11 +1590,11 @@ qboolean PM_CheckWater ()
 			VectorMA (pmove->basevelocity, 50.0*pmove->waterlevel, current_table[CONTENTS_CURRENT_0 - truecont], pmove->basevelocity);
 		}
 	}
-	else
+	/*else
 		{
 		// Управление состоянием тумана
-		pmove->infog = (cont == CONTENT_FOG) ? 1 : 0;
-		}
+		pmove->in_fog = (cont == CONTENT_FOG) ? 1 : 0;
+		}*/
 
 	return pmove->waterlevel > 1;
 }

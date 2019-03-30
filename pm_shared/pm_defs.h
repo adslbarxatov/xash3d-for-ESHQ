@@ -131,7 +131,7 @@ typedef struct playermove_s
 
 	int		onground;
 	int		waterlevel;
-	int		infog;		// Туман
+	int		collectedItems;		// Собираемые объекты
 	int		watertype;
 	int		oldwaterlevel;
 
