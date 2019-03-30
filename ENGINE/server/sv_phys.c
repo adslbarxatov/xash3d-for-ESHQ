@@ -346,11 +346,11 @@ qboolean SV_CheckWater( edict_t *ent )
 			VectorMA( ent->v.basevelocity, speed, dir, ent->v.basevelocity );
 		}
 	}
-	else
+	/*else
 		{
 		// Управление состоянием тумана
-		ent->v.infog = (cont == CONTENT_FOG) ? 1 : 0;
-		}
+		ent->v.in_fog = (cont == CONTENT_FOG) ? 1 : 0;
+		}*/
 
 	return ent->v.waterlevel > 1;
 }

@@ -533,7 +533,7 @@ static void SV_SetupPMove( playermove_t *pmove, edict_t *clent, usercmd_t *ucmd,
 	pmove->movetype = clent->v.movetype;
 	if( pmove->multiplayer ) pmove->onground = -1;
 	pmove->waterlevel = clent->v.waterlevel;
-	pmove->infog = clent->v.infog;		// Туман
+	pmove->collectedItems = clent->v.collectedItems;		// Собираемые объекты
 	pmove->watertype = clent->v.watertype;
 	pmove->maxspeed = svgame.movevars.maxspeed;
 	pmove->clientmaxspeed = clent->v.maxspeed;
@@ -584,7 +584,7 @@ static void SV_FinishPMove( playermove_t *pmove, edict_t *clent )
 	clent->v.flFallVelocity = pmove->flFallVelocity;
 	clent->v.oldbuttons = pmove->oldbuttons;
 	clent->v.waterlevel = pmove->waterlevel;
-	clent->v.infog = pmove->infog;		// Туман
+	clent->v.collectedItems = pmove->collectedItems;		// Собираемые объекты
 	clent->v.watertype = pmove->watertype;
 	clent->v.flTimeStepSound = pmove->flTimeStepSound;
 	clent->v.flDuckTime = pmove->flDuckTime;
