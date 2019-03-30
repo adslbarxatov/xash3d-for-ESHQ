@@ -836,7 +836,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	player.pev->deadflag = from->client.deadflag;
 	player.pev->waterlevel = from->client.waterlevel;
-	player.pev->infog = from->client.infog;		// Туман
+	player.pev->collectedItems = from->client.collectedItems;		// Собираемые объекты
 	player.pev->maxspeed    = from->client.maxspeed;
 	player.pev->fov = from->client.fov;
 	player.pev->weaponanim = from->client.weaponanim;
