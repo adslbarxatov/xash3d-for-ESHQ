@@ -1594,7 +1594,7 @@ void UpdateClientData ( const struct edict_s *ent, int sendweapons, struct clien
 	cd->viewmodel		= MODEL_INDEX( STRING( ent->v.viewmodel ) );
 
 	cd->waterlevel		= ent->v.waterlevel;
-	cd->infog			= ent->v.infog;			// Туман
+	cd->collectedItems	= ent->v.collectedItems;			// Собираемые объекты
 	cd->watertype		= ent->v.watertype;
 	cd->weapons			= ent->v.weapons;
 

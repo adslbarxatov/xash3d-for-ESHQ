@@ -2043,12 +2043,13 @@ void CBasePlayer::CheckTimeBasedDamage()
 				if (((i == itbd_NerveGas) && (m_rgbTimeBasedDamage[i] < NERVEGAS_DURATION)) ||
 					((i == itbd_Poison)   && (m_rgbTimeBasedDamage[i] < POISON_DURATION)))
 				{
-					if (m_rgItems[ITEM_ANTIDOTE])
+					// Более не используется как антидот
+					/*if (m_rgItems[ITEM_ANTIDOTE])
 					{
 						m_rgbTimeBasedDamage[i] = 0;
 						m_rgItems[ITEM_ANTIDOTE]--;
 						SetSuitUpdate("!HEV_HEAL4", FALSE, SUIT_REPEAT_OK);
-					}
+					}*/
 				}
 
 
@@ -2523,7 +2524,10 @@ void CBasePlayer::PostThink()
 			if ( flFallDamage > pev->health )
 			{//splat
 				// note: play on item channel because we play footstep landing on body channel
-				EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_MEDIUM);
+				if (RANDOM_LONG (0, 1))
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_MEDIUM);
+				else
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat2.wav", 1, ATTN_MEDIUM);
 			}
 
 			if ( flFallDamage > 0 )

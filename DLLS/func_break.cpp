@@ -814,7 +814,7 @@ public:
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	static char *m_soundNames[3];
+	static char *m_soundNames[9];
 	int		m_lastSound;	// no need to save/restore, just keeps the same sound from playing twice in a row
 	float	m_maxSpeed;
 	float	m_soundTime;
@@ -830,11 +830,17 @@ IMPLEMENT_SAVERESTORE( CPushable, CBreakable );
 
 LINK_ENTITY_TO_CLASS( func_pushable, CPushable );
 
-char *CPushable :: m_soundNames[3] = 
+char *CPushable :: m_soundNames[9] = 
 	{ 
-	"debris/pushbox1.wav", 
-	"debris/pushbox2.wav", 
+	"debris/pushbox1.wav",	// Пластик
+	"debris/pushbox2.wav",
 	"debris/pushbox3.wav",
+	"debris/pushbox4.wav",	// Дерево
+	"debris/pushbox5.wav",
+	"debris/pushbox6.wav",
+	"debris/pushbox7.wav",	// Металл
+	"debris/pushbox8.wav",
+	"debris/pushbox9.wav",
 	};
 
 
@@ -1001,36 +1007,68 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 	{
 		pevToucher->velocity.x = pev->velocity.x;
 		pevToucher->velocity.y = pev->velocity.y;
-		if ( (gpGlobals->time - m_soundTime) > 0.7 )
+		if ((gpGlobals->time - m_soundTime) > 0.7)
 		{
 			m_soundTime = gpGlobals->time;
 			if ( length > 0 && FBitSet(pev->flags, FL_ONGROUND) )
-			{
-				m_lastSound = RANDOM_LONG(0,2);
+				{
+				//m_lastSound = RANDOM_LONG(0,2);
+				//EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_MEDIUM);
+				//SetThink( StopSound );
+				//pev->nextthink = pev->ltime + 0.1;
+
+				switch (m_Material)
+					{
+					case matGlass:
+					case matCeilingTile:
+					case matUnbreakableGlass:
+					default:
+						m_lastSound = RANDOM_LONG (0, 2);
+						break;
+					
+					case matWood:
+					case matFlesh:
+						m_lastSound = RANDOM_LONG (3, 5);
+						break;
+
+					case matMetal:
+					case matCinderBlock:
+					case matComputer:
+					case matRocks:
+						m_lastSound = RANDOM_LONG (6, 8);
+						break;
+					}
+
+				// Запуск звука трения согласно материалу с планированием остановки
 				EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_MEDIUM);
-	//			SetThink( StopSound );
-	//			pev->nextthink = pev->ltime + 0.1;
-			}
+				SetThink (&CPushable::StopSound);
+				pev->nextthink = pev->ltime + 0.1;
+				}
 			else
-				STOP_SOUND( ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound] );
+				{
+				STOP_SOUND (ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
+				}
 		}
 	}
 }
 
-#if 0
-void CPushable::StopSound( void )
-{
-	Vector dist = pev->oldorigin - pev->origin;
-	if ( dist.Length() <= 0 )
-		STOP_SOUND( ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound] );
-}
-#endif
+// Обработка остановки трения
+void CPushable::StopSound (void)
+	{
+	pev->nextthink = pev->ltime + 0.1;
+
+	// Остановить звук, если движение прекратилось; отменить инерцию
+	if (((int)(pev->velocity.x * 1000.0f) == 0) && ((int)(pev->velocity.y * 1000.0f) == 0))
+		{
+		STOP_SOUND (ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
+		SetThink (NULL);
+		}
+	}
 
 int CPushable::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
-{
-	if ( pev->spawnflags & SF_PUSH_BREAKABLE )
+	{
+	if (pev->spawnflags & SF_PUSH_BREAKABLE)
 		return CBreakable::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 
 	return 1;
-}
-
+	}

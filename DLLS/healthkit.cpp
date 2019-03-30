@@ -26,13 +26,13 @@ extern int gmsgItemPickup;
 
 class CHealthKit : public CItem
 	{
-	void Spawn (void) ;
-	void Precache (void) ;
-	BOOL MyTouch (CBasePlayer *pPlayer) ;
+	void Spawn (void);
+	void Precache (void);
+	int MyTouch (CBasePlayer *pPlayer);
 	};
 
 
-LINK_ENTITY_TO_CLASS (item_healthkit, CHealthKit) ;
+LINK_ENTITY_TO_CLASS (item_healthkit, CHealthKit);
 
 
 void CHealthKit :: Spawn (void) 
@@ -49,22 +49,20 @@ void CHealthKit::Precache (void)
 	PRECACHE_SOUND("items/smallmedkit1.wav");
 	}
 
-BOOL CHealthKit::MyTouch (CBasePlayer *pPlayer) 
+int CHealthKit::MyTouch (CBasePlayer *pPlayer) 
 	{
 	if (pPlayer->pev->deadflag != DEAD_NO) 
-		{
-		return FALSE;
-		}
+		return -1;
 
-	if (pPlayer->TakeHealth (gSkillData.healthkitCapacity, DMG_GENERIC) ) 
+	if (pPlayer->TakeHealth (gSkillData.healthkitCapacity, DMG_GENERIC)) 
 		{
-		MESSAGE_BEGIN (MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev) ;
-		WRITE_STRING (STRING(pev->classname)) ;
+		MESSAGE_BEGIN (MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev);
+			WRITE_STRING (STRING(pev->classname));
 		MESSAGE_END();
 
 		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_MEDIUM);
 
-		if (g_pGameRules->ItemShouldRespawn (this) ) 
+		if (g_pGameRules->ItemShouldRespawn (this)) 
 			{
 			Respawn();
 			}
@@ -73,10 +71,10 @@ BOOL CHealthKit::MyTouch (CBasePlayer *pPlayer)
 			UTIL_Remove(this);	
 			}
 
-		return TRUE;
+		return 0;
 		}
 
-	return FALSE;
+	return -1;
 	}
 
 

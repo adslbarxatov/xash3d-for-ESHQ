@@ -951,159 +951,157 @@ TYPEDESCRIPTION	CLaser::m_SaveData[] =
 	DEFINE_FIELD( CLaser, m_firePosition, FIELD_POSITION_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CLaser, CBeam );
+IMPLEMENT_SAVERESTORE(CLaser, CBeam);
 
-void CLaser::Spawn( void )
-{
-	if ( FStringNull( pev->model ) )
+void CLaser::Spawn (void)
 	{
+	if (FStringNull(pev->model))
+		{
 		SetThink (&CBaseEntity::SUB_Remove);
 		return;
-	}
+		}
 	pev->solid = SOLID_NOT;							// Remove model & collisions
 	Precache( );
 
 	SetThink (&CLaser::StrikeThink);
 	pev->flags |= FL_CUSTOMENTITY;
 
-	PointsInit( pev->origin, pev->origin );
+	PointsInit(pev->origin, pev->origin);
 
-	if ( !m_pSprite && m_iszSpriteName )
-		m_pSprite = CSprite::SpriteCreate( STRING(m_iszSpriteName), pev->origin, TRUE );
+	if (!m_pSprite && m_iszSpriteName)
+		m_pSprite = CSprite::SpriteCreate(STRING(m_iszSpriteName), pev->origin, TRUE);
 	else
 		m_pSprite = NULL;
 
-	if ( m_pSprite )
-		m_pSprite->SetTransparency( kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx );
+	if (m_pSprite)
+		m_pSprite->SetTransparency(kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx);
 
-	if ( pev->targetname && !(pev->spawnflags & SF_BEAM_STARTON) )
+	if (pev->targetname && !(pev->spawnflags & SF_BEAM_STARTON))
 		TurnOff();
 	else
 		TurnOn();
-}
+	}
 
-void CLaser::Precache( void )
-{
+void CLaser::Precache (void)
+	{
 	pev->modelindex = PRECACHE_MODEL( (char *)STRING(pev->model) );
-	if ( m_iszSpriteName )
-		PRECACHE_MODEL( (char *)STRING(m_iszSpriteName) );
-}
-
+	if (m_iszSpriteName)
+		PRECACHE_MODEL((char *)STRING(m_iszSpriteName));
+	}
 
 void CLaser::KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "LaserTarget"))
 	{
+	if (FStrEq(pkvd->szKeyName, "LaserTarget"))
+		{
 		pev->message = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "width"))
-	{
-		SetWidth( atof(pkvd->szValue) );
+		{
+		SetWidth(atof(pkvd->szValue));
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "NoiseAmplitude"))
-	{
+		{
 		SetNoise( atoi(pkvd->szValue) );
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "TextureScroll"))
-	{
+		{
 		SetScrollRate( atoi(pkvd->szValue) );
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "texture"))
-	{
+		{
 		pev->model = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "EndSprite"))
-	{
+		{
 		m_iszSpriteName = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "framestart"))
-	{
+		{
 		pev->frame = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else if (FStrEq(pkvd->szKeyName, "damage"))
-	{
+		{
 		pev->dmg = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else
-		CBeam::KeyValue( pkvd );
-}
+		CBeam::KeyValue (pkvd);
+	}
 
 
-int CLaser::IsOn( void )
-{
+int CLaser::IsOn (void)
+	{
 	if (pev->effects & EF_NODRAW)
 		return 0;
 	return 1;
-}
+	}
 
 
-void CLaser::TurnOff( void )
-{
+void CLaser::TurnOff (void)
+	{
 	pev->effects |= EF_NODRAW;
 	pev->nextthink = 0;
-	if ( m_pSprite )
-		m_pSprite->TurnOff();
-}
 
+	if (m_pSprite)
+		m_pSprite->TurnOff ();
+	}
 
-void CLaser::TurnOn( void )
-{
+void CLaser::TurnOn (void)
+	{
 	pev->effects &= ~EF_NODRAW;
-	if ( m_pSprite )
-		m_pSprite->TurnOn();
+	if (m_pSprite)
+		m_pSprite->TurnOn ();
+
 	pev->dmgtime = gpGlobals->time;
 	pev->nextthink = gpGlobals->time;
-}
-
+	}
 
 void CLaser::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	int active = IsOn();
+	{
+	int active = IsOn ();
 
-	if ( !ShouldToggle( useType, active ) )
+	if (!ShouldToggle (useType, active))
 		return;
-	if ( active )
-	{
-		TurnOff();
-	}
+
+	if (active)
+		TurnOff ();
 	else
-	{
-		TurnOn();
+		TurnOn ();
 	}
-}
 
-
-void CLaser::FireAtPoint( TraceResult &tr )
-{
-	SetEndPos( tr.vecEndPos );
-	if ( m_pSprite )
+void CLaser::FireAtPoint (TraceResult &tr)
+	{
+	SetEndPos (tr.vecEndPos);
+	if (m_pSprite)
 		UTIL_SetOrigin( m_pSprite->pev, tr.vecEndPos );
 
-	BeamDamage( &tr );
-	DoSparks( GetStartPos(), tr.vecEndPos );
-}
+	BeamDamage (&tr);
+	DoSparks (GetStartPos(), tr.vecEndPos);
+	}
 
 void CLaser::StrikeThink( void )
-{
-	CBaseEntity *pEnd = RandomTargetname( STRING(pev->message) );
+	{
+	CBaseEntity *pEnd = RandomTargetname(STRING(pev->message));
 
-	if ( pEnd )
+	if (!IsOn ())
+		return;		// Непонятно, почему урон не выключался вместе с лазером
+
+	if (pEnd)
 		m_firePosition = pEnd->pev->origin;
 
 	TraceResult tr;
 
 	UTIL_TraceLine( pev->origin, m_firePosition, dont_ignore_monsters, NULL, &tr );
-	FireAtPoint( tr );
+	FireAtPoint (tr);
 	pev->nextthink = gpGlobals->time + 0.1;
-}
+	}
 
 
 
@@ -2072,24 +2070,33 @@ void CMessage::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 	CBaseEntity *pPlayer = NULL;
 
 	if ( pev->spawnflags & SF_MESSAGE_ALL )
-		UTIL_ShowMessageAll( STRING(pev->message) );
-	else
-	{
-		if ( pActivator && pActivator->IsPlayer() )
-			pPlayer = pActivator;
-		else
 		{
-			pPlayer = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+		UTIL_ShowMessageAll( STRING(pev->message) );
 		}
-		if ( pPlayer )
+	else
+		{
+		if ( pActivator && pActivator->IsPlayer() )
+			{
+			pPlayer = pActivator;
+			}
+		else
+			{
+			pPlayer = CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
+			}
+
+		if (pPlayer)
 			UTIL_ShowMessage( STRING(pev->message), pPlayer );
-	}
-	if ( pev->noise )
-	{
+		}
+
+	if (pev->noise)
+		{
 		EMIT_SOUND( edict(), CHAN_BODY, STRING(pev->noise), pev->scale, pev->speed );
-	}
+		}
+
 	if ( pev->spawnflags & SF_MESSAGE_ONCE )
+		{
 		UTIL_Remove( this );
+		}
 
 	SUB_UseTargets( this, USE_TOGGLE, 0 );
 }

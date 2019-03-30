@@ -122,23 +122,6 @@ class CGenericCycler : public CCycler
 	};
 LINK_ENTITY_TO_CLASS (cycler, CGenericCycler);
 
-
-// Probe droid imported for tech demo compatibility
-//
-// PROBE DROID
-//
-/*class CCyclerProbe : public CCycler
-	{
-	public:	
-		void Spawn( void );
-	};
-LINK_ENTITY_TO_CLASS( cycler_prdroid, CCyclerProbe );
-void CCyclerProbe :: Spawn( void )
-	{
-	pev->origin = pev->origin + Vector ( 0, 0, 16 );
-	GenericCyclerSpawn( "models/prdroid.mdl", Vector(-16,-16,-16), Vector(16,16,16));
-	}*/
-
 // Cycler member functions
 
 void CCycler :: GenericCyclerSpawn (char *szModel, Vector vecMin, Vector vecMax)
@@ -242,6 +225,11 @@ void CCycler :: DamageSound (void)		// Скопировано из CBreakable
 	int i;
 	int material = m_Material;
 
+	// Отмена звука, если cycler нематериальный
+	if (FBitSet (pev->spawnflags, HC_CYCLER_PASSABLE))
+		return;
+
+	// Настройка звука
 	if (RANDOM_LONG (0, 2))
 		pitch = PITCH_NORM;
 	else
@@ -299,10 +287,12 @@ void CCycler :: DamageSound (void)		// Скопировано из CBreakable
 			// UNDONE: no ceiling tile shard sound yet
 			i = 0;
 			break;
-			}
+		}
 
 	if (i)
+		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, rgpsz[RANDOM_LONG (0, i - 1)], fvol, ATTN_MEDIUM, 0, pitch);
+		}
 	}
 
 // TakeDamage
