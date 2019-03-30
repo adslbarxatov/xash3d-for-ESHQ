@@ -1,5 +1,5 @@
-# Xash3d for ESHQ / ES:FA v 6.3
-Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ /ES:FA mod v 6.3
+# Xash3d for ESHQ / ES:FA v 6.4
+Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ /ES:FA mod v 6.4
 #
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
@@ -16,7 +16,7 @@ Main changes touch client and server libraries, not engine core and menu.
 
 4. Also we have returned human-like gibs and red blood to zombie. We think that zombie is more like a scientist than a bullsquid.
 
-5. We have removed from our maps the 'cycler_sprite' and added 'Non-solid' flag to 'cycler'. Also our 'cycler' now have 'Material' field (crowbar hit sound depends on it) and two fields that defines collision box endpoints (looks like 'Color' setup). 'cycler' and 'env_sprite' entities can also accept 'body', 'skin' and 'sequence' settings.
+5. We have removed from our maps the 'cycler_sprite' and added 'Non-solid' flag to 'cycler'. Also our 'cycler' now have 'Material' field (crowbar hit sound depends on it) and two fields that defines collision box endpoints (looks like 'Color' setup). 'cycler' and 'env_sprite' entities can also accept 'body', 'skin' and 'sequence' settings. 'cycler' now can trigger its target.
 
 6. Our doors (momentary, rotating and simple) have different fields for 'Just opened' and 'Just closed' sounds. We are planning to split 'Opening' sound to 'Opening' and 'Closing'. But now it is not necessary. Also we have fixed some bugs (basically, around 'Starts open' flag) and expanded list of sounds (not only replaced exist ones). Finally, our doors are not play 'locked' sounds when opened.
 
@@ -50,9 +50,13 @@ Main changes touch client and server libraries, not engine core and menu.
 
 21. Wood, glass and snow textures got own sounds for player steps.
 
-22. Our 'cycler' can trigger its target.
+22. We have added a 'trigger_ramdom' entity that can randomly trigger targets from a specified list with specified probabilities. No more lasers needed!
 
-23. We have added a 'trigger_ramdom' entity that can randomly trigger targets from a specified list with specified probabilities. No more lasers needed!
+23. Our 'item_security' and 'item_antidote' are collectable now. Their counts can be used to trigger events on maps.
+
+24. Our lasers can be turn off correctly (old version of an engine turns off a sprite, but doesn't turn off a damage).
+
+25. Our pushables got new different sounds.
 
 
 
