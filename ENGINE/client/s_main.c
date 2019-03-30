@@ -1316,7 +1316,7 @@ void S_RenderFrame( ref_params_t *fd )
 	s_listener.entnum = fd->viewentity;	// can be camera entity too
 	s_listener.frametime = fd->frametime;
 	s_listener.waterlevel = fd->waterlevel;
-	s_listener.infog = fd->infog;		// Òóìàí
+	s_listener.collectedItems = fd->collectedItems;		// Ñîáèğàåìûå îáúåêòû
 	s_listener.active = CL_IsInGame();
 	s_listener.inmenu = CL_IsInMenu();
 	s_listener.paused = fd->paused;

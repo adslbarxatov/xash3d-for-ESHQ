@@ -635,7 +635,7 @@ void CL_SetupPMove( playermove_t *pmove, clientdata_t *cd, entity_state_t *state
 	pmove->movetype = state->movetype;
 	pmove->onground = -1; // will be set by PM_ code
 	pmove->waterlevel = cd->waterlevel;
-	pmove->infog = cd->infog;		// Туман
+	pmove->collectedItems = cd->collectedItems;		// Собираемые объекты
 	pmove->watertype = cd->watertype;
 	pmove->maxspeed = clgame.movevars.maxspeed;
 	pmove->clientmaxspeed = cd->maxspeed;

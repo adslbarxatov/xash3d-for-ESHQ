@@ -185,7 +185,7 @@ typedef struct
 
 	int		entnum;
 	int		waterlevel;
-	int		infog;			// Туман
+	int		collectedItems;			// Собираемые объекты
 	float		frametime;	// used for sound fade
 	qboolean		active;
 	qboolean		inmenu;		// listener in-menu ?

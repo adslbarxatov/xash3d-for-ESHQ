@@ -881,7 +881,7 @@ static void R_CheckFog( void )
 
 	RI.fogEnabled = false;
 
-	if( (RI.refdef.waterlevel < 2) && !RI.refdef.infog || !RI.drawWorld || !r_viewleaf )	// Туман
+	if( (RI.refdef.waterlevel < 2) /*&& !RI.refdef.in_fog*/ || !RI.drawWorld || !r_viewleaf )	// Туман
 		return;
 
 	ent = CL_GetWaterEntity( RI.vieworg );
@@ -895,7 +895,7 @@ static void R_CheckFog( void )
 		return;
 	}
 
-	if( (RI.refdef.waterlevel < 3) && !RI.refdef.infog )	// Туман
+	if( /*(*/RI.refdef.waterlevel < 3/*) && !RI.refdef.in_fog*/ )	// Туман
 		return;
 
 	if( !IsLiquidContents( RI.cached_contents ) && IsLiquidContents( cnt ))

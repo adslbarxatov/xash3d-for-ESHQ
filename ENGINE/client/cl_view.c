@@ -55,7 +55,7 @@ void V_SetupRefDef( void )
 	cl.refdef.smoothing = cl_smooth->integer;
 	cl.refdef.viewsize = scr_viewsize->integer;
 	cl.refdef.waterlevel = cl.frame.local.client.waterlevel;		
-	cl.refdef.infog = cl.frame.local.client.infog;		// Туман
+	cl.refdef.collectedItems = cl.frame.local.client.collectedItems;		// Собираемые объекты
 	cl.refdef.onlyClientDraw = 0;	// reset clientdraw
 	cl.refdef.hardware = true;	// always true
 	cl.refdef.spectator = cl.spectator;
