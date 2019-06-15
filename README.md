@@ -1,11 +1,11 @@
 # Xash3d for ESHQ / ES:FA v 7.4
 ### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ / ES:FA mod v 7.4
-#
+
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
 Modification based on old (from 2015) version of engine and may contain old bugs. But some new features
 may be useful for developers with the same mods' plots.
-#
+
 ## Main changes:
 
 1. We have fix some known bugs (like non-rotating func_rotating; crashes at killed scientists sentences, etc) for which we had enough mind and time.
@@ -68,7 +68,6 @@ may be useful for developers with the same mods' plots.
 
 30. Fixed mouse wheel's behavior and keyboard settings interface's inconvenience.
 
-#
 ## Known bugs
 
 Unfortunately, we cannot fix some bugs yet:
@@ -82,7 +81,9 @@ Unfortunately, we cannot fix some bugs yet:
 
 
 But we believe that it is not serious problem for now.
-#
+
+## Other notes
+
 This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax added).
 
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
