@@ -273,6 +273,7 @@ typedef struct enginefuncs_s
 	void	(*pfnResetTutorMessageDecayData)( void );
 	void	(*pfnQueryClientCvarValue)( const edict_t *player, const char *cvarName );
 	void	(*pfnQueryClientCvarValue2)( const edict_t *player, const char *cvarName, int requestID );
+	qboolean	(*pfnWriteAchievementsScript)(int newLevel);	// Новый функционал
 } enginefuncs_t;
 // ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
 	
