@@ -36,7 +36,6 @@ extern int gmsgItemPickup;
 		textParams.g1 = textParams.b2 = 255;\
 		textParams.b1 = textParams.g2 = 128;\
 		\
-		textParams.channel = 5;\
 		textParams.effect = 2;\
 		textParams.fadeinTime = 0.04f;\
 		textParams.fadeoutTime = 1.0f;\
@@ -108,6 +107,7 @@ void CWorldItem::Spawn( void )
 
 // Объект-ключ
 #define SF_SIMPLE_DOCUMENT	0x0002
+#define SF_THELASTONE		0x0004
 
 void CItem::Spawn(void)
 	{
@@ -343,7 +343,7 @@ class CItemAntidote : public CItem
 	{
 	// Стиль сообщения о собранных объектах
 	struct hudtextparms_s textParams;
-	char getMessage[32];
+	char getMessage[128];
 
 	void Spawn (void)
 		{ 
@@ -361,18 +361,37 @@ class CItemAntidote : public CItem
 	int MyTouch (CBasePlayer *pPlayer)
 		{
 		// Теперь антидот используется как собираемый объект
+		// Младшие 10 бит - количество, следующие 4 бита - уровень достижения (обеспечивает непревышение
+		// текущего достижения с сохранением ранее полученного)
+
 		//pPlayer->SetSuitUpdate("!HEV_DET4", FALSE, SUIT_NEXT_IN_1MIN);
 		EMIT_SOUND (pPlayer->edict(), CHAN_ITEM, "items/suitchargeok1.wav", 1, ATTN_MEDIUM);
 		pPlayer->m_rgItems[ITEM_ANTIDOTE] += 1;
 
 		// Настройка стиля отображения сообщений
 		SEC_SET_TEXT_PARAMS
+		textParams.channel = 5;
 
 		// Сообщение
-		sprintf (getMessage, "Hidden containers found: %2u", pPlayer->m_rgItems[ITEM_ANTIDOTE]);
+		if (minimumToTrigger == 0)
+			sprintf (getMessage, "Hidden containers found: %2u", pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF);
+
+		else if ((pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF) < minimumToTrigger)
+			sprintf (getMessage, "Hidden containers found: %u out of %u\nNot enough for now",
+				pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF, minimumToTrigger);
+
+		else
+			{
+			sprintf (getMessage, "Hidden containers found: %u\n%s!", pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF,
+				(pev->spawnflags & SF_THELASTONE) ? ("YOU GOT THEM ALL") : ("Well done"));
+
+			// Бонус
+			pPlayer->m_rgItems[ITEM_ANTIDOTE] += (1 << 10);
+			WRITE_ACHIEVEMENTS_SCRIPT ((pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x3C00) >> 10);
+			}
 		UTIL_HudMessageAll (textParams, getMessage);
 
-		if (pPlayer->m_rgItems[ITEM_ANTIDOTE] < minimumToTrigger)
+		if ((pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF) < minimumToTrigger)
 			return 1;	// Успешно, но цель срабатывать не должна
 
 		return 0;
@@ -387,7 +406,7 @@ class CItemSecurity : public CItem
 	{
 	// Стиль сообщения о собранных объектах
 	struct hudtextparms_s textParams;
-	char getMessage[32];
+	char getMessage[128];
 	
 	void Spawn (void)
 		{ 
@@ -410,9 +429,16 @@ class CItemSecurity : public CItem
 
 		// Настройка стиля отображения сообщений
 		SEC_SET_TEXT_PARAMS
+		textParams.channel = 6;
 
 		// Сообщение
-		sprintf (getMessage, "Documents found: %3u", pPlayer->m_rgItems[ITEM_SECURITY]);
+		if (minimumToTrigger == 0)
+			sprintf (getMessage, "Documents found: %3u", pPlayer->m_rgItems[ITEM_SECURITY]);
+		else if (pPlayer->m_rgItems[ITEM_SECURITY] < minimumToTrigger)
+			sprintf (getMessage, "Documents found: %u out of %u\nNot enough for now", pPlayer->m_rgItems[ITEM_SECURITY], minimumToTrigger);
+		else
+			sprintf (getMessage, "Documents found: %u\n%s!", pPlayer->m_rgItems[ITEM_SECURITY],
+				(pev->spawnflags & SF_THELASTONE) ? ("YOU GOT THEM ALL") : ("Well done"));
 		UTIL_HudMessageAll (textParams, getMessage);
 		
 		if (pPlayer->m_rgItems[ITEM_SECURITY] < minimumToTrigger)

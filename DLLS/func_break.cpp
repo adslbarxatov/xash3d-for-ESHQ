@@ -175,7 +175,7 @@ void CBreakable::Spawn( void )
 		SetTouch( NULL );
 
 	// Flag unbreakable glass as "worldbrush" so it will block ALL tracelines
-	if ( !IsBreakable() && pev->rendermode != kRenderNormal )
+	if (!IsBreakable() && (pev->rendermode != kRenderNormal))
 		pev->flags |= FL_WORLDBRUSH;
 }
 
@@ -611,7 +611,7 @@ void CBreakable::Die( void )
 	switch (m_Material)
 	{
 	case matGlass:
-		switch ( RANDOM_LONG(0,2) )
+		switch (RANDOM_LONG(0, 2))
 		{
 		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustglass1.wav", fvol, ATTN_MEDIUM, 0, pitch);	
 			break;
@@ -761,15 +761,24 @@ void CBreakable::Die( void )
 
 	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = pev->ltime + 0.1;
-	if ( m_iszSpawnObject )
-		CBaseEntity::Create( (char *)STRING(m_iszSpawnObject), VecBModelOrigin(pev), pev->angles, edict() );
+	if (m_iszSpawnObject)
+		{
+		// Эта правка позволяет создавать объекты при разрушении в настраиваемой позиции (высоту не учитываем)
+		if ((pev->origin.x == 0) && (pev->origin.y == 0)) //&& (pev->origin.z == 0))
+			{
+			CBaseEntity::Create((char *)STRING(m_iszSpawnObject), VecBModelOrigin (pev), pev->angles, edict ());
+			}
+		else
+			{
+			CBaseEntity::Create((char *)STRING(m_iszSpawnObject), pev->origin, pev->angles, edict ());
+			}
+		}
 
-
-	if ( Explodable() )
-	{
-		ExplosionCreate( Center(), pev->angles, edict(), ExplosionMagnitude(), TRUE );
+	if (Explodable ())
+		{
+		ExplosionCreate (Center (), pev->angles, edict (), ExplosionMagnitude (), TRUE);
+		}
 	}
-}
 
 
 
@@ -790,47 +799,47 @@ int	CBreakable :: DamageDecal( int bitsDamageType )
 	return CBaseEntity::DamageDecal( bitsDamageType );
 }
 
-
+#define PUSH_SOUND_NAMES	9
 class CPushable : public CBreakable
-{
+	{
 public:
-	void	Spawn ( void );
-	void	Precache( void );
-	void	Touch ( CBaseEntity *pOther );
-	void	Move( CBaseEntity *pMover, int push );
-	void	KeyValue( KeyValueData *pkvd );
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void	EXPORT StopSound( void );
+	void	Spawn (void);
+	void	Precache (void);
+	void	Touch (CBaseEntity *pOther);
+	void	Move (CBaseEntity *pMover, int push);
+	void	KeyValue (KeyValueData *pkvd);
+	void	Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	void	EXPORT StopSound (void);
 //	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 
-	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE; }
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int	ObjectCaps (void) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE; }
+	virtual int	Save (CSave &save);
+	virtual int	Restore (CRestore &restore);
 
-	inline float MaxSpeed( void ) { return m_maxSpeed; }
+	inline float MaxSpeed (void) { return m_maxSpeed; }
 	
 	// breakables use an overridden takedamage
-	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
+	virtual int TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	static char *m_soundNames[9];
+	static char *m_soundNames[PUSH_SOUND_NAMES];
 	int		m_lastSound;	// no need to save/restore, just keeps the same sound from playing twice in a row
 	float	m_maxSpeed;
 	float	m_soundTime;
-};
+	};
 
 TYPEDESCRIPTION	CPushable::m_SaveData[] = 
-{
-	DEFINE_FIELD( CPushable, m_maxSpeed, FIELD_FLOAT ),
-	DEFINE_FIELD( CPushable, m_soundTime, FIELD_TIME ),
-};
+	{
+	DEFINE_FIELD(CPushable, m_maxSpeed, FIELD_FLOAT),
+	DEFINE_FIELD(CPushable, m_soundTime, FIELD_TIME),
+	};
 
-IMPLEMENT_SAVERESTORE( CPushable, CBreakable );
+IMPLEMENT_SAVERESTORE(CPushable, CBreakable);
 
-LINK_ENTITY_TO_CLASS( func_pushable, CPushable );
+LINK_ENTITY_TO_CLASS(func_pushable, CPushable);
 
-char *CPushable :: m_soundNames[9] = 
+char *CPushable :: m_soundNames[PUSH_SOUND_NAMES] = 
 	{ 
 	"debris/pushbox1.wav",	// Пластик
 	"debris/pushbox2.wav",
@@ -843,139 +852,111 @@ char *CPushable :: m_soundNames[9] =
 	"debris/pushbox9.wav",
 	};
 
-
 void CPushable :: Spawn( void )
-{
-	if ( pev->spawnflags & SF_PUSH_BREAKABLE )
-		CBreakable::Spawn();
+	{
+	if (pev->spawnflags & SF_PUSH_BREAKABLE)
+		CBreakable::Spawn ();
 	else
-		Precache( );
+		Precache ();
 
 	pev->movetype	= MOVETYPE_PUSHSTEP;
 	pev->solid		= SOLID_BBOX;
-	SET_MODEL( ENT(pev), STRING(pev->model) );
+	SET_MODEL(ENT(pev), STRING(pev->model));
 
-	if ( pev->friction > 399 )
+	if (pev->friction > 399)
 		pev->friction = 399;
 
 	m_maxSpeed = 400 - pev->friction;
-	SetBits( pev->flags, FL_FLOAT );
+	SetBits(pev->flags, FL_FLOAT);
 	pev->friction = 0;
 	
 	pev->origin.z += 1;	// Pick up off of the floor
-	UTIL_SetOrigin( pev, pev->origin );
+	UTIL_SetOrigin(pev, pev->origin);
 
 	// Multiply by area of the box's cross-section (assume 1000 units^3 standard volume)
-	pev->skin = ( pev->skin * (pev->maxs.x - pev->mins.x) * (pev->maxs.y - pev->mins.y) ) * 0.0005;
+	pev->skin = (pev->skin * (pev->maxs.x - pev->mins.x) * (pev->maxs.y - pev->mins.y)) * 0.0005;
 	m_soundTime = 0;
-}
-
-
-void CPushable :: Precache( void )
-{
-	for ( int i = 0; i < 3; i++ )
-		PRECACHE_SOUND( m_soundNames[i] );
-
-	if ( pev->spawnflags & SF_PUSH_BREAKABLE )
-		CBreakable::Precache( );
-}
-
-
-void CPushable :: KeyValue( KeyValueData *pkvd )
-{
-	/*if ( FStrEq(pkvd->szKeyName, "size") )
-	{
-		int bbox = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-
-		switch( bbox )
-		{
-		case 0:	// Point
-			UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
-			break;
-
-		case 2: // Big Hull!?!?	!!!BUGBUG Figure out what this hull really is
-			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN*2, VEC_DUCK_HULL_MAX*2);
-			break;
-
-		case 3: // Player duck
-			UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-			break;
-
-		default:
-		case 1: // Player
-			UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
-			break;
-		}
-
 	}
-	else*/ if ( FStrEq(pkvd->szKeyName, "buoyancy") )
+
+void CPushable :: Precache (void)
 	{
+	for (int i = 0; i < PUSH_SOUND_NAMES; i++)
+		PRECACHE_SOUND(m_soundNames[i]);
+
+	if (pev->spawnflags & SF_PUSH_BREAKABLE)
+		CBreakable::Precache ();
+	}
+
+void CPushable :: KeyValue (KeyValueData *pkvd)
+	{
+	if (FStrEq(pkvd->szKeyName, "buoyancy"))
+		{
 		pev->skin = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else
-		CBreakable::KeyValue( pkvd );
-}
-
+		CBreakable::KeyValue (pkvd);
+	}
 
 // Pull the func_pushable
-void CPushable :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	if ( !pActivator || !pActivator->IsPlayer() )
+void CPushable :: Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 	{
-		if ( pev->spawnflags & SF_PUSH_BREAKABLE )
-			this->CBreakable::Use( pActivator, pCaller, useType, value );
+	if (!pActivator || !pActivator->IsPlayer())
+		{
+		if (pev->spawnflags & SF_PUSH_BREAKABLE)
+			this->CBreakable::Use (pActivator, pCaller, useType, value);
 		return;
+		}
+
+	if (pActivator->pev->velocity != g_vecZero)
+		Move (pActivator, 0);
 	}
 
-	if ( pActivator->pev->velocity != g_vecZero )
-		Move( pActivator, 0 );
-}
 
-
-void CPushable :: Touch( CBaseEntity *pOther )
-{
-	if ( FClassnameIs( pOther->pev, "worldspawn" ) )
+void CPushable :: Touch (CBaseEntity *pOther)
+	{
+	if (FClassnameIs (pOther->pev, "worldspawn"))
 		return;
 
-	Move( pOther, 1 );
-}
+	Move (pOther, 1);
+	}
 
 
-void CPushable :: Move( CBaseEntity *pOther, int push )
-{
+void CPushable :: Move (CBaseEntity *pOther, int push)
+	{
 	entvars_t*	pevToucher = pOther->pev;
 	int playerTouch = 0;
 
 	// Is entity standing on this pushable ?
-	if ( FBitSet(pevToucher->flags, FL_ONGROUND) && pevToucher->groundentity && VARS(pevToucher->groundentity) == pev )
-	{
+	if (FBitSet(pevToucher->flags, FL_ONGROUND) && pevToucher->groundentity && (VARS(pevToucher->groundentity) == pev))
+		{
 		// Only push if floating
-		if ( pev->waterlevel > 0 )
+		if (pev->waterlevel > 0)
 			pev->velocity.z += pevToucher->velocity.z * 0.1;
 
 		return;
-	}
+		}
 
 	// g-cont. fix pushable acceleration bug
-	if ( pOther->IsPlayer() )
-	{
+	if (pOther->IsPlayer())
+		{
 		// Don't push unless the player is pushing forward and NOT use (pull)
-		if ( push && !(pevToucher->button & (IN_FORWARD|IN_MOVERIGHT|IN_MOVELEFT|IN_BACK)) )
+		if (push && !(pevToucher->button & (IN_FORWARD | IN_MOVERIGHT | IN_MOVELEFT | IN_BACK)))
 			return;
-		if ( !push && !(pevToucher->button & (IN_BACK)) )
+
+		if (!push && !(pevToucher->button & (IN_BACK)))
 			return;
+
 		playerTouch = 1;
-	}
+		}
 
 	float factor;
 
-	if ( playerTouch )
-	{
-		if ( !(pevToucher->flags & FL_ONGROUND) )	// Don't push away from jumping/falling players unless in water
+	if (playerTouch)
 		{
-			if ( pev->waterlevel < 1 )
+		if (!(pevToucher->flags & FL_ONGROUND))	// Don't push away from jumping/falling players unless in water
+			{
+			if (pev->waterlevel < 1)
 				{
 				return;
 				}
@@ -983,12 +964,12 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 				{
 				factor = 0.1;
 				}
-		}
+			}
 		else
 			{
 			factor = 1;
 			}
-	}
+		}
 	else 
 		{
 		factor = 0.25;
@@ -997,20 +978,21 @@ void CPushable :: Move( CBaseEntity *pOther, int push )
 	pev->velocity.x += pevToucher->velocity.x * factor;
 	pev->velocity.y += pevToucher->velocity.y * factor;
 
-	float length = sqrt( pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y );
-	if ( push && (length > MaxSpeed()) )
-	{
+	float length = sqrt (pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y);
+	if (push && (length > MaxSpeed()))
+		{
 		pev->velocity.x = (pev->velocity.x * MaxSpeed() / length );
 		pev->velocity.y = (pev->velocity.y * MaxSpeed() / length );
-	}
-	if ( playerTouch )
-	{
+		}
+
+	if (playerTouch)
+		{
 		pevToucher->velocity.x = pev->velocity.x;
 		pevToucher->velocity.y = pev->velocity.y;
 		if ((gpGlobals->time - m_soundTime) > 0.7)
-		{
+			{
 			m_soundTime = gpGlobals->time;
-			if ( length > 0 && FBitSet(pev->flags, FL_ONGROUND) )
+			if ((length > 0) && FBitSet(pev->flags, FL_ONGROUND))
 				{
 				//m_lastSound = RANDOM_LONG(0,2);
 				//EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_MEDIUM);
@@ -1058,17 +1040,17 @@ void CPushable::StopSound (void)
 	pev->nextthink = pev->ltime + 0.1;
 
 	// Остановить звук, если движение прекратилось; отменить инерцию
-	if (((int)(pev->velocity.x * 1000.0f) == 0) && ((int)(pev->velocity.y * 1000.0f) == 0))
+	if (((int)(pev->velocity.x * 100.0f) == 0) && ((int)(pev->velocity.y * 100.0f) == 0))
 		{
 		STOP_SOUND (ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
 		SetThink (NULL);
 		}
 	}
 
-int CPushable::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
+int CPushable::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
 	if (pev->spawnflags & SF_PUSH_BREAKABLE)
-		return CBreakable::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+		return CBreakable::TakeDamage (pevInflictor, pevAttacker, flDamage, bitsDamageType);
 
 	return 1;
 	}

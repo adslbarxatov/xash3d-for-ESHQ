@@ -62,14 +62,14 @@ class CCycler : public CBaseMonster
 #define CHECK_CYCLER_SIZE(coord)	\
 	if (abs (pev->startpos.coord - pev->endpos.coord) < 2.0f)	\
 		{	\
-	pev->startpos.coord -= 1.0f;	\
-	pev->endpos.coord += 1.0f;	\
+		pev->startpos.coord -= 1.0f;	\
+		pev->endpos.coord += 1.0f;	\
 		}	\
 	else if (pev->startpos.coord > pev->endpos.coord)	\
 		{	\
-	vec_t coord = pev->startpos.coord;	\
-	pev->startpos.coord = pev->endpos.coord;	\
-	pev->endpos.coord = coord;	\
+		vec_t coord = pev->startpos.coord;	\
+		pev->startpos.coord = pev->endpos.coord;	\
+		pev->endpos.coord = coord;	\
 		}
 
 TYPEDESCRIPTION	CCycler::m_SaveData[] = 

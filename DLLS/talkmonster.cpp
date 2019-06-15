@@ -1157,9 +1157,21 @@ void CTalkMonster::PlaySentence( const char *pszSentence, float duration, float 
 
 	CTalkMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0;
 	if ( pszSentence[0] == '!' )
-		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, GetVoicePitch());
+		//EMIT_SOUND_DYN( edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, GetVoicePitch());
+		{
+		if (pszSentence[1] == '!')
+			{
+			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence + 2, volume, attenuation, 0, GetVoicePitch());
+			}
+		else
+			{
+			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, GetVoicePitch());
+			}
+		}
 	else
-		SENTENCEG_PlayRndSz( edict(), pszSentence, volume, attenuation, 0, GetVoicePitch() );
+		{
+		SENTENCEG_PlayRndSz(edict(), pszSentence, volume, attenuation, 0, GetVoicePitch());
+		}
 
 	// If you say anything, don't greet the player - you may have already spoken to them
 	SetBits(m_bitsSaid, bit_saidHelloPlayer);

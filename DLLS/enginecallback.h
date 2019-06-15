@@ -155,4 +155,6 @@ inline void *GET_PRIVATE( edict_t *pent )
 
 #define PLAYER_CNX_STATS		( *g_engfuncs.pfnGetPlayerStats )
 
+#define WRITE_ACHIEVEMENTS_SCRIPT	(*g_engfuncs.pfnWriteAchievementsScript)
+
 #endif		//ENGINECALLBACK_H

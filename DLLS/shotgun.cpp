@@ -250,7 +250,7 @@ void CShotgun::SecondaryAttack( void )
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
 	if (m_iClip != 0)
-		m_flPumpTime = gpGlobals->time + 0.95;
+		m_flPumpTime = gpGlobals->time + 0.85;
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.5;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
@@ -278,10 +278,10 @@ void CShotgun::Reload( void )
 	{
 		SendWeaponAnim( SHOTGUN_START_RELOAD );
 		m_fInSpecialReload = 1;
-		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 1.0;
-		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
+		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.3;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.3;
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 		return;
 	}
 	else if (m_fInSpecialReload == 1)
@@ -291,15 +291,15 @@ void CShotgun::Reload( void )
 		// was waiting for gun to move to side
 		m_fInSpecialReload = 2;
 
-		if (RANDOM_LONG(0,1))
-			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/reload1.wav", 1, ATTN_MEDIUM, 0, 85 + RANDOM_LONG(0,0x1f));
+		if (RANDOM_LONG (0, 1))
+			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/reload1.wav", 1, ATTN_MEDIUM, 0, 85 + RANDOM_LONG(0, 0x1f));
 		else
-			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/reload3.wav", 1, ATTN_MEDIUM, 0, 85 + RANDOM_LONG(0,0x1f));
+			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/reload3.wav", 1, ATTN_MEDIUM, 0, 85 + RANDOM_LONG(0, 0x1f));
 
 		SendWeaponAnim( SHOTGUN_RELOAD );
 
-		m_flNextReload = UTIL_WeaponTimeBase() + 0.5;
-		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+		m_flNextReload = UTIL_WeaponTimeBase() + 0.3;
+		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.3;
 	}
 	else
 	{
@@ -320,7 +320,7 @@ void CShotgun::WeaponIdle( void )
 	if ( m_flPumpTime && m_flPumpTime < gpGlobals->time )
 	{
 		// play pumping sound
-		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_MEDIUM, 0, 95 + RANDOM_LONG(0,0x1f));
+		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_MEDIUM, 0, 95 + RANDOM_LONG(0, 0x1f));
 		m_flPumpTime = 0;
 	}
 
@@ -342,7 +342,7 @@ void CShotgun::WeaponIdle( void )
 				SendWeaponAnim( SHOTGUN_PUMP );
 				
 				// play cocking sound
-				EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_MEDIUM, 0, 95 + RANDOM_LONG(0,0x1f));
+				EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_MEDIUM, 0, 95 + RANDOM_LONG(0, 0x1f));
 				m_fInSpecialReload = 0;
 				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
 			}
@@ -371,8 +371,6 @@ void CShotgun::WeaponIdle( void )
 	}
 }
 
-
-
 class CShotgunAmmo : public CBasePlayerAmmo
 {
 	void Spawn( void )
@@ -397,5 +395,3 @@ class CShotgunAmmo : public CBasePlayerAmmo
 	}
 };
 LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo );
-
-

@@ -1032,42 +1032,49 @@ void CScriptedSentence :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 
 
 void CScriptedSentence :: Spawn( void )
-{
+	{
+	char sentenceString[128];
+
 	pev->solid = SOLID_NOT;
 	
 	m_active = TRUE;
 	// if no targetname, start now
 	if ( !pev->targetname )
-	{
+		{
 		SetThink (&CScriptedSentence::FindThink);
 		pev->nextthink = gpGlobals->time + 1.0;
-	}
+		}
 
 	switch( pev->impulse )
-	{
-	case 1: // Medium radius
-		m_flAttenuation = ATTN_MEDIUM;
-		break;
+		{
+		case 1: // Medium radius
+			m_flAttenuation = ATTN_MEDIUM;
+			break;
 	
-	case 2:	// Large radius
-		m_flAttenuation = ATTN_LARGE;
-		break;
+		case 2:	// Large radius
+			m_flAttenuation = ATTN_LARGE;
+			break;
 
-	case 3:	//EVERYWHERE
-		m_flAttenuation = ATTN_EVERYWHERE;
-		break;
+		case 3:	//EVERYWHERE
+			m_flAttenuation = ATTN_EVERYWHERE;
+			break;
 	
-	default:
-	case 0: // Small radius
-		m_flAttenuation = ATTN_SMALL;
-		break;
-	}
+		default:
+		case 0: // Small radius
+			m_flAttenuation = ATTN_SMALL;
+			break;
+		}
 	pev->impulse = 0;
 
 	// No volume, use normal
 	if ( m_flVolume <= 0 )
 		m_flVolume = 1.0;
-}
+
+	// Прекэш звука, если в качестве сообщения указан отдельных звук
+	sprintf (sentenceString, "%s", STRING(m_iszSentence));
+	if ((strlen (sentenceString) > 3) && (sentenceString[0] == '!') && (sentenceString[1] == '!'))
+		PRECACHE_SOUND (sentenceString + 2);
+	}
 
 
 void CScriptedSentence :: FindThink( void )
@@ -1188,14 +1195,6 @@ BOOL CScriptedSentence :: StartSentence( CBaseMonster *pTarget )
 	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
 	return TRUE;
 }
-
-
-
-
-
-/*
-
-*/
 
 
 //=========================================================
