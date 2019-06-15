@@ -1,12 +1,12 @@
-# Xash3d for ESHQ / ES:FA v 7.2
-Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ /ES:FA mod v 7.2
+# Xash3d for ESHQ / ES:FA v 7.4
+### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ / ES:FA mod v 7.4
 #
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
 Modification based on old (from 2015) version of engine and may contain old bugs. But some new features
 may be useful for developers with the same mods' plots.
 #
-Main changes touch client and server libraries, not engine core and menu.
+## Main changes:
 
 1. We have fix some known bugs (like non-rotating func_rotating; crashes at killed scientists sentences, etc) for which we had enough mind and time.
 
@@ -62,13 +62,14 @@ Main changes touch client and server libraries, not engine core and menu.
 
 27. Range of pushables' sounds has been expanded and now they depend of materials of pushables. Sound script for pushables has been improved (better behavior corresponding).
 
-28. 'scripted_sentence' entity now can play single sound (it must be prefixed with '!!').
+28. 'scripted_sentence' entity now can play single sound (it must be prefixed with '!!'). Also you can add text message from titles.txt in addition to the sound sentence.
 
 29. Some speed improvements applied to shotgun and mp5.
 
 30. Fixed mouse wheel's behavior and keyboard settings interface's inconvenience.
 
-
+#
+## Known bugs
 
 Unfortunately, we cannot fix some bugs yet:
 
