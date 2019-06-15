@@ -1,5 +1,5 @@
-# Xash3d for ESHQ / ES:FA v 6.4
-Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ /ES:FA mod v 6.4
+# Xash3d for ESHQ / ES:FA v 7.2
+Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ /ES:FA mod v 7.2
 #
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
@@ -52,11 +52,21 @@ Main changes touch client and server libraries, not engine core and menu.
 
 22. We have added a 'trigger_ramdom' entity that can randomly trigger targets from a specified list with specified probabilities. No more lasers needed!
 
-23. Our 'item_security' and 'item_antidote' are collectable now. Their counts can be used to trigger events on maps.
+23. Our 'item_security' and 'item_antidote' are collectable now. Their counts can be used to trigger events on maps and activate extra abilities.
 
 24. Our lasers can be turn off correctly (old version of an engine turns off a sprite, but doesn't turn off a damage).
 
-25. Our pushables got new different sounds.
+25. Added achievement script’s support. Now our modification generates script with extended player's abilities according to count of collected 'item_antidote' items.
+
+26. Added support of 'origin' brush for breakables and pushables when they drop items on break. Now item will be dropped at the center of 'origin' brush or at the center of entity if brush not presented.
+
+27. Range of pushables' sounds has been expanded and now they depend of materials of pushables. Sound script for pushables has been improved (better behavior corresponding).
+
+28. 'scripted_sentence' entity now can play single sound (it must be prefixed with '!!').
+
+29. Some speed improvements applied to shotgun and mp5.
+
+30. Fixed mouse wheel's behavior and keyboard settings interface's inconvenience.
 
 
 
@@ -68,6 +78,8 @@ Unfortunately, we cannot fix some bugs yet:
 
 3. 'func_door_rotating' bug: incorrect collision if door has 'Ox' and/or 'Oy' flags.
 
+
+
 But we believe that it is not serious problem for now.
 #
 This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax added).
@@ -75,4 +87,3 @@ This assembly completely adapted for building with MS VS 10.0 and newer (some fi
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
 
 This assembly is a fork of original Xash3D engine with the same license.
-
