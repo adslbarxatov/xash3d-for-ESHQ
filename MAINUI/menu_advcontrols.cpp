@@ -78,7 +78,7 @@ static void UI_AdvControls_UpdateConfig( void )
 	CVAR_SET_FLOAT( "lookstrafe", uiAdvControls.lookStrafe.enabled );
 	CVAR_SET_FLOAT( "m_filter", uiAdvControls.mouseFilter.enabled );
 	CVAR_SET_FLOAT( "sv_aim", uiAdvControls.autoaim.enabled );
-	CVAR_SET_FLOAT( "sensitivity", (uiAdvControls.sensitivity.curValue * 20.0f) + 0.1f );
+	CVAR_SET_FLOAT( "sensitivity", (uiAdvControls.sensitivity.curValue * 20.0f) + 0.2f );
 
 	if( uiAdvControls.mouseLook.enabled )
 	{
@@ -125,7 +125,7 @@ static void UI_AdvControls_GetConfig( void )
 	if( CVAR_GET_FLOAT( "sv_aim" ))
 		uiAdvControls.autoaim.enabled = 1;
 
-	uiAdvControls.sensitivity.curValue = (CVAR_GET_FLOAT( "sensitivity" ) - 0.1f) / 20.0f;
+	uiAdvControls.sensitivity.curValue = (CVAR_GET_FLOAT( "sensitivity" ) - 0.2f) / 20.0f;
 
 	if( uiAdvControls.mouseLook.enabled )
 	{
@@ -293,7 +293,7 @@ static void UI_AdvControls_Init( void )
 	uiAdvControls.sensitivity.generic.statusText = "Set in-game mouse sensitivity";
 	uiAdvControls.sensitivity.minValue = 0.0;
 	uiAdvControls.sensitivity.maxValue = 1.0;
-	uiAdvControls.sensitivity.range = 0.05f;
+	uiAdvControls.sensitivity.range = 0.01f;
 
 	UI_AdvControls_GetConfig();
 

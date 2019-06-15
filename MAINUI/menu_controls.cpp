@@ -72,7 +72,7 @@ typedef struct
 	menuPicButton_s	no;
 
 	menuScrollList_s	keysList;
-	menuAction_s	hintMessage;
+	menuAction_s	hintMessage, tipMessage;
 	char		hintText[MAX_HINT_TEXT];
 
 	int		bind_grab;	// waiting for key input
@@ -311,81 +311,89 @@ static void UI_Controls_ResetKeysList( void )
 UI_Controls_KeyFunc
 =================
 */
-static const char *UI_Controls_KeyFunc( int key, int down )
-{
+static const char *UI_Controls_KeyFunc (int key, int down)
+	{
 	char	cmd[128];
 
-	if( uiControls.msgBox1.generic.flags & QMF_HIDDEN )
-	{
-		if( down && key == K_ESCAPE && uiControls.defaults.generic.flags & QMF_INACTIVE )
+	if (uiControls.msgBox1.generic.flags & QMF_HIDDEN)
 		{
-			UI_ResetToDefaultsDialog();
+		if (down && key == K_ESCAPE && uiControls.defaults.generic.flags & QMF_INACTIVE)
+			{
+			UI_ResetToDefaultsDialog ();
 			return uiSoundNull;
+			}
 		}
-	}
 	
-	if( down )
-	{
-		if( uiControls.bind_grab )	// assume we are in grab-mode
+	if (down)
 		{
+		if (uiControls.bind_grab)	// assume we are in grab-mode
+			{
 			// defining a key
-			if( key == '`' || key == '~' )
-			{
+			if ((key == '`') || (key == '~'))
+				{
 				return uiSoundBuzz;
-			}
-			else if( key != K_ESCAPE )
-			{
+				}
+			else if (key != K_ESCAPE)
+				{
 				const char *bindName = uiControls.keysBind[uiControls.keysList.curItem];
-				sprintf( cmd, "bind \"%s\" \"%s\"\n", KEY_KeynumToString( key ), bindName );
+				sprintf (cmd, "bind \"%s\" \"%s\"\n", KEY_KeynumToString( key ), bindName);
 				CLIENT_COMMAND( TRUE, cmd );
-			}
+				}
 
 			uiControls.bind_grab = false;
 			UI_Controls_RestartMenu();
 
 			return uiSoundLaunch;
-		}
-
-		if( key == K_ENTER && uiControls.dlgMessage.generic.flags & QMF_HIDDEN )
-		{
-			if( !strlen( uiControls.keysBind[uiControls.keysList.curItem] ))
-			{
-				// probably it's a seperator
-				return uiSoundBuzz;
 			}
+
+		if ((key == K_BACKSPACE || key == K_DEL) && uiControls.dlgMessage.generic.flags & QMF_HIDDEN)
+			{
+			// delete bindings
+			if (!strlen (uiControls.keysBind[uiControls.keysList.curItem]))
+				{
+				// probably it's a separator
+				return uiSoundNull;
+				}
+
+			const char *bindName = uiControls.keysBind[uiControls.keysList.curItem];
+			UI_UnbindCommand (bindName);
+			UI_StartSound (uiSoundRemoveKey);
+			UI_Controls_RestartMenu ();
+
+			if (key == K_DEL)
+				{
+				return uiSoundNull;
+				}
+			else
+				{
+				key = K_ENTER;	// Принудительный вход в режим захвата клавиши
+				}
+			}
+
+		if (key == K_ENTER && uiControls.dlgMessage.generic.flags & QMF_HIDDEN)
+			{
+			if (!strlen (uiControls.keysBind[uiControls.keysList.curItem]))
+				{
+				// probably it's a separator
+				return uiSoundBuzz;
+				}
 
 			// entering to grab-mode
 			const char *bindName = uiControls.keysBind[uiControls.keysList.curItem];
 			int keys[2];
 	
-			UI_Controls_GetKeyBindings( bindName, keys );
-			if( keys[1] != -1 ) UI_UnbindCommand( bindName );
+			UI_Controls_GetKeyBindings (bindName, keys);
+			if (keys[1] != -1)
+				UI_UnbindCommand (bindName);
 			uiControls.bind_grab = true;
 
-			UI_PromptDialog();	// show prompt
+			UI_PromptDialog ();	// show prompt
 			return uiSoundKey;
-		}
-
-		if(( key == K_BACKSPACE || key == K_DEL ) && uiControls.dlgMessage.generic.flags & QMF_HIDDEN )
-		{
-			// delete bindings
-
-			if( !strlen( uiControls.keysBind[uiControls.keysList.curItem] ))
-			{
-				// probably it's a seperator
-				return uiSoundNull;
 			}
-
-			const char *bindName = uiControls.keysBind[uiControls.keysList.curItem];
-			UI_UnbindCommand( bindName );
-			UI_StartSound( uiSoundRemoveKey );
-			UI_Controls_RestartMenu();
-
-			return uiSoundNull;
 		}
+
+	return UI_DefaultKey (&uiControls.menu, key, down);
 	}
-	return UI_DefaultKey( &uiControls.menu, key, down );
-}
 
 /*
 =================
@@ -511,6 +519,14 @@ static void UI_Controls_Init( void )
 
 	UI_UtilSetupPicButton( &uiControls.cancel, PC_CANCEL );
 
+	uiControls.tipMessage.generic.id = ID_TABLEHINT;
+	uiControls.tipMessage.generic.type = QMTYPE_ACTION;
+	uiControls.tipMessage.generic.flags = QMF_INACTIVE|QMF_SMALLFONT;
+	uiControls.tipMessage.generic.color = uiInputFgColor;
+	uiControls.tipMessage.generic.name = "    Press 'Enter' to set/add a key, 'Del' to clear keys,\n              'Backspace' to clear and set key";
+	uiControls.tipMessage.generic.x = 360;
+	uiControls.tipMessage.generic.y = 175;
+
 	uiControls.hintMessage.generic.id = ID_TABLEHINT;
 	uiControls.hintMessage.generic.type = QMTYPE_ACTION;
 	uiControls.hintMessage.generic.flags = QMF_INACTIVE|QMF_SMALLFONT;
@@ -588,6 +604,7 @@ static void UI_Controls_Init( void )
 	UI_AddItem( &uiControls.menu, (void *)&uiControls.advanced );
 	UI_AddItem( &uiControls.menu, (void *)&uiControls.done );
 	UI_AddItem( &uiControls.menu, (void *)&uiControls.cancel );
+	UI_AddItem( &uiControls.menu, (void *)&uiControls.tipMessage );
 	UI_AddItem( &uiControls.menu, (void *)&uiControls.hintMessage );
 	UI_AddItem( &uiControls.menu, (void *)&uiControls.keysList );
 	UI_AddItem( &uiControls.menu, (void *)&uiControls.msgBox1 );

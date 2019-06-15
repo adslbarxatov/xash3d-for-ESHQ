@@ -1036,7 +1036,7 @@ void UI_Slider_Init( menuSlider_s *sl )
 	if( !sl->generic.color ) sl->generic.color = uiColorWhite;
 	if( !sl->generic.focusColor ) sl->generic.focusColor = uiColorWhite;
 	if( !sl->range ) sl->range = 1.0f;
-	if( sl->range < 0.05f ) sl->range = 0.05f;
+	if( sl->range < 0.01f ) sl->range = 0.01f;
 
 	if( sl->generic.flags & QMF_BIGFONT )
 	{
