@@ -1449,7 +1449,7 @@ void pfnRemoveEntity( edict_t* e )
 		MsgDev( D_ERROR, "SV_RemoveEntity: entity already freed\n" );
 		return;
 	}
-
+	
 	// never free client or world entity
 	if( NUM_FOR_EDICT( e ) < ( svgame.globals->maxClients + 1 ))
 	{
@@ -4309,6 +4309,7 @@ static enginefuncs_t gEngfuncs =
 	pfnResetTutorMessageDecayData,
 	pfnQueryClientCvarValue,
 	pfnQueryClientCvarValue2,
+	FS_WriteAchievementsScript	// Новый функционал
 };
 
 /*
