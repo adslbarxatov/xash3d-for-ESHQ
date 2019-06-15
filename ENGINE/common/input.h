@@ -26,7 +26,7 @@ INPUT
 
 #include "keydefs.h"
 
-#define WM_MOUSEWHEEL	( WM_MOUSELAST + 1 ) // message that will be supported by the OS
+//#define WM_MOUSEWHEEL	( WM_MOUSELAST + 1 ) // message that will be supported by the OS	// Нахрена?
 #define MK_XBUTTON1		0x0020
 #define MK_XBUTTON2		0x0040
 #define MK_XBUTTON3		0x0080

@@ -745,7 +745,7 @@ int EXPORT Host_Main( const char *progname, int bChangeGame, pfnChangeGame func 
 	CL_Init();
 
 	if( host.type == HOST_DEDICATED )
-	{
+		{
 		Cmd_AddCommand( "quit", Sys_Quit, "quit the game" );
 		Cmd_AddCommand( "exit", Sys_Quit, "quit the game" );
 
@@ -754,12 +754,15 @@ int EXPORT Host_Main( const char *progname, int bChangeGame, pfnChangeGame func 
 		Cbuf_Execute();
 
 		Cbuf_AddText( va( "map %s\n", Cvar_VariableString( "defaultmap" )));
-	}
+		}
 	else
-	{
+		{
 		Cmd_AddCommand( "minimize", Host_Minimize_f, "minimize main window to tray" );
-		Cbuf_AddText( "exec config.cfg\n" );
-	}
+		Cbuf_AddText ("exec config.cfg\n");
+		
+		Cbuf_Execute ();	// Обеспечение для ачивок
+		Cbuf_AddText ("exec achi.cfg\n");
+		}
 
 	host.errorframe = 0;
 	Cbuf_Execute();
@@ -787,7 +790,11 @@ int EXPORT Host_Main( const char *progname, int bChangeGame, pfnChangeGame func 
 	Cmd_RemoveCommand( "setgl" );
 
 	// we need to execute it again here
-	Cmd_ExecuteString( "exec config.cfg\n", src_command );
+	Cmd_ExecuteString ("exec config.cfg\n", src_command);
+	
+	Cbuf_AddText ("exec achi.cfg\n");	// Обеспечение для ачивок (в мультиплеере необязателен)
+	Cbuf_Execute ();
+
 	oldtime = Sys_DoubleTime();
 
 	// main window message loop

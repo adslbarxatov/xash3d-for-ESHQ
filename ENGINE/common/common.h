@@ -394,6 +394,7 @@ int FS_Close( file_t *file );
 int FS_Getc( file_t *file );
 qboolean FS_Eof( file_t *file );
 fs_offset_t FS_FileLength( file_t *f );
+qboolean FS_WriteAchievementsScript (void);	// Новый функционал
 
 //
 // network.c

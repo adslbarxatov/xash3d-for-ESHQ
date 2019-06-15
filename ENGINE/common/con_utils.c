@@ -791,7 +791,7 @@ autocomplete_list_t cmd_list[] =
 { "load", Cmd_GetSavesList },
 { "play", Cmd_GetSoundList },
 { "map", Cmd_GetMapList },
-{ NULL }, // termiantor
+{ NULL }, // terminator
 };
 
 /*

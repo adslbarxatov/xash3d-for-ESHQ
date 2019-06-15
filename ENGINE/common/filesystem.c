@@ -1207,6 +1207,17 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 			pfile = COM_ParseFile( pfile, token );
 			GameInfo->secure = Q_atoi( token );
 		}
+		// Дополнительная настройка памяти
+		else if( !Q_stricmp( token, "max_edicts" ))
+		{
+			pfile = COM_ParseFile (pfile, token);
+			GameInfo->max_edicts = bound (600, Q_atoi (token), 4096);
+		}
+		else if( !Q_stricmp( token, "max_particles" ))
+		{
+			pfile = COM_ParseFile (pfile, token);
+			GameInfo->max_particles = bound (1024, Q_atoi (token), 131072);
+		}
 	}
 
 	Mem_Free( afile );
@@ -2850,6 +2861,61 @@ void FS_InitMemory( void )
 
 	fs_searchpaths = NULL;
 }
+
+/*
+================
+FS_WriteAchievementsScript
+
+Creates list of bonuses
+================
+*/
+#define ACHI_SCRIPT_FN	"achi.cfg"
+qboolean FS_WriteAchievementsScript (int newLevel)
+	{
+	// Переменные
+	file_t *f;
+	unsigned int level = 0;
+	char temp[16];
+
+	// Определение ранее созданного уровня (ошибки игнорируются)
+	f = FS_Open (ACHI_SCRIPT_FN, "r", false);
+	if (f)
+		{
+		FS_Getc (f); FS_Getc (f); FS_Getc (f);
+		level = ((unsigned int)FS_Getc (f)) & 0x0F;
+		FS_Close (f);
+		}
+
+	if ((newLevel <= level) || (level >= 3))
+		return true;	// Перезапись не требуется (уровень уже достигнут ранее или уровень максимальный)
+
+	// Запись файла
+	f = FS_Open (ACHI_SCRIPT_FN, "w", false);
+	if (!f)
+		return false;
+
+	Q_sprintf (temp, "// %u\n", level + 1);	// Создаёт условие для последующего повышения
+	FS_Print (f, temp);
+	FS_Print (f, "alias fullbrighton \"r_fullbright 1;bind 6 fullbrightoff\"\n");
+	FS_Print (f, "alias fullbrightoff \"r_fullbright 0;bind 6 fullbrighton\"\n");
+	FS_Print (f, "bind \"6\" fullbrighton\n");
+
+	if (level > 0)
+		FS_Print (f, "bind \"7\" \"notarget\"\n");
+
+	if (level > 1)
+		FS_Print (f, "bind \"8\" \"god\"\n");
+
+	// Завершено. Принудительное выполнение
+	FS_Close (f);
+
+	Cbuf_AddText ("exec achi.cfg\n");
+	Cbuf_Execute ();
+
+	return true;
+	}
+
+
 
 /*
 =============================================================================
