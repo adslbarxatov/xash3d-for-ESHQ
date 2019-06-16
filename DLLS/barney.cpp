@@ -238,8 +238,6 @@ void CBarney :: RunTask( Task_t *pTask )
 }
 
 
-
-
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
 // of sounds this monster regards. 

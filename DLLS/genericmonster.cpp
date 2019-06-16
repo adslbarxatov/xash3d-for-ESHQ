@@ -38,7 +38,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 
-	void	KeyValue( KeyValueData *pkvd );
+	void KeyValue( KeyValueData *pkvd );
 };
 LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster );
 
@@ -48,18 +48,22 @@ void CGenericMonster::KeyValue( KeyValueData *pkvd )
 	if (FStrEq(pkvd->szKeyName, "bcolor"))
 	{
 		int color = atoi(pkvd->szValue);
-		switch( color )
-		{
-		case 1:
-			pev->impulse = BLOOD_COLOR_RED;
-			break;
-		case 2:
-			pev->impulse = BLOOD_COLOR_GREEN;
-			break;
-		default:
-			pev->impulse = BLOOD_COLOR_YELLOW;
-			break;
-		}
+		switch (color)
+			{
+			default:
+			case 1:
+				pev->impulse = BLOOD_COLOR_RED;
+				break;
+
+			case 2:
+				pev->impulse = BLOOD_COLOR_GREEN;
+				break;
+
+			//default:
+			case 3:
+				pev->impulse = BLOOD_COLOR_YELLOW;
+				break;
+			}
 
 		pkvd->fHandled = TRUE;
 	}
@@ -73,7 +77,12 @@ void CGenericMonster::KeyValue( KeyValueData *pkvd )
 //=========================================================
 int	CGenericMonster :: Classify ( void )
 {
-	return	CLASS_PLAYER_ALLY;
+	// Красная кровь
+	if ((pev->impulse != BLOOD_COLOR_YELLOW) && (pev->impulse != BLOOD_COLOR_GREEN))
+		return CLASS_PLAYER_ALLY;
+
+	// Другая кровь
+	return CLASS_ALIEN_MONSTER;
 }
 
 //=========================================================

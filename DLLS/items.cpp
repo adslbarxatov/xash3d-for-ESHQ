@@ -337,6 +337,9 @@ class CItemBattery : public CItem
 
 LINK_ENTITY_TO_CLASS(item_battery, CItemBattery);
 
+// Поддержка Blue shift
+LINK_ENTITY_TO_CLASS(item_helmet, CItemBattery);
+LINK_ENTITY_TO_CLASS(item_armorvest, CItemBattery);
 
 
 class CItemAntidote : public CItem
