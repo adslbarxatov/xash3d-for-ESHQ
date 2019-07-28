@@ -132,7 +132,7 @@ void CApache :: Spawn( void )
 	m_flFieldOfView = -0.707; // 270 degrees
 
 	pev->sequence = 0;
-	ResetSequenceInfo( );
+	ResetSequenceInfo ();
 	pev->frame = RANDOM_LONG(0, 0xFF);
 
 	InitBoneControllers();

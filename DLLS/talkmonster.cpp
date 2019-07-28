@@ -903,12 +903,13 @@ void CTalkMonster :: Touch( CBaseEntity *pOther )
 // Respond to a previous question
 //=========================================================
 void CTalkMonster :: IdleRespond( void )
-{
+	{
 	int pitch = GetVoicePitch();
 	
 	// play response
-	PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_SMALL );
-}
+	if (FOkToSpeak ())	// ¬идимо, ответы на незаданные вопросы таки бывают
+		PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_SMALL );
+	}
 
 int CTalkMonster :: FOkToSpeak( void )
 {
@@ -944,7 +945,6 @@ int CTalkMonster :: FOkToSpeak( void )
 
 	return TRUE;
 }
-
 
 int CTalkMonster::CanPlaySentence( BOOL fDisregardState ) 
 { 

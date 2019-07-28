@@ -472,7 +472,8 @@ public:
 	int  LookupActivity ( int activity );
 	int  LookupActivityHeaviest ( int activity );
 	int  LookupSequence ( const char *label );
-	void ResetSequenceInfo ( );
+	void ResetSequenceInfo ();
+	void ResetSequenceInfo (BOOL Loop);
 	void DispatchAnimEvents ( float flFutureInterval = 0.1 ); // Handle events that have happend since last time called up until X seconds into the future
 	virtual void HandleAnimEvent( MonsterEvent_t *pEvent ) { return; };
 	float SetBoneController ( int iController, float flValue );

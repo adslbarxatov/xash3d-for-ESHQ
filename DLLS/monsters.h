@@ -41,33 +41,31 @@
 
 
 // Monster Spawnflags
-#define	SF_MONSTER_WAIT_TILL_SEEN		1// spawnflag that makes monsters wait until player can see them before attacking.
-#define	SF_MONSTER_GAG					2 // no idle noises from this monster
+#define	SF_MONSTER_WAIT_TILL_SEEN		1	// spawnflag that makes monsters wait until player can see them before attacking.
+#define	SF_MONSTER_GAG					2	// no idle noises from this monster
 #define SF_MONSTER_HITMONSTERCLIP		4
-//										8
-#define SF_MONSTER_PRISONER				16 // monster won't attack anyone, no one will attacke him.
-//										32
-//										64
-#define	SF_MONSTER_WAIT_FOR_SCRIPT		128 //spawnflag that makes monsters wait to check for attacking until the script is done or they've been attacked
-#define SF_MONSTER_PREDISASTER			256	//this is a predisaster scientist or barney. Influences how they speak.
-#define SF_MONSTER_FADECORPSE			512 // Fade out corpse after death
+#define SF_MONSTER_PRISONER				16	// monster won't attack anyone, no one will attacke him.
+#define	SF_MONSTER_WAIT_FOR_SCRIPT		128	// spawnflag that makes monsters wait to check for attacking until the script is done or they've been attacked
+#define SF_MONSTER_PREDISASTER			256	// this is a predisaster scientist or barney. Influences how they speak.
+#define SF_MONSTER_FADECORPSE			512	// Fade out corpse after death
+#define SF_MONSTER_OWN_SEQUENCE			1024	// отключить ИИ
 #define SF_MONSTER_FALL_TO_GROUND		0x80000000
 
 // specialty spawnflags
 #define SF_MONSTER_TURRET_AUTOACTIVATE	32
 #define SF_MONSTER_TURRET_STARTINACTIVE	64
-#define SF_MONSTER_WAIT_UNTIL_PROVOKED	64 // don't attack the player unless provoked
+#define SF_MONSTER_WAIT_UNTIL_PROVOKED	64	// don't attack the player unless provoked
 
 
 
 // MoveToOrigin stuff
-#define		MOVE_START_TURN_DIST	64 // when this far away from moveGoal, start turning to face next goal
-#define		MOVE_STUCK_DIST			32 // if a monster can't step this far, it is stuck.
+#define		MOVE_START_TURN_DIST	64	// when this far away from moveGoal, start turning to face next goal
+#define		MOVE_STUCK_DIST			32	// if a monster can't step this far, it is stuck.
 
 
 // MoveToOrigin stuff
-#define		MOVE_NORMAL				0// normal move in the direction monster is facing
-#define		MOVE_STRAFE				1// moves in direction specified, no matter which way monster is facing
+#define		MOVE_NORMAL				0	// normal move in the direction monster is facing
+#define		MOVE_STRAFE				1	// moves in direction specified, no matter which way monster is facing
 
 // spawn flags 256 and above are already taken by the engine
 extern void UTIL_MoveToOrigin( edict_t* pent, const Vector &vecGoal, float flDist, int iMoveType ); 

@@ -3,13 +3,13 @@
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*	Software, Inc. ("Id Technology"). Id Technology (c) 1996 Id Software, Inc. 
 *	All Rights Reserved.
 *
-*   This source code contains proprietary and confidential information of
-*   Valve LLC and its suppliers.  Access to this code is restricted to
-*   persons who have executed a written SDK license with Valve.  Any access,
-*   use or distribution of this code by or to any unlicensed person is illegal.
+* This source code contains proprietary and confidential information of
+* Valve LLC and its suppliers. Access to this code is restricted to
+* persons who have executed a written SDK license with Valve. Any access,
+* use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
 //=========================================================
@@ -29,24 +29,25 @@
 //=========================================================
 
 class CGenericMonster : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	int ISoundMask ( void );
+	{
+	public:
+		void Spawn (void);
+		void Precache (void);
+		void SetYawSpeed (void);
+		int Classify (void);
+		void HandleAnimEvent (MonsterEvent_t *pEvent);
+		int ISoundMask (void);
 
-	void KeyValue( KeyValueData *pkvd );
-};
-LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster );
+		void KeyValue (KeyValueData *pkvd);
+	};
+
+LINK_ENTITY_TO_CLASS (monster_generic, CGenericMonster);
 
 // Новая опция - выбор цвета крови
-void CGenericMonster::KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "bcolor"))
+void CGenericMonster::KeyValue (KeyValueData *pkvd)
 	{
+	if (FStrEq(pkvd->szKeyName, "bcolor"))
+		{
 		int color = atoi(pkvd->szValue);
 		switch (color)
 			{
@@ -59,90 +60,82 @@ void CGenericMonster::KeyValue( KeyValueData *pkvd )
 				pev->impulse = BLOOD_COLOR_GREEN;
 				break;
 
-			//default:
 			case 3:
 				pev->impulse = BLOOD_COLOR_YELLOW;
 				break;
 			}
 
 		pkvd->fHandled = TRUE;
-	}
+		}
 	else
-		CBaseMonster::KeyValue( pkvd );
-}
+		CBaseMonster::KeyValue (pkvd);
+	}
 
 //=========================================================
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CGenericMonster :: Classify ( void )
-{
+int	CGenericMonster :: Classify (void)
+	{
 	// Красная кровь
 	if ((pev->impulse != BLOOD_COLOR_YELLOW) && (pev->impulse != BLOOD_COLOR_GREEN))
 		return CLASS_PLAYER_ALLY;
 
 	// Другая кровь
 	return CLASS_ALIEN_MONSTER;
-}
+	}
 
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CGenericMonster :: SetYawSpeed ( void )
-{
+void CGenericMonster :: SetYawSpeed (void)
+	{
 	int ys;
 
-	switch ( m_Activity )
-	{
-	case ACT_IDLE:
-	default:
-		ys = 90;
-	}
+	switch (m_Activity)
+		{
+		case ACT_IDLE:
+		default:
+			ys = 90;
+		}
 
 	pev->yaw_speed = ys;
-}
+	}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void CGenericMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
-{
-	switch( pEvent->event )
+void CGenericMonster :: HandleAnimEvent (MonsterEvent_t *pEvent)
 	{
-	case 0:
-	default:
-		CBaseMonster::HandleAnimEvent( pEvent );
-		break;
+	switch (pEvent->event)
+		{
+		case 0:
+		default:
+			CBaseMonster::HandleAnimEvent (pEvent);
+			break;
+		}
 	}
-}
 
 //=========================================================
 // ISoundMask - generic monster can't hear.
 //=========================================================
-int CGenericMonster :: ISoundMask ( void )
-{
+int CGenericMonster :: ISoundMask (void)
+	{
 	return	NULL;
-}
+	}
 
 //=========================================================
 // Spawn
 //=========================================================
 void CGenericMonster :: Spawn()
-{
+	{
 	Precache();
 
-	SET_MODEL( ENT(pev), STRING(pev->model) );
+	SET_MODEL (ENT(pev), STRING(pev->model));
 
-/*
-	if ( FStrEq( STRING(pev->model), "models/player.mdl" ) )
-		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
-	else
-		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
-*/
-
-	if ( FStrEq( STRING(pev->model), "models/player.mdl" ) || FStrEq( STRING(pev->model), "models/holo.mdl" ) )
+	if (FStrEq (STRING(pev->model), "models/player.mdl") || FStrEq (STRING(pev->model), "models/holo.mdl"))
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 	else
 		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
@@ -151,26 +144,22 @@ void CGenericMonster :: Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= pev->impulse;
 	pev->health			= 8;
-	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView		= 0.5;	// indicates the width of this monster's forward view cone (as a dotproduct result)
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
 
-	if ( pev->spawnflags & SF_GENERICMONSTER_NOTSOLID )
-	{
+	if (pev->spawnflags & SF_GENERICMONSTER_NOTSOLID)
+		{
 		pev->solid = SOLID_NOT;
 		pev->takedamage = DAMAGE_NO;
+		}
 	}
-}
 
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
 void CGenericMonster :: Precache()
-{
-	PRECACHE_MODEL( (char *)STRING(pev->model) );
-}	
-
-//=========================================================
-// AI Schedules Specific to this monster
-//=========================================================
+	{
+	PRECACHE_MODEL ((char *)STRING(pev->model));
+	}	
