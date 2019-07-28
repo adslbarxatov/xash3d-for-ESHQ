@@ -972,6 +972,9 @@ static qboolean FS_WriteGameInfo( const char *filepath, gameinfo_t *GameInfo )
 	if( Q_strlen( GameInfo->trainmap ))
 		FS_Printf( f, "trainmap\t\t\"%s\"\n", GameInfo->trainmap );
 
+	if( Q_strlen( GameInfo->creditsmap ))
+		FS_Printf( f, "creditsmap\t\t\"%s\"\n", GameInfo->creditsmap );
+
 	if( GameInfo->version != 0.0f )
 		FS_Printf( f, "version\t\t%g\n", GameInfo->version );
 
@@ -1142,6 +1145,11 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 		{
 			pfile = COM_ParseFile( pfile, GameInfo->trainmap );
 			FS_StripExtension( GameInfo->trainmap ); // HQ2:Amen has extension .bsp
+		}
+		else if( !Q_stricmp( token, "creditsmap" ))
+		{
+			pfile = COM_ParseFile( pfile, GameInfo->creditsmap );
+			FS_StripExtension( GameInfo->creditsmap ); // HQ2:Amen has extension .bsp
 		}
 		else if( !Q_stricmp( token, "url_info" ))
 		{
@@ -1346,6 +1354,11 @@ static qboolean FS_ParseGameInfo( const char *gamedir, gameinfo_t *GameInfo )
 		{
 			pfile = COM_ParseFile( pfile, GameInfo->trainmap );
 			FS_StripExtension( GameInfo->trainmap ); // HQ2:Amen has extension .bsp
+		}
+		else if( !Q_stricmp( token, "creditsmap" ))
+		{
+			pfile = COM_ParseFile( pfile, GameInfo->creditsmap );
+			FS_StripExtension( GameInfo->creditsmap ); // HQ2:Amen has extension .bsp
 		}
 		else if( !Q_stricmp( token, "icon" ))
 		{
