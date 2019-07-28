@@ -208,11 +208,11 @@ char *MenuStrings[HINT_MAXSTRINGS] =
 "",
 "",
 "",
-"Return to game.",
-"Start a new game.",
+"Return to game",
+"Start a new game",
 "",	// 190
-"Load a previously saved game.",
-"Load a saved game, save the current game.",
+"Load a previously saved game",
+"Load a saved game, save the current game",
 "Change game settings, configure controls",
 "",
 "",
@@ -420,9 +420,9 @@ char *MenuStrings[HINT_MAXSTRINGS] =
 "",
 "",
 "",
-"Find more about Valve's product lineup",	// 400
+"View mod's credits", //"Find more about Valve's product lineup",	// 400
 "",
-"http://store.steampowered.com/app/70/",
+"", //"http://store.steampowered.com/app/70/",
 "",
 "",
 "",
