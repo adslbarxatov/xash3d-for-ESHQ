@@ -1,5 +1,5 @@
-# Xash3d for ESHQ / ES:FA v 7.4
-### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ / ES:FA mod v 7.4
+# Xash3d for ESHQ / ES:FA v 7.8
+### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ / ES:FA mod v 7.8
 
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
@@ -67,6 +67,12 @@ may be useful for developers with the same mods' plots.
 29. Some speed improvements applied to shotgun and mp5.
 
 30. Fixed mouse wheel's behavior and keyboard settings interface's inconvenience.
+
+31. Fixed 'gag' flag's behavior: now all scientists with 'gag' will be silent.
+
+32. 'Credits' section added to main menu; map for it may be selected by game configuration.
+
+33. Added 'Locked sequence' flag for all monsters. When set, engine will loop the sequence that is specified in monster's settings before its first damage, death or 'scripted_sequence' call. This feature works without 'scripted_sequence' entities.
 
 ## Known bugs
 
