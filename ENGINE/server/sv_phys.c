@@ -346,11 +346,6 @@ qboolean SV_CheckWater( edict_t *ent )
 			VectorMA( ent->v.basevelocity, speed, dir, ent->v.basevelocity );
 		}
 	}
-	/*else
-		{
-		// Управление состоянием тумана
-		ent->v.in_fog = (cont == CONTENT_FOG) ? 1 : 0;
-		}*/
 
 	return ent->v.waterlevel > 1;
 }
@@ -979,14 +974,14 @@ static edict_t *SV_PushRotate( edict_t *pusher, float movetime )
 		if( block ) continue;
 
 		// if the entity is standing on the pusher, it will definately be moved
-		if( !(( check->v.flags & FL_ONGROUND ) && check->v.groundentity == pusher ))
+		if( !(( check->v.flags & FL_ONGROUND ) && (check->v.groundentity == pusher) ))
 		{
-			if( check->v.absmin[0] >= pusher->v.absmax[0]
-			|| check->v.absmin[1] >= pusher->v.absmax[1]
-			|| check->v.absmin[2] >= pusher->v.absmax[2]
-			|| check->v.absmax[0] <= pusher->v.absmin[0]
-			|| check->v.absmax[1] <= pusher->v.absmin[1]
-			|| check->v.absmax[2] <= pusher->v.absmin[2] )
+			if ((check->v.absmin[0] >= pusher->v.absmax[0])
+			|| (check->v.absmin[1] >= pusher->v.absmax[1])
+			|| (check->v.absmin[2] >= pusher->v.absmax[2])
+			|| (check->v.absmax[0] <= pusher->v.absmin[0])
+			|| (check->v.absmax[1] <= pusher->v.absmin[1])
+			|| (check->v.absmax[2] <= pusher->v.absmin[2]))
 				continue;
 
 			// see if the ent's bbox is inside the pusher's final position
@@ -1004,7 +999,8 @@ static edict_t *SV_PushRotate( edict_t *pusher, float movetime )
 		// calculate destination position
 		if( check->v.movetype == MOVETYPE_PUSHSTEP )
 			VectorAverage( check->v.absmin, check->v.absmax, org );
-		else VectorCopy( check->v.origin, org );
+		else 
+			VectorCopy( check->v.origin, org );
 
 		Matrix4x4_VectorITransform( start_l, org, temp );
 		Matrix4x4_VectorTransform( end_l, temp, org2 );

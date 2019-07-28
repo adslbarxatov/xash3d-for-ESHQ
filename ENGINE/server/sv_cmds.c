@@ -299,6 +299,17 @@ void SV_HazardCourse_f( void )
 	Host_NewGame( GI->trainmap, false );
 }
 
+void SV_Credits_f( void )
+{
+	if( Cmd_Argc() != 1 )
+	{
+		Msg( "Usage: credits\n" );
+		return;
+	}
+
+	Host_NewGame( GI->creditsmap, false );
+}
+
 void SV_Endgame_f( void )
 {
 	Host_EndGame( "The End" );
@@ -814,6 +825,7 @@ void SV_InitOperatorCommands( void )
 	Cmd_AddCommand( "newgame", SV_Newgame_f, "begin new game" );
 	Cmd_AddCommand( "killgame", SV_Endgame_f, "end current game" );
 	Cmd_AddCommand( "hazardcourse", SV_HazardCourse_f, "starting a Hazard Course" );
+	Cmd_AddCommand( "credits", SV_Credits_f, "starting a credits" );
 	Cmd_AddCommand( "changelevel", SV_ChangeLevel_f, "changing level" );
 	Cmd_AddCommand( "restart", SV_Restart_f, "restarting current level" );
 	Cmd_AddCommand( "reload", SV_Reload_f, "continue from latest save or restart level" );
@@ -850,6 +862,7 @@ void SV_KillOperatorCommands( void )
 	Cmd_RemoveCommand( "newgame" );
 	Cmd_RemoveCommand( "endgame" );
 	Cmd_RemoveCommand( "hazardcourse" );
+	Cmd_RemoveCommand( "credits" );
 	Cmd_RemoveCommand( "changelevel" );
 	Cmd_RemoveCommand( "restart" );
 	Cmd_RemoveCommand( "reload" );
