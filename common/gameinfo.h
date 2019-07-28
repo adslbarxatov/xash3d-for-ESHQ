@@ -32,6 +32,7 @@ typedef struct
 	char		gamefolder[64];	// used for change game '-game x'
 	char		startmap[64];	// map to start singleplayer game
 	char		trainmap[64];	// map to start hazard course (if specified)
+	char		creditsmap[64];	// map to show credits (if specified)
 	char		title[64];	// Game Main Title
 	char		version[14];	// game version (optional)
 	short		flags;		// game flags
