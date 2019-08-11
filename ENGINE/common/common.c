@@ -333,9 +333,9 @@ COM_FreeFile
 =============
 */
 void COM_FreeFile( void *buffer )
-{
-	free( buffer ); 
-}
+	{
+	free (buffer);
+	}
 
 /*
 =============
