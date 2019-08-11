@@ -175,11 +175,19 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		rgsz[1] = "player/pl_grate4.wav";
 		cnt = 2;
 		break;
-	case CHAR_TEX_TILE:	fvol = 0.8; fvolbar = 0.2;
+	// Разведение резины и плитки
+	case CHAR_TEX_RUBBER:	fvol = 0.8; fvolbar = 0.2;
 		rgsz[0] = "player/pl_tile1.wav";
 		rgsz[1] = "player/pl_tile3.wav";
 		rgsz[2] = "player/pl_tile2.wav";
 		rgsz[3] = "player/pl_tile4.wav";
+		cnt = 4;
+		break;
+	case CHAR_TEX_TILES:	fvol = 0.9;	fvolbar = 0.4;
+		rgsz[0] = "debris/tile1.wav";
+		rgsz[1] = "debris/tile2.wav";
+		rgsz[2] = "debris/tile3.wav";
+		rgsz[3] = "debris/tile4.wav";
 		cnt = 4;
 		break;
 	case CHAR_TEX_SLOSH: fvol = 0.9; fvolbar = 0.0;
