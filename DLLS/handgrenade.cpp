@@ -150,7 +150,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;
 
-		// alway explode 3 seconds after the pin was pulled
+		// always explode 3 seconds after the pin was pulled
 		float time = m_flStartThrow - gpGlobals->time + 3.0;
 		if (time < 0)
 			time = 0;
@@ -221,13 +221,9 @@ void CHandGrenade::WeaponIdle( void )
 		else 
 		{
 			iAnim = HANDGRENADE_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 75.0 / 30.0;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.5;
 		}
 
 		SendWeaponAnim( iAnim );
 	}
 }
-
-
-
-

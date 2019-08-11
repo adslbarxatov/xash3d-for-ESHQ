@@ -17,16 +17,16 @@
 //=========================================================
 
 struct skilldata_t
-{
+	{
 
-	int iSkillLevel; // game skill level
+	int iSkillLevel;				// Текущий уровень сложности
 
-// Monster Health & Damage
-	float	agruntHealth;
+	// Monster Health & Damage
+	float agruntHealth;
 	float agruntDmgPunch;
 
 	float apacheHealth;
-	
+
 	float barneyHealth;
 
 	float bigmommaHealthFactor;		// Multiply each node's health by this
@@ -91,7 +91,7 @@ struct skilldata_t
 	float sentryHealth;
 
 
-// Player Weapons
+	// Player Weapons
 	float plrDmgCrowbar;
 	float plrDmg9MM;
 	float plrDmg357;
@@ -108,34 +108,34 @@ struct skilldata_t
 	float plrDmgHandGrenade;
 	float plrDmgSatchel;
 	float plrDmgTripmine;
-	
-// weapons shared by monsters
+
+	// weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
 	float monDmg12MM;
 	float monDmgHornet;
 
-// health/suit charge
+	// health/suit charge
 	float suitchargerCapacity;
 	float batteryCapacity;
 	float healthchargerCapacity;
 	float healthkitCapacity;
 	float scientistHeal;
 
-// monster damage adj
+	// monster damage adj
 	float monHead;
 	float monChest;
 	float monStomach;
 	float monLeg;
 	float monArm;
 
-// player damage adj
+	// player damage adj
 	float plrHead;
 	float plrChest;
 	float plrStomach;
 	float plrLeg;
 	float plrArm;
-};
+	};
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
 float GetSkillCvar( char *pName );

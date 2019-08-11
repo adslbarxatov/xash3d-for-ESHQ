@@ -86,9 +86,7 @@ public:
 
 #define MAX_WEAPONS			32
 
-
 #define MAX_NORMAL_BATTERY	100
-
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
 #define CROWBAR_WEIGHT		0
@@ -107,13 +105,13 @@ public:
 #define TRIPMINE_WEIGHT		-10
 
 
-// weapon clip/carry ammo capacities
+// Максимальное количество патронов
 #define URANIUM_MAX_CARRY		100
 #define	_9MM_MAX_CARRY			250
-#define _357_MAX_CARRY			36
-#define BUCKSHOT_MAX_CARRY		125
+#define _357_MAX_CARRY			60
+#define BUCKSHOT_MAX_CARRY		100
 #define BOLT_MAX_CARRY			50
-#define ROCKET_MAX_CARRY		5
+#define ROCKET_MAX_CARRY		7
 #define HANDGRENADE_MAX_CARRY	10
 #define SATCHEL_MAX_CARRY		5
 #define TRIPMINE_MAX_CARRY		5
@@ -121,7 +119,7 @@ public:
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
 
-// the maximum amount of ammo each weapon's clip can hold
+// Размер обоймы оружия
 #define WEAPON_NOCLIP			-1
 
 //#define CROWBAR_MAX_CLIP		WEAPON_NOCLIP
@@ -141,45 +139,45 @@ public:
 #define SNARK_MAX_CLIP			WEAPON_NOCLIP
 
 
-// the default amount of ammo that comes with each gun when it spawns
+// Количество патронов в новом оружии
 #define GLOCK_DEFAULT_GIVE			17
 #define PYTHON_DEFAULT_GIVE			6
 #define MP5_DEFAULT_GIVE			25
-#define MP5_DEFAULT_AMMO			25
+//#define MP5_DEFAULT_AMMO			25		// Повторяется
 #define MP5_M203_DEFAULT_GIVE		0
 #define SHOTGUN_DEFAULT_GIVE		12
 #define CROSSBOW_DEFAULT_GIVE		5
 #define RPG_DEFAULT_GIVE			1
 #define GAUSS_DEFAULT_GIVE			20
 #define EGON_DEFAULT_GIVE			20
-#define HANDGRENADE_DEFAULT_GIVE	5
+#define HANDGRENADE_DEFAULT_GIVE	1		// 5 не соответствует модели
 #define SATCHEL_DEFAULT_GIVE		1
 #define TRIPMINE_DEFAULT_GIVE		1
 #define SNARK_DEFAULT_GIVE			5
 #define HIVEHAND_DEFAULT_GIVE		8
 
-// The amount of ammo given to a player by an ammo item.
-#define AMMO_URANIUMBOX_GIVE	20
-#define AMMO_GLOCKCLIP_GIVE		GLOCK_MAX_CLIP
-#define AMMO_357BOX_GIVE		PYTHON_MAX_CLIP
+// Количество патронов в отдельных обоймах
+#define AMMO_URANIUMBOX_GIVE	GAUSS_DEFAULT_GIVE
+#define AMMO_GLOCKCLIP_GIVE		GLOCK_DEFAULT_GIVE
+#define AMMO_357BOX_GIVE		PYTHON_DEFAULT_GIVE
 #define AMMO_MP5CLIP_GIVE		MP5_MAX_CLIP
 #define AMMO_CHAINBOX_GIVE		200
 #define AMMO_M203BOX_GIVE		2
-#define AMMO_BUCKSHOTBOX_GIVE	12
-#define AMMO_CROSSBOWCLIP_GIVE	CROSSBOW_MAX_CLIP
-#define AMMO_RPGCLIP_GIVE		RPG_MAX_CLIP
-#define AMMO_URANIUMBOX_GIVE	20
-#define AMMO_SNARKBOX_GIVE		5
+#define AMMO_BUCKSHOTBOX_GIVE	SHOTGUN_DEFAULT_GIVE
+#define AMMO_CROSSBOWCLIP_GIVE	CROSSBOW_DEFAULT_GIVE
+#define AMMO_RPGCLIP_GIVE		RPG_DEFAULT_GIVE
+//#define AMMO_URANIUMBOX_GIVE	20			// Повтор
+#define AMMO_SNARKBOX_GIVE		SNARK_DEFAULT_GIVE
 
 // bullet types
 typedef	enum
 {
 	BULLET_NONE = 0,
-	BULLET_PLAYER_9MM, // glock
-	BULLET_PLAYER_MP5, // mp5
-	BULLET_PLAYER_357, // python
-	BULLET_PLAYER_BUCKSHOT, // shotgun
-	BULLET_PLAYER_CROWBAR, // crowbar swipe
+	BULLET_PLAYER_9MM,
+	BULLET_PLAYER_MP5,
+	BULLET_PLAYER_357,
+	BULLET_PLAYER_BUCKSHOT,
+	BULLET_PLAYER_CROWBAR,
 
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
@@ -187,7 +185,7 @@ typedef	enum
 } Bullet;
 
 
-#define ITEM_FLAG_SELECTONEMPTY		1
+#define ITEM_FLAG_SELECTIONEMPTY	1
 #define ITEM_FLAG_NOAUTORELOAD		2
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
 #define ITEM_FLAG_LIMITINWORLD		8
@@ -207,7 +205,7 @@ typedef struct
 	int		iMaxClip;
 	int		iId;
 	int		iFlags;
-	int		iWeight;// this value used to determine this weapon's importance in autoselection.
+	int		iWeight;		// this value used to determine this weapon's importance in autoselection.
 } ItemInfo;
 
 typedef struct
@@ -224,7 +222,7 @@ public:
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
-	
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	virtual int AddToPlayer( CBasePlayer *pPlayer );	// return TRUE if the item you want the item added to the player inventory
@@ -240,7 +238,7 @@ public:
 	virtual int GetItemInfo(ItemInfo *p) { return 0; };	// returns 0 if struct not filled out
 	virtual BOOL CanDeploy( void ) { return TRUE; };
 	virtual BOOL Deploy( )								// returns is deploy was successful
-		 { return TRUE; };
+	{ return TRUE; };
 
 	virtual BOOL CanHolster( void ) { return TRUE; };// can this weapon be put away right now?
 	virtual void Holster( int skiplocal = 0 );
@@ -290,7 +288,7 @@ class CBasePlayerWeapon : public CBasePlayerItem
 public:
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
-	
+
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	// generic weapon versions of CBasePlayerItem calls
@@ -310,7 +308,7 @@ public:
 
 	int m_iPlayEmptySound;
 	int m_fFireOnEmpty;		// True when the gun is empty and the player is still holding down the
-							// attack key(s)
+	// attack key(s)
 	virtual BOOL PlayEmptySound( void );
 	virtual void ResetEmptySound( void );
 
@@ -332,7 +330,7 @@ public:
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
-	
+
 	int	PrimaryAmmoIndex(); 
 	int	SecondaryAmmoIndex(); 
 
@@ -449,7 +447,7 @@ public:
 	BOOL HasWeapon( CBasePlayerItem *pCheckItem );
 	BOOL PackWeapon( CBasePlayerItem *pWeapon );
 	BOOL PackAmmo( int iszName, int iCount );
-	
+
 	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];// one slot for each 
 
 	int m_rgiszAmmo[MAX_AMMO_SLOTS];// ammo names
@@ -489,7 +487,7 @@ public:
 
 private:
 	int m_iShell;
-	
+
 
 	unsigned short m_usFireGlock1;
 	unsigned short m_usFireGlock2;
@@ -672,7 +670,7 @@ class CLaserSpot : public CBaseEntity
 public:
 	void Suspend( float flSuspendTime );
 	void EXPORT Revive( void );
-	
+
 	static CLaserSpot *CreateSpot( void );
 };
 
@@ -762,7 +760,7 @@ public:
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	void WeaponIdle( void );
-	
+
 	void StartFire( void );
 	void Fire( Vector vecOrigSrc, Vector vecDirShooting, float flDamage );
 	float GetFullChargeTime( void );
@@ -827,7 +825,7 @@ public:
 	BOOL HasAmmo( void );
 
 	void UseAmmo( int count );
-	
+
 	enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 
 	CBeam				*m_pBeam;
@@ -873,7 +871,7 @@ public:
 	float m_flNextAnimTime;
 
 	float m_flRechargeTime;
-	
+
 	int m_iFirePhase;// don't save me.
 
 	virtual BOOL UseDecrement( void )
@@ -903,7 +901,7 @@ public:
 	BOOL CanHolster( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
-	
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )
@@ -935,11 +933,11 @@ public:
 	BOOL CanDeploy( void );
 	BOOL Deploy( void );
 	BOOL IsUseable( void );
-	
+
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
 	void Throw( void );
-	
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )
