@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 // Классы
@@ -24,9 +26,9 @@ namespace ESHQSetupStub
 		private const int headerFontSize = (int)(scale * 0.20);	// Размер шрифта заголовков расширенного режима
 		private const int textFontSize = (int)(scale * 0.13);	// Размер шрифта текста расширенного режима
 		private const string logoString1 = "ESHQ",				// Тексты лого
-			logoString2 = "ES:FA";
+			logoString2 = "ES:FA", logoString4 = "ON";
 
-		private int logo2Height;								// Высота второго лого
+		private int logoHeight;									// Высота лого
 		private Point[] logo2Form;								// Форма стрелки второго лого
 		private SolidBrush logo2Green, logo2Grey;
 
@@ -38,10 +40,10 @@ namespace ESHQSetupStub
 		private Graphics g, g2;					// Объекты-отрисовщики
 		private SolidBrush foreBrush, backBrush, backHidingBrush1, backHidingBrush2;
 		private Pen backPen;
-		private Bitmap logo1, logo2a, logo2b;
+		private Bitmap logo1, logo2a, logo2b, logo4a, logo4b;
 		private Bitmap logo2GreyPart, logo2GreenPart, logo2BackPart;
-		private Font logo1Font, headerFont, textFont;
-		private SizeF logo1Size;				// Графические размеры текста для текущего экрана
+		private Font logo1Font, headerFont, textFont, logo4Font;
+		private SizeF logo1Size, logo4Size;		// Графические размеры текста для текущего экрана
 
 		private uint extended = 0;				// Тип расширенного режима
 
@@ -51,12 +53,25 @@ namespace ESHQSetupStub
 		private const int lineFeed = 40;		// Высота строки текста расширенного режима
 		private const int lineLeft = 250;		// Начало строки текста расширенного режима
 
-		private List<List<LogoDrawerString>> extendedStrings1 = new List<List<LogoDrawerString>> ();	// Строки текста расширенного режима
-		private List<List<LogoDrawerString>> extendedStrings2 = new List<List<LogoDrawerString>> ();
-		private List<List<LogoDrawerString>> extendedStrings3 = new List<List<LogoDrawerString>> ();
+		private List<List<LogoDrawerString>> extendedStrings1 = new List<List<LogoDrawerString>> (),	// Строки текста расширенного режима
+			extendedStrings2 = new List<List<LogoDrawerString>> (),
+			extendedStrings3 = new List<List<LogoDrawerString>> (),
+			extendedStrings4 = new List<List<LogoDrawerString>> ();
+
+#if LDDEBUG
+		// Эта конструкция имитирует нажатие клавиши, запускающей и останавливающей запись
+		[DllImport ("user32.dll")]
+		private static extern void keybd_event (byte vk, byte scan, int flags, int extrainfo);
+
+		private void TriggerRecord ()
+			{
+			keybd_event ((byte)Keys.Add, 0, 0, 0);
+			keybd_event ((byte)Keys.Add, 0, 2, 0);
+			}
+#endif
 
 		/// <summary>
-		/// Доступные режимы отрисовки лого
+		/// Доступные режимы отрисовки основного лого
 		/// </summary>
 		public enum DrawModes
 			{
@@ -80,9 +95,9 @@ namespace ESHQSetupStub
 			// Инициализация
 			Random rnd = new Random ();
 #if LDDEBUG
-			extended = 3;
+			extended = 4;
 #else
-			extended = ((rnd.Next (10) == 0) ? (uint)rnd.Next (1, 4) : 0);
+			extended = ((rnd.Next (5) == 0) ? (uint)rnd.Next (1, 5) : 0);
 #endif
 
 			if (extended == 0)
@@ -93,7 +108,7 @@ namespace ESHQSetupStub
 			InitializeComponent ();
 			}
 
-		private void LogoDrawer_Load (object sender, System.EventArgs e)
+		private void LogoDrawer_Shown (object sender, EventArgs e)
 			{
 			// Если запрос границ экрана завершается ошибкой, отменяем отображение
 			this.Left = this.Top = 0;
@@ -122,29 +137,33 @@ namespace ESHQSetupStub
 
 			logo1Font = new Font ("Lucida Sans Unicode", logoFontSize);
 			logo1Size = g.MeasureString (logoString1, logo1Font);
+			logo4Font = new Font ("RelayComp-Light", logoFontSize * 2);
+			logo4Size = g.MeasureString (logoString4, logo4Font);
 
 			/*logo2Font = new Font ("Hair ‱", logoFontSize);
 			if (logo2Font.Name != "Hair ‱")
 				extended = 0;*/
-			logo2Height = (int)(this.Height / 4.5);
 
+			#region Сборка компонентов изображений
 			if (extended == 2)
 				{
+				logoHeight = (int)(this.Height / 4.5);
+
 				// Создание формы стрелки
 				logo2Form = new Point[] {
 					new Point (0, 0),
-					new Point (0, 6 * logo2Height / 7),
-					new Point (logo2Height / 7, logo2Height),
-					new Point (2 * logo2Height / 7, 6 * logo2Height / 7),
-					new Point (2 * logo2Height / 7, 0),
-					new Point (logo2Height / 7, logo2Height / 7)
+					new Point (0, 6 * logoHeight / 7),
+					new Point (logoHeight / 7, logoHeight),
+					new Point (2 * logoHeight / 7, 6 * logoHeight / 7),
+					new Point (2 * logoHeight / 7, 0),
+					new Point (logoHeight / 7, logoHeight / 7)
 					};
 
 				// Формирование стрелок
 				logo2Green = new SolidBrush (Color.FromArgb (0, 160, 80));
 				logo2Grey = new SolidBrush (Color.FromArgb (160, 160, 160));
 
-				logo2BackPart = new Bitmap (2 * logo2Height / 7, logo2Height);
+				logo2BackPart = new Bitmap (2 * logoHeight / 7, logoHeight);
 				g2 = Graphics.FromImage (logo2BackPart);
 				g2.FillRectangle (new SolidBrush (Color.FromArgb (0, 0, 0, 0)), 0, 0, logo2BackPart.Width, logo2BackPart.Height);
 				g2.FillPolygon (backBrush, logo2Form);
@@ -160,14 +179,19 @@ namespace ESHQSetupStub
 				g2.FillPolygon (logo2Green, logo2Form);
 				g2.Dispose ();
 
-				logo2a = new Bitmap (2 * logo2Height / 7, this.Height);
-				logo2b = new Bitmap (2 * logo2Height, this.Height);
+				logo2a = new Bitmap (2 * logoHeight / 7, this.Height);
+				logo2b = new Bitmap (2 * logoHeight, this.Height);
 				}
+			else if (extended == 4)
+				{
+				logoHeight = (int)(this.Height / 1.5);
+				}
+			#endregion
 
 			headerFont = new Font ("Lucida Console", headerFontSize, FontStyle.Bold);
 			textFont = new Font ("Lucida Console", textFontSize);
 
-			// Установка начальных позиций и методов отрисовки
+			#region Установка начальных позиций и методов отрисовки
 			switch (mode)
 				{
 				default:
@@ -189,6 +213,28 @@ namespace ESHQSetupStub
 					break;
 				}
 
+			switch (extended)
+				{
+				default:
+				case 1:
+					ExtendedTimer.Tick += ExtendedTimer1_Tick;
+					break;
+
+				case 2:
+					ExtendedTimer.Tick += ExtendedTimer2_Tick;
+					break;
+
+				case 3:
+					ExtendedTimer.Tick += ExtendedTimer3_Tick;
+					break;
+
+				case 4:
+					ExtendedTimer.Tick += ExtendedTimer4_Tick;
+					break;
+				}
+			#endregion
+
+			#region Тексты расширенного режима
 			// Текст расширенного режима, вариант 1
 			uint headerLetterWidth = (uint)(g.MeasureString ("A", headerFont).Width * 0.8f);
 			uint textLetterWidth = (uint)(g.MeasureString ("A", textFont).Width * 0.8f);
@@ -208,11 +254,14 @@ namespace ESHQSetupStub
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"- Oh, from arabic it means 'love'. May be...", textFont, 30, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Hell no! Oh God! Have you ever seen Half-Life?   What kind of love do you assumed to see here?", textFont, 80, textLetterWidth));
+				"- Hell no! Oh God!  Have you ever seen Half-Life?" +
+				"  What kind of love do you assumed to see here?", textFont, 80, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Some love to machines, I think. Technocracy      madness or somethin'", textFont, 80, textLetterWidth));
+				"- Some  love  to machines,  I think.  Technocracy" +
+				"  madness or something...", textFont, 80, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- ...I'm shocked. It's actually an accident. But   you're completely right", textFont, 50, textLetterWidth));
+				"- ...I'm shocked.  It's actually an accident. But" +
+				"  you're completely right", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"- OK, keep going", textFont, 100, textLetterWidth));
 
@@ -229,9 +278,12 @@ namespace ESHQSetupStub
 				"• Quarters", headerFont, 40, headerLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- It's a fake name for infrastructure facility     where our plot begins. Our project is about    " +
-				"  tech. And about people's inability to use it     properly. We just tried to create something    " +
-				"  that we haven't in reality. We got it, I think.  Surrealistic disasters, crushes, mad AI, etc...", textFont, 50, textLetterWidth));
+				"- It's a  fake name  for infrastructure  facility" +
+				"  where  our plot  begins.  Our project  is about" +
+				"  tech.  And about  people's inability  to use it" +
+				"  properly.  We just  tried  to create  something" +
+				"  that we haven't in reality. We got it, I think." +
+				"  Surrealistic disasters, crushes, mad AI, etc...", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"  But... Hell yeah! We're sharing 'love'! ♥♥♥", textFont, 100, textLetterWidth));
@@ -247,34 +299,40 @@ namespace ESHQSetupStub
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"- An infinity sign, I think", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Yes, it is. But it's 'interrupted' infinity.     Like a life. It may be eternal. But it tends   " +
+				"- Yes, it is.  But it's  'interrupted'  infinity." +
+				"  Like a life.  It may  be eternal.  But it tends" +
 				"  to break off suddenly... What else?", textFont, 80, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"- DNA, may be?", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Yes, of course. The code of life. And the        source code that we using just like a painter  " +
+				"- Yes,  of course.  The  code  of life.  And  the" +
+				"  source code  that we using  just like a painter" +
 				"  uses his brush. It's context dependent", textFont, 80, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Is Large Hadron Collider also here? Logo looks   like its rays dispersing from center", textFont, 50, textLetterWidth));
+				"- Is Large Hadron Collider also here?  Logo looks" +
+				"  like its rays dispersing from center", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- It's obvious. LHC is about life origin too.      And about tech too", textFont, 100, textLetterWidth));
+				"- It's  obvious.  LHC is  about life  origin too." +
+				"  And about tech too", textFont, 100, textLetterWidth));
 
 			extendedStrings1.Add (new List<LogoDrawerString> ());
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"- And how about crossing roads?", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Of course, it is. An intersection of ways and    fates is the life itself. It's ESHQ itself", textFont, 80, textLetterWidth));
+				"- Of course, it is.  An intersection of  ways and" +
+				"  fates is the life itself. It's ESHQ itself", textFont, 80, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
 				"- Did you invented new Ankh?", textFont, 50, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- No no no. Don't be so pretentious. It's just     possible descriptions. And we just need unique " +
+				"- No no no.  Don't be  so pretentious.  It's just" +
+				"  possible descriptions.  And we just need unique" +
 				"  logo. Here it is", textFont, 80, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings1[extendedStrings1.Count - 1].Add (new LogoDrawerString (
-				"- Well done!", textFont, 100, textLetterWidth));
+				"- Oh, well done!", textFont, 120, textLetterWidth));
 
 			// Текст расширенного режима, вариант 2
 			extendedStrings2.Add (new List<LogoDrawerString> ());
@@ -285,15 +343,19 @@ namespace ESHQSetupStub
 
 			extendedStrings2[extendedStrings2.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings2[extendedStrings2.Count - 1].Add (new LogoDrawerString (
-				"   It's simple. We called our installation       assembly 'Deployment packages'. After that we    " +
-				"took 'd' and 'p' and merge them into single      arrow-like logo.", textFont, 70, textLetterWidth));
+				"   It's  simple.   We  called   our  installation" +
+				"assembly  'Deployment  packages'.  After that  we" +
+				"took  'd' and 'p'  and  merge  them  into  single" +
+				"arrow-like logo.", textFont, 80, textLetterWidth));
 			extendedStrings2[extendedStrings2.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings2[extendedStrings2.Count - 1].Add (new LogoDrawerString (
-				"   ...Although, to be completely honest: we took 'd' and 'p' and after that we called our assembly" +
-				"'DP'. We just like the way they merge. And the   right words was easy to find.", textFont, 70, textLetterWidth));
+				"   ...Although, to be completely honest:  we took" +
+				"'d' and 'p' and after that we called our assembly" +
+				"'DP'.  We just enjoy the way they merge.  And the" +
+				"right words was easy to find.", textFont, 70, textLetterWidth));
 			extendedStrings2[extendedStrings2.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings2[extendedStrings2.Count - 1].Add (new LogoDrawerString (
-				"   So it goes", textFont, 100, textLetterWidth));
+				"   So it goes", textFont, 150, textLetterWidth));
 
 			// Текст расширенного режима, вариант 3
 			extendedStrings3.Add (new List<LogoDrawerString> ());
@@ -304,15 +366,43 @@ namespace ESHQSetupStub
 
 			extendedStrings3[extendedStrings3.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings3[extendedStrings3.Count - 1].Add (new LogoDrawerString (
-				"   This is the oldest one. When it was born its  text (abbreviation) was a name for pre- pre- pre-" +
-				"prototype of SampiHQ from our mod. Proto got new life with new name. And I have a nick.", textFont, 80, textLetterWidth));
+				"   This is the  oldest one.  When it was born its" +
+				"text (abbreviation) was a name for pre- pre- pre-" +
+				"prototype of SampiHQ from our mod.  Proto got new" +
+				"life with new name. And I have a nick.", textFont, 80, textLetterWidth));
 			extendedStrings3[extendedStrings3.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings3[extendedStrings3.Count - 1].Add (new LogoDrawerString (
-				"   Emerald green stone-like shield also comes    from there. It's was an integrated symbol of     " +
-				"stability, strength, protection and power.       In general, it stays so.", textFont, 80, textLetterWidth));
+				"   Emerald  green  stone-like  shield  also comes" +
+				"from  there.  It's  was an  integrated  symbol of" +
+				"stability,   strength,   protection   and  power." +
+				"In general, it stays so.", textFont, 80, textLetterWidth));
 			extendedStrings3[extendedStrings3.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
 			extendedStrings3[extendedStrings3.Count - 1].Add (new LogoDrawerString (
-				"   As a result, it's simple and unique. Just     what I need ☺", textFont, 120, textLetterWidth));
+				"   As  a result,  it's  simple  and unique.  Just" +
+				"what I need ☺", textFont, 150, textLetterWidth));
+
+			// Текст расширенного режима, вариант 4
+			extendedStrings4.Add (new List<LogoDrawerString> ());
+			extendedStrings4[extendedStrings4.Count - 1].Add (new LogoDrawerString (
+				"What does our logo mean?", headerFont, 50, headerLetterWidth));
+			extendedStrings4[extendedStrings4.Count - 1].Add (new LogoDrawerString (
+				"Some explanations from RD_AAOW (creator)", textFont, 80, textLetterWidth));
+
+			extendedStrings4[extendedStrings4.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
+			extendedStrings4[extendedStrings4.Count - 1].Add (new LogoDrawerString (
+				"   Here  are two  opposite  stylized letters  'c'" +
+				"whose 'dance'  generates new ideas  and solutions" +
+				"(marked by  the word  'on').  All these  elements" +
+				"are in the beginning of word 'concurrent' that is" +
+				"also   about    coordination,    coherence    and" +
+				"composition of scattered parts.", textFont, 150, textLetterWidth));
+			extendedStrings4[extendedStrings4.Count - 1].Add (new LogoDrawerString (" ", textFont, 0, textLetterWidth));
+			extendedStrings4[extendedStrings4.Count - 1].Add (new LogoDrawerString (
+				"   This  geometry  seems  to  be  partially  used" +
+				"already. But  we  think  that  this  filling  may" +
+				"pretend to be original", textFont, 150, textLetterWidth));
+
+			#endregion
 
 			// Сброс настроек
 			phase1 = phase2 = 1;
@@ -321,6 +411,11 @@ namespace ESHQSetupStub
 			DrawingTimer.Interval = MovingTimer.Interval = 1;
 			PauseTimer.Interval = 2000;
 			ExtendedTimer.Interval = 20;
+
+#if LDDEBUG
+			if (mode == DrawModes.Mode1)
+				TriggerRecord ();
+#endif
 			DrawingTimer.Enabled = true;
 			}
 
@@ -347,8 +442,8 @@ namespace ESHQSetupStub
 				case 2:
 					arc1 += 2.0;
 
-					point1.X = (this.Width - scale) / 2 + (int)(Cosinus (arc1) * scale / 2.0);
-					point1.Y = this.Height / 2 + (int)(Sinus (arc1) * scale / 2.0);
+					point1.X = (this.Width - scale) / 2 + (int)(LogoDrawerSupport.Cosinus (arc1) * scale / 2.0);
+					point1.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (arc1) * scale / 2.0);
 
 					if (arc1 >= 0.0)
 						{
@@ -361,8 +456,8 @@ namespace ESHQSetupStub
 				case 3:
 					arc1 -= 2.0;
 
-					point1.X = (this.Width + scale) / 2 + (int)(Cosinus (arc1) * scale / 2.0);
-					point1.Y = this.Height / 2 + (int)(Sinus (arc1) * scale / 2.0);
+					point1.X = (this.Width + scale) / 2 + (int)(LogoDrawerSupport.Cosinus (arc1) * scale / 2.0);
+					point1.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (arc1) * scale / 2.0);
 
 					if (arc1 <= -270.0)
 						{
@@ -393,8 +488,8 @@ namespace ESHQSetupStub
 				case 2:
 					arc2 -= 2.0;
 
-					point2.X = (this.Width - scale) / 2 + (int)(Cosinus (arc2) * scale / 2.0);
-					point2.Y = this.Height / 2 + (int)(Sinus (arc2) * scale / 2.0);
+					point2.X = (this.Width - scale) / 2 + (int)(LogoDrawerSupport.Cosinus (arc2) * scale / 2.0);
+					point2.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (arc2) * scale / 2.0);
 
 					if (arc2 <= 0.0)
 						{
@@ -407,8 +502,8 @@ namespace ESHQSetupStub
 				case 3:
 					arc2 += 2.0;
 
-					point2.X = (this.Width + scale) / 2 + (int)(Cosinus (arc2) * scale / 2.0);
-					point2.Y = this.Height / 2 + (int)(Sinus (arc2) * scale / 2.0);
+					point2.X = (this.Width + scale) / 2 + (int)(LogoDrawerSupport.Cosinus (arc2) * scale / 2.0);
+					point2.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (arc2) * scale / 2.0);
 
 					if (arc2 >= 360.0)
 						{
@@ -460,15 +555,15 @@ namespace ESHQSetupStub
 				case 2:
 					arc1 += 1.0;
 
-					point1.X = (this.Width + scale) / 2 + (int)(Cosinus (180.0 - arc1) * scale / 2.0);			// Нижняя правая
-					point1.Y = this.Height / 2 + (int)(Sinus (180.0 - arc1) * scale / 2.0);
-					point2.X = (this.Width + scale) / 2 + (int)(Cosinus (180.0 + arc1 * 2.0) * scale / 2.0);	// Верхняя правая
-					point2.Y = this.Height / 2 + (int)(Sinus (180.0 + arc1 * 2.0) * scale / 2.0);
+					point1.X = (this.Width + scale) / 2 + (int)(LogoDrawerSupport.Cosinus (180.0 - arc1) * scale / 2.0);		// Нижняя правая
+					point1.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (180.0 - arc1) * scale / 2.0);
+					point2.X = (this.Width + scale) / 2 + (int)(LogoDrawerSupport.Cosinus (180.0 + arc1 * 2.0) * scale / 2.0);	// Верхняя правая
+					point2.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (180.0 + arc1 * 2.0) * scale / 2.0);
 
-					point3.X = (this.Width - scale) / 2 + (int)(Cosinus (-arc1) * scale / 2.0);					// Верхняя левая
-					point3.Y = this.Height / 2 + (int)(Sinus (-arc1) * scale / 2.0);
-					point4.X = (this.Width - scale) / 2 + (int)(Cosinus (arc1 * 2.0) * scale / 2.0);			// Нижняя левая
-					point4.Y = this.Height / 2 + (int)(Sinus (arc1 * 2.0) * scale / 2.0);
+					point3.X = (this.Width - scale) / 2 + (int)(LogoDrawerSupport.Cosinus (-arc1) * scale / 2.0);				// Верхняя левая
+					point3.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (-arc1) * scale / 2.0);
+					point4.X = (this.Width - scale) / 2 + (int)(LogoDrawerSupport.Cosinus (arc1 * 2.0) * scale / 2.0);			// Нижняя левая
+					point4.Y = this.Height / 2 + (int)(LogoDrawerSupport.Sinus (arc1 * 2.0) * scale / 2.0);
 
 					if (arc1 >= 90.0)
 						{
@@ -548,22 +643,22 @@ namespace ESHQSetupStub
 				{
 				// Расходящаяся от центра рамка, стирающая лишние линии
 				g.DrawRectangle (backPen,
-					(int)((this.Width / 2 - (scale + tailsSize)) * ((1 + Cosinus (arc1 + 180.0)) / 2.0)),
-					(int)((this.Height / 2 - (int)(scale / 2 + tailsSize)) * ((1 + Cosinus (arc1 + 180.0)) / 2.0)),
-					(int)(logo1.Width + (this.Width - logo1.Width) * ((1 + Cosinus (arc1)) / 2.0)),
-					(int)(logo1.Height + (this.Height - logo1.Height) * ((1 + Cosinus (arc1)) / 2.0)));
+					(int)((this.Width / 2 - (scale + tailsSize)) * ((1 + LogoDrawerSupport.Cosinus (arc1 + 180.0)) / 2.0)),
+					(int)((this.Height / 2 - (int)(scale / 2 + tailsSize)) * ((1 + LogoDrawerSupport.Cosinus (arc1 + 180.0)) / 2.0)),
+					(int)(logo1.Width + (this.Width - logo1.Width) * ((1 + LogoDrawerSupport.Cosinus (arc1)) / 2.0)),
+					(int)(logo1.Height + (this.Height - logo1.Height) * ((1 + LogoDrawerSupport.Cosinus (arc1)) / 2.0)));
 
 				// Смещающееся влево лого
-				g.DrawImage (logo1, (this.Width - logo1.Width) / 2 - (int)(((1 + Cosinus (arc1)) / 2.0) * (this.Width - logo1.Width) / 4),
-					(int)((this.Height - (scale + 2 * tailsSize)) / 2));
+				g.DrawImage (logo1, (this.Width - logo1.Width) / 2 - (int)(((1 + LogoDrawerSupport.Cosinus (arc1)) / 2.0) *
+					(this.Width - logo1.Width) / 4), (int)((this.Height - (scale + 2 * tailsSize)) / 2));
 				}
 			else if (arc1 >= -90.0)
 				{
 				// Отображение текста
-				g.DrawString (logoString1.Substring (0, (int)(logoString1.Length * Sinus (-arc1))),
+				g.DrawString (logoString1.Substring (0, (int)(logoString1.Length * LogoDrawerSupport.Sinus (-arc1))),
 					logo1Font, foreBrush, this.Width - (this.Width - logo1.Width) / 4 - logo1Size.Width,
 					this.Height / 2 - logo1Size.Height * 0.7f);
-				g.DrawString (logoString2.Substring (0, (int)(logoString2.Length * Sinus (-arc1))),
+				g.DrawString (logoString2.Substring (0, (int)(logoString2.Length * LogoDrawerSupport.Sinus (-arc1))),
 					logo1Font, foreBrush, this.Width - (this.Width - logo1.Width) / 4 - logo1Size.Width,
 					this.Height / 2);
 				}
@@ -590,21 +685,6 @@ namespace ESHQSetupStub
 			// Инициализация расширенного режима
 			phase1 = 1;
 			steps = 0;
-			switch (extended)
-				{
-				default:
-				case 1:
-					ExtendedTimer.Tick += ExtendedTimer1_Tick;
-					break;
-
-				case 2:
-					ExtendedTimer.Tick += ExtendedTimer2_Tick;
-					break;
-
-				case 3:
-					ExtendedTimer.Tick += ExtendedTimer3_Tick;
-					break;
-				}
 
 			// Запуск
 			ExtendedTimer.Enabled = true;
@@ -701,7 +781,7 @@ namespace ESHQSetupStub
 					extended = 0;
 					mode = DrawModes.Mode2;
 					DrawingTimer.Tick -= DrawingTimer_Mode1;
-					LogoDrawer_Load (null, null);
+					LogoDrawer_Shown (null, null);
 					break;
 				}
 			}
@@ -728,14 +808,14 @@ namespace ESHQSetupStub
 					for (int i = -10; i < -2; i++)
 						{
 						g2.DrawImage ((i % 2 == 0) ? logo2GreyPart : logo2GreenPart, 0,
-							this.Height / 2 + i * 6 * logo2Height / 7 + steps);
+							this.Height / 2 + i * 6 * logoHeight / 7 + steps);
 						}
-					g2.DrawImage (logo2BackPart, 0, this.Height / 2 - 3 * 6 * logo2Height / 7);
-					g2.DrawImage (logo2BackPart, 0, this.Height / 2 + 2 * 6 * logo2Height / 7);
+					g2.DrawImage (logo2BackPart, 0, this.Height / 2 - 3 * 6 * logoHeight / 7);
+					g2.DrawImage (logo2BackPart, 0, this.Height / 2 + 2 * 6 * logoHeight / 7);
 
-					g.DrawImage (logo2a, this.Width / 2 - logo2Height / 7, 0);
+					g.DrawImage (logo2a, this.Width / 2 - logoHeight / 7, 0);
 
-					if (steps >= 6 * logo2Height)
+					if (steps >= 6 * logoHeight)
 						{
 						g2.Dispose ();
 						g2 = Graphics.FromImage (logo2b);
@@ -748,19 +828,19 @@ namespace ESHQSetupStub
 				case 4:
 					steps += 2;
 
-					g2.FillPie (logo2Grey, 2 * logo2Height / 7, this.Height / 2 - (6 * logo2Height / 7),
-						12 * logo2Height / 7, 12 * logo2Height / 7,
-						270, (int)(180 * Sinus (steps)));
-					g2.FillEllipse (backBrush, 4 * logo2Height / 7, this.Height / 2 - (4 * logo2Height / 7),
-						8 * logo2Height / 7, 8 * logo2Height / 7);
-					g2.FillPie (logo2Green, 0, this.Height / 2 - (6 * logo2Height / 7),
-						12 * logo2Height / 7, 12 * logo2Height / 7,
-						90, (int)(180 * Sinus (steps)));
-					g2.FillEllipse (backBrush, 2 * logo2Height / 7, this.Height / 2 - (4 * logo2Height / 7),
-						8 * logo2Height / 7, 8 * logo2Height / 7);
-					g2.DrawImage (logo2a, 6 * logo2Height / 7, 0);
+					g2.FillPie (logo2Grey, 2 * logoHeight / 7, this.Height / 2 - (6 * logoHeight / 7),
+						12 * logoHeight / 7, 12 * logoHeight / 7,
+						270, (int)(180 * LogoDrawerSupport.Sinus (steps)));
+					g2.FillEllipse (backBrush, 4 * logoHeight / 7, this.Height / 2 - (4 * logoHeight / 7),
+						8 * logoHeight / 7, 8 * logoHeight / 7);
+					g2.FillPie (logo2Green, 0, this.Height / 2 - (6 * logoHeight / 7),
+						12 * logoHeight / 7, 12 * logoHeight / 7,
+						90, (int)(180 * LogoDrawerSupport.Sinus (steps)));
+					g2.FillEllipse (backBrush, 2 * logoHeight / 7, this.Height / 2 - (4 * logoHeight / 7),
+						8 * logoHeight / 7, 8 * logoHeight / 7);
+					g2.DrawImage (logo2a, 6 * logoHeight / 7, 0);
 
-					g.DrawImage (logo2b, this.Width / 2 - logo2Height, 0);
+					g.DrawImage (logo2b, this.Width / 2 - logoHeight, 0);
 
 					if (steps > 90)
 						{
@@ -819,12 +899,12 @@ namespace ESHQSetupStub
 					extended = 0;
 					mode = DrawModes.Mode2;
 					DrawingTimer.Tick -= DrawingTimer_Mode1;
-					LogoDrawer_Load (null, null);
+					LogoDrawer_Shown (null, null);
 					break;
 				}
 			}
 
-		// Таймер расширенного режима отображения, вариант 2
+		// Таймер расширенного режима отображения, вариант 3
 		private void ExtendedTimer3_Tick (object sender, EventArgs e)
 			{
 			switch (phase1)
@@ -886,7 +966,121 @@ namespace ESHQSetupStub
 					extended = 0;
 					mode = DrawModes.Mode2;
 					DrawingTimer.Tick -= DrawingTimer_Mode1;
-					LogoDrawer_Load (null, null);
+					LogoDrawer_Shown (null, null);
+					break;
+				}
+			}
+
+		// Таймер расширенного режима отображения, вариант 4
+		private void ExtendedTimer4_Tick (object sender, EventArgs e)
+			{
+			switch (phase1)
+				{
+				// Начальное затенение
+				case 1:
+					HideScreen (true);
+					break;
+
+				// Создание объекта
+				case 2:
+					logo4a = new Bitmap ((int)(logoHeight * 1.2), (int)(logoHeight * 1.2));
+					g2 = Graphics.FromImage (logo4a);
+
+					phase1++;
+					break;
+
+				// Вход скобок
+				case 3:
+					// Задний круг
+					g2.FillEllipse (foreBrush, (int)(logoHeight * 0.1), (int)(logoHeight * 0.1), logoHeight, logoHeight);
+
+					// Передний круг
+					g2.FillEllipse (backBrush, (int)(logoHeight * 0.1) + steps, (int)(logoHeight * 0.1) - steps,
+						logoHeight - 2 * steps, logoHeight + 2 * steps);
+
+					// Отрисовка
+					g.DrawImage (logo4a, (this.Width - logo4a.Width) / 2, (this.Height - logo4a.Height) / 2);
+
+					steps++;
+					if (steps >= 0.05 * logoHeight)
+						{
+						g2.Dispose ();
+						logo4b = new Bitmap ((int)(logoHeight * 1.2), (int)(logoHeight * 1.2));
+						g2 = Graphics.FromImage (logo4b);
+
+						g2.TranslateTransform ((int)(logoHeight * 0.6), (int)(logoHeight * 0.6));
+						steps = 0;
+						phase1++;
+						}
+					break;
+
+				// Вращение
+				case 4:
+					// Отрисовка
+					steps++;
+					g2.RotateTransform (steps);
+
+					g2.DrawImage (logo4a, -(int)(logoHeight * 0.6), -(int)(logoHeight * 0.6));
+					g.DrawImage (logo4b, (this.Width - logo4b.Width) / 2, (this.Height - logo4b.Height) / 2);
+
+					if (steps >= 170)
+						{
+						g.DrawString (logoString4, logo4Font, foreBrush, (this.Width - logo4Size.Width) / 2,
+							(this.Height - logo4Size.Height) / 2 + 15);
+
+						g2.Dispose ();
+						steps = 0;
+						phase1++;
+						}
+					break;
+
+				// Пауза
+				case 5:
+					if (steps++ > 100)
+						{
+						steps = 0;
+						phase1++;
+						}
+					break;
+
+				// Затемнение
+				case 6:
+					HideScreen (false);
+					break;
+
+				// Отрисовка начальных элементов
+				case 7:
+					if (steps++ == 0)
+						g.DrawString ("Concurrent", textFont, foreBrush, 50, lineFeed);
+					else if (steps > 20)
+						{
+						steps = 0;
+						point1.X = lineLeft;
+						point1.Y = lineFeed;
+						phase1++;
+						}
+					break;
+
+				case 8:
+					DrawSplitter ();
+					break;
+
+				// Отрисовка текста
+				case 9:
+					DrawText (extendedStrings4);
+					break;
+
+				// Завершение
+				case 10:
+					HideScreen (true);
+					break;
+
+				case 11:
+					ExtendedTimer.Enabled = false;
+					extended = 0;
+					mode = DrawModes.Mode2;
+					DrawingTimer.Tick -= DrawingTimer_Mode1;
+					LogoDrawer_Shown (null, null);
 					break;
 				}
 			}
@@ -898,6 +1092,10 @@ namespace ESHQSetupStub
 			{
 			// Остановка всех отрисовок
 			DrawingTimer.Enabled = MovingTimer.Enabled = PauseTimer.Enabled = ExtendedTimer.Enabled = false;
+#if LDDEBUG
+			TriggerRecord ();
+			Thread.Sleep (1000);
+#endif
 
 			// Сброс всех ресурсов
 			foreBrush.Dispose ();
@@ -918,6 +1116,11 @@ namespace ESHQSetupStub
 				logo2BackPart.Dispose ();
 				logo2GreenPart.Dispose ();
 				logo2GreyPart.Dispose ();
+				}
+			else if (extended == 4)
+				{
+				logo4a.Dispose ();
+				logo4b.Dispose ();
 				}
 
 			if (logo1 != null)
@@ -946,36 +1149,6 @@ namespace ESHQSetupStub
 #endif
 			}
 
-		/// <summary>
-		/// Метод переводит градусы в радианы
-		/// </summary>
-		/// <param name="Phi">Градусная величина угла</param>
-		/// <returns>Радианная величина угла</returns>
-		private double D2R (double Phi)
-			{
-			return Math.PI * Phi / 180.0;
-			}
-
-		/// <summary>
-		/// Метод возвращает значение синуса угла, представленного в градусах
-		/// </summary>
-		/// <param name="ArcInDegrees">Градусная величина угла</param>
-		/// <returns>Синус угла</returns>
-		private double Sinus (double ArcInDegrees)
-			{
-			return Math.Sin (D2R (ArcInDegrees));
-			}
-
-		/// <summary>
-		/// Метод возвращает значение косинуса угла, представленного в градусах
-		/// </summary>
-		/// <param name="ArcInDegrees">Градусная величина угла</param>
-		/// <returns>Косинус угла</returns>
-		private double Cosinus (double ArcInDegrees)
-			{
-			return Math.Cos (D2R (ArcInDegrees));
-			}
-
 		// Метод рисует числовой маркер
 		private void DrawMarker (uint Number)
 			{
@@ -992,7 +1165,8 @@ namespace ESHQSetupStub
 		private void DrawSplitter ()
 			{
 			steps++;
-			g.FillRectangle (foreBrush, 220, this.Height * 0.05f, drawerSize / 2, this.Height * 0.9f * (float)Sinus (steps * 4));
+			g.FillRectangle (foreBrush, 220, this.Height * 0.05f, drawerSize / 2, this.Height * 0.9f *
+				(float)LogoDrawerSupport.Sinus (steps * 4));
 
 			if (steps > 45)
 				{
