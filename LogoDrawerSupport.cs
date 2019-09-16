@@ -72,6 +72,18 @@ namespace ESHQSetupStub
 		private uint stringLength = 0;
 
 		/// <summary>
+		/// Тип строки (дополнительное поле)
+		/// </summary>
+		public uint StringType
+			{
+			get
+				{
+				return stringType;
+				}
+			}
+		private uint stringType = 0;
+
+		/// <summary>
 		/// Конструктор. Инициализиует объект-строку (предполагает моноширинный шрифт)
 		/// </summary>
 		/// <param name="Text">Текст строки</param>
@@ -79,6 +91,24 @@ namespace ESHQSetupStub
 		/// <param name="TimeoutPause">Пауза до перехода к следующей строке</param>
 		/// <param name="LetterWidth">Ширина отдельной буквы строки</param>
 		public LogoDrawerString (string Text, Font TextFont, uint TimeoutPause, uint LetterWidth)
+			{
+			LogoDrawerStringInit (Text, TextFont, TimeoutPause, LetterWidth, 0);
+			}
+
+		/// <summary>
+		/// Конструктор. Инициализиует объект-строку (предполагает моноширинный шрифт)
+		/// </summary>
+		/// <param name="Text">Текст строки</param>
+		/// <param name="TextFont">Шрифт строки</param>
+		/// <param name="TimeoutPause">Пауза до перехода к следующей строке</param>
+		/// <param name="LetterWidth">Ширина отдельной буквы строки</param>
+		/// <param name="Type">Тип строки (для поддержки дополнительных функций)</param>
+		public LogoDrawerString (string Text, Font TextFont, uint TimeoutPause, uint LetterWidth, uint Type)
+			{
+			LogoDrawerStringInit (Text, TextFont, TimeoutPause, LetterWidth, Type);
+			}
+
+		private void LogoDrawerStringInit (string Text, Font TextFont, uint TimeoutPause, uint LetterWidth, uint Type)
 			{
 			stringText = Text;
 			if ((stringText == null) || (stringText == ""))
@@ -88,6 +118,7 @@ namespace ESHQSetupStub
 			stringFont = TextFont;
 			letterSize = LetterWidth;
 			pause = TimeoutPause;
+			stringType = Type;
 			}
 		}
 
@@ -216,7 +247,6 @@ namespace ESHQSetupStub
 
 					if (!LogoDrawerSupport.IsFlat (metrics.StartupPosition))
 						endY = y = rnd.Next ((int)ScreenHeight + ρ) - ρ / 2;
-					//endY = y = (int)(ScreenHeight / 4);
 					else
 						endY = y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
 					break;
@@ -254,12 +284,18 @@ namespace ESHQSetupStub
 							speedY = -rnd.Next (LogoDrawerSupport.AccelerationBorder + 1);
 						else
 							speedY = rnd.Next (-(int)metrics.MinSpeed, (int)metrics.MaxSpeed + 1);
+
+						if (metrics.MaxSpeed == 0)
+							break;
 						}
 
 					if (LogoDrawerSupport.IsCenter (metrics.StartupPosition))
 						{
 						x = (int)ScreenWidth / 2;
-						y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						if (LogoDrawerSupport.IsFlat (metrics.StartupPosition))
+							y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						else
+							y = (int)(ScreenHeight / 2);
 						}
 					else
 						{
@@ -267,8 +303,10 @@ namespace ESHQSetupStub
 						y = rnd.Next ((int)ScreenHeight + ρ) - ρ / 2;
 						}
 
-					endX = (speedX > 0) ? ((int)ScreenWidth + ρ) : -ρ;
-					endY = (speedY > 0) ? ((int)ScreenHeight + ρ) : -ρ;
+					endX = (speedX > 0) ? ((int)ScreenWidth + ρ + speedX + maxFluctuation) :
+						(-ρ + speedX - maxFluctuation);		// Фикс против преждевременного
+					endY = (speedY > 0) ? ((int)ScreenHeight + ρ + speedY + maxFluctuation) :
+						(-ρ + speedY - maxFluctuation);		// 'перепрыгивания' порога
 
 					break;
 				}
@@ -308,10 +346,8 @@ namespace ESHQSetupStub
 					speedY--;
 				}
 
-			if (Enlarging > 0)
-				ρ += 2;
-			else if ((Enlarging < 0) && (ρ > 1))
-				ρ -= 2;
+			if ((Enlarging > 0) || (Enlarging < 0) && (ρ > -Enlarging + 2))
+				ρ += Enlarging;
 
 			// Отрисовка
 			if (image != null)
@@ -817,12 +853,18 @@ namespace ESHQSetupStub
 							speedY = -rnd.Next (LogoDrawerSupport.AccelerationBorder + 1);
 						else
 							speedY = rnd.Next (-(int)metrics.MinSpeed, (int)metrics.MaxSpeed + 1);
+
+						if (metrics.MaxSpeed == 0)
+							break;
 						}
 
 					if (LogoDrawerSupport.IsCenter (metrics.StartupPosition))
 						{
 						x = (int)ScreenWidth / 2;
-						y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						if (LogoDrawerSupport.IsFlat (metrics.StartupPosition))
+							y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						else
+							y = (int)(ScreenHeight / 2);
 						}
 					else
 						{
@@ -830,8 +872,10 @@ namespace ESHQSetupStub
 						y = rnd.Next ((int)ScreenHeight + 2 * ρ) - ρ;
 						}
 
-					endX = (speedX > 0) ? ((int)ScreenWidth + 8 * ρ) : (-8 * ρ);
-					endY = (speedY > 0) ? ((int)ScreenHeight + 8 * ρ) : (-8 * ρ);
+					endX = (speedX > 0) ? ((int)ScreenWidth + 8 * ρ + speedX + maxFluctuation) :
+						(-8 * ρ + speedX - maxFluctuation);
+					endY = (speedY > 0) ? ((int)ScreenHeight + 8 * ρ + speedY + maxFluctuation) :
+						(-8 * ρ + speedY - maxFluctuation);
 					break;
 				}
 
@@ -879,10 +923,8 @@ namespace ESHQSetupStub
 					φ -= 360;
 				}
 
-			if (Enlarging > 0)
-				ρ++;
-			else if ((Enlarging < 0) && (ρ > 0))
-				ρ--;
+			if ((Enlarging > 0) || (Enlarging < 0) && (ρ > -Enlarging))
+				ρ += Enlarging;
 
 			// Сброс предыдущего изображения
 			if (image != null)
@@ -961,32 +1003,42 @@ namespace ESHQSetupStub
 
 			metrics.MinSize = (OldMetrics.MinSize > OldMetrics.MaxSize) ? OldMetrics.MaxSize : OldMetrics.MinSize;
 			metrics.MaxSize = (OldMetrics.MinSize > OldMetrics.MaxSize) ? OldMetrics.MinSize : OldMetrics.MaxSize;
-			if (metrics.MinSize < 1)
-				metrics.MinSize = 1;
+			if (metrics.MinSize < MinObjectSize)
+				metrics.MinSize = MinObjectSize;
+			if (metrics.MinSize > MaxObjectSize)
+				metrics.MinSize = MaxObjectSize;
 			if (metrics.MaxSize < metrics.MinSize)
 				metrics.MaxSize = metrics.MinSize;
+			if (metrics.MaxSize > MaxObjectSize)
+				metrics.MaxSize = MaxObjectSize;
 
 			metrics.MinSpeed = (OldMetrics.MinSpeed > OldMetrics.MaxSpeed) ? OldMetrics.MaxSpeed : OldMetrics.MinSpeed;
 			metrics.MaxSpeed = (OldMetrics.MinSpeed > OldMetrics.MaxSpeed) ? OldMetrics.MinSpeed : OldMetrics.MaxSpeed;
-			if (metrics.MinSpeed < 1)
-				metrics.MinSpeed = 1;
+			if (metrics.MinSpeed < MinObjectSpeed)
+				metrics.MinSpeed = MinObjectSpeed;
+			if (metrics.MinSpeed > MaxObjectSpeed)
+				metrics.MinSpeed = MaxObjectSpeed;
 			if (metrics.MaxSpeed < metrics.MinSpeed)
 				metrics.MaxSpeed = metrics.MinSpeed;
+			if (metrics.MaxSpeed > MaxObjectSpeed)
+				metrics.MaxSpeed = MaxObjectSpeed;
 
 			metrics.MaxSpeedFluctuation = OldMetrics.MaxSpeedFluctuation;
+			if (metrics.MaxSpeedFluctuation > MaxObjectSpeed)
+				metrics.MaxSpeedFluctuation = MaxObjectSpeed;
 			metrics.StartupPosition = OldMetrics.StartupPosition;
 
 			metrics.ObjectsType = OldMetrics.ObjectsType;
 
 			metrics.ObjectsCount = OldMetrics.ObjectsCount;
-			if (metrics.ObjectsCount > 20)
-				metrics.ObjectsCount = 20;
+			if (metrics.ObjectsCount > MaxObjectsCount)
+				metrics.ObjectsCount = (byte)MaxObjectsCount;
 
 			metrics.PolygonsSidesCount = OldMetrics.PolygonsSidesCount;
-			if (metrics.PolygonsSidesCount > 16)
-				metrics.PolygonsSidesCount = 16;
-			if (metrics.PolygonsSidesCount < 3)
-				metrics.PolygonsSidesCount = 3;
+			if (metrics.PolygonsSidesCount > MaxPolygonsSidesCount)
+				metrics.PolygonsSidesCount = (byte)MaxPolygonsSidesCount;
+			if (metrics.PolygonsSidesCount < MinPolygonsSidesCount)
+				metrics.PolygonsSidesCount = (byte)MinPolygonsSidesCount;
 
 			metrics.KeepTracks = OldMetrics.KeepTracks;
 			metrics.AsStars = OldMetrics.AsStars;
@@ -994,13 +1046,63 @@ namespace ESHQSetupStub
 			metrics.Acceleration = OldMetrics.Acceleration;
 
 			metrics.Enlarging = OldMetrics.Enlarging;
-			if (metrics.Enlarging < 0)
-				metrics.Enlarging = -1;
-			if (metrics.Enlarging > 0)
-				metrics.Enlarging = 1;
+			if (metrics.Enlarging < -MaxEnlarge)
+				metrics.Enlarging = -MaxEnlarge;
+			if (metrics.Enlarging > MaxEnlarge)
+				metrics.Enlarging = MaxEnlarge;
 
 			return metrics;
 			}
+
+		/// <summary>
+		/// Минимально допустимый размер шрифта
+		/// </summary>
+		public const uint MinFontSize = 10;
+
+		/// <summary>
+		/// Максимально допустимый размер шрифта
+		/// </summary>
+		public const uint MaxFontSize = 100;
+
+		/// <summary>
+		/// Максимально допустимое количество объектов
+		/// </summary>
+		public const uint MaxObjectsCount = 20;
+
+		/// <summary>
+		/// Минимально допустимое количество сторон многоугольников
+		/// </summary>
+		public const uint MinPolygonsSidesCount = 3;
+
+		/// <summary>
+		/// Максимально допустимое количество сторон многоугольников
+		/// </summary>
+		public const uint MaxPolygonsSidesCount = 16;
+
+		/// <summary>
+		/// Максимально допустимый коэффициент увеличения / уменьшения
+		/// </summary>
+		public const int MaxEnlarge = 10;
+
+		/// <summary>
+		/// Минимально допустимая скорость объекта
+		/// </summary>
+		public const uint MinObjectSpeed = 0;
+
+		/// <summary>
+		/// Максимально допустимая скорость объекта
+		/// </summary>
+		public const uint MaxObjectSpeed = 20;
+
+		/// <summary>
+		/// Минимально допустимый размер объекта
+		/// </summary>
+		public const uint MinObjectSize = 1;
+
+		/// <summary>
+		/// Максимально допустимый размер объекта
+		/// </summary>
+		public const uint MaxObjectSize = 400;
 
 		/// <summary>
 		/// Метод переводит градусы в радианы
@@ -1253,12 +1355,18 @@ namespace ESHQSetupStub
 							speedY = -rnd.Next (LogoDrawerSupport.AccelerationBorder + 1);
 						else
 							speedY = rnd.Next (-(int)metrics.MinSpeed, (int)metrics.MaxSpeed + 1);
+
+						if (metrics.MaxSpeed == 0)
+							break;
 						}
 
 					if (LogoDrawerSupport.IsCenter (metrics.StartupPosition))
 						{
 						x = (int)ScreenWidth / 2;
-						y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						if (LogoDrawerSupport.IsFlat (metrics.StartupPosition))
+							y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						else
+							y = (int)(ScreenHeight / 2);
 						}
 					else
 						{
@@ -1266,8 +1374,10 @@ namespace ESHQSetupStub
 						y = rnd.Next ((int)ScreenHeight + sourceImage.Height) - sourceImage.Height / 2;
 						}
 
-					endX = (speedX > 0) ? ((int)ScreenWidth + sourceImage.Width) : -sourceImage.Width;
-					endY = (speedY > 0) ? ((int)ScreenHeight + sourceImage.Height) : -sourceImage.Height;
+					endX = (speedX > 0) ? ((int)ScreenWidth + sourceImage.Width + speedX + maxFluctuation) :
+						(-sourceImage.Width + speedX - maxFluctuation);
+					endY = (speedY > 0) ? ((int)ScreenHeight + sourceImage.Height + speedY + maxFluctuation) :
+						(-sourceImage.Height + speedY - maxFluctuation);
 
 					break;
 				}
@@ -1577,12 +1687,18 @@ namespace ESHQSetupStub
 							speedY = -rnd.Next (LogoDrawerSupport.AccelerationBorder + 1);
 						else
 							speedY = rnd.Next (-(int)metrics.MinSpeed, (int)metrics.MaxSpeed + 1);
+
+						if (metrics.MaxSpeed == 0)
+							break;
 						}
 
 					if (LogoDrawerSupport.IsCenter (metrics.StartupPosition))
 						{
 						x = (int)ScreenWidth / 2;
-						y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						if (LogoDrawerSupport.IsFlat (metrics.StartupPosition))
+							y = (int)(ScreenHeight * (1.0 - LogoDrawerSupport.TextFieldPart));
+						else
+							y = (int)(ScreenHeight / 2);
 						}
 					else
 						{
@@ -1590,8 +1706,10 @@ namespace ESHQSetupStub
 						y = rnd.Next ((int)ScreenHeight + sourceImage.Height) - sourceImage.Height / 2;
 						}
 
-					endX = (speedX > 0) ? ((int)ScreenWidth + sourceImage.Width) : -sourceImage.Width;
-					endY = (speedY > 0) ? ((int)ScreenHeight + sourceImage.Height) : -sourceImage.Height;
+					endX = (speedX > 0) ? ((int)ScreenWidth + sourceImage.Width + speedX + maxFluctuation) :
+						(-sourceImage.Width + speedX - maxFluctuation);
+					endY = (speedY > 0) ? ((int)ScreenHeight + sourceImage.Height + speedY + maxFluctuation) :
+						(-sourceImage.Height + speedY - maxFluctuation);
 
 					break;
 				}
@@ -1646,7 +1764,12 @@ namespace ESHQSetupStub
 
 			g.TranslateTransform (sourceImage.Width / 2, sourceImage.Height / 2);			// Центровка поворота
 			g.RotateTransform (φ);
+			/*if ((Enlarging > 0) || (Enlarging < 0) && (sourceImage.Width > -Enlarging) && (sourceImage.Height > -Enlarging))
+				g.DrawImage (sourceImage, -sourceImage.Width / 2, -sourceImage.Height / 2, sourceImage.Width + Enlarging ,
+					sourceImage.Height + (int)((double)sourceImage.Height * (double)Enlarging / (double)sourceImage.Width));
+			else*/
 			g.DrawImage (sourceImage, -sourceImage.Width / 2, -sourceImage.Height / 2);
+
 			g.Dispose ();
 
 			// Контроль

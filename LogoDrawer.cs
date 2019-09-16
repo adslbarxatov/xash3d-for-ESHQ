@@ -1104,7 +1104,6 @@ namespace ESHQSetupStub
 			backHidingBrush2.Dispose ();
 			backPen.Dispose ();
 			logo1Font.Dispose ();
-			//logo2Font.Dispose ();
 			headerFont.Dispose ();
 			textFont.Dispose ();
 			g.Dispose ();
@@ -1119,8 +1118,10 @@ namespace ESHQSetupStub
 				}
 			else if (extended == 4)
 				{
-				logo4a.Dispose ();
-				logo4b.Dispose ();
+				if (logo4a != null)
+					logo4a.Dispose ();
+				if (logo4b != null)
+					logo4b.Dispose ();
 				}
 
 			if (logo1 != null)
