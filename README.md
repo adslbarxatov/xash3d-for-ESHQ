@@ -95,3 +95,11 @@ This assembly completely adapted for building with MS VS 10.0 and newer (some fi
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
 
 This assembly is a fork of original Xash3D engine with the same license.
+
+#
+
+We've formalized our [Applications development policy (ADP)](https://vk.com/@rdaaow_fupl-adp).
+We're strongly recommend reading it before using our products.
+
+Мы формализовали нашу [Политику разработки приложений (ADP)](https://vk.com/@rdaaow_fupl-adp).
+Настоятельно рекомендуем ознакомиться с ней перед использованием наших продуктов.
