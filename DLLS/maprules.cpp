@@ -202,9 +202,9 @@ private:
 LINK_ENTITY_TO_CLASS( game_end, CGameEnd );
 
 
-void CGameEnd::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	if ( !CanFireForActivator( pActivator ) )
+void CGameEnd::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
+	{
+	if (!CanFireForActivator (pActivator))
 		return;
 
 	if (pActivator->IsPlayer () && !g_pGameRules->IsMultiplayer ())	// Фрагмент для singleplayer
@@ -215,7 +215,7 @@ void CGameEnd::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 		{
 		g_pGameRules->EndMultiplayerGame();
 		}
-}
+	}
 
 
 //

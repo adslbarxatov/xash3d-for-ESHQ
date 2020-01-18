@@ -978,6 +978,7 @@ class CMomentaryDoor : public CBaseToggle
 
 		BYTE	m_bMoveSnd;			// sound a door makes while moving	
 		BYTE	m_bStopSnd;			// sound a door makes when it stops
+		float	oldSoundValue;		// Значение, используемое для контроля состояния звука двери
 	};
 
 LINK_ENTITY_TO_CLASS (momentary_door, CMomentaryDoor);
@@ -1023,7 +1024,6 @@ void CMomentaryDoor::Spawn (void)
 
 void CMomentaryDoor::Precache (void)
 	{
-
 	// set the door's "in-motion" sound
 	switch (m_bMoveSnd)
 		{
@@ -1148,22 +1148,35 @@ void CMomentaryDoor::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 	if (value > 1.0)
 		value = 1.0;
-	Vector move = m_vecPosition1 + (value * (m_vecPosition2 - m_vecPosition1));
+	if (value < -1.0)
+		value = -1.0;
 
+	Vector move = m_vecPosition1 + (abs (value) * (m_vecPosition2 - m_vecPosition1));
 	Vector delta = move - pev->origin;
 	float speed = delta.Length() * 10;
 
-	if (speed != 0)
+	if (value != 0)
 		{
-		// This entity only thinks when it moves, so if it's thinking, it's in the process of moving
-		// play the sound when it starts moving
-		if (pev->nextthink < pev->ltime || pev->nextthink == 0)
+		//if ((value > 0) && ((pev->nextthink < pev->ltime) || (pev->nextthink == 0)))	// Не работает
+
+		// oldSoundValue, равное нулю, означает, что движение начато только что
+		// разные знаки означают, что изменено направление движения
+		// в обоих случаях звук нужно перезапустить
+		if ((oldSoundValue == 0.0f) || (oldSoundValue * value < 0))
+			{
+			STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
 			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_MEDIUM);
+			}
 
 		LinearMove (move, speed);
-		SetMoveDone (&CMomentaryDoor::MomentaryMoveDone);
+		}
+	else if (oldSoundValue != 0)	// Звук остановки невозможен в начале движения
+		{
+		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseArrived), 1, ATTN_MEDIUM);
 		}
 
+	oldSoundValue = value;			// Обновление значения
 	}
 
 void CMomentaryDoor::MomentaryMoveDone (void)
