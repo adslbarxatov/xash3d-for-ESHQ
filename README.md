@@ -80,7 +80,7 @@ may be useful for developers with the same mods' plots.
 
 Unfortunately, we cannot fix some bugs yet:
 
-_1. 'momentary_rot_button' bug: infinite cycle for loopable door sounds._
+1. ~'momentary_rot_button' bug: infinite cycle for loopable door sounds~ (fixed).
 
 2. 'func_pushable' bug: totally incorrect collision box.
 
