@@ -350,188 +350,101 @@ void CBaseDoor :: SetToggleState (int state)
 void CBaseDoor::Precache (void)
 	{
 	char *pszSound;
+	char precacheBuf[32];
+	precacheBuf[0] = '\0';
 
 	// set the door's "in-motion" sound
 	switch (m_bMoveSnd)
 		{
-	case	0:
-		pev->noiseMoving = ALLOC_STRING("common/null.wav");
-		break;
-	case	1:
-		PRECACHE_SOUND ("doors/doormove1.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove1.wav");
-		break;
-	case	2:
-		PRECACHE_SOUND ("doors/doormove2.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove2.wav");
-		break;
-	case	3:
-		PRECACHE_SOUND ("doors/doormove3.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove3.wav");
-		break;
-	case	4:
-		PRECACHE_SOUND ("doors/doormove4.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove4.wav");
-		break;
-	case	5:
-		PRECACHE_SOUND ("doors/doormove5.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove5.wav");
-		break;
-	case	6:
-		PRECACHE_SOUND ("doors/doormove6.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove6.wav");
-		break;
-	case	7:
-		PRECACHE_SOUND ("doors/doormove7.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove7.wav");
-		break;
-	case	8:
-		PRECACHE_SOUND ("doors/doormove8.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove8.wav");
-		break;
-	case	9:
-		PRECACHE_SOUND ("doors/doormove9.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove9.wav");
-		break;
-	case	10:
-		PRECACHE_SOUND ("doors/doormove10.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove10.wav");
-		break;
-	case	11:
-		PRECACHE_SOUND ("doors/doormove11.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove11.wav");
-		break;
-	case	12:
-		PRECACHE_SOUND ("doors/doormove12.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove12.wav");
-		break;
-	default:
-		pev->noiseMoving = ALLOC_STRING("common/null.wav");
-		break;
+		case	0:
+		default:
+			pev->noiseMoving = ALLOC_STRING("common/null.wav");
+			break;
+
+		case	1:
+			/*PRECACHE_SOUND ("doors/doormove1.wav");
+			pev->noiseMoving = ALLOC_STRING("doors/doormove1.wav");
+			break;*/
+		case	2:
+		case	3:
+		case	4:
+		case	5:
+		case	6:
+		case	7:
+		case	8:
+		case	10:
+		case	11:
+		case	12:
+			sprintf (precacheBuf, "doors/doormove%i.wav", m_bMoveSnd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseMoving = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	9:
+			sprintf (precacheBuf, "doors/doormove9_%i.wav", RANDOM_LONG (1, 3));
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseMoving = ALLOC_STRING(precacheBuf);
+			break;
 		}
 
 	// Установка звука остановки в открытом состоянии/Общего звука остановки
 	switch (m_bStopSnd)
 		{
-	case	0:
-	default:
-		pev->noiseArrived = ALLOC_STRING("common/null.wav");
-		break;
+		case	0:
+		default:
+			pev->noiseArrived = ALLOC_STRING("common/null.wav");
+			break;
 
-	case	1:
-		PRECACHE_SOUND ("doors/doorstop1.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop1.wav");
-		break;
-	case	2:
-		PRECACHE_SOUND ("doors/doorstop2.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop2.wav");
-		break;
-	case	3:
-		PRECACHE_SOUND ("doors/doorstop3.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop3.wav");
-		break;
-	case	4:
-		PRECACHE_SOUND ("doors/doorstop4.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop4.wav");
-		break;
-	case	5:
-		PRECACHE_SOUND ("doors/doorstop5.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop5.wav");
-		break;
-	case	6:
-		PRECACHE_SOUND ("doors/doorstop6.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop6.wav");
-		break;
-	case	7:
-		PRECACHE_SOUND ("doors/doorstop7.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop7.wav");
-		break;
-	case	8:
-		PRECACHE_SOUND ("doors/doorstop8.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop8.wav");
-		break;
-	case	9:
-		PRECACHE_SOUND ("doors/doorstop9.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop9.wav");
-		break;
-	case	10:
-		PRECACHE_SOUND ("doors/doorstop10.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop10.wav");
-		break;
-	case	11:
-		PRECACHE_SOUND ("doors/doorstop11.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop11.wav");
-		break;
-	case	12:
-		PRECACHE_SOUND ("doors/doorstop12.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop12.wav");
-		break;
+		case	1:
+		case	2:
+		case	3:
+		case	4:
+		case	5:
+		case	6:
+		case	7:
+		case	8:
+		case	9:
+		case	10:
+		case	11:
+		case	12:
+			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStopSnd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseArrived = ALLOC_STRING(precacheBuf);
+			break;
 		}
 
 	// Установка звука остановки в закрытом состоянии (если есть)
 	switch (m_bStop2Snd)
 		{
 		// Для обеспечения совместимости состояние "нет звука" передвинуто
-	case	-1:
-	default:
-		pev->noiseReturned = ALLOC_STRING("common/null.wav");
-		break;
+		case	-1:
+		default:
+			pev->noiseReturned = ALLOC_STRING("common/null.wav");
+			break;
 
-		// Эмуляция отсутствия этой настройки
-	case	0:
-		// Звук уже был кэширован
-		pev->noiseReturned = ALLOC_STRING ((char*)STRING(pev->noiseArrived));
-		break;
+			// Эмуляция отсутствия этой настройки
+		case	0:
+			// Звук уже был кэширован
+			pev->noiseReturned = ALLOC_STRING ((char*)STRING(pev->noiseArrived));
+			break;
 
-		// Далее - стандартная процедура
-	case	1:
-		PRECACHE_SOUND ("doors/doorstop1.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop1.wav");
-		break;
-	case	2:
-		PRECACHE_SOUND ("doors/doorstop2.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop2.wav");
-		break;
-	case	3:
-		PRECACHE_SOUND ("doors/doorstop3.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop3.wav");
-		break;
-	case	4:
-		PRECACHE_SOUND ("doors/doorstop4.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop4.wav");
-		break;
-	case	5:
-		PRECACHE_SOUND ("doors/doorstop5.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop5.wav");
-		break;
-	case	6:
-		PRECACHE_SOUND ("doors/doorstop6.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop6.wav");
-		break;
-	case	7:
-		PRECACHE_SOUND ("doors/doorstop7.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop7.wav");
-		break;
-	case	8:
-		PRECACHE_SOUND ("doors/doorstop8.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop8.wav");
-		break;
-	case	9:
-		PRECACHE_SOUND ("doors/doorstop9.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop9.wav");
-		break;
-	case	10:
-		PRECACHE_SOUND ("doors/doorstop10.wav");
-		pev->noiseReturned = ALLOC_STRING("doors/doorstop10.wav");
-		break;
-	case	11:
-		PRECACHE_SOUND ("doors/doorstop11.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop11.wav");
-		break;
-	case	12:
-		PRECACHE_SOUND ("doors/doorstop12.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop12.wav");
-		break;
+			// Далее - стандартная процедура
+		case	1:
+		case	2:
+		case	3:
+		case	4:
+		case	5:
+		case	6:
+		case	7:
+		case	8:
+		case	9:
+		case	10:
+		case	11:
+		case	12:
+			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStop2Snd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseReturned = ALLOC_STRING(precacheBuf);
+			break;
 		}
 
 	// Контроль обратного состояния
@@ -561,31 +474,31 @@ void CBaseDoor::Precache (void)
 
 	switch (m_bLockedSentence)
 		{
-	case 1: m_ls.sLockedSentence = ALLOC_STRING("NA"); break; // access denied
-	case 2: m_ls.sLockedSentence = ALLOC_STRING("ND"); break; // security lockout
-	case 3: m_ls.sLockedSentence = ALLOC_STRING("NF"); break; // blast door
-	case 4: m_ls.sLockedSentence = ALLOC_STRING("NFIRE"); break; // fire door
-	case 5: m_ls.sLockedSentence = ALLOC_STRING("NCHEM"); break; // chemical door
-	case 6: m_ls.sLockedSentence = ALLOC_STRING("NRAD"); break; // radiation door
-	case 7: m_ls.sLockedSentence = ALLOC_STRING("NCON"); break; // gen containment
-	case 8: m_ls.sLockedSentence = ALLOC_STRING("NH"); break; // maintenance door
-	case 9: m_ls.sLockedSentence = ALLOC_STRING("NG"); break; // broken door
+		case 1: m_ls.sLockedSentence = ALLOC_STRING("NA"); break; // access denied
+		case 2: m_ls.sLockedSentence = ALLOC_STRING("ND"); break; // security lockout
+		case 3: m_ls.sLockedSentence = ALLOC_STRING("NF"); break; // blast door
+		case 4: m_ls.sLockedSentence = ALLOC_STRING("NFIRE"); break; // fire door
+		case 5: m_ls.sLockedSentence = ALLOC_STRING("NCHEM"); break; // chemical door
+		case 6: m_ls.sLockedSentence = ALLOC_STRING("NRAD"); break; // radiation door
+		case 7: m_ls.sLockedSentence = ALLOC_STRING("NCON"); break; // gen containment
+		case 8: m_ls.sLockedSentence = ALLOC_STRING("NH"); break; // maintenance door
+		case 9: m_ls.sLockedSentence = ALLOC_STRING("NG"); break; // broken door
 
-	default: m_ls.sLockedSentence = 0; break;
+		default: m_ls.sLockedSentence = 0; break;
 		}
 
 	switch (m_bUnlockedSentence)
 		{
-	case 1: m_ls.sUnlockedSentence = ALLOC_STRING("EA"); break; // access granted
-	case 2: m_ls.sUnlockedSentence = ALLOC_STRING("ED"); break; // security door
-	case 3: m_ls.sUnlockedSentence = ALLOC_STRING("EF"); break; // blast door
-	case 4: m_ls.sUnlockedSentence = ALLOC_STRING("EFIRE"); break; // fire door
-	case 5: m_ls.sUnlockedSentence = ALLOC_STRING("ECHEM"); break; // chemical door
-	case 6: m_ls.sUnlockedSentence = ALLOC_STRING("ERAD"); break; // radiation door
-	case 7: m_ls.sUnlockedSentence = ALLOC_STRING("ECON"); break; // gen containment
-	case 8: m_ls.sUnlockedSentence = ALLOC_STRING("EH"); break; // maintenance door
+		case 1: m_ls.sUnlockedSentence = ALLOC_STRING("EA"); break; // access granted
+		case 2: m_ls.sUnlockedSentence = ALLOC_STRING("ED"); break; // security door
+		case 3: m_ls.sUnlockedSentence = ALLOC_STRING("EF"); break; // blast door
+		case 4: m_ls.sUnlockedSentence = ALLOC_STRING("EFIRE"); break; // fire door
+		case 5: m_ls.sUnlockedSentence = ALLOC_STRING("ECHEM"); break; // chemical door
+		case 6: m_ls.sUnlockedSentence = ALLOC_STRING("ERAD"); break; // radiation door
+		case 7: m_ls.sUnlockedSentence = ALLOC_STRING("ECON"); break; // gen containment
+		case 8: m_ls.sUnlockedSentence = ALLOC_STRING("EH"); break; // maintenance door
 
-	default: m_ls.sUnlockedSentence = 0; break;
+		default: m_ls.sUnlockedSentence = 0; break;
 		}
 	}
 
@@ -1024,98 +937,63 @@ void CMomentaryDoor::Spawn (void)
 
 void CMomentaryDoor::Precache (void)
 	{
+	char precacheBuf[32];
+
 	// set the door's "in-motion" sound
 	switch (m_bMoveSnd)
 		{
-	case	0:
-		pev->noiseMoving = ALLOC_STRING("common/null.wav");
-		break;
-	case	1:
-		PRECACHE_SOUND ("doors/doormove1.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove1.wav");
-		break;
-	case	2:
-		PRECACHE_SOUND ("doors/doormove2.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove2.wav");
-		break;
-	case	3:
-		PRECACHE_SOUND ("doors/doormove3.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove3.wav");
-		break;
-	case	4:
-		PRECACHE_SOUND ("doors/doormove4.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove4.wav");
-		break;
-	case	5:
-		PRECACHE_SOUND ("doors/doormove5.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove5.wav");
-		break;
-	case	6:
-		PRECACHE_SOUND ("doors/doormove6.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove6.wav");
-		break;
-	case	7:
-		PRECACHE_SOUND ("doors/doormove7.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove7.wav");
-		break;
-	case	8:
-		PRECACHE_SOUND ("doors/doormove8.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove8.wav");
-		break;
-	default:
-		pev->noiseMoving = ALLOC_STRING("common/null.wav");
-		break;
+		case	0:
+		default:
+			pev->noiseMoving = ALLOC_STRING("common/null.wav");
+			break;
+
+		case	1:
+		case	2:
+		case	3:
+		case	4:
+		case	5:
+		case	6:
+		case	7:
+		case	8:
+		case	10:
+		case	11:
+		case	12:
+			sprintf (precacheBuf, "doors/doormove%i.wav", m_bMoveSnd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseMoving = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	9:
+			sprintf (precacheBuf, "doors/doormove9_%i.wav", RANDOM_LONG (1, 3));
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseMoving = ALLOC_STRING(precacheBuf);
+			break;
 		}
 
 	// set the door's 'reached destination' stop sound
 	switch (m_bStopSnd)
 		{
-	case	0:
-		pev->noiseArrived = ALLOC_STRING("common/null.wav");
-		break;
-	case	1:
-		PRECACHE_SOUND ("doors/doorstop1.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop1.wav");
-		break;
-	case	2:
-		PRECACHE_SOUND ("doors/doorstop2.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop2.wav");
-		break;
-	case	3:
-		PRECACHE_SOUND ("doors/doorstop3.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop3.wav");
-		break;
-	case	4:
-		PRECACHE_SOUND ("doors/doorstop4.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop4.wav");
-		break;
-	case	5:
-		PRECACHE_SOUND ("doors/doorstop5.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop5.wav");
-		break;
-	case	6:
-		PRECACHE_SOUND ("doors/doorstop6.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop6.wav");
-		break;
-	case	7:
-		PRECACHE_SOUND ("doors/doorstop7.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop7.wav");
-		break;
-	case	8:
-		PRECACHE_SOUND ("doors/doorstop8.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop8.wav");
-		break;
-	case	9:
-		PRECACHE_SOUND ("doors/doorstop9.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop9.wav");
-		break;
-	case	10:
-		PRECACHE_SOUND ("doors/doorstop10.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop10.wav");
-		break;
-	default:
-		pev->noiseArrived = ALLOC_STRING("common/null.wav");
-		break;
+		case	0:
+		default:
+			pev->noiseArrived = ALLOC_STRING("common/null.wav");
+			break;
+
+		case	1:
+		case	2:
+		case	3:
+		case	4:
+		case	5:
+		case	6:
+		case	7:
+		case	8:
+		case	9:
+		case	10:
+		case	11:
+		case	12:
+			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStopSnd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseArrived = ALLOC_STRING(precacheBuf);
+			break;
 		}
 	}
 
