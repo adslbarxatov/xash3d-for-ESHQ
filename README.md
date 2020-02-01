@@ -1,5 +1,5 @@
-# Xash3d for ESHQ and ES:FA v 8.7
-### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mod v 8.7
+# Xash3d for ESHQ and ES:FA mods v 8.8
+### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 8.8
 
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 

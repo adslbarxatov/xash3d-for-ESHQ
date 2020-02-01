@@ -362,9 +362,6 @@ void CBaseDoor::Precache (void)
 			break;
 
 		case	1:
-			/*PRECACHE_SOUND ("doors/doormove1.wav");
-			pev->noiseMoving = ALLOC_STRING("doors/doormove1.wav");
-			break;*/
 		case	2:
 		case	3:
 		case	4:
@@ -372,16 +369,22 @@ void CBaseDoor::Precache (void)
 		case	6:
 		case	7:
 		case	8:
-		case	10:
 		case	11:
 		case	12:
+		case	13:
 			sprintf (precacheBuf, "doors/doormove%i.wav", m_bMoveSnd);
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseMoving = ALLOC_STRING(precacheBuf);
 			break;
 
 		case	9:
-			sprintf (precacheBuf, "doors/doormove9_%i.wav", RANDOM_LONG (1, 3));
+			sprintf (precacheBuf, "doors/doormove9%c.wav", 'a' + RANDOM_LONG (0, 2));
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseMoving = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	10:
+			sprintf (precacheBuf, "doors/doormove10%c.wav", 'a' + RANDOM_LONG (0, 1));
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseMoving = ALLOC_STRING(precacheBuf);
 			break;
@@ -407,6 +410,7 @@ void CBaseDoor::Precache (void)
 		case	10:
 		case	11:
 		case	12:
+		case	13:
 			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStopSnd);
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseArrived = ALLOC_STRING(precacheBuf);
@@ -441,6 +445,7 @@ void CBaseDoor::Precache (void)
 		case	10:
 		case	11:
 		case	12:
+		case	13:
 			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStop2Snd);
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseReturned = ALLOC_STRING(precacheBuf);
@@ -955,16 +960,22 @@ void CMomentaryDoor::Precache (void)
 		case	6:
 		case	7:
 		case	8:
-		case	10:
 		case	11:
 		case	12:
+		case	13:
 			sprintf (precacheBuf, "doors/doormove%i.wav", m_bMoveSnd);
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseMoving = ALLOC_STRING(precacheBuf);
 			break;
 
 		case	9:
-			sprintf (precacheBuf, "doors/doormove9_%i.wav", RANDOM_LONG (1, 3));
+			sprintf (precacheBuf, "doors/doormove9%c.wav", 'a' + RANDOM_LONG (0, 2));
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseMoving = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	10:
+			sprintf (precacheBuf, "doors/doormove10%c.wav", 'a' + RANDOM_LONG (0, 1));
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseMoving = ALLOC_STRING(precacheBuf);
 			break;
@@ -990,6 +1001,7 @@ void CMomentaryDoor::Precache (void)
 		case	10:
 		case	11:
 		case	12:
+		case	13:
 			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStopSnd);
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseArrived = ALLOC_STRING(precacheBuf);
