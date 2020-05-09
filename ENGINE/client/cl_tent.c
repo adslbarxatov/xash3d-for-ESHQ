@@ -175,7 +175,7 @@ void CL_TEntPlaySound( TEMPENTITY *pTemp, float damp )
 		Q_snprintf( soundname, sizeof( soundname ), "debris/metal%i.wav", Com_RandomLong( 1, 6 ));
 		break;
 	case BOUNCE_FLESH:
-		Q_snprintf( soundname, sizeof( soundname ), "debris/flesh%i.wav", Com_RandomLong( 1, 7 ));
+		Q_snprintf( soundname, sizeof( soundname ), "debris/flesh%i.wav", Com_RandomLong( 2, 7 ));
 		break;
 	case BOUNCE_WOOD:
 		Q_snprintf( soundname, sizeof( soundname ), "debris/wood%i.wav", Com_RandomLong( 1, 3 ));

@@ -407,11 +407,16 @@ void CBaseDoor::Precache (void)
 		case	7:
 		case	8:
 		case	9:
-		case	10:
 		case	11:
 		case	12:
-		case	13:
+		//case	13:
 			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStopSnd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseArrived = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	10:
+			sprintf (precacheBuf, "doors/doorstop10%c.wav", 'a' + RANDOM_LONG (0, 1));
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseArrived = ALLOC_STRING(precacheBuf);
 			break;
@@ -442,11 +447,16 @@ void CBaseDoor::Precache (void)
 		case	7:
 		case	8:
 		case	9:
-		case	10:
 		case	11:
 		case	12:
-		case	13:
+		//case	13:
 			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStop2Snd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseReturned = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	10:
+			sprintf (precacheBuf, "doors/doorstop10%c.wav", 'a' + RANDOM_LONG (0, 1));
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseReturned = ALLOC_STRING(precacheBuf);
 			break;
@@ -851,8 +861,7 @@ void CRotDoor::Spawn (void)
 	if (FBitSet (pev->spawnflags, SF_DOOR_START_OPEN))
 		{	// swap pos1 and pos2, put door at pos2, invert movement direction
 		pev->angles = m_vecAngle2;
-		m_vecAngle2 = m_vecAngle1;	// Исправляем ошибку с обменом переменных (исходный вариант
-		// устанавливает им одинаковые значения)
+		m_vecAngle2 = m_vecAngle1;	// Исправляем ошибку с обменом переменных (исходный вариант устанавливает им одинаковые значения)
 		m_vecAngle1 = pev->angles;
 		pev->movedir = pev->movedir * -1;
 		}
@@ -998,11 +1007,16 @@ void CMomentaryDoor::Precache (void)
 		case	7:
 		case	8:
 		case	9:
-		case	10:
 		case	11:
 		case	12:
-		case	13:
+		//case	13:
 			sprintf (precacheBuf, "doors/doorstop%i.wav", m_bStopSnd);
+			PRECACHE_SOUND (precacheBuf);
+			pev->noiseArrived = ALLOC_STRING(precacheBuf);
+			break;
+
+		case	10:
+			sprintf (precacheBuf, "doors/doorstop10%c.wav", 'a' + RANDOM_LONG (0, 1));
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseArrived = ALLOC_STRING(precacheBuf);
 			break;

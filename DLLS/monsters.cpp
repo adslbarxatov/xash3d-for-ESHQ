@@ -2135,6 +2135,7 @@ int CBaseMonster::TaskIsRunning (void)
 //=========================================================
 int CBaseMonster::IRelationship (CBaseEntity *pTarget)
 	{
+	// Who vvv / Whom >>>
 	static int iEnemy[14][14] =
 		{			 // NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 HASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN
 		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
@@ -2143,7 +2144,7 @@ int CBaseMonster::IRelationship (CBaseEntity *pTarget)
 		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_HT	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO	},
 		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_HT	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
 		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-		/*HUMANASSASSIN*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_NO	,R_NO	,R_NO	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
+		/*HUMANASSASSIN*/{ R_NO	,R_DL	,R_HT	,R_HT	,R_HT	,R_HT	,R_NO	,R_NO	,R_NO	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
 		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
 		/*ALIENPREY */	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO	},
 		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO	},
@@ -2621,13 +2622,23 @@ void CBaseMonster :: HandleAnimEvent (MonsterEvent_t *pEvent)
 	case MONSTER_EVENT_BODYDROP_HEAVY:
 		if (pev->flags & FL_ONGROUND)
 			{
-			if (RANDOM_LONG (0, 1) == 0)
+			switch (RANDOM_LONG (1, 4))
 				{
-				EMIT_SOUND_DYN (ENT(pev), CHAN_BODY, "common/bodydrop3.wav", 1, ATTN_MEDIUM, 0, 90);
-				}
-			else
-				{
-				EMIT_SOUND_DYN (ENT(pev), CHAN_BODY, "common/bodydrop4.wav", 1, ATTN_MEDIUM, 0, 90);
+				case 1:
+					EMIT_SOUND_DYN (ENT(pev), CHAN_BODY, "common/bodydrop1.wav", 1, ATTN_MEDIUM, 0, 90);
+					break;
+
+				case 2:
+					EMIT_SOUND_DYN (ENT(pev), CHAN_BODY, "common/bodydrop2.wav", 1, ATTN_MEDIUM, 0, 90);
+					break;
+
+				case 3:
+					EMIT_SOUND_DYN (ENT(pev), CHAN_BODY, "common/bodydrop3.wav", 1, ATTN_MEDIUM, 0, 90);
+					break;
+
+				case 4:
+					EMIT_SOUND_DYN (ENT(pev), CHAN_BODY, "common/bodydrop4.wav", 1, ATTN_MEDIUM, 0, 90);
+					break;
 				}
 			}
 		break;
@@ -2635,13 +2646,23 @@ void CBaseMonster :: HandleAnimEvent (MonsterEvent_t *pEvent)
 	case MONSTER_EVENT_BODYDROP_LIGHT:
 		if (pev->flags & FL_ONGROUND)
 			{
-			if (RANDOM_LONG (0, 1) == 0)
+			switch (RANDOM_LONG (1, 4))
 				{
-				EMIT_SOUND (ENT(pev), CHAN_BODY, "common/bodydrop3.wav", 1, ATTN_MEDIUM);
-				}
-			else
-				{
-				EMIT_SOUND (ENT(pev), CHAN_BODY, "common/bodydrop4.wav", 1, ATTN_MEDIUM);
+				case 1:
+					EMIT_SOUND (ENT(pev), CHAN_BODY, "common/bodydrop1.wav", 1, ATTN_MEDIUM);
+					break;
+
+				case 2:
+					EMIT_SOUND (ENT(pev), CHAN_BODY, "common/bodydrop2.wav", 1, ATTN_MEDIUM);
+					break;
+
+				case 3:
+					EMIT_SOUND (ENT(pev), CHAN_BODY, "common/bodydrop3.wav", 1, ATTN_MEDIUM);
+					break;
+
+				case 4:
+					EMIT_SOUND (ENT(pev), CHAN_BODY, "common/bodydrop4.wav", 1, ATTN_MEDIUM);
+					break;
 				}
 			}
 		break;
@@ -3353,9 +3374,9 @@ CBaseEntity* CBaseMonster :: DropItem (char *pszItemName, const Vector &vecPos, 
 
 	if (pItem)
 		{
-		// do we want this behavior to be default?! (sjb)
-		pItem->pev->velocity = pev->velocity;
-		pItem->pev->avelocity = Vector (0, RANDOM_FLOAT (0, 100), 0);
+		pItem->pev->origin = Vector (pev->origin.x, pev->origin.y, pItem->pev->origin.z);	// ѕринудительное расположение над инициатором
+		pItem->pev->velocity = Vector (0, 0, RANDOM_FLOAT (0, 100));						// «апрет на боковые смещени€
+		pItem->pev->avelocity = Vector (0, RANDOM_FLOAT (100, 300), 0);
 		return pItem;
 		}
 	else

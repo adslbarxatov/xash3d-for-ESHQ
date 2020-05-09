@@ -709,6 +709,9 @@ void ClientPrecache( void )
 	PRECACHE_SOUND("player/pl_metal2.wav");
 	PRECACHE_SOUND("player/pl_metal3.wav");
 	PRECACHE_SOUND("player/pl_metal4.wav");
+	PRECACHE_SOUND("player/pl_metal5.wav");
+	PRECACHE_SOUND("player/pl_metal6.wav");
+	PRECACHE_SOUND("player/pl_metal7.wav");
 
 	PRECACHE_SOUND("player/pl_dirt1.wav");		// Движение по песку
 	PRECACHE_SOUND("player/pl_dirt2.wav");
@@ -787,11 +790,11 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
 
 // player gib sounds
-	PRECACHE_SOUND("common/bodysplat.wav");		               
-	PRECACHE_SOUND("common/bodysplat2.wav");		               
+	PRECACHE_SOUND("common/bodysplat.wav");
+	PRECACHE_SOUND("common/bodysplat2.wav");
+	PRECACHE_SOUND("common/bodysplat3.wav");
 
 // player pain sounds
-	PRECACHE_SOUND("player/pl_pain2.wav");
 	PRECACHE_SOUND("player/pl_pain4.wav");
 	PRECACHE_SOUND("player/pl_pain5.wav");
 	PRECACHE_SOUND("player/pl_pain6.wav");

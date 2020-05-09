@@ -260,15 +260,16 @@ void CCycler :: DamageSound (void)		// Скопировано из CBreakable
 			break;
 
 		case matMetal:
-			rgpsz[0] = "player/pl_metal1.wav";
-			rgpsz[1] = "player/pl_metal2.wav";
-			i = 2;
+			rgpsz[0] = "player/pl_metal5.wav";
+			rgpsz[1] = "player/pl_metal6.wav";
+			rgpsz[2] = "player/pl_metal7.wav";
+			i = 3;
 			break;
 
 		case matFlesh:
-			rgpsz[0] = "debris/flesh1.wav";
-			rgpsz[1] = "debris/flesh2.wav";
-			rgpsz[2] = "debris/flesh3.wav";
+			rgpsz[0] = "debris/flesh2.wav";
+			rgpsz[1] = "debris/flesh3.wav";
+			rgpsz[2] = "debris/flesh4.wav";
 			rgpsz[3] = "debris/flesh5.wav";
 			rgpsz[4] = "debris/flesh6.wav";
 			rgpsz[5] = "debris/flesh7.wav";

@@ -189,9 +189,9 @@ const char *CBreakable::pSoundsWood[] =
 
 const char *CBreakable::pSoundsFlesh[] = 
 	{
-	"debris/flesh1.wav",
 	"debris/flesh2.wav",
 	"debris/flesh3.wav",
+	"debris/flesh4.wav",
 	"debris/flesh5.wav",
 	"debris/flesh6.wav",
 	"debris/flesh7.wav",
@@ -407,9 +407,9 @@ void CBreakable::DamageSound (void)
 		break;
 
 	case matFlesh:
-		rgpsz[0] = "debris/flesh1.wav";
-		rgpsz[1] = "debris/flesh2.wav";
-		rgpsz[2] = "debris/flesh3.wav";
+		rgpsz[0] = "debris/flesh2.wav";
+		rgpsz[1] = "debris/flesh3.wav";
+		rgpsz[2] = "debris/flesh4.wav";
 		rgpsz[3] = "debris/flesh5.wav";
 		rgpsz[4] = "debris/flesh6.wav";
 		rgpsz[5] = "debris/flesh7.wav";

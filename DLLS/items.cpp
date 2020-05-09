@@ -421,13 +421,12 @@ class CItemSecurity : public CItem
 	void Precache (void)
 		{
 		PRECACHE_MODEL ("models/w_security.mdl");
-		//PRECACHE_SOUND ("items/9mmclip1.wav");
 		PRECACHE_SOUND ("debris/flesh1.wav");
 		}
 
 	int MyTouch (CBasePlayer *pPlayer)
 		{
-		EMIT_SOUND (pPlayer->edict(), CHAN_ITEM, /*"items/9mmclip1.wav"*/ "debris/flesh1.wav", 1, ATTN_MEDIUM);
+		EMIT_SOUND (pPlayer->edict(), CHAN_ITEM, "debris/flesh1.wav", 1, ATTN_MEDIUM);
 		pPlayer->m_rgItems[ITEM_SECURITY] += 1;
 
 		// Настройка стиля отображения сообщений

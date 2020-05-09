@@ -298,10 +298,18 @@ void CBaseMonster :: GibMonster (void)
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
 
-	if (RANDOM_LONG (0, 1))
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_MEDIUM);
-	else
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat2.wav", 1, ATTN_MEDIUM);		
+	switch (RANDOM_LONG (1, 3))
+		{
+		case 1:
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_MEDIUM);
+			break;
+		case 2:
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat2.wav", 1, ATTN_MEDIUM);
+			break;
+		case 3:
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat3.wav", 1, ATTN_MEDIUM);
+			break;
+		}
 
 	// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
 	if (HasHumanGibs())

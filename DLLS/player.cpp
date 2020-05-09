@@ -243,18 +243,28 @@ LINK_ENTITY_TO_CLASS( player, CBasePlayer );
 
 
 void CBasePlayer :: Pain( void )
-{
-	float	flRndSound;//sound randomizer
-
-	flRndSound = RANDOM_FLOAT ( 0 , 1 ); 
+	{
+	long flRndSound = RANDOM_LONG (1, 5); 
 	
-	if ( flRndSound <= 0.33 )
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_MEDIUM);
-	else if ( flRndSound <= 0.66 )	
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_MEDIUM);
-	else
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_MEDIUM);
-}
+	switch (flRndSound)
+		{
+		case 1:
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain4.wav", 1, ATTN_MEDIUM);
+			break;
+
+		case 2:
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_MEDIUM);
+			break;
+
+		case 3:
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_MEDIUM);
+			break;
+
+		case 4:
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_MEDIUM);
+			break;
+		}
+	}
 
 /* 
  *
@@ -343,25 +353,19 @@ int TrainSpeed(int iSpeed, int iMax)
 
 void CBasePlayer :: DeathSound( void )
 {
-	// water death sounds
-	/*
-	if (pev->waterlevel == 3)
-	{
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_EVERYWHERE);
-		return;
-	}
-	*/
-
 	// temporarily using pain sounds for death sounds
 	switch (RANDOM_LONG(1,5)) 
 	{
-	case 1: 
+	case 1:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain4.wav", 1, ATTN_MEDIUM);
+		break;
+	case 2:
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_MEDIUM);
 		break;
-	case 2: 
+	case 3:
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_MEDIUM);
 		break;
-	case 3: 
+	case 4:
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_MEDIUM);
 		break;
 	}
@@ -2524,10 +2528,18 @@ void CBasePlayer::PostThink()
 			if ( flFallDamage > pev->health )
 			{//splat
 				// note: play on item channel because we play footstep landing on body channel
-				if (RANDOM_LONG (0, 1))
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_MEDIUM);
-				else
-					EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat2.wav", 1, ATTN_MEDIUM);
+				switch (RANDOM_LONG (1, 3))
+					{
+					case 1:
+						EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_MEDIUM);
+						break;
+					case 2:
+						EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat2.wav", 1, ATTN_MEDIUM);
+						break;
+					case 3:
+						EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat3.wav", 1, ATTN_MEDIUM);
+						break;
+					}
 			}
 
 			if ( flFallDamage > 0 )

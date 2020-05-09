@@ -1,5 +1,5 @@
-# Xash3d for ESHQ and ES:FA mods v 8.9
-### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 8.9
+# Xash3d for ESHQ and ES:FA mods v 8.15
+### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 8.15
 
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
@@ -75,6 +75,8 @@ may be useful for developers with the same mods' plots.
 33. Added 'Locked sequence' flag for all monsters. When set, engine will loop the sequence that is specified in monster's settings before its first damage, death or 'scripted_sequence' call. This feature works without 'scripted_sequence' entities.
 
 34. Momentary doors' sounds behaviour reviewed: sounds of moving and stop will work properly now.
+
+35. Fixed bug with stucking weapons that can be dropped by dead h_grunts.
 
 ## Known bugs
 

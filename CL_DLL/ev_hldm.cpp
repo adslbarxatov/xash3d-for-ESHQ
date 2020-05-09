@@ -155,9 +155,10 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		cnt = 2;
 		break;
 	case CHAR_TEX_METAL: fvol = 0.9; fvolbar = 0.3;
-		rgsz[0] = "player/pl_metal1.wav";
-		rgsz[1] = "player/pl_metal2.wav";
-		cnt = 2;
+		rgsz[0] = "player/pl_metal5.wav";
+		rgsz[1] = "player/pl_metal6.wav";
+		rgsz[2] = "player/pl_metal7.wav";
+		cnt = 3;
 		break;
 	case CHAR_TEX_DIRT:	fvol = 0.9; fvolbar = 0.1;
 		rgsz[0] = "player/pl_dirt1.wav";

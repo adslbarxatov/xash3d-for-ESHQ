@@ -280,8 +280,8 @@ void CHGrunt :: GibMonster (void)
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
 
-	if (GetBodygroup (2) != 2)
-		{// throw a gun if the grunt has one
+	if (GetBodygroup (2) != 2)	// Ёта зона, видимо, вообще не работает при текущих модел€х
+		{	// throw a gun if the grunt has one
 		GetAttachment (0, vecGunPos, vecGunAngles);
 
 		CBaseEntity *pGun;
@@ -295,9 +295,10 @@ void CHGrunt :: GibMonster (void)
 			}
 		if (pGun)
 			{
-			// „тобы в стенах реже застревали, уберЄм разброс по горизонтальным ос€м
-			pGun->pev->velocity = Vector (/*RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (-50, 50),*/ 0, 0, RANDOM_FLOAT (200, 300));
-			pGun->pev->avelocity = Vector (0, RANDOM_FLOAT (200, 400), 0);
+			// „тобы в стенах реже застревали, уберЄм разброс по горизонтальным ос€м и расположим оружие пр€мо над телом
+			pGun->pev->origin = Vector (pev->origin.x, pev->origin.y, pGun->pev->origin.z);
+			pGun->pev->velocity = Vector (0, 0, RANDOM_FLOAT (0, 100));
+			pGun->pev->avelocity = Vector (0, RANDOM_FLOAT (100, 300), 0);
 			}
 
 		if (FBitSet (pev->weapons, HGRUNT_GRENADELAUNCHER))
@@ -305,21 +306,11 @@ void CHGrunt :: GibMonster (void)
 			pGun = DropItem ("ammo_ARgrenades", vecGunPos, vecGunAngles);
 			if (pGun)
 				{
-				pGun->pev->velocity = Vector (/*RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (-50, 50),*/ 0, 0, RANDOM_FLOAT (200, 300));
-				pGun->pev->avelocity = Vector (0, RANDOM_FLOAT (200, 400), 0);
+				pGun->pev->origin = Vector (pev->origin.x, pev->origin.y, pGun->pev->origin.z);
+				pGun->pev->velocity = Vector (0, 0, RANDOM_FLOAT (0, 100));
+				pGun->pev->avelocity = Vector (0, RANDOM_FLOAT (100, 300), 0);
 				}
 			}
-
-		//  огда-нибудь разрешим солдату выбрасывать гранату при гибели
-		/*if (FBitSet (pev->weapons, HGRUNT_HANDGRENADE))
-		{
-		pGun = DropItem ("weapon_handgrenade", vecGunPos, vecGunAngles);
-		if (pGun)
-		{
-		pGun->pev->velocity = Vector (RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (-50, 50), RANDOM_FLOAT (200, 300));
-		pGun->pev->avelocity = Vector (0, RANDOM_FLOAT (200, 400), 0);
-		}
-		}*/
 		}
 
 	CBaseMonster :: GibMonster ();
@@ -355,10 +346,6 @@ BOOL CHGrunt :: FOkToSpeak (void)
 			return FALSE;
 			}
 		}
-
-	// if player is not in pvs, don't speak
-	//	if (FNullEnt (FIND_CLIENT_IN_PVS (edict ())))
-	//		return FALSE;
 
 	return TRUE;
 	}
