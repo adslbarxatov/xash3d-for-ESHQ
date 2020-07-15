@@ -1,10 +1,12 @@
-# Xash3d for ESHQ and ES:FA mods v 8.15
-### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 8.15
+# Xash3d for ESHQ and ES:FA mods v 9 and newer
+### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 9 and newer
 
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
 Modification based on old (from 2015) version of engine and may contain old bugs. But some new features
 may be useful for developers with the same mods' plots.
+
+
 
 ## Main changes:
 
@@ -78,6 +80,8 @@ may be useful for developers with the same mods' plots.
 
 35. Fixed bug with stucking weapons that can be dropped by dead h_grunts.
 
+
+
 ## Known bugs
 
 Unfortunately, we cannot fix some bugs yet:
@@ -98,10 +102,18 @@ This assembly is enough to launch Half-Life (WON) and some compatible mods.
 
 This assembly is a fork of original Xash3D engine with the same license.
 
-#
 
-We've formalized our [Applications development policy (ADP)](https://vk.com/@rdaaow_fupl-adp).
-We're strongly recommend reading it before using our products.
 
-Мы формализовали нашу [Политику разработки приложений (ADP)](https://vk.com/@rdaaow_fupl-adp).
-Настоятельно рекомендуем ознакомиться с ней перед использованием наших продуктов.
+## Development policy and EULA / Политика разработки и EULA
+
+This [Policy (ADP)](https://vk.com/@rdaaow_fupl-adp), its positions, conclusion, EULA and application methods
+describes general rules that we follow in all of our development processes, released applications and implemented
+ideas.
+**It must be acquainted by participants and users before using any of laboratory's products.
+By downloading them, you agree to this Policy**
+
+Данная [Политика (ADP)](https://vk.com/@rdaaow_fupl-adp), её положения, заключение, EULA и способы применения
+описывают общие правила, которым мы следуем во всех наших процессах разработки, вышедших в релиз приложениях
+и реализованных идеях.
+**Обязательна к ознакомлению всем участникам и пользователям перед использованием любого из продуктов лаборатории.
+Загружая их, вы соглашаетесь с этой Политикой**
