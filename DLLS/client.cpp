@@ -712,6 +712,7 @@ void ClientPrecache( void )
 	PRECACHE_SOUND("player/pl_metal5.wav");
 	PRECACHE_SOUND("player/pl_metal6.wav");
 	PRECACHE_SOUND("player/pl_metal7.wav");
+	PRECACHE_SOUND("player/pl_metal8.wav");
 
 	PRECACHE_SOUND("player/pl_dirt1.wav");		// Движение по песку
 	PRECACHE_SOUND("player/pl_dirt2.wav");

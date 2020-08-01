@@ -764,8 +764,6 @@ void CBaseButton::ButtonBackHome (void)
 
 	if (FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE))
 		{
-		//EMIT_SOUND (ENT (pev), CHAN_VOICE, (char*)STRING (pev->noise), 1, ATTN_MEDIUM);
-
 		SUB_UseTargets (m_hActivator, USE_TOGGLE, 0);
 		}
 

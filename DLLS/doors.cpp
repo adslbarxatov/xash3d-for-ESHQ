@@ -1059,14 +1059,14 @@ void CMomentaryDoor::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	Vector delta = move - pev->origin;
 	float speed = delta.Length() * 10;
 
-	if (value != 0)
+	if ((value != 0) && (abs (value) < 1.0))
 		{
 		//if ((value > 0) && ((pev->nextthink < pev->ltime) || (pev->nextthink == 0)))	// Не работает
 
 		// oldSoundValue, равное нулю, означает, что движение начато только что
 		// разные знаки означают, что изменено направление движения
 		// в обоих случаях звук нужно перезапустить
-		if ((oldSoundValue == 0.0f) || (oldSoundValue * value < 0))
+		if ((oldSoundValue == 0.0f) || (abs (oldSoundValue) == 1.0f) || (oldSoundValue * value < 0))
 			{
 			STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
 			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_MEDIUM);
@@ -1074,7 +1074,7 @@ void CMomentaryDoor::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 		LinearMove (move, speed);
 		}
-	else if (oldSoundValue != 0)	// Звук остановки невозможен в начале движения
+	else if ((oldSoundValue != 0) && (abs (oldSoundValue) < 1.0))	// Звук остановки невозможен в начале движения
 		{
 		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseArrived), 1, ATTN_MEDIUM);

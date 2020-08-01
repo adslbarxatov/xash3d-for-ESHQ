@@ -431,7 +431,7 @@ void CBreakable::DamageSound (void)
 		}
 
 	if (i)
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG(0,i-1)], fvol, ATTN_MEDIUM, 0, pitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG (0, i - 1)], fvol, ATTN_MEDIUM, 0, pitch);
 	}
 
 void CBreakable::BreakTouch (CBaseEntity *pOther)
@@ -500,27 +500,34 @@ void CBreakable::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE us
 
 void CBreakable::TraceAttack (entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 	{
-	// random spark if this is a 'computer' object
-	if (RANDOM_LONG(0,1))
+	// Обязательные искры в случае с материалом 'металл'
+	if (m_Material == matMetal)
+		{
+		UTIL_Sparks (ptr->vecEndPos);
+		}
+
+	if (RANDOM_LONG (0, 1))
 		{
 		switch (m_Material)
 			{
-		case matComputer:
-			{
-			UTIL_Sparks (ptr->vecEndPos);
-
-			float flVolume = RANDOM_FLOAT (0.7 , 1.0);//random volume range
-			switch (RANDOM_LONG(0,1))
+			// Случайные искры в случае с материалом 'компьютер'
+			case matComputer:
 				{
-			case 0: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_MEDIUM);	break;
-			case 1: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_MEDIUM);	break;
-				}
-			}
-			break;
+				UTIL_Sparks (ptr->vecEndPos);
 
-		case matUnbreakableGlass:
-			UTIL_Ricochet (ptr->vecEndPos, RANDOM_FLOAT(0.5,1.5));
-			break;
+				float flVolume = RANDOM_FLOAT (0.7, 1.0);//random volume range
+				switch (RANDOM_LONG (0, 1))
+					{
+					case 0: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_MEDIUM);	break;
+					case 1: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_MEDIUM);	break;
+					}
+				}
+				break;
+
+			// 'Рикошет' в случае с материалом 'ударопрочное стекло'
+			case matUnbreakableGlass:
+				UTIL_Ricochet (ptr->vecEndPos, RANDOM_FLOAT (0.5, 1.5));
+				break;
 			}
 		}
 

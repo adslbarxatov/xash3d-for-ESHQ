@@ -235,7 +235,7 @@ void CCycler :: DamageSound (void)		// Скопировано из CBreakable
 	else
 		pitch = 95 + RANDOM_LONG (0, 34);
 
-	fvol = RANDOM_FLOAT (0.75, 1.0);
+	fvol = RANDOM_FLOAT (0.85, 1.0);
 
 	if (material == matComputer && RANDOM_LONG (0, 1))
 		material = matMetal;
@@ -263,7 +263,8 @@ void CCycler :: DamageSound (void)		// Скопировано из CBreakable
 			rgpsz[0] = "player/pl_metal5.wav";
 			rgpsz[1] = "player/pl_metal6.wav";
 			rgpsz[2] = "player/pl_metal7.wav";
-			i = 3;
+			rgpsz[3] = "player/pl_metal8.wav";
+			i = 4;
 			break;
 
 		case matFlesh:
