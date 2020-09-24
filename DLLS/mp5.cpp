@@ -22,6 +22,7 @@
 #include "player.h"
 #include "soundent.h"
 #include "gamerules.h"
+#include "game.h"
 
 enum mp5_e
 	{
@@ -35,11 +36,8 @@ enum mp5_e
 	MP5_FIRE3,
 	};
 
-
-
 LINK_ENTITY_TO_CLASS (weapon_mp5, CMP5);
 LINK_ENTITY_TO_CLASS (weapon_9mmAR, CMP5);
-
 
 //=========================================================
 //=========================================================
@@ -57,9 +55,8 @@ void CMP5::Spawn ()
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
 
-	FallInit ();// get ready to fall down.
+	FallInit ();	// get ready to fall down.
 	}
-
 
 void CMP5::Precache (void)
 	{
@@ -77,9 +74,9 @@ void CMP5::Precache (void)
 	PRECACHE_SOUND ("items/clipinsert1.wav");
 	PRECACHE_SOUND ("items/cliprelease1.wav");
 
-	PRECACHE_SOUND ("weapons/hks1.wav");// H to the K
-	PRECACHE_SOUND ("weapons/hks2.wav");// H to the K
-	PRECACHE_SOUND ("weapons/hks3.wav");// H to the K
+	PRECACHE_SOUND ("weapons/hks1.wav");
+	PRECACHE_SOUND ("weapons/hks2.wav");
+	PRECACHE_SOUND ("weapons/hks3.wav");
 
 	PRECACHE_SOUND ("weapons/glauncher.wav");
 	PRECACHE_SOUND ("weapons/glauncher2.wav");
@@ -124,9 +121,12 @@ BOOL CMP5::Deploy ()
 	return DefaultDeploy ("models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5");
 	}
 
-
 void CMP5::PrimaryAttack ()
 	{
+#ifndef CLIENT_DLL
+	int mp5OldRate = mp5_old_rate.value;
+#endif
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 		{
@@ -179,21 +179,32 @@ void CMP5::PrimaryAttack ()
 	flags = 0;
 #endif
 
-	PLAYBACK_EVENT_FULL (flags, m_pPlayer->edict (), m_usMP5, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0);
+	PLAYBACK_EVENT_FULL (flags, m_pPlayer->edict (), m_usMP5, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 
+		vecDir.x, vecDir.y, 0, 0, 0, 0);
 
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate ("!HEV_AMO0", FALSE, 0);
 
+#ifdef CLIENT_DLL
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 0.09;
+#else
+	m_flNextPrimaryAttack = GetNextAttackDelay (0.1);
+#endif
 
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase ())
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 0.09;
+#ifndef CLIENT_DLL
+		if (mp5_old_rate.value == 0)
+			m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 0.1;
+
+	if (mp5_old_rate.value == 1)
+		m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 0.08;
+#else
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 0.09;
+#endif
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + UTIL_SharedRandomFloat (m_pPlayer->random_seed, 10, 15);
 	}
-
-
 
 void CMP5::SecondaryAttack (void)
 	{
@@ -238,9 +249,13 @@ void CMP5::SecondaryAttack (void)
 
 	PLAYBACK_EVENT (flags, m_pPlayer->edict (), m_usMP52);
 
+#ifdef CLIENT_DLL
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 1;
+#else
+	m_flNextPrimaryAttack = GetNextAttackDelay (1);
+#endif
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase () + 1;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + 5;// idle pretty soon after shooting.
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + 5;	// idle pretty soon after shooting.
 
 	if (!m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType])
 		// HEV suit - indicate out of ammo condition
@@ -254,7 +269,6 @@ void CMP5::Reload (void)
 
 	DefaultReload (MP5_MAX_CLIP, MP5_RELOAD, 1.5);
 	}
-
 
 void CMP5::WeaponIdle (void)
 	{
@@ -283,8 +297,6 @@ void CMP5::WeaponIdle (void)
 	m_flTimeWeaponIdle = UTIL_SharedRandomFloat (m_pPlayer->random_seed, 10, 15); // how long till we do this again.
 	}
 
-
-
 class CMP5AmmoClip : public CBasePlayerAmmo
 	{
 	void Spawn (void)
@@ -308,10 +320,9 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 		return bResult;
 		}
 	};
+
 LINK_ENTITY_TO_CLASS (ammo_mp5clip, CMP5AmmoClip);
 LINK_ENTITY_TO_CLASS (ammo_9mmAR, CMP5AmmoClip);
-
-
 
 class CMP5Chainammo : public CBasePlayerAmmo
 	{
@@ -336,8 +347,8 @@ class CMP5Chainammo : public CBasePlayerAmmo
 		return bResult;
 		}
 	};
-LINK_ENTITY_TO_CLASS (ammo_9mmbox, CMP5Chainammo);
 
+LINK_ENTITY_TO_CLASS (ammo_9mmbox, CMP5Chainammo);
 
 class CMP5AmmoGrenade : public CBasePlayerAmmo
 	{
@@ -363,5 +374,6 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 		return bResult;
 		}
 	};
+
 LINK_ENTITY_TO_CLASS (ammo_mp5grenades, CMP5AmmoGrenade);
 LINK_ENTITY_TO_CLASS (ammo_ARgrenades, CMP5AmmoGrenade);
