@@ -2987,7 +2987,7 @@ void PM_PlayerMove ( qboolean server )
 	// Convert view angles to vectors
 	AngleVectors (pmove->angles, pmove->forward, pmove->right, pmove->up);
 
-	// PM_ShowClipBox();
+	//PM_ShowClipBox();
 
 	// Special handling for spectator and observers. (iuser1 is set if the player's in observer mode)
 	if ( pmove->spectator || pmove->iuser1 > 0 )

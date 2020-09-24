@@ -303,14 +303,14 @@ void CBaseButton::Precache (void)
 
 	if (m_bLockedSound)
 		{
-		pszSound = ButtonSound ( (int)m_bLockedSound);
+		pszSound = ButtonSound  ((int)m_bLockedSound);
 		PRECACHE_SOUND (pszSound);
 		m_ls.sLockedSound = ALLOC_STRING (pszSound);
 		}
 
 	if (m_bUnlockedSound)
 		{
-		pszSound = ButtonSound ( (int)m_bUnlockedSound);
+		pszSound = ButtonSound  ((int)m_bUnlockedSound);
 		PRECACHE_SOUND (pszSound);
 		m_ls.sUnlockedSound = ALLOC_STRING (pszSound);
 		}
@@ -484,7 +484,7 @@ void CBaseButton::Spawn ()
 
 
 	// Is this a non-moving button?
-	if ( ( (m_vecPosition2 - m_vecPosition1).Length () < 1) || (pev->spawnflags & SF_BUTTON_DONTMOVE))
+	if  ( ((m_vecPosition2 - m_vecPosition1).Length () < 1) || (pev->spawnflags & SF_BUTTON_DONTMOVE))
 		m_vecPosition2 = m_vecPosition1;
 
 	m_fStayPushed = (m_flWait == -1 ? TRUE : FALSE);
@@ -620,7 +620,7 @@ CBaseButton::BUTTON_CODE CBaseButton::ButtonResponseToTouch (void)
 
 	if (m_toggle_state == TS_AT_TOP)
 		{
-		if ( (FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE)) && !m_fStayPushed)
+		if  ((FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE)) && !m_fStayPushed)
 			{
 			return BUTTON_RETURN;
 			}
@@ -1034,13 +1034,13 @@ void CMomentaryRotButton::UpdateSelf (float value)
 	m_lastUsed = 1;
 
 	pev->nextthink = pev->ltime + 0.1;
-	if ( (m_direction > 0) && (value >= 1.0))
+	if  ((m_direction > 0) && (value >= 1.0))
 		{
 		pev->avelocity = g_vecZero;
 		pev->angles = m_end;
 		return;
 		}
-	else if ( (m_direction < 0) && (value <= 0))
+	else if  ((m_direction < 0) && (value <= 0))
 		{
 		pev->avelocity = g_vecZero;
 		pev->angles = m_start;

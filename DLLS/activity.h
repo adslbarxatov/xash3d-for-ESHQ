@@ -59,12 +59,12 @@ typedef enum {
 	ACT_DIEFORWARD,
 	ACT_DIEVIOLENT,
 	ACT_BARNACLE_HIT,		// barnacle tongue hits a monster
-	ACT_BARNACLE_PULL,		// barnacle is lifting the monster ( loop )
+	ACT_BARNACLE_PULL,		// barnacle is lifting the monster  (loop )
 	ACT_BARNACLE_CHOMP,		// barnacle latches on to the monster
-	ACT_BARNACLE_CHEW,		// barnacle is holding the monster in its mouth ( loop )
+	ACT_BARNACLE_CHEW,		// barnacle is holding the monster in its mouth  (loop )
 	ACT_SLEEP,
 	ACT_INSPECT_FLOOR,		// for active idles, look at something on or near the floor
-	ACT_INSPECT_WALL,		// for active idles, look at something directly ahead of you ( doesn't HAVE to be a wall or on a wall )
+	ACT_INSPECT_WALL,		// for active idles, look at something directly ahead of you  (doesn't HAVE to be a wall or on a wall )
 	ACT_IDLE_ANGRY,			// alternate idle animation in which the monster is clearly agitated. (loop)
 	ACT_WALK_HURT,			// limp  (loop)
 	ACT_RUN_HURT,			// limp  (loop)

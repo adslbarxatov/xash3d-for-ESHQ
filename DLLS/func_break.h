@@ -24,35 +24,35 @@ class CBreakable : public CBaseDelay
 {
 public:
 	// basic functions
-	void Spawn( void );
-	void Precache( void );
-	void KeyValue( KeyValueData* pkvd);
-	void EXPORT BreakTouch( CBaseEntity *pOther );
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void DamageSound( void );
+	void Spawn (void );
+	void Precache (void );
+	void KeyValue (KeyValueData* pkvd);
+	void EXPORT BreakTouch (CBaseEntity *pOther );
+	void Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void DamageSound (void );
 
 	// breakables use an overridden takedamage
-	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
+	virtual int TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 	// To spark when hit
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void TraceAttack (entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 
-	BOOL IsBreakable( void );
-	BOOL SparkWhenHit( void );
+	BOOL IsBreakable (void );
+	BOOL SparkWhenHit (void );
 
-	int	 DamageDecal( int bitsDamageType );
+	int	 DamageDecal (int bitsDamageType );
 
-	void EXPORT		Die( void );
-	virtual int		ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	void EXPORT		Die (void );
+	virtual int		ObjectCaps (void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
+	virtual int		Save (CSave &save );
+	virtual int		Restore (CRestore &restore );
 
-	inline BOOL		Explodable( void ) { return ExplosionMagnitude() > 0; }
-	inline int		ExplosionMagnitude( void ) { return pev->impulse; }
-	inline void		ExplosionSetMagnitude( int magnitude ) { pev->impulse = magnitude; }
+	inline BOOL		Explodable (void ) { return ExplosionMagnitude() > 0; }
+	inline int		ExplosionMagnitude (void ) { return pev->impulse; }
+	inline void		ExplosionSetMagnitude (int magnitude ) { pev->impulse = magnitude; }
 
-	static void MaterialSoundPrecache( Materials precacheMaterial );
-	static void MaterialSoundRandom( edict_t *pEdict, Materials soundMaterial, float volume );
-	static const char **MaterialSoundList( Materials precacheMaterial, int &soundCount );
+	static void MaterialSoundPrecache (Materials precacheMaterial );
+	static void MaterialSoundRandom (edict_t *pEdict, Materials soundMaterial, float volume );
+	static const char **MaterialSoundList (Materials precacheMaterial, int &soundCount );
 
 	static const char *pSoundsWood[];
 	static const char *pSoundsFlesh[];

@@ -23,9 +23,9 @@
 #define	NO_NODE				-1
 #define MAX_NODE_HULLS		4
 
-#define bits_NODE_LAND      ( 1 << 0 )  // Land node, so nudge if necessary.
-#define bits_NODE_AIR       ( 1 << 1 )  // Air node, don't nudge.
-#define bits_NODE_WATER     ( 1 << 2 )  // Water node, don't nudge.
+#define bits_NODE_LAND       (1 << 0 )  // Land node, so nudge if necessary.
+#define bits_NODE_AIR        (1 << 1 )  // Air node, don't nudge.
+#define bits_NODE_WATER      (1 << 2 )  // Water node, don't nudge.
 #define bits_NODE_GROUP_REALM (bits_NODE_LAND | bits_NODE_AIR | bits_NODE_WATER)
 
 //=========================================================
@@ -62,11 +62,11 @@ public:
 //=========================================================
 // CLink - A link between 2 nodes
 //=========================================================
-#define		bits_LINK_SMALL_HULL	( 1 << 0 )// headcrab box can fit through this connection
-#define		bits_LINK_HUMAN_HULL	( 1 << 1 )// player box can fit through this connection
-#define		bits_LINK_LARGE_HULL	( 1 << 2 )// big box can fit through this connection
-#define		bits_LINK_FLY_HULL		( 1 << 3 )// a flying big box can fit through this connection
-#define		bits_LINK_DISABLED		( 1 << 4 )// link is not valid when the set
+#define		bits_LINK_SMALL_HULL	 (1 << 0 )// headcrab box can fit through this connection
+#define		bits_LINK_HUMAN_HULL	 (1 << 1 )// player box can fit through this connection
+#define		bits_LINK_LARGE_HULL	 (1 << 2 )// big box can fit through this connection
+#define		bits_LINK_FLY_HULL		 (1 << 3 )// a flying big box can fit through this connection
+#define		bits_LINK_DISABLED		 (1 << 4 )// link is not valid when the set
 
 #define		NODE_SMALL_HULL			0
 #define		NODE_HUMAN_HULL			1
@@ -76,7 +76,7 @@ public:
 class CLink
 {
 public:
-	int		m_iSrcNode;// the node that 'owns' this link ( keeps us from having to make reverse lookups )
+	int		m_iSrcNode;// the node that 'owns' this link  (keeps us from having to make reverse lookups )
 	int		m_iDestNode;// the node on the other end of the link. 
 	
 	entvars_t	*m_pLinkEnt;// the entity that blocks this connection (doors, etc)
@@ -159,23 +159,23 @@ public:
 	int		m_iLastCoverSearch;
 
 	// functions to create the graph
-	int		LinkVisibleNodes ( CLink *pLinkPool, FILE *file, int *piBadNode );
-	int		RejectInlineLinks ( CLink *pLinkPool, FILE *file );
-	int		FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, int afCapMask);
-	int		FindNearestNode ( const Vector &vecOrigin, CBaseEntity *pEntity );
-	int		FindNearestNode ( const Vector &vecOrigin, int afNodeTypes );
-	//int		FindNearestLink ( const Vector &vecTestPoint, int *piNearestLink, BOOL *pfAlongLine );
-	float	PathLength( int iStart, int iDest, int iHull, int afCapMask );
-	int		NextNodeInRoute( int iCurrentNode, int iDest, int iHull, int iCap );
+	int		LinkVisibleNodes  (CLink *pLinkPool, FILE *file, int *piBadNode );
+	int		RejectInlineLinks  (CLink *pLinkPool, FILE *file );
+	int		FindShortestPath  (int *piPath, int iStart, int iDest, int iHull, int afCapMask);
+	int		FindNearestNode  (const Vector &vecOrigin, CBaseEntity *pEntity );
+	int		FindNearestNode  (const Vector &vecOrigin, int afNodeTypes );
+	//int		FindNearestLink  (const Vector &vecTestPoint, int *piNearestLink, BOOL *pfAlongLine );
+	float	PathLength (int iStart, int iDest, int iHull, int afCapMask );
+	int		NextNodeInRoute (int iCurrentNode, int iDest, int iHull, int iCap );
 
 	enum NODEQUERY { NODEGRAPH_DYNAMIC, NODEGRAPH_STATIC };
 	// A static query means we're asking about the possiblity of handling this entity at ANY time
 	// A dynamic query means we're asking about it RIGHT NOW.  So we should query the current state
-	int		HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType );
-	entvars_t*	LinkEntForLink ( CLink *pLink, CNode *pNode );
-	void	ShowNodeConnections ( int iNode );
-	void	InitGraph( void );
-	int		AllocNodes ( void );
+	int		HandleLinkEnt  (int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType );
+	entvars_t*	LinkEntForLink  (CLink *pLink, CNode *pNode );
+	void	ShowNodeConnections  (int iNode );
+	void	InitGraph (void );
+	int		AllocNodes  (void );
 	
 	int		CheckNODFile(char *szMapName);
 	int		FLoadGraph(char *szMapName);
@@ -194,9 +194,9 @@ public:
 
 	void    SortNodes(void);
 
-	int			HullIndex( const CBaseEntity *pEntity );	// what hull the monster uses
-	int			NodeType( const CBaseEntity *pEntity );		// what node type the monster uses
-	inline int	CapIndex( int afCapMask ) 
+	int			HullIndex (const CBaseEntity *pEntity );	// what hull the monster uses
+	int			NodeType (const CBaseEntity *pEntity );		// what node type the monster uses
+	inline int	CapIndex (int afCapMask ) 
 	{ 
 		if (afCapMask & (bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE)) 
 			return 1; 
@@ -204,53 +204,53 @@ public:
 	}
 
 
-	inline	CNode &Node( int i )
+	inline	CNode &Node (int i )
 	{
 #ifdef _DEBUG
-		if ( !m_pNodes || i < 0 || i > m_cNodes )
-			ALERT( at_error, "Bad Node!\n" );
+		if  (!m_pNodes || i < 0 || i > m_cNodes )
+			ALERT (at_error, "Bad Node!\n" );
 #endif
 		return m_pNodes[i];
 	}
 
-	inline	CLink &Link( int i )
+	inline	CLink &Link (int i )
 	{
 #ifdef _DEBUG
-		if ( !m_pLinkPool || i < 0 || i > m_cLinks )
-			ALERT( at_error, "Bad link!\n" );
+		if  (!m_pLinkPool || i < 0 || i > m_cLinks )
+			ALERT (at_error, "Bad link!\n" );
 #endif
 		return m_pLinkPool[i];
 	}
 	
-	inline CLink &NodeLink( int iNode, int iLink )
+	inline CLink &NodeLink (int iNode, int iLink )
 	{
-		return Link( Node( iNode ).m_iFirstLink + iLink );
+		return Link (Node (iNode ).m_iFirstLink + iLink );
 	}
 
-	inline CLink &NodeLink( const CNode &node, int iLink )
+	inline CLink &NodeLink (const CNode &node, int iLink )
 	{
-		return Link( node.m_iFirstLink + iLink );
+		return Link (node.m_iFirstLink + iLink );
 	}
 
-	inline  int	INodeLink ( int iNode, int iLink )
+	inline  int	INodeLink  (int iNode, int iLink )
 	{
-		return NodeLink( iNode, iLink ).m_iDestNode;
+		return NodeLink (iNode, iLink ).m_iDestNode;
 	}
 
 #if 0
-	inline CNode &SourceNode( int iNode, int iLink )
+	inline CNode &SourceNode (int iNode, int iLink )
 	{
-		return Node( NodeLink( iNode, iLink ).m_iSrcNode );
+		return Node (NodeLink (iNode, iLink ).m_iSrcNode );
 	}
 
-	inline CNode &DestNode( int iNode, int iLink )
+	inline CNode &DestNode (int iNode, int iLink )
 	{
-		return Node( NodeLink( iNode, iLink ).m_iDestNode );
+		return Node (NodeLink (iNode, iLink ).m_iDestNode );
 	}
 
-	inline	CNode *PNodeLink ( int iNode, int iLink ) 
+	inline	CNode *PNodeLink  (int iNode, int iLink ) 
 	{
-		return &DestNode( iNode, iLink );
+		return &DestNode (iNode, iLink );
 	}
 #endif
 };
@@ -261,9 +261,9 @@ public:
 //=========================================================
 class CNodeEnt : public CBaseEntity
 {
-	void Spawn( void );
-	void KeyValue( KeyValueData *pkvd );
-	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	void Spawn (void );
+	void KeyValue (KeyValueData *pkvd );
+	virtual int	ObjectCaps (void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 	short m_sHintType;
 	short m_sHintActivity;
@@ -276,13 +276,13 @@ class CNodeEnt : public CBaseEntity
 class CStack 
 {
 public:
-			CStack( void );
-	void	Push( int value );
-	int		Pop( void );
-	int		Top( void );
-	int		Empty( void ) { return m_level==0; }
-	int		Size( void ) { return m_level; }
-	void    CopyToArray ( int *piArray );
+			CStack (void );
+	void	Push (int value );
+	int		Pop (void );
+	int		Top (void );
+	int		Empty (void ) { return m_level==0; }
+	int		Size (void ) { return m_level; }
+	void    CopyToArray  (int *piArray );
 
 private:
 	int		m_stack[ MAX_STACK_NODES ];
@@ -297,13 +297,13 @@ class CQueue
 {
 public:
 
-	CQueue( void );// constructor
-	inline int Full ( void ) { return ( m_cSize == MAX_STACK_NODES ); }
-	inline int Empty ( void ) { return ( m_cSize == 0 ); }
-	//inline int Tail ( void ) { return ( m_queue[ m_tail ] ); }
-	inline int Size ( void ) { return ( m_cSize ); }
-	void Insert( int, float );
-	int Remove( float & );
+	CQueue (void );// constructor
+	inline int Full  (void ) { return  (m_cSize == MAX_STACK_NODES ); }
+	inline int Empty  (void ) { return  (m_cSize == 0 ); }
+	//inline int Tail  (void ) { return  (m_queue[ m_tail ] ); }
+	inline int Size  (void ) { return  (m_cSize ); }
+	void Insert (int, float );
+	int Remove (float & );
 
 private:
 	int	m_cSize;
@@ -324,13 +324,13 @@ class CQueuePriority
 {
 public:
 
-	CQueuePriority( void );// constructor
-	inline int Full ( void ) { return ( m_cSize == MAX_STACK_NODES ); }
-	inline int Empty ( void ) { return ( m_cSize == 0 ); }
-	//inline int Tail ( float & ) { return ( m_queue[ m_tail ].Id ); }
-	inline int Size ( void ) { return ( m_cSize ); }
-	void Insert( int, float );
-	int Remove( float &);
+	CQueuePriority (void );// constructor
+	inline int Full  (void ) { return  (m_cSize == MAX_STACK_NODES ); }
+	inline int Empty  (void ) { return  (m_cSize == 0 ); }
+	//inline int Tail  (float & ) { return  (m_queue[ m_tail ].Id ); }
+	inline int Size  (void ) { return  (m_cSize ); }
+	void Insert (int, float );
+	int Remove (float &);
 
 private:
 	int	m_cSize;

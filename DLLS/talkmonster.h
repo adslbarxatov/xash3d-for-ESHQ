@@ -98,60 +98,60 @@ enum
 class CTalkMonster : public CBaseMonster
 {
 public:
-	void			TalkInit( void );				
+	void			TalkInit (void );				
 	CBaseEntity		*FindNearestFriend(BOOL fPlayer);
-	float			TargetDistance( void );
-	void			StopTalking( void ) { SentenceStop(); }
+	float			TargetDistance (void );
+	void			StopTalking (void ) { SentenceStop(); }
 	
 	// Base Monster functions
-	void			Precache( void );
-	int				TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	void			Precache (void );
+	int				TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	void			Touch(	CBaseEntity *pOther );
-	void			Killed( entvars_t *pevAttacker, int iGib );
-	int				IRelationship ( CBaseEntity *pTarget );
-	virtual int		CanPlaySentence( BOOL fDisregardState );
-	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-	void			PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
-	void			KeyValue( KeyValueData *pkvd );
+	void			Killed (entvars_t *pevAttacker, int iGib );
+	int				IRelationship  (CBaseEntity *pTarget );
+	virtual int		CanPlaySentence (BOOL fDisregardState );
+	virtual void	PlaySentence (const char *pszSentence, float duration, float volume, float attenuation );
+	void			PlayScriptedSentence (const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+	void			KeyValue (KeyValueData *pkvd );
 
 	// AI functions
-	void			SetActivity ( Activity newActivity );
-	Schedule_t		*GetScheduleOfType ( int Type );
-	void			StartTask( Task_t *pTask );
-	void			RunTask( Task_t *pTask );
-	void			HandleAnimEvent( MonsterEvent_t *pEvent );
-	void			PrescheduleThink( void );
+	void			SetActivity  (Activity newActivity );
+	Schedule_t		*GetScheduleOfType  (int Type );
+	void			StartTask (Task_t *pTask );
+	void			RunTask (Task_t *pTask );
+	void			HandleAnimEvent (MonsterEvent_t *pEvent );
+	void			PrescheduleThink (void );
 	
 
 	// Conversations / communication
-	int				GetVoicePitch( void );
-	void			IdleRespond( void );
-	int				FIdleSpeak( void );
-	int				FIdleStare( void );
-	int				FIdleHello( void );
-	void			IdleHeadTurn( Vector &vecFriend );
-	int				FOkToSpeak( void );
-	void			TrySmellTalk( void );
-	CBaseEntity		*EnumFriends( CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
-	void			AlertFriends( void );
-	void			ShutUpFriends( void );
-	BOOL			IsTalking( void );
-	void			Talk( float flDuration );	
+	int				GetVoicePitch (void );
+	void			IdleRespond (void );
+	int				FIdleSpeak (void );
+	int				FIdleStare (void );
+	int				FIdleHello (void );
+	void			IdleHeadTurn (Vector &vecFriend );
+	int				FOkToSpeak (void );
+	void			TrySmellTalk (void );
+	CBaseEntity		*EnumFriends (CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
+	void			AlertFriends (void );
+	void			ShutUpFriends (void );
+	BOOL			IsTalking (void );
+	void			Talk (float flDuration );	
 	// For following
-	BOOL			CanFollow( void );
-	BOOL			IsFollowing( void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
-	void			StopFollowing( BOOL clearSchedule );
-	void			StartFollowing( CBaseEntity *pLeader );
-	virtual void	DeclineFollowing( void ) {}
-	void			LimitFollowers( CBaseEntity *pPlayer, int maxFollowers );
+	BOOL			CanFollow (void );
+	BOOL			IsFollowing (void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
+	void			StopFollowing (BOOL clearSchedule );
+	void			StartFollowing (CBaseEntity *pLeader );
+	virtual void	DeclineFollowing (void ) {}
+	void			LimitFollowers (CBaseEntity *pPlayer, int maxFollowers );
 
-	void EXPORT		FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void EXPORT		FollowerUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	
-	virtual void	SetAnswerQuestion( CTalkMonster *pSpeaker );
-	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
+	virtual void	SetAnswerQuestion (CTalkMonster *pSpeaker );
+	virtual int		FriendNumber (int arrayNumber )	{ return arrayNumber; }
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save (CSave &save );
+	virtual int		Restore (CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	
@@ -175,9 +175,9 @@ public:
 
 
 // Clients can push talkmonsters out of their way
-#define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
+#define		bits_COND_CLIENT_PUSH		 (bits_COND_SPECIAL1 )
 // Don't see a client right now.
-#define		bits_COND_CLIENT_UNSEEN		( bits_COND_SPECIAL2 )
+#define		bits_COND_CLIENT_UNSEEN		 (bits_COND_SPECIAL2 )
 
 
 #endif		//TALKMONSTER_H

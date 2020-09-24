@@ -511,7 +511,7 @@ void CBullsquid :: HandleAnimEvent (MonsterEvent_t *pEvent)
 		vecSpitOffset = (pev->origin + vecSpitOffset);
 		if (m_hEnemy)	// В некоторых случаях сюда попадает m_hEnemy == NULL. Обрабатываем этот случай
 			{
-			vecSpitDir = ( (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
+			vecSpitDir =  ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
 			}
 		else
 			{

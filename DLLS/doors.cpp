@@ -295,17 +295,17 @@ void CBaseDoor::Spawn ()
 	if (pev->skin == 0)
 		{//normal door
 		if (FBitSet (pev->spawnflags, SF_DOOR_PASSABLE))
-			pev->solid		= SOLID_NOT;
+			pev->solid = SOLID_NOT;
 		else
-			pev->solid		= SOLID_BSP;
+			pev->solid = SOLID_BSP;
 		}
 	else
 		{// special contents
-		pev->solid		= SOLID_NOT;
+		pev->solid = SOLID_NOT;
 		SetBits (pev->spawnflags, SF_DOOR_SILENT);	// water is silent for now
 		}
 
-	pev->movetype	= MOVETYPE_PUSH;
+	pev->movetype = MOVETYPE_PUSH;
 	UTIL_SetOrigin(pev, pev->origin);
 	SET_MODEL (ENT(pev), STRING(pev->model));
 
@@ -315,7 +315,8 @@ void CBaseDoor::Spawn ()
 	m_vecPosition1	= pev->origin;		// По умолчанию, позиция "закрыто"
 
 	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2	= m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x-2)) + fabs (pev->movedir.y * (pev->size.y-2)) + fabs (pev->movedir.z * (pev->size.z-2)) - m_flLip));
+	m_vecPosition2	= m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x-2)) + 
+		fabs (pev->movedir.y * (pev->size.y-2)) + fabs (pev->movedir.z * (pev->size.z-2)) - m_flLip));
 
 	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
 
@@ -329,8 +330,9 @@ void CBaseDoor::Spawn ()
 	m_toggle_state = TS_AT_BOTTOM;
 
 	// if the door is flagged for USE button activation only, use NULL touch function
-	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY))
+	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY) && !FStringNull(pev->targetname))
 		{
+		pev->body = 0;	// Используем как флаг "замка"
 		SetTouch (NULL);
 		}
 	else // touchable button
@@ -562,7 +564,29 @@ void CBaseDoor::DoorTouch (CBaseEntity *pOther)
 void CBaseDoor::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 	{
 	m_hActivator = pActivator;
-	// if not ready to be used, ignore "use" command.
+	
+	// Обработка "замка"
+	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY))
+		{
+		if (pCaller->IsPlayer ())
+			{
+			if (pev->body == 0)
+				{
+				PlayLockSounds(pev, &m_ls, TRUE, FALSE);
+				return;
+				}
+			}
+		else
+			{
+			// Открытие замка
+			if (pev->body == 0)
+				pev->body = 1;
+
+			return;
+			}
+		}
+
+	// Обработка двери
 	if (m_toggle_state == TS_AT_BOTTOM || FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP)
 		DoorActivate();
 	}

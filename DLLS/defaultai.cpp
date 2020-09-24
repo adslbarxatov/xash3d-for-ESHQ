@@ -40,7 +40,7 @@ Schedule_t	slFail[] =
 {
 	{
 		tlFail,
-		HLARRAYSIZE ( tlFail ),
+		HLARRAYSIZE  (tlFail ),
 		bits_COND_CAN_ATTACK,
 		0,
 		"Fail"
@@ -61,7 +61,7 @@ Schedule_t	slIdleStand[] =
 {
 	{ 
 		tlIdleStand1,
-		HLARRAYSIZE ( tlIdleStand1 ), 
+		HLARRAYSIZE  (tlIdleStand1 ), 
 		bits_COND_NEW_ENEMY		|
 		bits_COND_SEE_FEAR		|
 		bits_COND_LIGHT_DAMAGE	|
@@ -87,7 +87,7 @@ Schedule_t	slIdleTrigger[] =
 {
 	{ 
 		tlIdleStand1,
-		HLARRAYSIZE ( tlIdleStand1 ), 
+		HLARRAYSIZE  (tlIdleStand1 ), 
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
@@ -106,7 +106,7 @@ Schedule_t	slIdleWalk[] =
 {
 	{ 
 		tlIdleWalk1,
-		HLARRAYSIZE ( tlIdleWalk1 ), 
+		HLARRAYSIZE  (tlIdleWalk1 ), 
 		bits_COND_NEW_ENEMY		|
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE	|
@@ -139,7 +139,7 @@ Schedule_t	slAmbush[] =
 {
 	{ 
 		tlAmbush,
-		HLARRAYSIZE ( tlAmbush ), 
+		HLARRAYSIZE  (tlAmbush ), 
 		bits_COND_NEW_ENEMY		|
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE	|
@@ -178,7 +178,7 @@ Schedule_t slActiveIdle[] =
 {
 	{
 		tlActiveIdle,
-		HLARRAYSIZE( tlActiveIdle ),
+		HLARRAYSIZE (tlActiveIdle ),
 		bits_COND_NEW_ENEMY		|
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE	|
@@ -208,7 +208,7 @@ Schedule_t slWakeAngry[] =
 {
 	{
 		tlWakeAngry1,
-		HLARRAYSIZE ( tlWakeAngry1 ),
+		HLARRAYSIZE  (tlWakeAngry1 ),
 		0,
 		0,
 		"Wake Angry"
@@ -229,7 +229,7 @@ Schedule_t	slAlertFace[] =
 {
 	{ 
 		tlAlertFace1,
-		HLARRAYSIZE ( tlAlertFace1 ),
+		HLARRAYSIZE  (tlAlertFace1 ),
 		bits_COND_NEW_ENEMY		|
 		bits_COND_SEE_FEAR		|
 		bits_COND_LIGHT_DAMAGE	|
@@ -256,7 +256,7 @@ Schedule_t	slAlertSmallFlinch[] =
 {
 	{ 
 		tlAlertSmallFlinch,
-		HLARRAYSIZE ( tlAlertSmallFlinch ),
+		HLARRAYSIZE  (tlAlertSmallFlinch ),
 		0,
 		0,
 		"Alert Small Flinch"
@@ -278,7 +278,7 @@ Schedule_t	slAlertStand[] =
 {
 	{ 
 		tlAlertStand1,
-		HLARRAYSIZE ( tlAlertStand1 ), 
+		HLARRAYSIZE  (tlAlertStand1 ), 
 		bits_COND_NEW_ENEMY				|
 		bits_COND_SEE_ENEMY				|
 		bits_COND_SEE_FEAR				|
@@ -325,7 +325,7 @@ Schedule_t	slInvestigateSound[] =
 {
 	{ 
 		tlInvestigateSound,
-		HLARRAYSIZE ( tlInvestigateSound ), 
+		HLARRAYSIZE  (tlInvestigateSound ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_SEE_FEAR			|
 		bits_COND_LIGHT_DAMAGE		|
@@ -351,7 +351,7 @@ Schedule_t	slCombatStand[] =
 {
 	{ 
 		tlCombatStand1,
-		HLARRAYSIZE ( tlCombatStand1 ), 
+		HLARRAYSIZE  (tlCombatStand1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -376,7 +376,7 @@ Schedule_t	slCombatFace[] =
 {
 	{ 
 		tlCombatFace1,
-		HLARRAYSIZE ( tlCombatFace1 ), 
+		HLARRAYSIZE  (tlCombatFace1 ), 
 		bits_COND_CAN_ATTACK			|
 		bits_COND_NEW_ENEMY				|
 		bits_COND_ENEMY_DEAD,
@@ -401,7 +401,7 @@ Schedule_t slStandoff[] =
 {
 	{
 		tlStandoff,
-		HLARRAYSIZE ( tlStandoff ),
+		HLARRAYSIZE  (tlStandoff ),
 		bits_COND_CAN_RANGE_ATTACK1		|
 		bits_COND_CAN_RANGE_ATTACK2		|
 		bits_COND_ENEMY_DEAD			|
@@ -426,7 +426,7 @@ Schedule_t slArmWeapon[] =
 {
 	{
 		tlArmWeapon,
-		HLARRAYSIZE ( tlArmWeapon ),
+		HLARRAYSIZE  (tlArmWeapon ),
 		0,
 		0,
 		"Arm Weapon"
@@ -446,7 +446,7 @@ Schedule_t slReload[] =
 {
 	{
 		tlReload,
-		HLARRAYSIZE ( tlReload ),
+		HLARRAYSIZE  (tlReload ),
 		bits_COND_HEAVY_DAMAGE,
 		0,
 		"Reload"
@@ -469,7 +469,7 @@ Schedule_t	slRangeAttack1[] =
 {
 	{ 
 		tlRangeAttack1,
-		HLARRAYSIZE ( tlRangeAttack1 ), 
+		HLARRAYSIZE  (tlRangeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -495,7 +495,7 @@ Schedule_t	slRangeAttack2[] =
 {
 	{ 
 		tlRangeAttack2,
-		HLARRAYSIZE ( tlRangeAttack2 ), 
+		HLARRAYSIZE  (tlRangeAttack2 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -520,7 +520,7 @@ Schedule_t	slPrimaryMeleeAttack[] =
 {
 	{ 
 		tlPrimaryMeleeAttack1,
-		HLARRAYSIZE ( tlPrimaryMeleeAttack1 ), 
+		HLARRAYSIZE  (tlPrimaryMeleeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -543,7 +543,7 @@ Schedule_t	slSecondaryMeleeAttack[] =
 {
 	{ 
 		tlSecondaryMeleeAttack1,
-		HLARRAYSIZE ( tlSecondaryMeleeAttack1 ), 
+		HLARRAYSIZE  (tlSecondaryMeleeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -566,7 +566,7 @@ Schedule_t	slSpecialAttack1[] =
 {
 	{ 
 		tlSpecialAttack1,
-		HLARRAYSIZE ( tlSpecialAttack1 ), 
+		HLARRAYSIZE  (tlSpecialAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -592,7 +592,7 @@ Schedule_t	slSpecialAttack2[] =
 {
 	{ 
 		tlSpecialAttack2,
-		HLARRAYSIZE ( tlSpecialAttack2 ), 
+		HLARRAYSIZE  (tlSpecialAttack2 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
 		bits_COND_LIGHT_DAMAGE		|
@@ -619,7 +619,7 @@ Schedule_t slChaseEnemy[] =
 {
 	{ 
 		tlChaseEnemy1,
-		HLARRAYSIZE ( tlChaseEnemy1 ),
+		HLARRAYSIZE  (tlChaseEnemy1 ),
 		bits_COND_NEW_ENEMY			|
 		bits_COND_CAN_RANGE_ATTACK1	|
 		bits_COND_CAN_MELEE_ATTACK1	|
@@ -652,7 +652,7 @@ Schedule_t	slChaseEnemyFailed[] =
 {
 	{ 
 		tlChaseEnemyFailed,
-		HLARRAYSIZE ( tlChaseEnemyFailed ), 
+		HLARRAYSIZE  (tlChaseEnemyFailed ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_CAN_RANGE_ATTACK1	|
 		bits_COND_CAN_MELEE_ATTACK1	|
@@ -680,7 +680,7 @@ Schedule_t slSmallFlinch[] =
 {
 	{
 		tlSmallFlinch,
-		HLARRAYSIZE ( tlSmallFlinch ),
+		HLARRAYSIZE  (tlSmallFlinch ),
 		0,
 		0,
 		"Small Flinch"
@@ -701,7 +701,7 @@ Schedule_t slDie[] =
 {
 	{
 		tlDie1,
-		HLARRAYSIZE( tlDie1 ),
+		HLARRAYSIZE (tlDie1 ),
 		0,
 		0,
 		"Die"
@@ -722,7 +722,7 @@ Schedule_t slVictoryDance[] =
 {
 	{
 		tlVictoryDance,
-		HLARRAYSIZE( tlVictoryDance ),
+		HLARRAYSIZE (tlVictoryDance ),
 		0,
 		0,
 		"Victory Dance"
@@ -746,7 +746,7 @@ Schedule_t slBarnacleVictimGrab[] =
 {
 	{
 		tlBarnacleVictimGrab,
-		HLARRAYSIZE ( tlBarnacleVictimGrab ),
+		HLARRAYSIZE  (tlBarnacleVictimGrab ),
 		0,
 		0,
 		"Barnacle Victim"
@@ -770,7 +770,7 @@ Schedule_t slBarnacleVictimChomp[] =
 {
 	{
 		tlBarnacleVictimChomp,
-		HLARRAYSIZE ( tlBarnacleVictimChomp ),
+		HLARRAYSIZE  (tlBarnacleVictimChomp ),
 		0,
 		0,
 		"Barnacle Chomp"
@@ -789,7 +789,7 @@ Schedule_t	slError[] =
 {
 	{ 
 		tlError,
-		HLARRAYSIZE ( tlError ), 
+		HLARRAYSIZE  (tlError ), 
 		0,
 		0,
 		"Error"
@@ -812,7 +812,7 @@ Schedule_t slWalkToScript[] =
 {
 	{ 
 		tlScriptedWalk,
-		HLARRAYSIZE ( tlScriptedWalk ),
+		HLARRAYSIZE  (tlScriptedWalk ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
 		"WalkToScript"
@@ -836,7 +836,7 @@ Schedule_t slRunToScript[] =
 {
 	{ 
 		tlScriptedRun,
-		HLARRAYSIZE ( tlScriptedRun ),
+		HLARRAYSIZE  (tlScriptedRun ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
 		"RunToScript"
@@ -854,7 +854,7 @@ Schedule_t slWaitScript[] =
 {
 	{ 
 		tlScriptedWait,
-		HLARRAYSIZE ( tlScriptedWait ),
+		HLARRAYSIZE  (tlScriptedWait ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
 		"WaitForScript"
@@ -874,7 +874,7 @@ Schedule_t slFaceScript[] =
 {
 	{ 
 		tlScriptedFace,
-		HLARRAYSIZE ( tlScriptedFace ),
+		HLARRAYSIZE  (tlScriptedFace ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
 		"FaceScript"
@@ -895,7 +895,7 @@ Schedule_t	slCower[] =
 {
 	{
 		tlCower,
-		HLARRAYSIZE ( tlCower ),
+		HLARRAYSIZE  (tlCower ),
 		0,
 		0,
 		"Cower"
@@ -919,7 +919,7 @@ Schedule_t	slTakeCoverFromOrigin[] =
 {
 	{ 
 		tlTakeCoverFromOrigin,
-		HLARRAYSIZE ( tlTakeCoverFromOrigin ), 
+		HLARRAYSIZE  (tlTakeCoverFromOrigin ), 
 		bits_COND_NEW_ENEMY,
 		0,
 		"TakeCoverFromOrigin"
@@ -943,7 +943,7 @@ Schedule_t	slTakeCoverFromBestSound[] =
 {
 	{ 
 		tlTakeCoverFromBestSound,
-		HLARRAYSIZE ( tlTakeCoverFromBestSound ), 
+		HLARRAYSIZE  (tlTakeCoverFromBestSound ), 
 		bits_COND_NEW_ENEMY,
 		0,
 		"TakeCoverFromBestSound"
@@ -971,7 +971,7 @@ Schedule_t	slTakeCoverFromEnemy[] =
 {
 	{ 
 		tlTakeCoverFromEnemy,
-		HLARRAYSIZE ( tlTakeCoverFromEnemy ), 
+		HLARRAYSIZE  (tlTakeCoverFromEnemy ), 
 		bits_COND_NEW_ENEMY,
 		0,
 		"tlTakeCoverFromEnemy"
@@ -1020,31 +1020,31 @@ Schedule_t *CBaseMonster::m_scheduleList[] =
 	slFail
 };
 
-Schedule_t *CBaseMonster::ScheduleFromName( const char *pName )
+Schedule_t *CBaseMonster::ScheduleFromName (const char *pName )
 {
-	return ScheduleInList( pName, m_scheduleList, HLARRAYSIZE(m_scheduleList) );
+	return ScheduleInList (pName, m_scheduleList, HLARRAYSIZE(m_scheduleList) );
 }
 
 
-Schedule_t *CBaseMonster :: ScheduleInList( const char *pName, Schedule_t **pList, int listCount )
+Schedule_t *CBaseMonster :: ScheduleInList (const char *pName, Schedule_t **pList, int listCount )
 {
 	int i;
 	
-	if ( !pName )
+	if  (!pName )
 	{
-		ALERT( at_console, "%s set to unnamed schedule!\n", STRING(pev->classname) );
+		ALERT (at_console, "%s set to unnamed schedule!\n", STRING(pev->classname) );
 		return NULL;
 	}
 
 
-	for ( i = 0; i < listCount; i++ )
+	for  (i = 0; i < listCount; i++ )
 	{
-		if ( !pList[i]->pName )
+		if  (!pList[i]->pName )
 		{
-			ALERT( at_console, "Unnamed schedule!\n" );
+			ALERT (at_console, "Unnamed schedule!\n" );
 			continue;
 		}
-		if ( stricmp( pName, pList[i]->pName ) == 0 )
+		if  (stricmp (pName, pList[i]->pName ) == 0 )
 			return pList[i];
 	}
 	return NULL;
@@ -1054,25 +1054,25 @@ Schedule_t *CBaseMonster :: ScheduleInList( const char *pName, Schedule_t **pLis
 // GetScheduleOfType - returns a pointer to one of the 
 // monster's available schedules of the indicated type.
 //=========================================================
-Schedule_t* CBaseMonster :: GetScheduleOfType ( int Type ) 
+Schedule_t* CBaseMonster :: GetScheduleOfType  (int Type ) 
 {
-//	ALERT ( at_console, "Sched Type:%d\n", Type );
-	switch	( Type )
+//	ALERT  (at_console, "Sched Type:%d\n", Type );
+	switch	 (Type )
 	{
 	// This is the schedule for scripted sequences AND scripted AI
 	case SCHED_AISCRIPT:
 		{
-			ASSERT( m_pCine != NULL );
-			if ( !m_pCine )
+			ASSERT (m_pCine != NULL );
+			if  (!m_pCine )
 			{
-				ALERT( at_aiconsole, "Script failed for %s\n", STRING(pev->classname) );
+				ALERT (at_aiconsole, "Script failed for %s\n", STRING(pev->classname) );
 				CineCleanup();
-				return GetScheduleOfType( SCHED_IDLE_STAND );
+				return GetScheduleOfType (SCHED_IDLE_STAND );
 			}
 //			else
-//				ALERT( at_aiconsole, "Starting script %s for %s\n", STRING( m_pCine->m_iszPlay ), STRING(pev->classname) );
+//				ALERT (at_aiconsole, "Starting script %s for %s\n", STRING (m_pCine->m_iszPlay ), STRING(pev->classname) );
 
-			switch ( m_pCine->m_fMoveTo )
+			switch  (m_pCine->m_fMoveTo )
 			{
 				case 0: 
 				case 4: 
@@ -1088,7 +1088,7 @@ Schedule_t* CBaseMonster :: GetScheduleOfType ( int Type )
 		}
 	case SCHED_IDLE_STAND:
 		{
-			if ( RANDOM_LONG(0,14) == 0 && FCanActiveIdle() )
+			if  (RANDOM_LONG(0,14) == 0 && FCanActiveIdle() )
 			{
 				return &slActiveIdle[ 0 ];
 			}
@@ -1221,7 +1221,7 @@ Schedule_t* CBaseMonster :: GetScheduleOfType ( int Type )
 		}
 	default:
 		{
-			ALERT ( at_console, "GetScheduleOfType()\nNo CASE for Schedule Type %d!\n", Type );
+			ALERT  (at_console, "GetScheduleOfType()\nNo CASE for Schedule Type %d!\n", Type );
 
 			return &slIdleStand[ 0 ];
 			break;

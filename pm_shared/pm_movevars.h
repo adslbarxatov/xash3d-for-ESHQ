@@ -6,7 +6,7 @@
 //=============================================================================
 
 // pm_movevars.h
-#if !defined( PM_MOVEVARSH )
+#if !defined (PM_MOVEVARSH )
 #define PM_MOVEVARSH
 
 // movevars_t                  // Physics variables.

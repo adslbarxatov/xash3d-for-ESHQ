@@ -80,6 +80,8 @@ may be useful for developers with the same mods' plots.
 
 35. Fixed bug with stucking weapons that can be dropped by dead h_grunts.
 
+36. 'use only' flag for doors works now as unlocker (without opening).
+
 
 
 ## Known bugs

@@ -143,7 +143,7 @@ void CGib :: SpawnHeadGib (entvars_t *pevVictim)
 			entvars_t	*pevPlayer;
 
 			pevPlayer = VARS (pentPlayer);
-			pGib->pev->velocity = ( (pevPlayer->origin + pevPlayer->view_ofs) - pGib->pev->origin).Normalize() * 300;
+			pGib->pev->velocity =  ((pevPlayer->origin + pevPlayer->view_ofs) - pGib->pev->origin).Normalize() * 300;
 			pGib->pev->velocity.z += 100;
 			}
 		else
@@ -533,7 +533,7 @@ void CBaseMonster::BecomeDead (void)
 
 BOOL CBaseMonster::ShouldGibMonster (int iGib)
 	{
-	if ( (iGib == GIB_NORMAL && pev->health < GIB_HEALTH_VALUE) || (iGib == GIB_ALWAYS))
+	if  ((iGib == GIB_NORMAL && pev->health < GIB_HEALTH_VALUE) || (iGib == GIB_ALWAYS))
 		return TRUE;
 
 	return FALSE;
@@ -889,7 +889,7 @@ int CBaseMonster :: TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker,
 		}
 
 	// if this is a player, move him around!
-	if ( (!FNullEnt (pevInflictor)) && (pev->movetype == MOVETYPE_WALK) && (!pevAttacker || pevAttacker->solid != SOLID_TRIGGER))
+	if  ((!FNullEnt (pevInflictor)) && (pev->movetype == MOVETYPE_WALK) && (!pevAttacker || pevAttacker->solid != SOLID_TRIGGER))
 		{
 		pev->velocity = pev->velocity + vecDir * -DamageForce (flDamage);
 		}

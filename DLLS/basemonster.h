@@ -42,7 +42,7 @@ public:
 		EHANDLE				m_hOldEnemy[ MAX_OLD_ENEMIES ];
 		Vector				m_vecOldEnemy[ MAX_OLD_ENEMIES ];
 
-		float				m_flFieldOfView;// width of monster's field of view ( dot product )
+		float				m_flFieldOfView;// width of monster's field of view  (dot product )
 		float				m_flWaitFinished;// if we're told to wait, this is the time that the wait will be over.
 		float				m_flMoveWaitFinished;
 
@@ -108,230 +108,230 @@ public:
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
 	CCineMonster		*m_pCine;
 
-	virtual int		Save( CSave &save ); 
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save (CSave &save ); 
+	virtual int		Restore (CRestore &restore );
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	void KeyValue( KeyValueData *pkvd );
+	void KeyValue (KeyValueData *pkvd );
 
 // monster use function
-	void EXPORT			MonsterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT			CorpseUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void EXPORT			MonsterUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void EXPORT			CorpseUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 // overrideable Monster member functions
 	
-	virtual int	 BloodColor( void ) { return m_bloodColor; }
+	virtual int	 BloodColor (void ) { return m_bloodColor; }
 
-	virtual CBaseMonster *MyMonsterPointer( void ) { return this; }
-	virtual void Look ( int iDistance );// basic sight function for monsters
-	virtual void RunAI ( void );// core ai function!	
-	void Listen ( void );
+	virtual CBaseMonster *MyMonsterPointer (void ) { return this; }
+	virtual void Look  (int iDistance );// basic sight function for monsters
+	virtual void RunAI  (void );// core ai function!	
+	void Listen  (void );
 
-	virtual BOOL	IsAlive( void ) { return (pev->deadflag != DEAD_DEAD); }
-	virtual BOOL	ShouldFadeOnDeath( void );
+	virtual BOOL	IsAlive (void ) { return (pev->deadflag != DEAD_DEAD); }
+	virtual BOOL	ShouldFadeOnDeath (void );
 
 // Basic Monster AI functions
-	virtual float ChangeYaw ( int speed );
-	float VecToYaw( Vector vecDir );
-	float FlYawDiff ( void ); 
+	virtual float ChangeYaw  (int speed );
+	float VecToYaw (Vector vecDir );
+	float FlYawDiff  (void ); 
 
-	float DamageForce( float damage );
+	float DamageForce (float damage );
 
 // stuff written for new state machine
-		virtual void MonsterThink( void );
-		void EXPORT	CallMonsterThink( void ) { this->MonsterThink(); }
-		virtual int IRelationship ( CBaseEntity *pTarget );
-		virtual void MonsterInit ( void );
-		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
-		virtual void BecomeDead( void );
-		void EXPORT CorpseFallThink( void );
+		virtual void MonsterThink (void );
+		void EXPORT	CallMonsterThink (void ) { this->MonsterThink(); }
+		virtual int IRelationship  (CBaseEntity *pTarget );
+		virtual void MonsterInit  (void );
+		virtual void MonsterInitDead (void );	// Call after animation/pose is set up
+		virtual void BecomeDead (void );
+		void EXPORT CorpseFallThink (void );
 
-		void EXPORT MonsterInitThink ( void );
-		virtual void StartMonster ( void );
-		virtual CBaseEntity* BestVisibleEnemy ( void );// finds best visible enemy for attack
-		virtual BOOL FInViewCone ( CBaseEntity *pEntity );// see if pEntity is in monster's view cone
-		virtual BOOL FInViewCone ( Vector *pOrigin );// see if given location is in monster's view cone
-		virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
+		void EXPORT MonsterInitThink  (void );
+		virtual void StartMonster  (void );
+		virtual CBaseEntity* BestVisibleEnemy  (void );// finds best visible enemy for attack
+		virtual BOOL FInViewCone  (CBaseEntity *pEntity );// see if pEntity is in monster's view cone
+		virtual BOOL FInViewCone  (Vector *pOrigin );// see if given location is in monster's view cone
+		virtual void HandleAnimEvent (MonsterEvent_t *pEvent );
 
-		virtual int CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space
-		virtual void Move( float flInterval = 0.1 );
-		virtual void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
-		virtual BOOL ShouldAdvanceRoute( float flWaypointDist );
+		virtual int CheckLocalMove  (const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space
+		virtual void Move (float flInterval = 0.1 );
+		virtual void MoveExecute (CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
+		virtual BOOL ShouldAdvanceRoute (float flWaypointDist );
 
-		virtual Activity GetStoppedActivity( void ) { return ACT_IDLE; }
-		virtual void Stop( void ) { m_IdealActivity = GetStoppedActivity(); }
+		virtual Activity GetStoppedActivity (void ) { return ACT_IDLE; }
+		virtual void Stop (void ) { m_IdealActivity = GetStoppedActivity(); }
 
 		// This will stop animation until you call ResetSequenceInfo() at some point in the future
-		inline void StopAnimation( void ) { pev->framerate = 0; }
+		inline void StopAnimation (void ) { pev->framerate = 0; }
 
 		// these functions will survey conditions and set appropriate conditions bits for attack types.
-		virtual BOOL CheckRangeAttack1( float flDot, float flDist );
-		virtual BOOL CheckRangeAttack2( float flDot, float flDist );
-		virtual BOOL CheckMeleeAttack1( float flDot, float flDist );
-		virtual BOOL CheckMeleeAttack2( float flDot, float flDist );
+		virtual BOOL CheckRangeAttack1 (float flDot, float flDist );
+		virtual BOOL CheckRangeAttack2 (float flDot, float flDist );
+		virtual BOOL CheckMeleeAttack1 (float flDot, float flDist );
+		virtual BOOL CheckMeleeAttack2 (float flDot, float flDist );
 
-		BOOL FHaveSchedule( void );
-		BOOL FScheduleValid ( void );
-		void ClearSchedule( void );
-		BOOL FScheduleDone ( void );
-		void ChangeSchedule ( Schedule_t *pNewSchedule );
-		void NextScheduledTask ( void );
-		Schedule_t *ScheduleInList( const char *pName, Schedule_t **pList, int listCount );
+		BOOL FHaveSchedule (void );
+		BOOL FScheduleValid  (void );
+		void ClearSchedule (void );
+		BOOL FScheduleDone  (void );
+		void ChangeSchedule  (Schedule_t *pNewSchedule );
+		void NextScheduledTask  (void );
+		Schedule_t *ScheduleInList (const char *pName, Schedule_t **pList, int listCount );
 
-		virtual Schedule_t *ScheduleFromName( const char *pName );
+		virtual Schedule_t *ScheduleFromName (const char *pName );
 		static Schedule_t *m_scheduleList[];
 		
-		void MaintainSchedule ( void );
-		virtual void StartTask ( Task_t *pTask );
-		virtual void RunTask ( Task_t *pTask );
-		virtual Schedule_t *GetScheduleOfType( int Type );
-		virtual Schedule_t *GetSchedule( void );
-		virtual void ScheduleChange( void ) {}
-		// virtual int CanPlaySequence( void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
-		virtual int CanPlaySequence( BOOL fDisregardState, int interruptLevel );
-		virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAlive(); }
-		virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-		virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+		void MaintainSchedule  (void );
+		virtual void StartTask  (Task_t *pTask );
+		virtual void RunTask  (Task_t *pTask );
+		virtual Schedule_t *GetScheduleOfType (int Type );
+		virtual Schedule_t *GetSchedule (void );
+		virtual void ScheduleChange (void ) {}
+		// virtual int CanPlaySequence (void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
+		virtual int CanPlaySequence (BOOL fDisregardState, int interruptLevel );
+		virtual int CanPlaySentence (BOOL fDisregardState ) { return IsAlive(); }
+		virtual void PlaySentence (const char *pszSentence, float duration, float volume, float attenuation );
+		virtual void PlayScriptedSentence (const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
 
-		virtual void SentenceStop( void );
+		virtual void SentenceStop (void );
 
-		Task_t *GetTask ( void );
-		virtual MONSTERSTATE GetIdealState ( void );
-		virtual void SetActivity ( Activity NewActivity );
-		void SetSequenceByName ( char *szSequence );
-		void SetState ( MONSTERSTATE State );
-		virtual void ReportAIState( void );
+		Task_t *GetTask  (void );
+		virtual MONSTERSTATE GetIdealState  (void );
+		virtual void SetActivity  (Activity NewActivity );
+		void SetSequenceByName  (char *szSequence );
+		void SetState  (MONSTERSTATE State );
+		virtual void ReportAIState (void );
 
-		void CheckAttacks ( CBaseEntity *pTarget, float flDist );
-		virtual int CheckEnemy ( CBaseEntity *pEnemy );
-		void PushEnemy( CBaseEntity *pEnemy, Vector &vecLastKnownPos );
-		BOOL PopEnemy( void );
+		void CheckAttacks  (CBaseEntity *pTarget, float flDist );
+		virtual int CheckEnemy  (CBaseEntity *pEnemy );
+		void PushEnemy (CBaseEntity *pEnemy, Vector &vecLastKnownPos );
+		BOOL PopEnemy (void );
 
-		BOOL FGetNodeRoute ( Vector vecDest );
+		BOOL FGetNodeRoute  (Vector vecDest );
 		
-		inline void TaskComplete( void ) { if ( !HasConditions(bits_COND_TASK_FAILED) ) m_iTaskStatus = TASKSTATUS_COMPLETE; }
-		void MovementComplete( void );
-		inline void TaskFail( void ) { SetConditions(bits_COND_TASK_FAILED); }
-		inline void TaskBegin( void ) { m_iTaskStatus = TASKSTATUS_RUNNING; }
-		int TaskIsRunning( void );
-		inline int TaskIsComplete( void ) { return (m_iTaskStatus == TASKSTATUS_COMPLETE); }
-		inline int MovementIsComplete( void ) { return (m_movementGoal == MOVEGOAL_NONE); }
+		inline void TaskComplete (void ) { if  (!HasConditions(bits_COND_TASK_FAILED) ) m_iTaskStatus = TASKSTATUS_COMPLETE; }
+		void MovementComplete (void );
+		inline void TaskFail (void ) { SetConditions(bits_COND_TASK_FAILED); }
+		inline void TaskBegin (void ) { m_iTaskStatus = TASKSTATUS_RUNNING; }
+		int TaskIsRunning (void );
+		inline int TaskIsComplete (void ) { return (m_iTaskStatus == TASKSTATUS_COMPLETE); }
+		inline int MovementIsComplete (void ) { return (m_movementGoal == MOVEGOAL_NONE); }
 
-		int IScheduleFlags ( void );
-		BOOL FRefreshRoute( void );
-		BOOL FRouteClear ( void );
-		void RouteSimplify( CBaseEntity *pTargetEnt );
-		void AdvanceRoute ( float distance );
-		virtual BOOL FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
-		void MakeIdealYaw( Vector vecTarget );
-		virtual void SetYawSpeed ( void ) { return; };// allows different yaw_speeds for each activity
-		BOOL BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget );
-		virtual BOOL BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
-		int RouteClassify( int iMoveFlag );
-		void InsertWaypoint ( Vector vecLocation, int afMoveFlags );
+		int IScheduleFlags  (void );
+		BOOL FRefreshRoute (void );
+		BOOL FRouteClear  (void );
+		void RouteSimplify (CBaseEntity *pTargetEnt );
+		void AdvanceRoute  (float distance );
+		virtual BOOL FTriangulate  (const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
+		void MakeIdealYaw (Vector vecTarget );
+		virtual void SetYawSpeed  (void ) { return; };// allows different yaw_speeds for each activity
+		BOOL BuildRoute  (const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget );
+		virtual BOOL BuildNearestRoute  (Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
+		int RouteClassify (int iMoveFlag );
+		void InsertWaypoint  (Vector vecLocation, int afMoveFlags );
 		
-		BOOL FindLateralCover ( const Vector &vecThreat, const Vector &vecViewOffset );
-		virtual BOOL FindCover ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
-		virtual BOOL FValidateCover ( const Vector &vecCoverLocation ) { return TRUE; };
-		virtual float CoverRadius( void ) { return 784; } // Default cover radius
+		BOOL FindLateralCover  (const Vector &vecThreat, const Vector &vecViewOffset );
+		virtual BOOL FindCover  (Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
+		virtual BOOL FValidateCover  (const Vector &vecCoverLocation ) { return TRUE; };
+		virtual float CoverRadius (void ) { return 784; } // Default cover radius
 
-		virtual BOOL FCanCheckAttacks ( void );
-		virtual void CheckAmmo( void ) { return; };
-		virtual int IgnoreConditions ( void );
+		virtual BOOL FCanCheckAttacks  (void );
+		virtual void CheckAmmo (void ) { return; };
+		virtual int IgnoreConditions  (void );
 		
-		inline void	SetConditions( int iConditions ) { m_afConditions |= iConditions; }
-		inline void	ClearConditions( int iConditions ) { m_afConditions &= ~iConditions; }
-		inline BOOL HasConditions( int iConditions ) { if ( m_afConditions & iConditions ) return TRUE; return FALSE; }
-		inline BOOL HasAllConditions( int iConditions ) { if ( (m_afConditions & iConditions) == iConditions ) return TRUE; return FALSE; }
+		inline void	SetConditions (int iConditions ) { m_afConditions |= iConditions; }
+		inline void	ClearConditions (int iConditions ) { m_afConditions &= ~iConditions; }
+		inline BOOL HasConditions (int iConditions ) { if  (m_afConditions & iConditions ) return TRUE; return FALSE; }
+		inline BOOL HasAllConditions (int iConditions ) { if  ((m_afConditions & iConditions) == iConditions ) return TRUE; return FALSE; }
 
-		virtual BOOL FValidateHintType( short sHint );
-		int FindHintNode ( void );
-		virtual BOOL FCanActiveIdle ( void );
-		void SetTurnActivity ( void );
-		float FLSoundVolume ( CSound *pSound );
+		virtual BOOL FValidateHintType (short sHint );
+		int FindHintNode  (void );
+		virtual BOOL FCanActiveIdle  (void );
+		void SetTurnActivity  (void );
+		float FLSoundVolume  (CSound *pSound );
 
-		BOOL MoveToNode( Activity movementAct, float waitTime, const Vector &goal );
-		BOOL MoveToTarget( Activity movementAct, float waitTime );
-		BOOL MoveToLocation( Activity movementAct, float waitTime, const Vector &goal );
-		BOOL MoveToEnemy( Activity movementAct, float waitTime );
+		BOOL MoveToNode (Activity movementAct, float waitTime, const Vector &goal );
+		BOOL MoveToTarget (Activity movementAct, float waitTime );
+		BOOL MoveToLocation (Activity movementAct, float waitTime, const Vector &goal );
+		BOOL MoveToEnemy (Activity movementAct, float waitTime );
 
 		// Returns the time when the door will be open
-		float	OpenDoorAndWait( entvars_t *pevDoor );
+		float	OpenDoorAndWait (entvars_t *pevDoor );
 
-		virtual int ISoundMask( void );
-		virtual CSound* PBestSound ( void );
-		virtual CSound* PBestScent ( void );
-		virtual float HearingSensitivity( void ) { return 1.0; };
+		virtual int ISoundMask (void );
+		virtual CSound* PBestSound  (void );
+		virtual CSound* PBestScent  (void );
+		virtual float HearingSensitivity (void ) { return 1.0; };
 
-		BOOL FBecomeProne ( void );
-		virtual void BarnacleVictimBitten( entvars_t *pevBarnacle );
-		virtual void BarnacleVictimReleased( void );
+		BOOL FBecomeProne  (void );
+		virtual void BarnacleVictimBitten (entvars_t *pevBarnacle );
+		virtual void BarnacleVictimReleased (void );
 
-		void SetEyePosition ( void );
+		void SetEyePosition  (void );
 
-		BOOL FShouldEat( void );// see if a monster is 'hungry'
-		void Eat ( float flFullDuration );// make the monster 'full' for a while.
+		BOOL FShouldEat (void );// see if a monster is 'hungry'
+		void Eat  (float flFullDuration );// make the monster 'full' for a while.
 
-		CBaseEntity *CheckTraceHullAttack( float flDist, int iDamage, int iDmgType );
-		BOOL FacingIdeal( void );
+		CBaseEntity *CheckTraceHullAttack (float flDist, int iDamage, int iDmgType );
+		BOOL FacingIdeal (void );
 
-		BOOL FCheckAITrigger( void );// checks and, if necessary, fires the monster's trigger target. 
-		BOOL NoFriendlyFire( void );
+		BOOL FCheckAITrigger (void );// checks and, if necessary, fires the monster's trigger target. 
+		BOOL NoFriendlyFire (void );
 
-		BOOL BBoxFlat( void );
+		BOOL BBoxFlat (void );
 
 		// PrescheduleThink 
-		virtual void PrescheduleThink( void ) { return; };
+		virtual void PrescheduleThink (void ) { return; };
 
-		BOOL GetEnemy ( void );
-		void MakeDamageBloodDecal ( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir );
-		void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+		BOOL GetEnemy  (void );
+		void MakeDamageBloodDecal  (int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir );
+		void TraceAttack (entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 
 	// combat functions
-	float UpdateTarget ( entvars_t *pevTarget );
-	virtual Activity GetDeathActivity ( void );
-	Activity GetSmallFlinchActivity( void );
-	virtual void Killed( entvars_t *pevAttacker, int iGib );
-	virtual void GibMonster( void );
-	BOOL		 ShouldGibMonster( int iGib );
-	void		 CallGibMonster( void );
-	virtual BOOL	HasHumanGibs( void );
-	virtual BOOL	HasAlienGibs( void );
-	virtual void	FadeMonster( void );	// Called instead of GibMonster() when gibs are disabled
+	float UpdateTarget  (entvars_t *pevTarget );
+	virtual Activity GetDeathActivity  (void );
+	Activity GetSmallFlinchActivity (void );
+	virtual void Killed (entvars_t *pevAttacker, int iGib );
+	virtual void GibMonster (void );
+	BOOL		 ShouldGibMonster (int iGib );
+	void		 CallGibMonster (void );
+	virtual BOOL	HasHumanGibs (void );
+	virtual BOOL	HasAlienGibs (void );
+	virtual void	FadeMonster (void );	// Called instead of GibMonster() when gibs are disabled
 
-	Vector ShootAtEnemy( const Vector &shootOrigin );
-	virtual Vector BodyTarget( const Vector &posSrc ) { return Center( ) * 0.75 + EyePosition() * 0.25; };		// position to shoot at
+	Vector ShootAtEnemy (const Vector &shootOrigin );
+	virtual Vector BodyTarget (const Vector &posSrc ) { return Center () * 0.75 + EyePosition() * 0.25; };		// position to shoot at
 
-	virtual	Vector  GetGunPosition( void );
+	virtual	Vector  GetGunPosition (void );
 
-	virtual int TakeHealth( float flHealth, int bitsDamageType );
-	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	int			DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	virtual int TakeHealth (float flHealth, int bitsDamageType );
+	virtual int TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	int			DeadTakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
 	void RadiusDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
 	void RadiusDamage(Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
-	virtual int		IsMoving( void ) { return m_movementGoal != MOVEGOAL_NONE; }
+	virtual int		IsMoving (void ) { return m_movementGoal != MOVEGOAL_NONE; }
 
-	void RouteClear( void );
-	void RouteNew( void );
+	void RouteClear (void );
+	void RouteNew (void );
 	
-	virtual void DeathSound ( void ) { return; };
-	virtual void AlertSound ( void ) { return; };
-	virtual void IdleSound ( void ) { return; };
-	virtual void PainSound ( void ) { return; };
+	virtual void DeathSound  (void ) { return; };
+	virtual void AlertSound  (void ) { return; };
+	virtual void IdleSound  (void ) { return; };
+	virtual void PainSound  (void ) { return; };
 	
-	virtual void StopFollowing( BOOL clearSchedule ) {}
+	virtual void StopFollowing (BOOL clearSchedule ) {}
 
-	inline void	Remember( int iMemory ) { m_afMemory |= iMemory; }
-	inline void	Forget( int iMemory ) { m_afMemory &= ~iMemory; }
-	inline BOOL HasMemory( int iMemory ) { if ( m_afMemory & iMemory ) return TRUE; return FALSE; }
-	inline BOOL HasAllMemories( int iMemory ) { if ( (m_afMemory & iMemory) == iMemory ) return TRUE; return FALSE; }
+	inline void	Remember (int iMemory ) { m_afMemory |= iMemory; }
+	inline void	Forget (int iMemory ) { m_afMemory &= ~iMemory; }
+	inline BOOL HasMemory (int iMemory ) { if  (m_afMemory & iMemory ) return TRUE; return FALSE; }
+	inline BOOL HasAllMemories (int iMemory ) { if  ((m_afMemory & iMemory) == iMemory ) return TRUE; return FALSE; }
 
-	BOOL ExitScriptedSequence( );
-	BOOL CineCleanup( );
+	BOOL ExitScriptedSequence ();
+	BOOL CineCleanup ();
 
-	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+	CBaseEntity* DropItem  (char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 };
 
 

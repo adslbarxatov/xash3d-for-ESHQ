@@ -69,7 +69,7 @@ extern enginefuncs_t g_engfuncs;
 #define RANDOM_FLOAT	(*g_engfuncs.pfnRandomFloat)
 #define GETPLAYERAUTHID	(*g_engfuncs.pfnGetPlayerAuthId)
 
-inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NULL, edict_t *ed = NULL ) {
+inline void MESSAGE_BEGIN (int msg_dest, int msg_type, const float *pOrigin = NULL, edict_t *ed = NULL ) {
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
 }
 #define MESSAGE_END		(*g_engfuncs.pfnMessageEnd)
@@ -90,9 +90,9 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define ALERT			(*g_engfuncs.pfnAlertMessage)
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE	(*g_engfuncs.pfnPvAllocEntPrivateData)
-inline void *GET_PRIVATE( edict_t *pent )
+inline void *GET_PRIVATE (edict_t *pent )
 {
-	if ( pent )
+	if  (pent )
 		return pent->pvPrivateData;
 	return NULL;
 }
@@ -134,26 +134,26 @@ inline void *GET_PRIVATE( edict_t *pent )
 
 #define ENGINE_CHECK_VISIBILITY (*g_engfuncs.pfnCheckVisibility)
 
-#define DELTA_SET				( *g_engfuncs.pfnDeltaSetField )
-#define DELTA_UNSET				( *g_engfuncs.pfnDeltaUnsetField )
-#define DELTA_ADDENCODER		( *g_engfuncs.pfnDeltaAddEncoder )
-#define ENGINE_CURRENT_PLAYER   ( *g_engfuncs.pfnGetCurrentPlayer )
+#define DELTA_SET				 (*g_engfuncs.pfnDeltaSetField )
+#define DELTA_UNSET				 (*g_engfuncs.pfnDeltaUnsetField )
+#define DELTA_ADDENCODER		 (*g_engfuncs.pfnDeltaAddEncoder )
+#define ENGINE_CURRENT_PLAYER    (*g_engfuncs.pfnGetCurrentPlayer )
 
-#define	ENGINE_CANSKIP			( *g_engfuncs.pfnCanSkipPlayer )
+#define	ENGINE_CANSKIP			 (*g_engfuncs.pfnCanSkipPlayer )
 
-#define DELTA_FINDFIELD			( *g_engfuncs.pfnDeltaFindField )
-#define DELTA_SETBYINDEX		( *g_engfuncs.pfnDeltaSetFieldByIndex )
-#define DELTA_UNSETBYINDEX		( *g_engfuncs.pfnDeltaUnsetFieldByIndex )
+#define DELTA_FINDFIELD			 (*g_engfuncs.pfnDeltaFindField )
+#define DELTA_SETBYINDEX		 (*g_engfuncs.pfnDeltaSetFieldByIndex )
+#define DELTA_UNSETBYINDEX		 (*g_engfuncs.pfnDeltaUnsetFieldByIndex )
 
-#define ENGINE_GETPHYSINFO		( *g_engfuncs.pfnGetPhysicsInfoString )
+#define ENGINE_GETPHYSINFO		 (*g_engfuncs.pfnGetPhysicsInfoString )
 
-#define ENGINE_SETGROUPMASK		( *g_engfuncs.pfnSetGroupMask )
+#define ENGINE_SETGROUPMASK		 (*g_engfuncs.pfnSetGroupMask )
 
-#define ENGINE_INSTANCE_BASELINE ( *g_engfuncs.pfnCreateInstancedBaseline )
+#define ENGINE_INSTANCE_BASELINE  (*g_engfuncs.pfnCreateInstancedBaseline )
 
-#define ENGINE_FORCE_UNMODIFIED	( *g_engfuncs.pfnForceUnmodified )
+#define ENGINE_FORCE_UNMODIFIED	 (*g_engfuncs.pfnForceUnmodified )
 
-#define PLAYER_CNX_STATS		( *g_engfuncs.pfnGetPlayerStats )
+#define PLAYER_CNX_STATS		 (*g_engfuncs.pfnGetPlayerStats )
 
 #define WRITE_ACHIEVEMENTS_SCRIPT	(*g_engfuncs.pfnWriteAchievementsScript)
 

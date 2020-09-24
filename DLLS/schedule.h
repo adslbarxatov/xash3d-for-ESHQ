@@ -229,15 +229,15 @@ struct WayPoint_t
 
 // these MoveFlag values are assigned to a WayPoint's TYPE in order to demonstrate the 
 // type of movement the monster should use to get there.
-#define bits_MF_TO_TARGETENT		( 1 << 0 ) // local move to targetent.
-#define bits_MF_TO_ENEMY			( 1 << 1 ) // local move to enemy
-#define bits_MF_TO_COVER			( 1 << 2 ) // local move to a hiding place
-#define bits_MF_TO_DETOUR			( 1 << 3 ) // local move to detour point.
-#define bits_MF_TO_PATHCORNER		( 1 << 4 ) // local move to a path corner
-#define bits_MF_TO_NODE				( 1 << 5 ) // local move to a node
-#define bits_MF_TO_LOCATION			( 1 << 6 ) // local move to an arbitrary point
-#define bits_MF_IS_GOAL				( 1 << 7 ) // this waypoint is the goal of the whole move.
-#define bits_MF_DONT_SIMPLIFY		( 1 << 8 ) // Don't let the route code simplify this waypoint
+#define bits_MF_TO_TARGETENT		 (1 << 0 ) // local move to targetent.
+#define bits_MF_TO_ENEMY			 (1 << 1 ) // local move to enemy
+#define bits_MF_TO_COVER			 (1 << 2 ) // local move to a hiding place
+#define bits_MF_TO_DETOUR			 (1 << 3 ) // local move to detour point.
+#define bits_MF_TO_PATHCORNER		 (1 << 4 ) // local move to a path corner
+#define bits_MF_TO_NODE				 (1 << 5 ) // local move to a node
+#define bits_MF_TO_LOCATION			 (1 << 6 ) // local move to an arbitrary point
+#define bits_MF_IS_GOAL				 (1 << 7 ) // this waypoint is the goal of the whole move.
+#define bits_MF_DONT_SIMPLIFY		 (1 << 8 ) // Don't let the route code simplify this waypoint
 
 // If you define any flags that aren't _TO_ flags, add them here so we can mask
 // them off when doing compares.
@@ -252,35 +252,35 @@ struct WayPoint_t
 
 // these bits represent conditions that may befall the monster, of which some are allowed 
 // to interrupt certain schedules. 
-#define bits_COND_NO_AMMO_LOADED		( 1 << 0 ) // weapon needs to be reloaded!
-#define	bits_COND_SEE_HATE				( 1 << 1 ) // see something that you hate
-#define bits_COND_SEE_FEAR				( 1 << 2 ) // see something that you are afraid of
-#define bits_COND_SEE_DISLIKE			( 1 << 3 ) // see something that you dislike
-#define bits_COND_SEE_ENEMY				( 1 << 4 ) // target entity is in full view.
-#define bits_COND_ENEMY_OCCLUDED		( 1 << 5 ) // target entity occluded by the world
-#define bits_COND_SMELL_FOOD			( 1 << 6 )
-#define bits_COND_ENEMY_TOOFAR			( 1 << 7 )
-#define bits_COND_LIGHT_DAMAGE			( 1 << 8 ) // hurt a little 
-#define bits_COND_HEAVY_DAMAGE			( 1 << 9 ) // hurt a lot
-#define bits_COND_CAN_RANGE_ATTACK1		( 1 << 10)
-#define bits_COND_CAN_MELEE_ATTACK1		( 1 << 11)
-#define bits_COND_CAN_RANGE_ATTACK2		( 1 << 12)
-#define bits_COND_CAN_MELEE_ATTACK2		( 1 << 13)
-// #define bits_COND_CAN_RANGE_ATTACK3		( 1 << 14)
-#define bits_COND_PROVOKED				( 1 << 15)
-#define bits_COND_NEW_ENEMY				( 1 << 16)
-#define bits_COND_HEAR_SOUND			( 1 << 17) // there is an interesting sound
-#define bits_COND_SMELL					( 1 << 18) // there is an interesting scent
-#define bits_COND_ENEMY_FACING_ME		( 1 << 19) // enemy is facing me
-#define bits_COND_ENEMY_DEAD			( 1 << 20) // enemy was killed. If you get this in combat, try to find another enemy. If you get it in alert, victory dance.
-#define bits_COND_SEE_CLIENT			( 1 << 21) // see a client
-#define bits_COND_SEE_NEMESIS			( 1 << 22) // see my nemesis
+#define bits_COND_NO_AMMO_LOADED		 (1 << 0 ) // weapon needs to be reloaded!
+#define	bits_COND_SEE_HATE				 (1 << 1 ) // see something that you hate
+#define bits_COND_SEE_FEAR				 (1 << 2 ) // see something that you are afraid of
+#define bits_COND_SEE_DISLIKE			 (1 << 3 ) // see something that you dislike
+#define bits_COND_SEE_ENEMY				 (1 << 4 ) // target entity is in full view.
+#define bits_COND_ENEMY_OCCLUDED		 (1 << 5 ) // target entity occluded by the world
+#define bits_COND_SMELL_FOOD			 (1 << 6 )
+#define bits_COND_ENEMY_TOOFAR			 (1 << 7 )
+#define bits_COND_LIGHT_DAMAGE			 (1 << 8 ) // hurt a little 
+#define bits_COND_HEAVY_DAMAGE			 (1 << 9 ) // hurt a lot
+#define bits_COND_CAN_RANGE_ATTACK1		 (1 << 10)
+#define bits_COND_CAN_MELEE_ATTACK1		 (1 << 11)
+#define bits_COND_CAN_RANGE_ATTACK2		 (1 << 12)
+#define bits_COND_CAN_MELEE_ATTACK2		 (1 << 13)
+// #define bits_COND_CAN_RANGE_ATTACK3		 (1 << 14)
+#define bits_COND_PROVOKED				 (1 << 15)
+#define bits_COND_NEW_ENEMY				 (1 << 16)
+#define bits_COND_HEAR_SOUND			 (1 << 17) // there is an interesting sound
+#define bits_COND_SMELL					 (1 << 18) // there is an interesting scent
+#define bits_COND_ENEMY_FACING_ME		 (1 << 19) // enemy is facing me
+#define bits_COND_ENEMY_DEAD			 (1 << 20) // enemy was killed. If you get this in combat, try to find another enemy. If you get it in alert, victory dance.
+#define bits_COND_SEE_CLIENT			 (1 << 21) // see a client
+#define bits_COND_SEE_NEMESIS			 (1 << 22) // see my nemesis
 
-#define bits_COND_SPECIAL1				( 1 << 28) // Defined by individual monster
-#define bits_COND_SPECIAL2				( 1 << 29) // Defined by individual monster
+#define bits_COND_SPECIAL1				 (1 << 28) // Defined by individual monster
+#define bits_COND_SPECIAL2				 (1 << 29) // Defined by individual monster
 
-#define bits_COND_TASK_FAILED			( 1 << 30)
-#define bits_COND_SCHEDULE_DONE			( 1 << 31)
+#define bits_COND_TASK_FAILED			 (1 << 30)
+#define bits_COND_SCHEDULE_DONE			 (1 << 31)
 
 
 #define bits_COND_ALL_SPECIAL			(bits_COND_SPECIAL1 | bits_COND_SPECIAL2)

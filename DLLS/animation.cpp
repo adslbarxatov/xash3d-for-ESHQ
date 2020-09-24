@@ -51,11 +51,11 @@ typedef unsigned char byte;
 
 extern globalvars_t				*gpGlobals;
 
-#pragma warning( disable : 4244 )
+#pragma warning (disable : 4244 )
 
 
 
-int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
+int ExtractBbox (void *pmodel, int sequence, float *mins, float *maxs )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -79,7 +79,7 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 }
 
 
-int LookupActivity( void *pmodel, entvars_t *pev, int activity )
+int LookupActivity (void *pmodel, entvars_t *pev, int activity )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -107,12 +107,12 @@ int LookupActivity( void *pmodel, entvars_t *pev, int activity )
 }
 
 
-int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
+int LookupActivityHeaviest (void *pmodel, entvars_t *pev, int activity )
 {
 	studiohdr_t *pstudiohdr;
 	
 	pstudiohdr = (studiohdr_t *)pmodel;
-	if ( !pstudiohdr )
+	if  (!pstudiohdr )
 		return 0;
 
 	mstudioseqdesc_t	*pseqdesc;
@@ -125,7 +125,7 @@ int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
 	{
 		if (pseqdesc[i].activity == activity)
 		{
-			if ( pseqdesc[i].actweight > weight )
+			if  (pseqdesc[i].actweight > weight )
 			{
 				weight = pseqdesc[i].actweight;
 				seq = i;
@@ -136,22 +136,22 @@ int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
 	return seq;
 }
 
-void GetEyePosition ( void *pmodel, float *vecEyePosition )
+void GetEyePosition  (void *pmodel, float *vecEyePosition )
 {
 	studiohdr_t *pstudiohdr;
 	
 	pstudiohdr = (studiohdr_t *)pmodel;
 
-	if ( !pstudiohdr )
+	if  (!pstudiohdr )
 	{
-		ALERT ( at_console, "GetEyePosition() Can't get pstudiohdr ptr!\n" );
+		ALERT  (at_console, "GetEyePosition() Can't get pstudiohdr ptr!\n" );
 		return;
 	}
 
-	VectorCopy ( pstudiohdr->eyeposition, vecEyePosition );
+	VectorCopy  (pstudiohdr->eyeposition, vecEyePosition );
 }
 
-int LookupSequence( void *pmodel, const char *label )
+int LookupSequence (void *pmodel, const char *label )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -165,7 +165,7 @@ int LookupSequence( void *pmodel, const char *label )
 
 	for (int i = 0; i < pstudiohdr->numseq; i++)
 	{
-		if (stricmp( pseqdesc[i].label, label ) == 0)
+		if (stricmp (pseqdesc[i].label, label ) == 0)
 			return i;
 	}
 
@@ -173,23 +173,23 @@ int LookupSequence( void *pmodel, const char *label )
 }
 
 
-int IsSoundEvent( int eventNumber )
+int IsSoundEvent (int eventNumber )
 {
-	if ( eventNumber == SCRIPT_EVENT_SOUND || eventNumber == SCRIPT_EVENT_SOUND_VOICE )
+	if  (eventNumber == SCRIPT_EVENT_SOUND || eventNumber == SCRIPT_EVENT_SOUND_VOICE )
 		return 1;
 	return 0;
 }
 
 
-void SequencePrecache( void *pmodel, const char *pSequenceName )
+void SequencePrecache (void *pmodel, const char *pSequenceName )
 {
-	int index = LookupSequence( pmodel, pSequenceName );
-	if ( index >= 0 )
+	int index = LookupSequence (pmodel, pSequenceName );
+	if  (index >= 0 )
 	{
 		studiohdr_t *pstudiohdr;
 	
 		pstudiohdr = (studiohdr_t *)pmodel;
-		if ( !pstudiohdr || index >= pstudiohdr->numseq )
+		if  (!pstudiohdr || index >= pstudiohdr->numseq )
 			return;
 
 		mstudioseqdesc_t	*pseqdesc;
@@ -201,19 +201,19 @@ void SequencePrecache( void *pmodel, const char *pSequenceName )
 		for (int i = 0; i < pseqdesc->numevents; i++)
 		{
 			// Don't send client-side events to the server AI
-			if ( pevent[i].event >= EVENT_CLIENT )
+			if  (pevent[i].event >= EVENT_CLIENT )
 				continue;
 
 			// UNDONE: Add a callback to check to see if a sound is precached yet and don't allocate a copy
 			// of it's name if it is.
-			if ( IsSoundEvent( pevent[i].event ) )
+			if  (IsSoundEvent (pevent[i].event ) )
 			{
-				if ( !strlen(pevent[i].options) )
+				if  (!strlen(pevent[i].options) )
 				{
-					ALERT( at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options );
+					ALERT (at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options );
 				}
 
-				PRECACHE_SOUND( (char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
+				PRECACHE_SOUND ((char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
 			}
 		}
 	}
@@ -221,7 +221,7 @@ void SequencePrecache( void *pmodel, const char *pSequenceName )
 
 
 
-void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed )
+void GetSequenceInfo (void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -243,7 +243,7 @@ void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *
 	if (pseqdesc->numframes > 1)
 	{
 		*pflFrameRate = 256 * pseqdesc->fps / (pseqdesc->numframes - 1);
-		*pflGroundSpeed = sqrt( pseqdesc->linearmovement[0]*pseqdesc->linearmovement[0]+ pseqdesc->linearmovement[1]*pseqdesc->linearmovement[1]+ pseqdesc->linearmovement[2]*pseqdesc->linearmovement[2] );
+		*pflGroundSpeed = sqrt (pseqdesc->linearmovement[0]*pseqdesc->linearmovement[0]+ pseqdesc->linearmovement[1]*pseqdesc->linearmovement[1]+ pseqdesc->linearmovement[2]*pseqdesc->linearmovement[2] );
 		*pflGroundSpeed = *pflGroundSpeed * pseqdesc->fps / (pseqdesc->numframes - 1);
 	}
 	else
@@ -254,12 +254,12 @@ void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *
 }
 
 
-int GetSequenceFlags( void *pmodel, entvars_t *pev )
+int GetSequenceFlags (void *pmodel, entvars_t *pev )
 {
 	studiohdr_t *pstudiohdr;
 	
 	pstudiohdr = (studiohdr_t *)pmodel;
-	if ( !pstudiohdr || pev->sequence >= pstudiohdr->numseq )
+	if  (!pstudiohdr || pev->sequence >= pstudiohdr->numseq )
 		return 0;
 
 	mstudioseqdesc_t	*pseqdesc;
@@ -269,12 +269,12 @@ int GetSequenceFlags( void *pmodel, entvars_t *pev )
 }
 
 
-int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index )
+int GetAnimationEvent (void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index )
 {
 	studiohdr_t *pstudiohdr;
 	
 	pstudiohdr = (studiohdr_t *)pmodel;
-	if ( !pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
+	if  (!pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
 		return 0;
 
 	int events = 0;
@@ -302,10 +302,10 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	for (; index < pseqdesc->numevents; index++)
 	{
 		// Don't send client-side events to the server AI
-		if ( pevent[index].event >= EVENT_CLIENT )
+		if  (pevent[index].event >= EVENT_CLIENT )
 			continue;
 
-		if ( (pevent[index].frame >= flStart && pevent[index].frame < flEnd) || 
+		if  ((pevent[index].frame >= flStart && pevent[index].frame < flEnd) || 
 			((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1) )
 		{
 			pMonsterEvent->event = pevent[index].event;
@@ -316,7 +316,7 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	return 0;
 }
 
-float SetController( void *pmodel, entvars_t *pev, int iController, float flValue )
+float SetController (void *pmodel, entvars_t *pev, int iController, float flValue )
 {
 	int i;
 
@@ -372,7 +372,7 @@ float SetController( void *pmodel, entvars_t *pev, int iController, float flValu
 }
 
 
-float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
+float SetBlending (void *pmodel, entvars_t *pev, int iBlender, float flValue )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -416,7 +416,7 @@ float SetBlending( void *pmodel, entvars_t *pev, int iBlender, float flValue )
 
 
 
-int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
+int FindTransition (void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -435,7 +435,7 @@ int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
 
 	int	iEndNode;
 
-	// ALERT( at_console, "from %d to %d: ", pEndNode->iEndNode, pGoalNode->iStartNode );
+	// ALERT (at_console, "from %d to %d: ", pEndNode->iEndNode, pGoalNode->iStartNode );
 
 	if (*piDir > 0)
 	{
@@ -479,11 +479,11 @@ int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir )
 		}
 	}
 
-	ALERT( at_console, "error in transition graph" );
+	ALERT (at_console, "error in transition graph" );
 	return iGoalAnim;
 }
 
-void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue )
+void SetBodygroup (void *pmodel, entvars_t *pev, int iGroup, int iValue )
 {
 	studiohdr_t *pstudiohdr;
 	
@@ -505,7 +505,7 @@ void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue )
 }
 
 
-int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup )
+int GetBodygroup (void *pmodel, entvars_t *pev, int iGroup )
 {
 	studiohdr_t *pstudiohdr;
 	
