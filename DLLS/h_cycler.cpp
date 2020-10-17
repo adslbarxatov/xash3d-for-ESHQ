@@ -120,7 +120,9 @@ class CGenericCycler : public CCycler
 	public:
 		void Spawn (void) { GenericCyclerSpawn ((char *)STRING(pev->model), Vector (-16, -16, 0), Vector (16, 16, 72)); }
 	};
+
 LINK_ENTITY_TO_CLASS (cycler, CGenericCycler);
+LINK_ENTITY_TO_CLASS (env_model, CGenericCycler);	// ׁמגלוסעטלמסעü ס AOMDC
 
 // Cycler member functions
 

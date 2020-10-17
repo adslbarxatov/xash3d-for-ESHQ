@@ -229,8 +229,6 @@ void CItem :: KeyValue (KeyValueData* pkvd)
 		}
 	}
 
-
-
 #define SF_SUIT_SHORTLOGON		0x0001
 
 class CItemSuit : public CItem
@@ -262,9 +260,8 @@ class CItemSuit : public CItem
 		}
 	};
 
-LINK_ENTITY_TO_CLASS(item_suit, CItemSuit);
-
-
+LINK_ENTITY_TO_CLASS (item_suit, CItemSuit);
+LINK_ENTITY_TO_CLASS (item_flashlight, CItemSuit);	// Совместимость с AOMDC
 
 class CItemBattery : public CItem
 	{
@@ -336,11 +333,8 @@ class CItemBattery : public CItem
 	};
 
 LINK_ENTITY_TO_CLASS(item_battery, CItemBattery);
-
-// Поддержка Blue shift
-LINK_ENTITY_TO_CLASS(item_helmet, CItemBattery);
-LINK_ENTITY_TO_CLASS(item_armorvest, CItemBattery);
-
+LINK_ENTITY_TO_CLASS(item_helmet, CItemBattery);	// Совместимость с Blue shift
+LINK_ENTITY_TO_CLASS(item_armorvest, CItemBattery);	// Совместимость с Blue shift
 
 class CItemAntidote : public CItem
 	{
@@ -402,8 +396,6 @@ class CItemAntidote : public CItem
 	};
 
 LINK_ENTITY_TO_CLASS(item_antidote, CItemAntidote);
-
-
 
 class CItemSecurity : public CItem
 	{
@@ -477,8 +469,6 @@ class CItemKey : public CItem
 	};
 
 LINK_ENTITY_TO_CLASS(item_key, CItemKey);
-
-
 
 class CItemLongJump : public CItem
 	{

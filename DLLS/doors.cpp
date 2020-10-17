@@ -329,14 +329,20 @@ void CBaseDoor::Spawn ()
 
 	m_toggle_state = TS_AT_BOTTOM;
 
-	// if the door is flagged for USE button activation only, use NULL touch function
-	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY) && !FStringNull(pev->targetname))
+	// If the door is flagged for USE button activation only, use NULL touch function
+	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY))
 		{
-		pev->body = 0;	// Используем как флаг "замка"
+		if (!FStringNull(pev->targetname))
+			pev->body = 0;	// Используем как флаг "замка"
+		else
+			pev->body = 1;	// При отсутствии имени объекта замок разблокируется
+
 		SetTouch (NULL);
 		}
-	else // touchable button
+	else 
+		{
 		SetTouch (&CBaseDoor::DoorTouch);
+		}
 	}
 
 
@@ -537,8 +543,7 @@ void CBaseDoor::DoorTouch (CBaseEntity *pOther)
 		PlayLockSounds(pev, &m_ls, TRUE, FALSE);
 
 	// If door is somebody's target, then touching does nothing.
-	// You have to activate the owner (e.g. button).
-
+	// You have to activate the owner (e.g. button)
 	if (!FStringNull(pev->targetname))
 		{
 		// Контроль на открытие
@@ -892,12 +897,20 @@ void CRotDoor::Spawn (void)
 
 	m_toggle_state = TS_AT_BOTTOM;
 
+	// If the door is flagged for USE button activation only, use NULL touch function
 	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY))
 		{
+		if (!FStringNull(pev->targetname))
+			pev->body = 0;	// Используем как флаг "замка"
+		else
+			pev->body = 1;	// При отсутствии имени объекта замок разблокируется
+
 		SetTouch (NULL);
 		}
-	else // touchable button
+	else 
+		{
 		SetTouch (&CBaseDoor::DoorTouch);
+		}
 	}
 
 

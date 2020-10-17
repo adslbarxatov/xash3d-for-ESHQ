@@ -38,6 +38,8 @@ enum mp5_e
 
 LINK_ENTITY_TO_CLASS (weapon_mp5, CMP5);
 LINK_ENTITY_TO_CLASS (weapon_9mmAR, CMP5);
+LINK_ENTITY_TO_CLASS (weapon_mp5k, CMP5);	// Совместимость с AOMDC
+LINK_ENTITY_TO_CLASS (weapon_uzi, CMP5);
 
 //=========================================================
 //=========================================================
@@ -48,7 +50,7 @@ int CMP5::SecondaryAmmoIndex (void)
 
 void CMP5::Spawn ()
 	{
-	pev->classname = MAKE_STRING ("weapon_9mmAR"); // hack to allow for old names
+	pev->classname = MAKE_STRING ("weapon_9mmAR"); // Защита от переопределения имени
 	Precache ();
 	SET_MODEL (ENT (pev), "models/w_9mmAR.mdl");
 	m_iId = WEAPON_MP5;
@@ -323,6 +325,8 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 
 LINK_ENTITY_TO_CLASS (ammo_mp5clip, CMP5AmmoClip);
 LINK_ENTITY_TO_CLASS (ammo_9mmAR, CMP5AmmoClip);
+LINK_ENTITY_TO_CLASS (ammo_mp5k, CMP5AmmoClip);		// Совместимость с AOMDC
+LINK_ENTITY_TO_CLASS (ammo_uzi, CMP5AmmoClip);
 
 class CMP5Chainammo : public CBasePlayerAmmo
 	{

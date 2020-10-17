@@ -314,9 +314,6 @@ void SetMovedir (entvars_t *pev)
 	pev->angles = g_vecZero;
 	}
 
-
-
-
 void CBaseDelay::DelayThink (void)
 	{
 	CBaseEntity *pActivator = NULL;
