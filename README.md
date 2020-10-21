@@ -1,12 +1,14 @@
 # Xash3d for ESHQ and ES:FA mods v 9 and newer
 ### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 9 and newer
 
+
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
 Modification based on old (from 2015) version of engine and may contain old bugs. But some new features
 may be useful for developers with the same mods' plots.
 
 
+#
 
 ## Main changes:
 
@@ -82,6 +84,10 @@ may be useful for developers with the same mods' plots.
 
 36. 'use only' flag for doors works now as unlocker (without opening).
 
+37. Added replacements for entities from *HL: blue shift* and *Afraid of monsters*
+
+&nbsp;
+
 
 
 ## Known bugs
@@ -96,13 +102,19 @@ Unfortunately, we cannot fix some bugs yet:
 
 But we believe that it is not serious problem for now.
 
+&nbsp;
+
+
+
 ## Other notes
 
-This assembly completely adapted for building with MS VS 10.0 and newer (some fixes for type declarations and headers syntax added).
+This assembly completely adapted for building with Visual studio 10.0 and 19.0 and newer (some fixes for type declarations and headers syntax added).
 
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
 
 This assembly is a fork of original Xash3D engine with the same license.
+
+&nbsp;
 
 
 
@@ -113,6 +125,8 @@ describes general rules that we follow in all of our development processes, rele
 ideas.
 **It must be acquainted by participants and users before using any of laboratory's products.
 By downloading them, you agree to this Policy**
+
+#
 
 Данная [Политика (ADP)](https://vk.com/@rdaaow_fupl-adp), её положения, заключение, EULA и способы применения
 описывают общие правила, которым мы следуем во всех наших процессах разработки, вышедших в релиз приложениях
