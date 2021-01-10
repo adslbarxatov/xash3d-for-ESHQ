@@ -4743,7 +4743,7 @@ void CRevertSaved :: KeyValue( KeyValueData *pkvd )
 void CRevertSaved :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	// "Глушим" игрока, если необходимо
-	if ((pev->spawnflags & LOADSAVED_KILL))
+	if (pActivator && (pev->spawnflags & LOADSAVED_KILL))
 		{
 		pActivator->pev->armorvalue = 0;
 		pActivator->pev->health = 0;

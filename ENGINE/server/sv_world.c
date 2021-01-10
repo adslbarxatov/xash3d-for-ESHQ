@@ -28,7 +28,7 @@ typedef struct moveclip_s
 	{
 	vec3_t		boxmins, boxmaxs;	// enclose the test object along entire move
 	float		*mins, *maxs;	// size of the moving object
-	vec3_t		mins2, maxs2;	// size when clipping against mosnters
+	vec3_t		mins2, maxs2;	// size when clipping against monsters
 	const float	*start, *end;
 	trace_t		trace;
 	edict_t		*passedict;

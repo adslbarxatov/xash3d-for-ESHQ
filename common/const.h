@@ -575,14 +575,15 @@
 // byte ( length * 10 )
 
 #define MSG_BROADCAST		0	// unreliable to all
-#define MSG_ONE			1	// reliable to one (msg_entity)
-#define MSG_ALL			2	// reliable to all
+#define MSG_ONE				1	// reliable to one (msg_entity)
+#define MSG_ALL				2	// reliable to all
 #define MSG_INIT			3	// write to the init string
-#define MSG_PVS			4	// Ents in PVS of org
-#define MSG_PAS			5	// Ents in PAS of org
+#define MSG_PVS				4	// Ents in PVS of org
+#define MSG_PAS				5	// Ents in PAS of org
 #define MSG_PVS_R			6	// Reliable to PVS
 #define MSG_PAS_R			7	// Reliable to PAS
-#define MSG_ONE_UNRELIABLE		8	// Send to one client, but don't put in reliable stream, put in unreliable datagram ( could be dropped )
+#define MSG_ONE_UNRELIABLE	8	// Send to one client, but don't put in reliable stream, put in unreliable datagram
+								// (could be dropped)
 #define MSG_SPEC			9	// Sends to all spectator proxies
 
 // contents of a spot in the world
@@ -597,17 +598,17 @@
 #define CONTENTS_CLIP		-8	// changed to contents_solid
 #define CONTENTS_CURRENT_0		-9
 #define CONTENTS_CURRENT_90		-10
-#define CONTENTS_CURRENT_180		-11
-#define CONTENTS_CURRENT_270		-12
+#define CONTENTS_CURRENT_180	-11
+#define CONTENTS_CURRENT_270	-12
 #define CONTENTS_CURRENT_UP		-13
-#define CONTENTS_CURRENT_DOWN		-14
-#define CONTENTS_TRANSLUCENT		-15
+#define CONTENTS_CURRENT_DOWN	-14
+#define CONTENTS_TRANSLUCENT	-15
 
-#define CONTENTS_LADDER		-16
+#define CONTENTS_LADDER			-16
 
 #define CONTENT_FLYFIELD		-17
 #define CONTENT_GRAVITY_FLYFIELD	-18
-#define CONTENT_FOG			-19
+#define CONTENT_FOG				-19
 
 #define CONTENT_EMPTY		-1
 #define CONTENT_SOLID		-2
@@ -657,20 +658,20 @@
 
 // buttons
 #define IN_ATTACK			(1<<0)
-#define IN_JUMP			(1<<1)
-#define IN_DUCK			(1<<2)
+#define IN_JUMP				(1<<1)
+#define IN_DUCK				(1<<2)
 #define IN_FORWARD			(1<<3)
-#define IN_BACK			(1<<4)
-#define IN_USE			(1<<5)
+#define IN_BACK				(1<<4)
+#define IN_USE				(1<<5)
 #define IN_CANCEL			(1<<6)
-#define IN_LEFT			(1<<7)
+#define IN_LEFT				(1<<7)
 #define IN_RIGHT			(1<<8)
 #define IN_MOVELEFT			(1<<9)
 #define IN_MOVERIGHT		(1<<10)
 #define IN_ATTACK2			(1<<11)
-#define IN_RUN			(1<<12)
+#define IN_RUN				(1<<12)
 #define IN_RELOAD			(1<<13)
-#define IN_ALT1			(1<<14)
+#define IN_ALT1				(1<<14)
 #define IN_SCORE			(1<<15)   // Used by client.dll for when scoreboard is held down
 
 // Break Model Defines
@@ -682,7 +683,7 @@
 #define BREAK_SMOKE			0x10
 #define BREAK_TRANS			0x20
 #define BREAK_CONCRETE		0x40
-#define BREAK_2			0x80
+#define BREAK_2				0x80
 
 // Colliding temp entity sounds
 #define BOUNCE_GLASS		BREAK_GLASS
@@ -692,39 +693,39 @@
 #define BOUNCE_SHRAP		0x10
 #define BOUNCE_SHELL		0x20
 #define BOUNCE_CONCRETE		BREAK_CONCRETE
-#define BOUNCE_SHOTSHELL		0x80
+#define BOUNCE_SHOTSHELL	0x80
 
 // Temp entity bounce sound types
 #define TE_BOUNCE_NULL		0
 #define TE_BOUNCE_SHELL		1
-#define TE_BOUNCE_SHOTSHELL		2
+#define TE_BOUNCE_SHOTSHELL	2
 
 // Rendering constants
-enum 
-{	
-	kRenderNormal,		// src
+enum
+	{
+	kRenderNormal,			// src
 	kRenderTransColor,		// c*a+dest*(1-a)
 	kRenderTransTexture,	// src*a+dest*(1-a)
-	kRenderGlow,		// src*a+dest -- No Z buffer checks
+	kRenderGlow,			// src*a+dest -- No Z buffer checks
 	kRenderTransAlpha,		// src*srca+dest*(1-srca)
-	kRenderTransAdd		// src*a+dest
-};
+	kRenderTransAdd			// src*a+dest
+	};
 
-enum 
-{	
-	kRenderFxNone = 0, 
-	kRenderFxPulseSlow, 
-	kRenderFxPulseFast, 
-	kRenderFxPulseSlowWide, 
-	kRenderFxPulseFastWide, 
-	kRenderFxFadeSlow, 
-	kRenderFxFadeFast, 
-	kRenderFxSolidSlow, 
-	kRenderFxSolidFast, 	   
-	kRenderFxStrobeSlow, 
-	kRenderFxStrobeFast, 
-	kRenderFxStrobeFaster, 
-	kRenderFxFlickerSlow, 
+enum
+	{
+	kRenderFxNone = 0,
+	kRenderFxPulseSlow,
+	kRenderFxPulseFast,
+	kRenderFxPulseSlowWide,
+	kRenderFxPulseFastWide,
+	kRenderFxFadeSlow,
+	kRenderFxFadeFast,
+	kRenderFxSolidSlow,
+	kRenderFxSolidFast,
+	kRenderFxStrobeSlow,
+	kRenderFxStrobeFast,
+	kRenderFxStrobeFaster,
+	kRenderFxFlickerSlow,
 	kRenderFxFlickerFast,
 	kRenderFxNoDissipation,
 	kRenderFxDistort,			// Distort/scale/translate flicker
@@ -733,7 +734,7 @@ enum
 	kRenderFxExplode,			// Scale up really big!
 	kRenderFxGlowShell,			// Glowing Shell
 	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
-};
+	};
 
 typedef int		func_t;
 typedef int		string_t;
@@ -751,51 +752,51 @@ typedef int qboolean;
 #endif
 
 typedef struct
-{
+	{
 	byte	r, g, b;
-} color24;
+	} color24;
 
 typedef struct
-{
+	{
 	unsigned	r, g, b, a;
-} colorVec;
+	} colorVec;
 
 #ifdef _WIN32
 #pragma pack( push, 2 )
 #endif
 
 typedef struct
-{
+	{
 	unsigned short r, g, b, a;
-} PackedColorVec;
+	} PackedColorVec;
 
 #ifdef _WIN32
 #pragma pack( pop )
 #endif
 
 typedef struct link_s
-{
-	struct link_s	*prev, *next;
-} link_t;
+	{
+	struct link_s* prev, * next;
+	} link_t;
 
 typedef struct edict_s edict_t;
 
 typedef struct
-{
+	{
 	vec3_t	normal;
 	float	dist;
-} plane_t;
+	} plane_t;
 
 typedef struct
-{
+	{
 	qboolean	allsolid;		// if true, plane is not valid
-	qboolean	startsolid;	// if true, the initial point was in a solid area
+	qboolean	startsolid;		// if true, the initial point was in a solid area
 	qboolean	inopen, inwater;
-	float	fraction;		// time completed, 1.0 = didn't hit anything
-	vec3_t	endpos;		// final position
-	plane_t	plane;		// surface normal at impact
-	edict_t	*ent;		// entity the surface is on
-	int	hitgroup;		// 0 == generic, non zero is specific body part
-} trace_t;
+	float	fraction;			// time completed, 1.0 = didn't hit anything
+	vec3_t	endpos;				// final position
+	plane_t	plane;				// surface normal at impact
+	edict_t* ent;				// entity the surface is on
+	int	hitgroup;				// 0 == generic, non zero is specific body part
+	} trace_t;
 
 #endif//CONST_H
