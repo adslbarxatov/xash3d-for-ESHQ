@@ -90,8 +90,6 @@ may be useful for developers with the same mods' plots.
 
 39. Fixed too long time stuck on jumping from the water.
 
-40. 
-
 &nbsp;
 
 
