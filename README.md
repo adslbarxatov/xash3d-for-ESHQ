@@ -84,7 +84,13 @@ may be useful for developers with the same mods' plots.
 
 36. 'use only' flag for doors works now as unlocker (without opening).
 
-37. Added replacements for entities from *HL: blue shift* and *Afraid of monsters*
+37. Added replacements for entities from *HL: blue shift* and *Afraid of monsters*.
+
+38. Barnacles can shoot nothing on death.
+
+39. Fixed too long time stuck on jumping from the water.
+
+40. 
 
 &nbsp;
 
