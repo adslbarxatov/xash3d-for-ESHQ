@@ -1863,6 +1863,10 @@
 
 @PointClass base(RenderFields, Monster) size(-16 -16 -36, 16 16 0) studio("models/barnacle.mdl") = monster_barnacle : "Barnacle Monster"
 [
+	spawnflags(Flags) =
+	[
+		8 : "Без останков" : 0
+	]
 ]
 
 @PointClass base(Monster, TalkMonster, Sequence) size(-16 -16 0, 16 16 72) studio("models/barney.mdl") = monster_barney : "Barney"

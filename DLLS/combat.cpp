@@ -859,7 +859,8 @@ int CBaseMonster :: TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker,
 	// set damage type sustained
 	m_bitsDamageType |= bitsDamageType;
 
-	// grab the vector of the incoming attack. (pretend that the inflictor is a little lower than it really is, so the body will tend to fly upward a bit).
+	// grab the vector of the incoming attack. (pretend that the inflictor is a little lower than it really is,
+	// so the body will tend to fly upward a bit).
 	vecDir = Vector (0, 0, 0);
 	if (!FNullEnt (pevInflictor))
 		{
@@ -966,7 +967,7 @@ int CBaseMonster :: TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker,
 
 //=========================================================
 // DeadTakeDamage - takedamage function called when a monster's
-// corpse is damaged.
+// corpse is damaged
 //=========================================================
 int CBaseMonster :: DeadTakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
 	{
@@ -997,7 +998,8 @@ int CBaseMonster :: DeadTakeDamage (entvars_t *pevInflictor, entvars_t *pevAttac
 
 #endif
 
-	// kill the corpse if enough damage was done to destroy the corpse and the damage is of a type that is allowed to destroy the corpse.
+	// kill the corpse if enough damage was done to destroy the corpse and the damage is of a type
+	// that is allowed to destroy the corpse
 	if (bitsDamageType & DMG_GIB_CORPSE)
 		{
 		if (pev->health <= flDamage)
@@ -1012,7 +1014,6 @@ int CBaseMonster :: DeadTakeDamage (entvars_t *pevInflictor, entvars_t *pevAttac
 
 	return 1;
 	}
-
 
 float CBaseMonster :: DamageForce (float damage)
 	{ 

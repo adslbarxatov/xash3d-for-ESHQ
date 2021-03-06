@@ -171,7 +171,7 @@ void CBaseMonster :: BarnacleVictimBitten (entvars_t *pevBarnacle)
 
 //=========================================================
 // BarnacleVictimReleased - called by barnacle victims when
-// the host barnacle is killed.
+// the host barnacle is killed
 //=========================================================
 void CBaseMonster :: BarnacleVictimReleased (void)
 	{

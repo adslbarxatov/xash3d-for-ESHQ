@@ -31,32 +31,32 @@ extern void SetMovedir(entvars_t* ev);
 #define noiseArrived noise2
 #define noiseReturned noise3
 
-class CBaseDoor : public CBaseToggle
+class CBaseDoor: public CBaseToggle
 	{
 	public:
 		void Spawn (void);
 		void Precache (void);
-		virtual void KeyValue (KeyValueData *pkvd);
-		virtual void Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-		virtual void Blocked (CBaseEntity *pOther);
+		virtual void KeyValue (KeyValueData* pkvd);
+		virtual void Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+		virtual void Blocked (CBaseEntity* pOther);
 
 
-		virtual int	ObjectCaps (void) 
-			{ 
+		virtual int	ObjectCaps (void)
+			{
 			if (pev->spawnflags & SF_ITEM_USE_ONLY)
-				return (CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE;
+				return (CBaseToggle::ObjectCaps () & ~FCAP_ACROSS_TRANSITION) | FCAP_IMPULSE_USE;
 			else
-				return (CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION);
+				return (CBaseToggle::ObjectCaps () & ~FCAP_ACROSS_TRANSITION);
 			};
-		virtual int	Save (CSave &save);
-		virtual int	Restore (CRestore &restore);
+		virtual int	Save (CSave& save);
+		virtual int	Restore (CRestore& restore);
 
 		static	TYPEDESCRIPTION m_SaveData[];
 
 		virtual void SetToggleState (int state);
 
 		// used to selectivly override defaults
-		void EXPORT DoorTouch (CBaseEntity *pOther);
+		void EXPORT DoorTouch (CBaseEntity* pOther);
 
 		// local functions
 		int DoorActivate ();
@@ -74,8 +74,8 @@ class CBaseDoor : public CBaseToggle
 		locksound_t m_ls;			// door lock sounds
 
 		BYTE	m_bLockedSound;		// ordinals from entity selection
-		BYTE	m_bLockedSentence;	
-		BYTE	m_bUnlockedSound;	
+		BYTE	m_bLockedSentence;
+		BYTE	m_bUnlockedSound;
 		BYTE	m_bUnlockedSentence;
 	};
 
@@ -645,20 +645,20 @@ extern Vector VecBModelOrigin (entvars_t* pevBModel);
 //
 void CBaseDoor::DoorGoUp (void)
 	{
-	entvars_t	*pevActivator;
+	entvars_t* pevActivator;
 
 	// It could be going-down, if blocked.
-	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
+	ASSERT (m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
 
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
 	if (!FBitSet (pev->spawnflags, SF_DOOR_SILENT))
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_MEDIUM);
+		EMIT_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving), 1, ATTN_MEDIUM);
 
 	m_toggle_state = TS_GOING_UP;
 
 	SetMoveDone (&CBaseDoor::DoorHitTop);
-	if (FClassnameIs(pev, "func_door_rotating"))		// !!! BUGBUG Triggered doors don't work with this yet
+	if (FClassnameIs (pev, "func_door_rotating"))		// !!! BUGBUG Triggered doors don't work with this yet
 		{
 		float	sign = 1.0;
 
@@ -676,16 +676,15 @@ void CBaseDoor::DoorGoUp (void)
 				//			Vector vnext = (pevToucher->origin + (pevToucher->velocity * 10)) - pev->origin;
 				UTIL_MakeVectors (pevActivator->angles);
 				Vector vnext = (pevActivator->origin + (gpGlobals->v_forward * 10)) - pev->origin;
-				if ((vec.x*vnext.y - vec.y*vnext.x) < 0)
+				if ((vec.x * vnext.y - vec.y * vnext.x) < 0)
 					sign = -1.0;
 				}
 			}
-		AngularMove(m_vecAngle2*sign, pev->speed);
+		AngularMove (m_vecAngle2 * sign, pev->speed);
 		}
 	else
-		LinearMove(m_vecPosition2, pev->speed);
+		LinearMove (m_vecPosition2, pev->speed);
 	}
-
 
 //
 // The door has reached the "up" position. Either go back down, or wait for another activation.
