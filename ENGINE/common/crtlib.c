@@ -71,6 +71,29 @@ int Q_strlen( const char *string )
 	return len;
 }
 
+int Q_colorstr( const char *string )
+{
+	int		len;
+	const char	*p;
+
+	if( !string ) return 0;
+
+	len = 0;
+	p = string;
+	while( *p )
+	{
+		if( IsColorString( p ))
+		{
+			len += 2;
+			p += 2;
+			continue;
+		}
+		p++;
+	}
+
+	return len;
+}
+
 char Q_toupper( const char in )
 {
 	char	out;
@@ -160,7 +183,7 @@ char *_copystring( byte *mempool, const char *s, const char *filename, int filel
 	if( !s ) return NULL;
 	if( !mempool ) mempool = host.mempool;
 
-	b = _Mem_Alloc( mempool, Q_strlen( s ) + 1, filename, fileline );
+	b = _Mem_Alloc( mempool, Q_strlen( s ) + 1, false, filename, fileline );
 	Q_strcpy( b, s );
 
 	return b;
@@ -255,6 +278,7 @@ float Q_atof( const char *str )
 	// assume decimal
 	decimal = -1;
 	total = 0;
+
 	while( 1 )
 	{
 		c = *str++;
@@ -289,7 +313,7 @@ void Q_atov( float *vec, const char *str, size_t siz )
 	int	j;
 
 	Q_strncpy( buffer, str, sizeof( buffer ));
-	Q_memset( vec, 0, sizeof( vec_t ) * siz );
+	memset( vec, 0, sizeof( vec_t ) * siz );
 	pstr = pfront = buffer;
 
 	for( j = 0; j < siz; j++ )
@@ -338,11 +362,14 @@ int Q_strnicmp( const char *s1, const char *s2, int n )
 
 	if( s1 == NULL )
 	{
-		if( s2 == NULL ) return 0;
+		if( s2 == NULL )
+			return 0;
 		else return -1;
 	}
 	else if( s2 == NULL )
+	{
 		return 1;
+          }
 
 	do {
 		c1 = *s1++;
@@ -364,16 +391,19 @@ int Q_strnicmp( const char *s1, const char *s2, int n )
 
 int Q_strncmp( const char *s1, const char *s2, int n )
 {
-	int		c1, c2;
+	int	c1, c2;
 
 	if( s1 == NULL )
 	{
-		if( s2 == NULL ) return 0;
+		if( s2 == NULL )
+			return 0;
 		else return -1;
 	}
 	else if( s2 == NULL )
+	{
 		return 1;
-	
+	}	
+
 	do {
 		c1 = *s1++;
 		c2 = *s2++;
@@ -475,6 +505,7 @@ const char* Q_timestamp( int format )
 	}
 
 	Q_strncpy( timestamp, timestring, sizeof( timestamp ));
+
 	return timestamp;
 }
 
@@ -530,7 +561,17 @@ int Q_vsnprintf( char *buffer, size_t buffersize, const char *format, va_list ar
 {
 	size_t	result;
 
-	result = _vsnprintf( buffer, buffersize, format, args );
+	__try
+	{
+		result = _vsnprintf( buffer, buffersize, format, args );
+	}
+
+	// to prevent crash while output
+	__except( EXCEPTION_EXECUTE_HANDLER )
+	{
+		Q_strncpy( buffer, "^1sprintf throw exception^7\n", buffersize );
+		result = buffersize;
+	}
 
 	if( result < 0 || result >= buffersize )
 	{
@@ -562,6 +603,26 @@ int Q_sprintf( char *buffer, const char *format, ... )
 	va_end( args );
 
 	return result;
+}
+
+uint Q_hashkey( const char *string, uint hashSize, qboolean caseinsensitive )
+{
+	uint	i, hashKey = 0;
+
+	if( caseinsensitive )
+	{
+		for( i = 0; string[i]; i++)
+			hashKey += (i * 119) * Q_tolower( string[i] );
+	}
+	else
+	{
+		for( i = 0; string[i]; i++ )
+			hashKey += (i + 119) * (int)string[i];
+	}
+
+	hashKey = ((hashKey ^ (hashKey >> 10)) ^ (hashKey >> 20)) & (hashSize - 1);
+
+	return hashKey;
 }
 
 char *Q_pretifymem( float value, int digitsafterdecimal )
@@ -658,22 +719,4 @@ char *va( const char *format, ... )
 	va_end( argptr );
 
 	return s;
-}
-
-void _Q_memcpy( void *dest, const void *src, size_t count, const char *filename, int fileline )
-{
-	if( src == NULL || count <= 0 ) return; // nothing to copy
-	if( dest == NULL ) Sys_Error( "memcpy: dest == NULL (called at %s:%i)\n", filename, fileline );
-	memcpy( dest, src, count );
-}
-
-void _Q_memset( void *dest, int set, size_t count, const char *filename, int fileline )
-{
-	if( dest == NULL ) Sys_Error( "memset: dest == NULL (called at %s:%i)\n", filename, fileline );
-	memset( dest, set, count );
-}
-
-void CRT_Init( void )
-{
-	Memory_Init();
 }

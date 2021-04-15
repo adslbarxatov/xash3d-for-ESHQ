@@ -14,7 +14,6 @@ GNU General Public License for more details.
 */
 
 #include "common.h"
-#include "bspfile.h"
 #include "client.h"
 
 #define NUM_BYTES		256
@@ -94,9 +93,9 @@ void CRC32_Init( dword *pulCRC )
 	*pulCRC = CRC32_INIT_VALUE;
 }
 
-void CRC32_Final( dword *pulCRC )
+dword CRC32_Final( dword pulCRC )
 {
-	*pulCRC ^= CRC32_XOR_VALUE;
+	return pulCRC ^ CRC32_XOR_VALUE;
 }
 
 void CRC32_ProcessByte( dword *pulCRC, byte ch )
@@ -139,7 +138,6 @@ JustAfew:
 	// the main loop is aligned and only has to worry about 8 byte at a time.
 	// The low-order two bits of pb and nBuffer in total control the
 	// upfront work.
-
 	nFront = ((uint)pb) & 3;
 	nBuffer -= nFront;
 
@@ -184,11 +182,10 @@ byte CRC32_BlockSequence( byte *base, int length, int sequence )
 	char	buffer[64];
 
 	if( sequence < 0 ) sequence = abs( sequence );
-
 	ptr = (char *)crc32table + (sequence % 0x3FC);
 
 	if( length > 60 ) length = 60;
-	Q_memcpy( buffer, base, length );
+	memcpy( buffer, base, length );
 
 	buffer[length+0] = ptr[0];
 	buffer[length+1] = ptr[1];
@@ -199,21 +196,21 @@ byte CRC32_BlockSequence( byte *base, int length, int sequence )
 
 	CRC32_Init( &CRC );
 	CRC32_ProcessBuffer( &CRC, buffer, length );
-	CRC32_Final( &CRC );
+	CRC = CRC32_Final( CRC );
 
 	return (byte)CRC;
 }
 
 qboolean CRC32_File( dword *crcvalue, const char *filename )
 {
-	file_t	*f;
 	char	buffer[1024];
 	int	num_bytes;
+	file_t	*f;
 
 	f = FS_Open( filename, "rb", false );
 	if( !f ) return false;
 
-	ASSERT( crcvalue != NULL );
+	Assert( crcvalue != NULL );
 	CRC32_Init( crcvalue );
 
 	while( 1 )
@@ -230,18 +227,18 @@ qboolean CRC32_File( dword *crcvalue, const char *filename )
 	return true;
 }
 
-qboolean CRC32_MapFile( dword *crcvalue, const char *filename )
+qboolean CRC32_MapFile( dword *crcvalue, const char *filename, qboolean multiplayer )
 {
-	file_t	*f;
-	dheader_t	header;
-	char	buffer[1024];
+	char	headbuf[256], buffer[1024];
 	int	i, num_bytes, lumplen;
-	qboolean	blue_shift = false;
+	int	version, hdr_size;
+	dheader_t	*header;
+	file_t	*f;
 
 	if( !crcvalue ) return false;
 
 	// always calc same checksum for singleplayer
-	if( cls.state >= ca_connected && SV_Active() && CL_GetMaxClients() == 1 )
+	if( multiplayer == false )
 	{
 		*crcvalue = (('H'<<24)+('S'<<16)+('A'<<8)+'X');
 		return true;
@@ -250,36 +247,40 @@ qboolean CRC32_MapFile( dword *crcvalue, const char *filename )
 	f = FS_Open( filename, "rb", false );
 	if( !f ) return false;
 
-	num_bytes = FS_Read( f, &header, sizeof( header ));
+	// read version number
+	FS_Read( f, &version, sizeof( int ));
+	FS_Seek( f, 0, SEEK_SET );
+
+	hdr_size = sizeof( int ) + sizeof( dlump_t ) * HEADER_LUMPS;
+	num_bytes = FS_Read( f, headbuf, hdr_size );
 
 	// corrupted map ?
-	if( num_bytes != sizeof( header ))
+	if( num_bytes != hdr_size )
 	{
 		FS_Close( f );
 		return false;
 	}
+
+	header = (dheader_t *)headbuf;
 
 	// invalid version ?
-	if( header.version != Q1BSP_VERSION && header.version != HLBSP_VERSION )
+	switch( header->version )
 	{
+	case Q1BSP_VERSION:
+	case HLBSP_VERSION:
+	case QBSP2_VERSION:
+		break;
+	default:
 		FS_Close( f );
 		return false;
 	}
 
-	ASSERT( crcvalue != NULL );
 	CRC32_Init( crcvalue );
 
-	// check for Blue-Shift maps
-	if( header.lumps[LUMP_ENTITIES].fileofs <= 1024 && (header.lumps[LUMP_ENTITIES].filelen % sizeof( dplane_t )) == 0 )
-		blue_shift = true;
-
-	for( i = 0; i < HEADER_LUMPS; i++ )
+	for( i = LUMP_PLANES; i < HEADER_LUMPS; i++ )
 	{
-		if( blue_shift && i == LUMP_PLANES ) continue;
-		else if( i == LUMP_ENTITIES ) continue;
-
-		lumplen = header.lumps[i].filelen;
-		FS_Seek( f, header.lumps[i].fileofs, SEEK_SET );
+		lumplen = header->lumps[i].filelen;
+		FS_Seek( f, header->lumps[i].fileofs, SEEK_SET );
 
 		while( lumplen > 0 )
 		{
@@ -299,6 +300,7 @@ qboolean CRC32_MapFile( dword *crcvalue, const char *filename )
 	}
 
 	FS_Close( f );
+
 	return 1;
 }
 
@@ -350,11 +352,11 @@ void MD5Update( MD5Context_t *ctx, const byte *buf, uint len )
 		t = 64 - t;
 		if( len < t )
 		{
-			Q_memcpy( p, buf, len );
+			memcpy( p, buf, len );
 			return;
 		}
 
-		Q_memcpy( p, buf, t );
+		memcpy( p, buf, t );
 		MD5Transform( ctx->buf, (uint *)ctx->in );
 		buf += t;
 		len -= t;
@@ -363,14 +365,14 @@ void MD5Update( MD5Context_t *ctx, const byte *buf, uint len )
 	// process data in 64-byte chunks
 	while( len >= 64 )
 	{
-		Q_memcpy( ctx->in, buf, 64 );
+		memcpy( ctx->in, buf, 64 );
 		MD5Transform( ctx->buf, (uint *)ctx->in );
 		buf += 64;
 		len -= 64;
 	}
 
 	// handle any remaining bytes of data.
-	Q_memcpy( ctx->in, buf, len );
+	memcpy( ctx->in, buf, len );
 }
 
 /*
@@ -402,16 +404,16 @@ void MD5Final( byte digest[16], MD5Context_t *ctx )
 	{
 
 		// two lots of padding: pad the first block to 64 bytes
-		Q_memset( p, 0, count );
+		memset( p, 0, count );
 		MD5Transform( ctx->buf, (uint *)ctx->in );
 
 		// now fill the next block with 56 bytes
-		Q_memset( ctx->in, 0, 56 );
+		memset( ctx->in, 0, 56 );
 	}
 	else
 	{
 		// pad block to 56 bytes
-		Q_memset( p, 0, count - 8 );
+		memset( p, 0, count - 8 );
 	}
 
 	// append length in bits and transform
@@ -419,8 +421,8 @@ void MD5Final( byte digest[16], MD5Context_t *ctx )
 	((uint *)ctx->in)[15] = ctx->bits[1];
 
 	MD5Transform( ctx->buf, (uint *)ctx->in );
-	Q_memcpy( digest, ctx->buf, 16 );
-	Q_memset( ctx, 0, sizeof( ctx ));	// in case it's sensitive
+	memcpy( digest, ctx->buf, 16 );
+	memset( ctx, 0, sizeof( *ctx ));	// in case it's sensitive
 }
 
 // The four core functions
@@ -524,14 +526,74 @@ void MD5Transform( uint buf[4], const uint in[16] )
 	buf[3] += d;
 }
 
+qboolean MD5_HashFile( byte digest[16], const char *pszFileName, uint seed[4] )
+{
+	file_t		*file;
+	char		buffer[1024];
+	MD5Context_t	MD5_Hash;
+	int		bytes;
+ 
+	if(( file = FS_Open( pszFileName, "rb", false )) == NULL )
+		return false;
+
+	memset( &MD5_Hash, 0, sizeof( MD5Context_t ));
+
+	MD5Init( &MD5_Hash );
+
+	if( seed )
+	{
+		MD5Update( &MD5_Hash, (const byte *)seed, 16 );
+	}
+
+	while( 1 )
+	{
+		bytes = FS_Read( file, buffer, sizeof( buffer ));
+
+		if( bytes > 0 )
+			MD5Update( &MD5_Hash, buffer, bytes );
+
+		if( FS_Eof( file ))
+			break;
+	}
+
+	FS_Close( file );
+	MD5Final( digest, &MD5_Hash );
+
+	return true;
+}
+
 /*
 =================
-Com_HashKey
+MD5_Print
+
+transform hash to hexadecimal printable symbols
+=================
+*/
+char *MD5_Print( byte hash[16] )
+{
+	static char	szReturn[64];
+	byte		szChunk[10];
+	int		i;
+
+	memset( szReturn, 0, 64 );
+
+	for( i = 0; i < 16; i++ )
+	{
+		Q_snprintf( szChunk, sizeof( szChunk ), "%02X", hash[i] );
+		Q_strncat( szReturn, szChunk, sizeof( szReturn ));
+	}
+
+	return szReturn;
+}
+
+/*
+=================
+COM_HashKey
 
 returns hash key for string
 =================
 */
-uint Com_HashKey( const char *string, uint hashSize )
+uint COM_HashKey( const char *string, uint hashSize )
 {
 	uint	i, hashKey = 0;
 

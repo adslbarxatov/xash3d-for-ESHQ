@@ -14,40 +14,584 @@ GNU General Public License for more details.
 */
 
 #include "common.h"
+#include "math.h"	// fabs...
 
-convar_t	*cvar_vars; // head of list
-convar_t	*userinfo, *physinfo, *serverinfo, *renderinfo;
+convar_t	*cvar_vars = NULL; // head of list
+convar_t	*cmd_scripting;
 
 /*
 ============
-Cvar_InfoValidate
+Cvar_FindVar
+
+find the specified variable by name
 ============
 */
-static qboolean Cvar_ValidateString( const char *s, qboolean isvalue )
+convar_t *Cvar_FindVarExt( const char *var_name, int ignore_group )
 {
-	if( !s ) return false;
-	if( Q_strstr( s, "\\" ) && !isvalue )
-		return false;
-	if( Q_strstr( s, "\"" )) return false;
-	if( Q_strstr( s, ";" )) return false;
+	convar_t	*var;
+
+	if( !var_name )
+		return NULL;
+
+	for( var = cvar_vars; var; var = var->next )
+	{
+		if( ignore_group && FBitSet( ignore_group, var->flags ))
+			continue;
+
+		if( !Q_stricmp( var_name, var->name ))
+			return var;
+	}
+
+	return NULL;
+}
+
+/*
+============
+Cvar_BuildAutoDescription
+
+build cvar auto description that based on the setup flags
+============
+*/
+const char *Cvar_BuildAutoDescription( int flags )
+{
+	static char	desc[128];
+
+	desc[0] = '\0';
+
+	if( FBitSet( flags, FCVAR_EXTDLL ))
+		Q_strncpy( desc, "game ", sizeof( desc ));
+	else if( FBitSet( flags, FCVAR_CLIENTDLL ))
+		Q_strncpy( desc, "client ", sizeof( desc ));
+	else if( FBitSet( flags, FCVAR_GAMEUIDLL ))
+		Q_strncpy( desc, "GameUI ", sizeof( desc ));
+
+	if( FBitSet( flags, FCVAR_SERVER ))
+		Q_strncat( desc, "server ", sizeof( desc ));
+
+	if( FBitSet( flags, FCVAR_USERINFO ))
+		Q_strncat( desc, "user ", sizeof( desc ));
+
+	if( FBitSet( flags, FCVAR_ARCHIVE ))
+		Q_strncat( desc, "archived ", sizeof( desc ));
+
+	Q_strncat( desc, "cvar", sizeof( desc ));
+
+	return desc;
+}
+
+/*
+============
+Cvar_UpdateInfo
+
+deal with userinfo etc
+============
+*/
+static qboolean Cvar_UpdateInfo( convar_t *var, const char *value, qboolean notify )
+{
+	if( FBitSet( var->flags, FCVAR_USERINFO ))
+	{
+		if ( host.type == HOST_DEDICATED )
+		{
+			// g-cont. this is a very strange behavior...
+			Info_SetValueForKey( SV_Serverinfo(), var->name, value, MAX_SERVERINFO_STRING ),
+			SV_BroadcastCommand( "fullserverinfo \"%s\"\n", SV_Serverinfo( ));
+		}
+		else
+		{
+			if( !Info_SetValueForKey( CL_Userinfo(), var->name, value, MAX_INFO_STRING ))
+				return false; // failed to change value
+
+			// time to update server copy of userinfo
+			CL_ServerCommand( true, "setinfo \"%s\" \"%s\"\n", var->name, value );
+		}
+	}
+
+	if( FBitSet( var->flags, FCVAR_SERVER ) && notify )
+	{
+		if( !FBitSet( var->flags, FCVAR_UNLOGGED ))
+		{
+			if( FBitSet( var->flags, FCVAR_PROTECTED ))
+			{
+				Log_Printf( "Server cvar \"%s\" = \"%s\"\n", var->name, "***PROTECTED***" );
+				SV_BroadcastPrintf( NULL, "\"%s\" changed to \"%s\"\n", var->name, "***PROTECTED***" );
+			}
+			else
+			{
+				Log_Printf( "Server cvar \"%s\" = \"%s\"\n", var->name, value );
+				SV_BroadcastPrintf( NULL, "\"%s\" changed to \"%s\"\n", var->name, value );
+			}
+		}
+	}
+
 	return true;
 }
 
 /*
 ============
-Cvar_FindVar
+Cvar_ValidateString
+
+deal with userinfo etc
 ============
 */
-convar_t *Cvar_FindVar( const char *var_name )
+const char *Cvar_ValidateString( convar_t *var, const char *value )
+{
+	const char	*pszValue;
+	static char	szNew[MAX_STRING];
+
+	pszValue = value;
+	szNew[0] = 0;
+
+	// this cvar's string must only contain printable characters.
+	// strip out any other crap. we'll fill in "empty" if nothing is left
+	if( FBitSet( var->flags, FCVAR_PRINTABLEONLY ))
+	{
+		char	*szVal = szNew;
+		int	len = 0;
+
+		// step through the string, only copying back in characters that are printable
+		while( *pszValue && len < MAX_STRING )
+		{
+			if( ((byte)*pszValue) < 32 )
+			{
+				pszValue++;
+				continue;
+			}
+			*szVal++ = *pszValue++;
+			len++;
+		}
+
+		*szVal = '\0';
+		pszValue = szNew;
+
+		// g-cont. is this even need?
+		if( !Q_strlen( szNew )) Q_strncpy( szNew, "empty", sizeof( szNew ));
+	}
+
+	if( FBitSet( var->flags, FCVAR_NOEXTRAWHITEPACE ))
+	{
+		char	*szVal = szNew;
+		int	len = 0;
+
+		// step through the string, only copying back in characters that are printable
+		while( *pszValue && len < MAX_STRING )
+		{
+			if( *pszValue == ' ' )
+			{
+				pszValue++;
+				continue;
+			}
+			*szVal++ = *pszValue++;
+			len++;
+		}
+
+		*szVal = '\0';
+		pszValue = szNew;
+	}
+
+	return pszValue;
+}
+
+/*
+============
+Cvar_UnlinkVar
+
+unlink the variable
+============
+*/
+int Cvar_UnlinkVar( const char *var_name, int group )
+{
+	int	count = 0;
+	convar_t	**prev;
+	convar_t	*var;
+
+	prev = &cvar_vars;
+
+	while( 1 )
+	{
+		var = *prev;
+		if( !var ) break;
+
+		// do filter by name
+		if( var_name && Q_strcmp( var->name, var_name ))
+		{
+			prev = &var->next;
+			continue;
+		}
+
+		// do filter by specified group
+		if( group && !FBitSet( var->flags, group ))
+		{
+			prev = &var->next;
+			continue;
+		}
+
+		// unlink variable from list
+		freestring( var->string );
+		*prev = var->next;
+
+		// only allocated cvars can throw these fields
+		if( FBitSet( var->flags, FCVAR_ALLOCATED ))
+		{
+			freestring( var->name );
+			freestring( var->def_string );
+			freestring( var->desc );
+			Mem_Free( var );
+		}
+		count++;
+	}
+
+	return count;
+}
+
+/*
+============
+Cvar_Changed
+
+Tell the engine parts about cvar changing
+============
+*/
+static void Cvar_Changed( convar_t *var )
+{
+	Assert( var != NULL );
+
+	// tell about changes
+	SetBits( var->flags, FCVAR_CHANGED );
+
+	// tell the engine parts with global state
+	if( FBitSet( var->flags, FCVAR_USERINFO ))
+		host.userinfo_changed = true;
+
+	if( FBitSet( var->flags, FCVAR_MOVEVARS ))
+		host.movevars_changed = true;
+
+	if( FBitSet( var->flags, FCVAR_VIDRESTART ))
+		host.renderinfo_changed = true;
+
+	if( !Q_strcmp( var->name, "sv_cheats" ))
+		host.allow_cheats = Q_atoi( var->string );
+}
+
+/*
+============
+Cvar_LookupVars
+============
+*/
+void Cvar_LookupVars( int checkbit, void *buffer, void *ptr, setpair_t callback )
 {
 	convar_t	*var;
 
+	// nothing to process ?
+	if( !callback ) return;
+
+	// force checkbit to 0 for lookup all cvars
 	for( var = cvar_vars; var; var = var->next )
 	{
-		if( !Q_stricmp( var_name, var->name ))
-			return var;
+		if( checkbit && !FBitSet( var->flags, checkbit ))
+			continue;
+
+		if( buffer )
+		{
+			callback( var->name, var->string, buffer, ptr );
+		}
+		else
+		{
+			// NOTE: dlls cvars doesn't have description
+			if( FBitSet( var->flags, FCVAR_ALLOCATED|FCVAR_EXTENDED ))
+				callback( var->name, var->string, var->desc, ptr );
+			else callback( var->name, var->string, "", ptr );
+		}
 	}
-	return NULL;
+}
+
+/*
+============
+Cvar_Get
+
+If the variable already exists, the value will not be set
+The flags will be or'ed in if the variable exists.
+============
+*/
+convar_t *Cvar_Get( const char *name, const char *value, int flags, const char *var_desc )
+{
+	convar_t	*cur, *find, *var;
+	
+	ASSERT( name && *name );
+
+	// check for command coexisting
+	if( Cmd_Exists( name ))
+	{
+		Con_DPrintf( S_ERROR "can't register variable '%s', is already defined as command\n", name );
+		return NULL;
+	}
+
+	var = Cvar_FindVar( name );
+
+	if( var )
+	{
+		// already existed?
+		if( FBitSet( flags, FCVAR_GLCONFIG ))
+		{
+			// NOTE: cvars without description produced by Cvar_FullSet
+			// which executed from the config file. So we don't need to
+			// change value here: we *already* have actual value from config.
+			// in other cases we need to rewrite them
+			if( Q_strcmp( var->desc, "" ))
+			{
+				// directly set value
+				freestring( var->string );
+				var->string = copystring( value );
+				var->value = Q_atof( var->string );
+				SetBits( var->flags, flags );
+
+				// tell engine about changes
+				Cvar_Changed( var );
+			}
+		}
+		else
+		{
+			SetBits( var->flags, flags );
+			Cvar_DirectSet( var, value );
+		}
+
+		if( FBitSet( var->flags, FCVAR_ALLOCATED ) && Q_strcmp( var_desc, var->desc ))
+		{
+			if( !FBitSet( flags, FCVAR_GLCONFIG ))
+				Con_Reportf( "%s change description from %s to %s\n", var->name, var->desc, var_desc );
+			// update description if needs
+			freestring( var->desc );
+			var->desc = copystring( var_desc );
+		}
+
+		return var;
+	}
+
+	// allocate a new cvar
+	var = Z_Malloc( sizeof( *var ));
+	var->name = copystring( name );
+	var->string = copystring( value );
+	var->def_string = copystring( value );
+	var->desc = copystring( var_desc );
+	var->value = Q_atof( var->string );
+	var->flags = flags|FCVAR_ALLOCATED;
+
+	// link the variable in alphanumerical order
+	for( cur = NULL, find = cvar_vars; find && Q_strcmp( find->name, var->name ) < 0; cur = find, find = find->next );
+
+	if( cur ) cur->next = var;
+	else cvar_vars = var;
+	var->next = find;
+
+	// fill it cls.userinfo, svs.serverinfo
+	Cvar_UpdateInfo( var, var->string, false );
+
+	// tell engine about changes
+	Cvar_Changed( var );
+
+	return var;
+}
+
+/*
+============
+Cvar_RegisterVariable
+
+Adds a freestanding variable to the variable list.
+============
+*/
+void Cvar_RegisterVariable( convar_t *var )
+{
+	convar_t	*cur, *find, *dup;
+
+	ASSERT( var != NULL );
+
+	// first check to see if it has allready been defined
+	dup = Cvar_FindVar( var->name );
+
+	if( dup )
+	{
+		if( !FBitSet( dup->flags, FCVAR_TEMPORARY ))
+		{
+			Con_DPrintf( S_ERROR "can't register variable '%s', is already defined\n", var->name );
+			return;
+		}
+
+		// time to replace temp variable with real
+		Cvar_UnlinkVar( var->name, FCVAR_TEMPORARY );
+	}
+
+	// check for overlap with a command
+	if( Cmd_Exists( var->name ))
+	{
+		Con_DPrintf( S_ERROR "can't register variable '%s', is already defined as command\n", var->name );
+		return;
+	}
+
+	// NOTE: all the 'long' engine cvars have an special setntinel on static declaration
+	// (all the engine cvars should be declared through CVAR_DEFINE macros or they shouldn't working properly anyway)
+	// so we can determine long version 'convar_t' and short version 'cvar_t' more reliable than by FCVAR_EXTDLL flag
+	if( CVAR_CHECK_SENTINEL( var )) SetBits( var->flags, FCVAR_EXTENDED );
+
+	// copy the value off, because future sets will free it
+	if( FBitSet( var->flags, FCVAR_EXTENDED ))
+		var->def_string = var->string; // just swap pointers
+
+	var->string = copystring( var->string );	
+	var->value = Q_atof( var->string );
+
+	// find the supposed position in chain (alphanumerical order)
+	for( cur = NULL, find = cvar_vars; find && Q_strcmp( find->name, var->name ) < 0; cur = find, find = find->next );
+
+	// now link variable	
+	if( cur ) cur->next = var;
+	else cvar_vars = var;
+	var->next = find;
+
+	// fill it cls.userinfo, svs.serverinfo
+	Cvar_UpdateInfo( var, var->string, false );
+
+	// tell engine about changes
+	Cvar_Changed( var );
+}
+
+/*
+============
+Cvar_DirectSet
+
+way to change value for many cvars
+============
+*/
+void Cvar_DirectSet( convar_t *var, const char *value )
+{
+	const char	*pszValue;
+	
+	if( !var ) return;	// ???
+
+	// lookup for registration
+	if( CVAR_CHECK_SENTINEL( var ) || ( var->next == NULL && !FBitSet( var->flags, FCVAR_EXTENDED|FCVAR_ALLOCATED )))
+	{
+		// need to registering cvar fisrt
+		Cvar_RegisterVariable( var );	// ok, register it
+	}
+
+	// lookup for registration again
+	if( var != Cvar_FindVar( var->name ))
+		return; // how this possible?
+
+	if( FBitSet( var->flags, FCVAR_READ_ONLY|FCVAR_GLCONFIG ))
+	{
+		Con_Printf( "%s is read-only.\n", var->name );
+		return;
+	}
+	
+	if( FBitSet( var->flags, FCVAR_CHEAT ) && !host.allow_cheats )
+	{
+		Con_Printf( "%s is cheat protected.\n", var->name );
+		return;
+	}
+
+	// just tell user about deferred changes
+	if( FBitSet( var->flags, FCVAR_LATCH ) && ( SV_Active() || CL_Active( )))
+		Con_Printf( "%s will be changed upon restarting.\n", var->name );
+
+	// check value
+	if( !value )
+	{
+		if( !FBitSet( var->flags, FCVAR_EXTENDED|FCVAR_ALLOCATED ))
+		{
+			Con_Printf( "%s has no default value and can't be reset.\n", var->name );
+			return;
+		}
+
+		value = var->def_string; // reset to default value
+	}
+
+	pszValue = Cvar_ValidateString( var, value );
+
+	// nothing to change
+	if( !Q_strcmp( pszValue, var->string ))
+		return;
+
+	// fill it cls.userinfo, svs.serverinfo
+	if( !Cvar_UpdateInfo( var, pszValue, true ))
+		return;
+
+	// and finally changed the cvar itself
+	freestring( var->string );
+	var->string = copystring( pszValue );
+	var->value = Q_atof( var->string );
+
+	// tell engine about changes
+	Cvar_Changed( var );
+}
+
+/*
+============
+Cvar_FullSet
+
+can set any protected cvars
+============
+*/
+void Cvar_FullSet( const char *var_name, const char *value, int flags )
+{
+	convar_t	*var = Cvar_FindVar( var_name );
+
+	if( !var )
+	{
+		Cvar_Get( var_name, value, flags, "" );
+		return;
+	}
+
+	freestring( var->string );
+	var->string = copystring( value );
+	var->value = Q_atof( var->string );
+	SetBits( var->flags, flags );
+
+	// tell engine about changes
+	Cvar_Changed( var );
+}
+
+/*
+============
+Cvar_Set
+============
+*/
+void Cvar_Set( const char *var_name, const char *value )
+{
+	convar_t	*var = Cvar_FindVar( var_name );
+
+	if( !var )
+	{
+		// there is an error in C code if this happens
+		Con_Printf( "Cvar_Set: variable '%s' not found\n", var_name );
+		return;
+	}
+
+	Cvar_DirectSet( var, value );
+}
+
+/*
+============
+Cvar_SetValue
+============
+*/
+void Cvar_SetValue( const char *var_name, float value )
+{
+	char	val[32];
+	
+	if( fabs( value - (int)value ) < 0.000001 )
+		Q_snprintf( val, sizeof( val ), "%d", (int)value );
+	else Q_snprintf( val, sizeof( val ), "%f", value );
+
+	Cvar_Set( var_name, val );
+}
+
+/*
+============
+Cvar_Reset
+============
+*/
+void Cvar_Reset( const char *var_name )
+{
+	Cvar_Set( var_name, NULL );
 }
 
 /*
@@ -60,8 +604,9 @@ float Cvar_VariableValue( const char *var_name )
 	convar_t	*var;
 
 	var = Cvar_FindVar( var_name );
-	if( !var ) return 0;
-	return var->value;
+	if( !var ) return 0.0f;
+
+	return Q_atof( var->string );
 }
 
 /*
@@ -76,7 +621,7 @@ int Cvar_VariableInteger( const char *var_name )
 	var = Cvar_FindVar( var_name );
 	if( !var ) return 0;
 
-	return var->integer;
+	return Q_atoi( var->string );
 }
 
 /*
@@ -96,612 +641,14 @@ char *Cvar_VariableString( const char *var_name )
 
 /*
 ============
-Cvar_LookupVars
+Cvar_Exists
 ============
 */
-void Cvar_LookupVars( int checkbit, void *buffer, void *ptr, setpair_t callback )
+qboolean Cvar_Exists( const char *var_name )
 {
-	convar_t	*cvar;
-
-	// nothing to process ?
-	if( !callback ) return;
-
-	// force checkbit to 0 for lookup all cvars
-	for( cvar = cvar_vars; cvar; cvar = cvar->next )
-	{
-		if( checkbit && !( cvar->flags & checkbit )) continue;
-		if( buffer )
-		{
-			callback( cvar->name, cvar->string, buffer, ptr );
-		}
-		else
-		{
-			// NOTE: dlls cvars doesn't have description
-			if( cvar->flags & ( CVAR_EXTDLL|CVAR_CLIENTDLL ))
-				callback( cvar->name, cvar->string, "game cvar", ptr );
-			else callback( cvar->name, cvar->string, cvar->description, ptr );
-		}
-	}
-}
-
-/*
-============
-Cvar_Get
-
-If the variable already exists, the value will not be set
-The flags will be or'ed in if the variable exists.
-============
-*/
-convar_t *Cvar_Get( const char *var_name, const char *var_value, int flags, const char *var_desc )
-{
-	convar_t	*var;
-	
-	if( !var_name )
-	{
-		Sys_Error( "Cvar_Get: passed NULL name\n" );
-		return NULL;
-	}
-
-	if( !var_value ) var_value = "0"; // just apply default value
-
-	// all broadcast cvars must be passed this check
-	if( flags & ( CVAR_USERINFO|CVAR_SERVERINFO|CVAR_PHYSICINFO ))
-	{
-		if( !Cvar_ValidateString( var_name, false ))
-		{
-			MsgDev( D_ERROR, "invalid info cvar name string %s\n", var_name );
-			return NULL;
-		}
-
-		if( !Cvar_ValidateString( var_value, true ))
-		{
-			MsgDev( D_WARN, "invalid cvar value string: %s\n", var_value );
-			var_value = "0"; // just apply default value
-		}
-	}
-
-	// check for command coexisting
-	if( Cmd_Exists( var_name ))
-	{
-		MsgDev( D_ERROR, "Cvar_Get: %s is a command\n", var_name );
-		return NULL;
-	}
-
-	var = Cvar_FindVar( var_name );
-
-	if( var )
-	{
-		// fast check for short cvars
-		if( var->flags & CVAR_EXTDLL )
-		{
-			var->flags |= flags;
-			return var;
-		}
-
-		// if the C code is now specifying a variable that the user already
-		// set a value for, take the new value as the reset value
-		if(( var->flags & CVAR_USER_CREATED ) && !( flags & CVAR_USER_CREATED ) && var_value[0] )
-		{
-			var->flags &= ~CVAR_USER_CREATED;
-			Mem_Free( var->reset_string );
-			var->reset_string = copystring( var_value );
-		}
-
-		var->flags |= flags;
-
-		// only allow one non-empty reset string without a warning
-		if( !var->reset_string[0] )
-		{
-			// we don't have a reset string yet
-			Mem_Free( var->reset_string );
-			var->reset_string = copystring( var_value );
-		}
-
-		// if we have a latched string, take that value now
-		if( var->latched_string )
-		{
-			char *s;
-
-			s = var->latched_string;
-			var->latched_string = NULL; // otherwise cvar_set2 would free it
-			Cvar_Set2( var_name, s, true );
-			Mem_Free( s );
-		}
-
-		if( var_desc )
-		{
-			// update description if needs
-			if( var->description ) Mem_Free( var->description );
-			var->description = copystring( var_desc );
-		}
-		return var;
-	}
-
-	// allocate a new cvar
-	var = Z_Malloc( sizeof( *var ));
-	var->name = copystring( var_name );
-	var->string = copystring( var_value );
-	var->reset_string = copystring( var_value );
-	if( var_desc ) var->description = copystring( var_desc );
-	var->value = Q_atof( var->string );
-	var->integer = Q_atoi( var->string );
-	var->modified = true;
-	var->flags = flags;
-
-	// link the variable in
-	var->next = cvar_vars;
-	cvar_vars = var;
-
-	return var;
-}
-
-/*
-============
-Cvar_RegisterVariable
-
-Adds a freestanding variable to the variable list.
-============
-*/
-void Cvar_RegisterVariable( cvar_t *var )
-{
-	convar_t	**prev, *cur = NULL;
-	convar_t	*find;
-
-	ASSERT( var != NULL );
-
-	// check for overlap with a command
-	if( Cmd_Exists( var->name ))
-	{
-		MsgDev( D_ERROR, "Cvar_Register: %s is a command\n", var->name );
-		return;
-	}
-	
-	// first check to see if it has allready been defined
-	if(( cur = Cvar_FindVar( var->name )) != NULL )
-	{
-		// this cvar is already registered with Cvar_RegisterVariable
-		// so we can't replace it
-		if( cur->flags & CVAR_EXTDLL )
-		{
-			MsgDev( D_ERROR, "can't register variable %s, allready defined\n", var->name );
-			return;
-		}
-	}
-
-	if( cur )
-	{
-		prev = &cvar_vars;
-
-		while( 1 )
-		{
-			find = *prev;
-
-			ASSERT( find != NULL );
-
-			if( cur == cvar_vars )
-			{
-				// relink at tail
-				cvar_vars = (convar_t *)var;
-				break;
-			}
-
-			// search for previous cvar
-			if( cur != find->next )
-			{
-				prev = &find->next;
-				continue;
-			}
-
-			// link new variable
-			find->next = (convar_t *)var;
-			break;
-		}
-
-		var->string = cur->string;	// we already have right string
-		var->value = Q_atof( var->string );
-		var->flags |= CVAR_EXTDLL;	// all cvars passed this function are game cvars
-		var->next = (cvar_t *)cur->next;
-
-		// release current cvar (but keep string)
-		if( cur->name ) Mem_Free( cur->name );
-		if( cur->latched_string ) Mem_Free( cur->latched_string );
-		if( cur->reset_string ) Mem_Free( cur->reset_string );
-		if( cur->description ) Mem_Free( cur->description );
-		Mem_Free( cur );
-	}
-	else
-	{
-		// copy the value off, because future sets will Z_Free it
-		var->string = copystring( var->string );
-		var->value = Q_atof( var->string );
-		var->flags |= CVAR_EXTDLL;		// all cvars passed this function are game cvars
-	
-		// link the variable in
-		var->next = (cvar_t *)cvar_vars;
-		cvar_vars = (convar_t *)var;
-	}
-}
-	
-/*
-============
-Cvar_Set2
-============
-*/
-convar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force )
-{
-	convar_t		*var;
-	const char	*pszValue;
-	char		szNew[MAX_SYSPATH];
-	qboolean		dll_variable = false;
-	
-	if( !Cvar_ValidateString( var_name, false ))
-	{
-		MsgDev( D_ERROR, "invalid cvar name string: %s\n", var_name );
-		return NULL;
-	}
-
-	var = Cvar_FindVar( var_name );
-	if( !var )
-	{
-		// create it
-		if( force ) return Cvar_Get( var_name, value, 0, NULL );
-		return Cvar_Get( var_name, value, CVAR_USER_CREATED, NULL );
-
-	}
-
-	// use this check to prevent acessing for unexisting fields
-	// for cvar_t: latechd_string, description, etc
-	if( var->flags & CVAR_EXTDLL )
-		dll_variable = true;
-
-	if( !value )
-	{
-		if( dll_variable ) value = "0";
-		else value = var->reset_string;
-	}
-
-	if( !Q_strcmp( value, var->string ))
-		return var;
-
-	// any latched values not allowed for game cvars
-	if( dll_variable ) force = true;
-
-	if( !force )
-	{
-		if( var->flags & ( CVAR_READ_ONLY|CVAR_GLCONFIG ))
-		{
-			MsgDev( D_INFO, "%s is read only.\n", var_name );
-			return var;
-		}
-
-		if( var->flags & CVAR_INIT )
-		{
-			MsgDev( D_INFO, "%s is write protected.\n", var_name );
-			return var;
-		}
-
-		if( var->flags & ( CVAR_LATCH|CVAR_LATCH_VIDEO ))
-		{
-			if( var->latched_string )
-			{
-				if(!Q_strcmp( value, var->latched_string ))
-					return var;
-				Mem_Free( var->latched_string );
-			}
-			else
-			{
-				if( !Q_strcmp( value, var->string ))
-					return var;
-			}
-
-			if( var->flags & CVAR_LATCH && Cvar_VariableInteger( "host_serverstate" ))
-			{
-				MsgDev( D_INFO, "%s will be changed upon restarting.\n", var->name );
-				var->latched_string = copystring( value );
-			}
-			else if( var->flags & CVAR_LATCH_VIDEO )
-			{
-				MsgDev( D_INFO, "%s will be changed upon restarting video.\n", var->name );
-				var->latched_string = copystring( value );
-			}
-			else
-			{
-				Mem_Free( var->string );		// free the old value string
-				var->string = copystring( value );
-				var->value = Q_atof( var->string );
-				var->integer = Q_atoi( var->string );
-			}
-
-			var->modified = true;
-			return var;
-		}
-
-		if(( var->flags & CVAR_CHEAT ) && !Cvar_VariableInteger( "sv_cheats" ))
-		{
-			MsgDev( D_INFO, "%s is cheat protected.\n", var_name );
-			return var;
-		}
-	}
-	else
-	{
-		if( !dll_variable && var->latched_string )
-		{
-			Mem_Free( var->latched_string );
-			var->latched_string = NULL;
-		}
-	}
-
-	pszValue = value;
-
-	// This cvar's string must only contain printable characters.
-	// Strip out any other crap.
-	// We'll fill in "empty" if nothing is left
-	if( var->flags & CVAR_PRINTABLEONLY )
-	{
-		const char *pS;
-		char *pD;
-
-		// clear out new string
-		szNew[0] = '\0';
-
-		pS = pszValue;
-		pD = szNew;
-
-		// step through the string, only copying back in characters that are printable
-		while( *pS )
-		{
-			if( ((byte)*pS) < 32 || ((byte)*pS) > 255 )
-			{
-				pS++;
-				continue;
-			}
-			*pD++ = *pS++;
-		}
-
-		// terminate the new string
-		*pD = '\0';
-
-		// if it's empty, then insert a marker string
-		if( !Q_strlen( szNew ))
-		{
-			Q_strcpy( szNew, "default" );
-		}
-
-		// point the value here.
-		pszValue = szNew;
-	}
-
- 	// nothing to change
-	if( !Q_strcmp( pszValue, var->string ))
-		return var;
-
-	if( var->flags & CVAR_USERINFO )
-		userinfo->modified = true;	// transmit at next oportunity
-
-	if( var->flags & CVAR_PHYSICINFO )
-		physinfo->modified = true;	// transmit at next oportunity
-
-	if( var->flags & CVAR_SERVERINFO )
-		serverinfo->modified = true;	// transmit at next oportunity
-
-	if( var->flags & CVAR_RENDERINFO )
-		renderinfo->modified = true;	// transmit at next oportunity
-	
-	// free the old value string
-	Mem_Free( var->string );
-	var->string = copystring( pszValue );
-	var->value = Q_atof( var->string );
-
-	if( !dll_variable )
-	{
-		var->integer = Q_atoi( var->string );
-		var->modified = true;
-	}
-
-	return var;
-}
-
-/*
-============
-Cvar_Set
-============
-*/
-void Cvar_Set( const char *var_name, const char *value )
-{
-	Cvar_Set2( var_name, value, true );
-}
-
-/*
-============
-Cvar_SetLatched
-============
-*/
-void Cvar_SetLatched( const char *var_name, const char *value )
-{
-	Cvar_Set2( var_name, value, false );
-}
-
-/*
-============
-Cvar_FullSet
-============
-*/
-void Cvar_FullSet( const char *var_name, const char *value, int flags )
-{
-	convar_t	*var;
-	qboolean	dll_variable = false;
-		
-	var = Cvar_FindVar( var_name );
-	if( !var ) 
-	{
-		// create it
-		Cvar_Get( var_name, value, flags, "" );
-		return;
-	}
-
-	// use this check to prevent acessing for unexisting fields
-	// for cvar_t: latechd_string, description, etc
-	if( var->flags & CVAR_EXTDLL )
-	{
-		dll_variable = true;
-	}
-
-	if( var->flags & CVAR_USERINFO )
-	{
-		// transmit at next oportunity
-		userinfo->modified = true;
-	}	
-
-	if( var->flags & CVAR_PHYSICINFO )
-	{
-		// transmit at next oportunity
-		physinfo->modified = true;
-	}
-
-	if( var->flags & CVAR_SERVERINFO )
-	{
-		// transmit at next oportunity
-		serverinfo->modified = true;
-	}
-
-	if( var->flags & CVAR_RENDERINFO )
-	{
-		// transmit at next oportunity
-		renderinfo->modified = true;
-	}
-
-	Mem_Free( var->string ); // free the old value string
-	var->string = copystring( value );
-	var->value = Q_atof( var->string );
-	var->flags = flags;
-
-	if( dll_variable ) return;	// below field doesn't exist in cvar_t
-
-	var->integer = Q_atoi( var->string );
-	var->modified = true;
-}
-
-/*
-============
-Cvar_DirectSet
-============
-*/
-void Cvar_DirectSet( cvar_t *var, const char *value )
-{
-	cvar_t		*test;
-	const char	*pszValue;
-	char		szNew[MAX_SYSPATH];
-	
-	if( !var ) return;	// GET_CVAR_POINTER is failed ?
-
-	// make sure what is really pointer to the cvar
-	test = (cvar_t *)Cvar_FindVar( var->name );
-	ASSERT( var == test ); 
-
-	if( value && !Cvar_ValidateString( value, true ))
-	{
-		MsgDev( D_WARN, "invalid cvar value string: %s\n", value );
-		value = "default";
-	}
-
-	if( !value ) value = "0";
-
-	if( var->flags & ( CVAR_READ_ONLY|CVAR_GLCONFIG|CVAR_INIT|CVAR_RENDERINFO|CVAR_LATCH|CVAR_LATCH_VIDEO ))
-	{
-		// Cvar_DirectSet cannot change these cvars at all
-		return;
-	}
-	
-	if(( var->flags & CVAR_CHEAT ) && !Cvar_VariableInteger( "sv_cheats" ))
-	{
-		// cheats are disabled
-		return;
-	}
-
-	pszValue = value;
-
-	// This cvar's string must only contain printable characters.
-	// Strip out any other crap.
-	// We'll fill in "empty" if nothing is left
-	if( var->flags & CVAR_PRINTABLEONLY )
-	{
-		const char	*pS;
-		char		*pD;
-
-		// clear out new string
-		szNew[0] = '\0';
-
-		pS = pszValue;
-		pD = szNew;
-
-		// step through the string, only copying back in characters that are printable
-		while( *pS )
-		{
-			if( *pS < 32 || *pS > 255 )
-			{
-				pS++;
-				continue;
-			}
-			*pD++ = *pS++;
-		}
-
-		// terminate the new string
-		*pD = '\0';
-
-		// if it's empty, then insert a marker string
-		if( !Q_strlen( szNew ))
-		{
-			Q_strcpy( szNew, "default" );
-		}
-
-		// point the value here.
-		pszValue = szNew;
-	}
-
-	if( !Q_strcmp( pszValue, var->string ))
-		return;
-
-	if( var->flags & CVAR_USERINFO )
-		userinfo->modified = true;	// transmit at next oportunity
-
-	if( var->flags & CVAR_PHYSICINFO )
-		physinfo->modified = true;	// transmit at next oportunity
-
-	if( var->flags & CVAR_SERVERINFO )
-		serverinfo->modified = true;	// transmit at next oportunity
-
-	if( var->flags & CVAR_RENDERINFO )
-		renderinfo->modified = true;	// transmit at next oportunity
-
-	// free the old value string
-	Mem_Free( var->string );
-	var->string = copystring( pszValue );
-	var->value = Q_atof( var->string );
-}
-
-/*
-============
-Cvar_SetFloat
-============
-*/
-void Cvar_SetFloat( const char *var_name, float value )
-{
-	char	val[32];
-
-	if( value == (int)value )
-		Q_sprintf( val, "%i", (int)value );
-	else Q_sprintf( val, "%f", value );
-	Cvar_Set( var_name, val );
-}
-
-/*
-============
-Cvar_Reset
-============
-*/
-void Cvar_Reset( const char *var_name )
-{
-	Cvar_Set2( var_name, NULL, false );
+	if( Cvar_FindVar( var_name ))
+		return true;
+	return false;
 }
 
 /*
@@ -718,19 +665,14 @@ void Cvar_SetCheatState( void )
 	// set all default vars to the safe value
 	for( var = cvar_vars; var; var = var->next )
 	{
-		if( var->flags & CVAR_CHEAT )
+		// can't process dll cvars - missed def_string
+		if( !FBitSet( var->flags, FCVAR_ALLOCATED|FCVAR_EXTENDED ))
+			continue;
+
+		if( FBitSet( var->flags, FCVAR_CHEAT ))
 		{
-			// the CVAR_LATCHED|CVAR_CHEAT vars might escape the reset here 
-			// because of a different var->latched_string
-			if( var->latched_string )
-			{
-				Mem_Free( var->latched_string );
-				var->latched_string = NULL;
-			}
-			if( Q_strcmp( var->reset_string, var->string ))
-			{
-				Cvar_Set( var->name, var->reset_string );
-			}
+			if( Q_strcmp( var->def_string, var->string ))
+				Cvar_DirectSet( var, var->def_string );
 		}
 	}
 }
@@ -746,6 +688,13 @@ qboolean Cvar_Command( void )
 {
 	convar_t	*v;
 
+	// special case for setup opengl configuration
+	if( host.apply_opengl_config )
+	{
+		Cvar_FullSet( Cmd_Argv( 0 ), Cmd_Argv( 1 ), FCVAR_GLCONFIG );
+		return true;
+	}
+
 	// check variables
 	v = Cvar_FindVar( Cmd_Argv( 0 ));
 	if( !v ) return false;
@@ -753,14 +702,50 @@ qboolean Cvar_Command( void )
 	// perform a variable print or set
 	if( Cmd_Argc() == 1 )
 	{
-		if( v->flags & ( CVAR_INIT|CVAR_EXTDLL )) Msg( "%s: %s\n", v->name, v->string );
-		else Msg( "%s: %s ( ^3%s^7 )\n", v->name, v->string, v->reset_string );
+		if( FBitSet( v->flags, FCVAR_ALLOCATED|FCVAR_EXTENDED ))
+			Con_Printf( "\"%s\" is \"%s\" ( ^3\"%s\"^7 )\n", v->name, v->string, v->def_string );
+		else Con_Printf( "\"%s\" is \"%s\"\n", v->name, v->string );
+
 		return true;
 	}
 
-	// set the value if forcing isn't required
-	Cvar_Set2( v->name, Cmd_Argv( 1 ), false );
-	return true;
+	if( host.apply_game_config )
+	{
+		if( !FBitSet( v->flags, FCVAR_EXTDLL ))
+			return true; // only game.dll cvars passed
+	}
+
+	if( FBitSet( v->flags, FCVAR_SPONLY ) && CL_GetMaxClients() > 1 )
+	{
+		Con_Printf( "can't set \"%s\" in multiplayer\n", v->name );
+		return false;
+	}
+	else
+	{
+		Cvar_DirectSet( v, Cmd_Argv( 1 ));
+		if( host.apply_game_config )
+			host.sv_cvars_restored++;
+		return true;
+	}
+}
+
+/*
+============
+Cvar_WriteVariables
+
+Writes lines containing "variable value" for all variables
+with the specified flag set to true.
+============
+*/
+void Cvar_WriteVariables( file_t *f, int group )
+{
+	convar_t	*var;
+	
+	for( var = cvar_vars; var; var = var->next )
+	{
+		if( FBitSet( var->flags, group ))
+			FS_Printf( f, "%s \"%s\"\n", var->name, var->string );
+	}
 }
 
 /*
@@ -776,161 +761,13 @@ void Cvar_Toggle_f( void )
 
 	if( Cmd_Argc() != 2 )
 	{
-		Msg( "Usage: toggle <variable>\n" );
+		Con_Printf( S_USAGE "toggle <variable>\n" );
 		return;
 	}
 
-	v = Cvar_VariableValue( Cmd_Argv( 1 ));
-	v = !v;
+	v = !Cvar_VariableInteger( Cmd_Argv( 1 ));
 
-	Cvar_Set2( Cmd_Argv( 1 ), va( "%i", v ), false );
-}
-
-/*
-============
-Cvar_Set_f
-
-Allows setting and defining of arbitrary cvars from console, even if they
-weren't declared in C code.
-============
-*/
-void Cvar_Set_f( void )
-{
-	int	i, c, l = 0, len;
-	char	combined[MAX_CMD_TOKENS];
-
-	c = Cmd_Argc();
-	if( c < 3 )
-	{
-		Msg( "Usage: set <variable> <value>\n" );
-		return;
-	}
-	combined[0] = 0;
-
-	for( i = 2; i < c; i++ )
-	{
-		len = Q_strlen( Cmd_Argv(i) + 1 );
-		if( l + len >= MAX_CMD_TOKENS - 2 )
-			break;
-		Q_strcat( combined, Cmd_Argv( i ));
-		if( i != c-1 ) Q_strcat( combined, " " );
-		l += len;
-	}
-
-	Cvar_Set2( Cmd_Argv( 1 ), combined, false );
-}
-
-/*
-============
-Cvar_SetU_f
-
-As Cvar_Set, but also flags it as userinfo
-============
-*/
-void Cvar_SetU_f( void )
-{
-	convar_t	*v;
-
-	if( Cmd_Argc() != 3 )
-	{
-		Msg( "Usage: setu <variable> <value>\n" );
-		return;
-	}
-
-	Cvar_Set_f();
-	v = Cvar_FindVar( Cmd_Argv( 1 ));
-
-	if( !v ) return;
-	v->flags |= CVAR_USERINFO;
-}
-
-/*
-============
-Cvar_SetP_f
-
-As Cvar_Set, but also flags it as physinfo
-============
-*/
-void Cvar_SetP_f( void )
-{
-	convar_t	*v;
-
-	if( Cmd_Argc() != 3 )
-	{
-		Msg( "Usage: setp <variable> <value>\n" );
-		return;
-	}
-
-	Cvar_Set_f();
-	v = Cvar_FindVar( Cmd_Argv( 1 ));
-
-	if( !v ) return;
-	v->flags |= CVAR_PHYSICINFO;
-}
-
-/*
-============
-Cvar_SetS_f
-
-As Cvar_Set, but also flags it as serverinfo
-============
-*/
-void Cvar_SetS_f( void )
-{
-	convar_t	*v;
-
-	if( Cmd_Argc() != 3 )
-	{
-		Msg( "Usage: sets <variable> <value>\n" );
-		return;
-	}
-	Cvar_Set_f();
-	v = Cvar_FindVar( Cmd_Argv( 1 ));
-
-	if( !v ) return;
-	v->flags |= CVAR_SERVERINFO;
-}
-
-/*
-============
-Cvar_SetA_f
-
-As Cvar_Set, but also flags it as archived
-============
-*/
-void Cvar_SetA_f( void )
-{
-	convar_t	*v;
-
-	if( Cmd_Argc() != 3 )
-	{
-		Msg( "Usage: seta <variable> <value>\n" );
-		return;
-	}
-
-	Cvar_Set_f();
-	v = Cvar_FindVar( Cmd_Argv( 1 ));
-
-	if( !v ) return;
-	v->flags |= CVAR_ARCHIVE;
-}
-
-/*
-============
-Cvar_SetR_f
-
-As Cvar_Set, but also flags it as renderinfo
-============
-*/
-void Cvar_SetR_f( void )
-{
-	if( Cmd_Argc() != 3 )
-	{
-		Msg( "Usage: setr <variable> <value>\n" );
-		return;
-	}
-
-	Cvar_FullSet( Cmd_Argv( 1 ), Cmd_Argv( 2 ), CVAR_RENDERINFO );
+	Cvar_Set( Cmd_Argv( 1 ), va( "%i", v ));
 }
 
 /*
@@ -944,11 +781,11 @@ void Cvar_SetGL_f( void )
 {
 	if( Cmd_Argc() != 3 )
 	{
-		Msg( "Usage: setgl <variable> <value>\n" );
+		Con_Printf( S_USAGE "setgl <variable> <value>\n" );
 		return;
 	}
 
-	Cvar_FullSet( Cmd_Argv( 1 ), Cmd_Argv( 2 ), CVAR_GLCONFIG );
+	Cvar_FullSet( Cmd_Argv( 1 ), Cmd_Argv( 2 ), FCVAR_GLCONFIG );
 }
 
 /*
@@ -960,9 +797,10 @@ void Cvar_Reset_f( void )
 {
 	if( Cmd_Argc() != 2 )
 	{
-		Msg( "Usage: reset <variable>\n" );
+		Con_Printf( S_USAGE "reset <variable>\n" );
 		return;
 	}
+
 	Cvar_Reset( Cmd_Argv( 1 ));
 }
 
@@ -974,248 +812,57 @@ Cvar_List_f
 void Cvar_List_f( void )
 {
 	convar_t	*var;
-	char	*match;
-	int	i = 0, j = 0;
+	char	*match = NULL;
+	char	*value;
+	int	count = 0;
 
-	if( Cmd_Argc() > 1 ) match = Cmd_Argv(1);
-	else match = NULL;
+	if( Cmd_Argc() > 1 )
+		match = Cmd_Argv( 1 );
 
-	for( var = cvar_vars; var; var = var->next, i++ )
+	for( var = cvar_vars; var; var = var->next )
 	{
+		if( var->name[0] == '@' )
+			continue;	// never shows system cvars
+
 		if( match && !Q_stricmpext( match, var->name ))
 			continue;
 
-		if( var->flags & CVAR_SERVERINFO ) Msg( "SV    " );
-		else Msg( " " );
+		if( Q_colorstr( var->string ))
+			value = va( "\"%s\"", var->string );
+		else value = va( "\"^2%s^7\"", var->string );
 
-		if( var->flags & CVAR_USERINFO ) Msg( "USER  " );
-		else Msg( " " );
+		if( FBitSet( var->flags, FCVAR_EXTENDED|FCVAR_ALLOCATED ))
+			Con_Printf( " %-*s %s ^3%s^7\n", 32, var->name, value, var->desc );
+		else Con_Printf( " %-*s %s ^3%s^7\n", 32, var->name, value, Cvar_BuildAutoDescription( var->flags ));
 
-		if( var->flags & CVAR_PHYSICINFO ) Msg( "PHYS  " );
-		else Msg( " " );
-
-		if( var->flags & CVAR_READ_ONLY ) Msg( "READ  " );
-		else Msg( " " );
-
-		if( var->flags & CVAR_INIT ) Msg( "INIT  " );
-		else Msg( " " );
-
-		if( var->flags & CVAR_ARCHIVE ) Msg( "ARCH  " );
-		else Msg( " " );
-
-		if( var->flags & CVAR_LATCH ) Msg( "LATCH " );
-		else Msg( " " );
-
-		if( var->flags & CVAR_LATCH_VIDEO ) Msg( "VIDEO " );
-		else Msg( " " );
-
-		if( var->flags & CVAR_GLCONFIG ) Msg( "OPENGL" );
-		else Msg( " " );
-
-		if( var->flags & CVAR_CHEAT ) Msg( "CHEAT " );
-		else Msg( " " );
-		Msg(" %s \"%s\" %s\n", var->name, var->string, var->description );
-		j++;
-	}
-
-	Msg( "\n%i cvars\n", j );
-	Msg( "%i total cvars\n", i );
-}
-
-/*
-============
-Cvar_Restart_f
-
-Resets all cvars to their hardcoded values
-============
-*/
-void Cvar_Restart_f( void )
-{
-	convar_t	*var;
-	convar_t	**prev;
-
-	prev = &cvar_vars;
-
-	while( 1 )
-	{
-		var = *prev;
-		if( !var ) break;
-
-		// don't mess with rom values, or some inter-module
-		// communication will get broken (cl.active, etc)
-		if( var->flags & ( CVAR_READ_ONLY|CVAR_GLCONFIG|CVAR_INIT|CVAR_RENDERINFO|CVAR_EXTDLL ))
-		{
-			prev = &var->next;
-			continue;
-		}
-
-		// throw out any variables the user created
-		if( var->flags & CVAR_USER_CREATED )
-		{
-			*prev = var->next;
-			if( var->name ) Mem_Free( var->name );
-			if( var->string ) Mem_Free( var->string );
-			if( var->latched_string ) Mem_Free( var->latched_string );
-			if( var->reset_string ) Mem_Free( var->reset_string );
-			if( var->description ) Mem_Free( var->description );
-			Mem_Free( var );
-
-			continue;
-		}
-
-		Cvar_Set( var->name, var->reset_string );
-		prev = &var->next;
-	}
-}
-
-/*
-============
-Cvar_Latched_f
-
-Now all latched strings is valid
-============
-*/
-void Cvar_Latched_f( void )
-{
-	convar_t	*var;
-	convar_t	**prev;
-
-	prev = &cvar_vars;
-
-	while( 1 )
-	{
-		var = *prev;
-		if( !var ) break;
-
-		if( var->flags & CVAR_EXTDLL )
-		{
-			prev = &var->next;
-			continue;
-		}
-
-		if( var->flags & CVAR_LATCH && var->latched_string )
-		{
-			Cvar_FullSet( var->name, var->latched_string, var->flags );
-			Mem_Free( var->latched_string );
-			var->latched_string = NULL;
-		}
-		prev = &var->next;
-	}
-}
-
-/*
-============
-Cvar_Latched_f
-
-Now all latched video strings is valid
-============
-*/
-void Cvar_LatchedVideo_f( void )
-{
-	convar_t	*var;
-	convar_t	**prev;
-
-	prev = &cvar_vars;
-
-	while ( 1 )
-	{
-		var = *prev;
-		if( !var ) break;
-
-		if( var->flags & CVAR_EXTDLL )
-		{
-			prev = &var->next;
-			continue;
-		}
-
-		if( var->flags & CVAR_LATCH_VIDEO && var->latched_string )
-		{
-			Cvar_FullSet( var->name, var->latched_string, var->flags );
-			Mem_Free( var->latched_string );
-			var->latched_string = NULL;
-		}
-		prev = &var->next;
-	}
-}
-
-/*
-============
-Cvar_Unlink_f
-
-unlink all cvars with flag CVAR_EXTDLL
-============
-*/
-void Cvar_Unlink_f( void )
-{
-	convar_t	*var;
-	convar_t	**prev;
-	int	count = 0;
-
-	if( Cvar_VariableInteger( "host_gameloaded" ))
-	{
-		MsgDev( D_NOTE, "can't unlink cvars while game is loaded\n" );
-		return;
-	}
-
-	prev = &cvar_vars;
-
-	while( 1 )
-	{
-		var = *prev;
-		if( !var ) break;
-
-		// ignore all non-game cvars
-		if(!( var->flags & CVAR_EXTDLL ))
-		{
-			prev = &var->next;
-			continue;
-		}
-
-		// throw out any variables the game created
-		*prev = var->next;
-		if( var->string ) Mem_Free( var->string );
 		count++;
 	}
+
+	Con_Printf( "\n%i cvars\n", count );
 }
 
 /*
 ============
 Cvar_Unlink
 
-unlink all cvars with flag CVAR_CLIENTDLL
+unlink all cvars with specified flag
 ============
 */
-void Cvar_Unlink( void )
+void Cvar_Unlink( int group )
 {
-	convar_t	*var;
-	convar_t	**prev;
-	int	count = 0;
+	int	count;
 
-	if( Cvar_VariableInteger( "host_clientloaded" ))
-	{
-		MsgDev( D_NOTE, "can't unlink cvars while client is loaded\n" );
+	if( Cvar_VariableInteger( "host_gameloaded" ) && FBitSet( group, FCVAR_EXTDLL ))
 		return;
-	}
 
-	prev = &cvar_vars;
+	if( Cvar_VariableInteger( "host_clientloaded" ) && FBitSet( group, FCVAR_CLIENTDLL ))
+		return;
 
-	while( 1 )
-	{
-		var = *prev;
-		if( !var ) break;
+	if( Cvar_VariableInteger( "host_gameuiloaded" ) && FBitSet( group, FCVAR_GAMEUIDLL ))
+		return;
 
-		// ignore all non-client cvars
-		if(!( var->flags & CVAR_CLIENTDLL ))
-		{
-			prev = &var->next;
-			continue;
-		}
-
-		// throw out any variables the game created
-		*prev = var->next;
-		if( var->string ) Mem_Free( var->string );
-		count++;
-	}
+	count = Cvar_UnlinkVar( NULL, group );
+	Con_Reportf( "unlink %i cvars\n", count );
 }
 
 /*
@@ -1228,23 +875,11 @@ Reads in all archived cvars
 void Cvar_Init( void )
 {
 	cvar_vars = NULL;
-	userinfo = Cvar_Get( "@userinfo", "0", CVAR_READ_ONLY, "" ); // use ->modified value only
-	physinfo = Cvar_Get( "@physinfo", "0", CVAR_READ_ONLY, "" ); // use ->modified value only
-	serverinfo = Cvar_Get( "@serverinfo", "0", CVAR_READ_ONLY, "" ); // use ->modified value only
-	renderinfo = Cvar_Get( "@renderinfo", "0", CVAR_READ_ONLY, "" ); // use ->modified value only
+	cmd_scripting = Cvar_Get( "cmd_scripting", "0", FCVAR_ARCHIVE, "enable simple condition checking and variable operations" );
+	Cvar_RegisterVariable (&host_developer); // early registering for dev 
 
-	Cmd_AddCommand ("toggle", Cvar_Toggle_f, "toggles a console variable's values (use for more info)" );
-	Cmd_AddCommand ("set", Cvar_Set_f, "create or change the value of a console variable" );
-	Cmd_AddCommand ("sets", Cvar_SetS_f, "create or change the value of a serverinfo variable" );
-	Cmd_AddCommand ("setu", Cvar_SetU_f, "create or change the value of a userinfo variable" );
-	Cmd_AddCommand ("setp", Cvar_SetP_f, "create or change the value of a physicinfo variable" );
-	Cmd_AddCommand ("setr", Cvar_SetR_f, "create or change the value of a renderinfo variable" );
-	Cmd_AddCommand ("setgl", Cvar_SetGL_f, "create or change the value of a opengl variable" );
-	Cmd_AddCommand ("seta", Cvar_SetA_f, "create or change the value of a console variable that will be saved to config.cfg" );
-	Cmd_AddCommand ("reset", Cvar_Reset_f, "reset any type variable to initial value" );
-	Cmd_AddCommand ("latch", Cvar_Latched_f, "apply latched values" );
-	Cmd_AddCommand ("vidlatch", Cvar_LatchedVideo_f, "apply latched values for video subsystem" );
-	Cmd_AddCommand ("cvarlist", Cvar_List_f, "display all console variables beginning with the specified prefix" );
-	Cmd_AddCommand ("unsetall", Cvar_Restart_f, "reset all console variables to their default values" );
-	Cmd_AddCommand ("@unlink", Cvar_Unlink_f, "unlink static cvars defined in gamedll" );
+	Cmd_AddCommand( "setgl", Cvar_SetGL_f, "create or change the value of a opengl variable" );	// OBSOLETE
+	Cmd_AddCommand( "toggle", Cvar_Toggle_f, "toggles a console variable's values (use for more info)" );
+	Cmd_AddCommand( "reset", Cvar_Reset_f, "reset any type variable to initial value" );
+	Cmd_AddCommand( "cvarlist", Cvar_List_f, "display all console variables beginning with the specified prefix" );
 }
