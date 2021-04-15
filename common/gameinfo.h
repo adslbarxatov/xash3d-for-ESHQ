@@ -17,6 +17,7 @@ GNU General Public License for more details.
 #define GAMEINFO_H
 
 #define GFL_NOMODELS	(1<<0)
+#define GFL_NOSKILLS	(1<<1)
 
 /*
 ========================================================================
@@ -36,7 +37,7 @@ typedef struct
 	char		title[64];	// Game Main Title
 	char		version[14];	// game version (optional)
 	short		flags;		// game flags
-	
+
 	// about mod info
 	char		game_url[256];	// link to a developer's site
 	char		update_url[256];	// link to updates page
