@@ -23,42 +23,42 @@ static char	*rgpparseword[CVOXWORDMAX];	// array of pointers to parsed words
 static char	voxperiod[] = "_period";	// vocal pause
 static char	voxcomma[] = "_comma";	// vocal pause
 
-static int IsNextWord( char c )
+static int IsNextWord( const char c )
 {
 	if( c == '.' || c == ',' || c == ' ' || c == '(' )
 		return 1;
 	return 0;
 }
 
-static int IsSkipSpace( char c )
+static int IsSkipSpace( const char c )
 {
 	if( c == ',' || c == '.' || c == ' ' )
 		return 1;
 	return 0;
 }
 
-static int IsWhiteSpace( char space )
+static int IsWhiteSpace( const char space )
 {
 	if( space == ' ' || space == '\t' || space == '\r' || space == '\n' )
 		return 1;
 	return 0;
 }
 
-static int IsCommandChar( char c )
+static int IsCommandChar( const char c )
 {
 	if( c == 'v' || c == 'p' || c == 's' || c == 'e' || c == 't' )
 		return 1;
 	return 0;
 }
 
-static int IsDelimitChar( char c )
+static int IsDelimitChar( const char c )
 {
 	if( c == '(' || c == ')' )
 		return 1;
 	return 0;
 }
 
-static char *ScanForwardUntil( char *string, char scan )
+static char *ScanForwardUntil( char *string, const char scan )
 {
 	while( string[0] )
 	{
@@ -94,7 +94,7 @@ static char *VOX_GetDirectory( char *szpath, char *psz )
 	}
 
 	cb = Q_strlen( psz ) - cb;
-	Q_memcpy( szpath, psz, cb );
+	memcpy( szpath, psz, cb );
 	szpath[cb] = 0;
 
 	return p + 1;
@@ -122,6 +122,7 @@ char *VOX_LookupString( const char *pSentenceName, int *psentencenum )
 			return (g_Sentences[i].pName + Q_strlen( g_Sentences[i].pName ) + 1 );
 		}
 	}
+
 	return NULL;
 }
 
@@ -133,7 +134,7 @@ char **VOX_ParseString( char *psz )
 	int	i, fdone = 0;
 	char	c, *p = psz;
 
-	Q_memset( rgpparseword, 0, sizeof( char* ) * CVOXWORDMAX );
+	memset( rgpparseword, 0, sizeof( char* ) * CVOXWORDMAX );
 
 	if( !psz ) return NULL;
 
@@ -184,6 +185,7 @@ char **VOX_ParseString( char *psz )
 			else rgpparseword[i++] = p;
 		}
 	}
+
 	return rgpparseword;
 }
 
@@ -197,6 +199,7 @@ float VOX_GetVolumeScale( channel_t *pchan )
 			if( volume < 1.0f ) return volume;
 		}
 	}
+
 	return 1.0f;
 }
 
@@ -223,6 +226,7 @@ float VOX_ModifyPitch( channel_t *ch, float pitch )
 			pitch += ( ch->words[ch->wordIndex].pitch - PITCH_NORM ) * 0.01f;
 		}
 	}
+
 	return pitch;
 }
 
@@ -296,7 +300,7 @@ int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 		if( ct == ')' )
 			break;
 
-		Q_memset( sznum, 0, sizeof( sznum ));
+		memset( sznum, 0, sizeof( sznum ));
 		i = 0;
 
 		c = *(++psz);
@@ -334,6 +338,7 @@ int VOX_ParseWordParams( char *psz, voxword_t *pvoxword, int fFirst )
 		voxwordDefault = *pvoxword;
 		return 0;
 	}
+
 	return 1;
 }
 
@@ -345,8 +350,8 @@ void VOX_LoadWord( channel_t *pchan )
 
 		if( pSource )
 		{
-			int	start = pchan->words[pchan->wordIndex].start;
-			int	end = pchan->words[pchan->wordIndex].end;
+			int start = pchan->words[pchan->wordIndex].start;
+			int end = pchan->words[pchan->wordIndex].end;
 
 			// apply mixer
 			pchan->currentWord = &pchan->pMixer;
@@ -376,19 +381,19 @@ void VOX_LoadWord( channel_t *pchan )
 void VOX_FreeWord( channel_t *pchan )
 {
 	pchan->currentWord = NULL; // sentence is finished
-	Q_memset( &pchan->pMixer, 0, sizeof( pchan->pMixer ));
+	memset( &pchan->pMixer, 0, sizeof( pchan->pMixer ));
 
-	// UNDONE: release unused sounds ?
-#if 0
+	// release unused sounds
 	if( pchan->words[pchan->wordIndex].sfx )
 	{
 		// If this wave wasn't precached by the game code
 		if( !pchan->words[pchan->wordIndex].fKeepCached )
 		{
-			S_FreeSound( pchan->words[pchan->wordIndex].sfx );
+			FS_FreeSound( pchan->words[pchan->wordIndex].sfx->cache );
+			pchan->words[pchan->wordIndex].sfx->cache = NULL;
+			pchan->words[pchan->wordIndex].sfx = NULL;
 		}
 	}
-#endif
 }
 
 void VOX_LoadFirstWord( channel_t *pchan, voxword_t *pwords )
@@ -399,8 +404,10 @@ void VOX_LoadFirstWord( channel_t *pchan, voxword_t *pwords )
 	// sentence array, and set the channel to point to the
 	// sentence array
 	while( pwords[i].sfx != NULL )
-		pchan->words[i] = pwords[i++];
-		
+	{
+		pchan->words[i] = pwords[i];
+		i++;
+	}		
 	pchan->words[i].sfx = NULL;
 
 	pchan->wordIndex = 0;
@@ -418,7 +425,8 @@ int VOX_MixDataToDevice( channel_t *pchan, int sampleCount, int outputRate, int 
 
 	while( sampleCount > 0 && pchan->currentWord )
 	{
-		int	outputCount = S_MixDataToDevice( pchan, sampleCount, outputRate, outputOffset );
+		int	timeCompress = pchan->words[pchan->wordIndex].timecompress;
+		int	outputCount = S_MixDataToDevice( pchan, sampleCount, outputRate, outputOffset, timeCompress );
 
 		outputOffset += outputCount;
 		sampleCount -= outputCount;
@@ -452,8 +460,8 @@ void VOX_LoadSound( channel_t *pchan, const char *pszin )
 	if( !pszin || !*pszin )
 		return;
 
-	Q_memset( rgvoxword, 0, sizeof( voxword_t ) * CVOXWORDMAX );
-	Q_memset( buffer, 0, sizeof( buffer ));
+	memset( rgvoxword, 0, sizeof( voxword_t ) * CVOXWORDMAX );
+	memset( buffer, 0, sizeof( buffer ));
 
 	// lookup actual string in g_Sentences, 
 	// set pointer to string data
@@ -461,7 +469,7 @@ void VOX_LoadSound( channel_t *pchan, const char *pszin )
 
 	if( !psz )
 	{
-		MsgDev( D_ERROR, "VOX_LoadSound: no sentence named %s\n", pszin );
+		Con_DPrintf( S_ERROR "VOX_LoadSound: no such sentence %s\n", pszin );
 		return;
 	}
 
@@ -470,7 +478,7 @@ void VOX_LoadSound( channel_t *pchan, const char *pszin )
 
 	if( Q_strlen( psz ) > sizeof( buffer ) - 1 )
 	{
-		MsgDev( D_ERROR, "VOX_LoadSound: sentence is too long %s\n", psz );
+		Con_Printf( S_ERROR "VOX_LoadSound: sentence is too long %s\n", psz );
 		return;
 	}
 
@@ -537,12 +545,12 @@ void VOX_ParseLineCommands( char *pSentenceData, int sentenceIndex )
 		length = pNext - pSentenceData;
 		if( tempBufferPos + length > sizeof( tempBuffer ))
 		{
-			MsgDev( D_ERROR, "sentence too long!\n" );
+			Con_Printf( S_ERROR "sentence too long!\n" );
 			return;
 		}
 
 		// Copy good string to temp buffer
-		Q_memcpy( tempBuffer + tempBufferPos, pSentenceData, length );
+		memcpy( tempBuffer + tempBufferPos, pSentenceData, length );
 		
 		// move the copy position
 		tempBufferPos += length;
@@ -602,18 +610,19 @@ void VOX_ReadSentenceFile( const char *psentenceFileName )
 
 	// load file
 	pFileData = (char *)FS_LoadFile( psentenceFileName, &fileSize, false );
-
-	if( !pFileData )
-	{
-		MsgDev( D_WARN, "couldn't load %s\n", psentenceFileName );
-		return;
-	} 
+	if( !pFileData ) return; // this game just doesn't used vox sound system
 
 	pch = pFileData;
 	pchlast = pch + fileSize;
 
 	while( pch < pchlast )
 	{
+		if( g_numSentences >= MAX_SENTENCES )
+		{
+			Con_Printf( S_ERROR "VOX_Init: too many sentences specified\n" );
+			break;
+		}
+
 		// only process this pass on sentences
 		pSentenceData = NULL;
 
@@ -626,7 +635,7 @@ void VOX_ReadSentenceFile( const char *psentenceFileName )
 		// skip entire line if first char is /
 		if( *pch != '/' )
 		{
-			sentence_t	*pSentence = &g_Sentences[g_numSentences++];
+			sentence_t *pSentence = &g_Sentences[g_numSentences++];
 
 			pSentence->pName = pch;
 			pSentence->length = 0;
@@ -665,10 +674,10 @@ void VOX_ReadSentenceFile( const char *psentenceFileName )
 
 void VOX_Init( void )
 {
-	Q_memset( g_Sentences, 0, sizeof( g_Sentences ));
+	memset( g_Sentences, 0, sizeof( g_Sentences ));
 	g_numSentences = 0;
 
-	VOX_ReadSentenceFile( "sound/sentences.txt" );
+	VOX_ReadSentenceFile( DEFAULT_SOUNDPATH "sentences.txt" );
 }
 
 

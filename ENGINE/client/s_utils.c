@@ -20,24 +20,6 @@ GNU General Public License for more details.
 #define ZERO_X_8( b )	(( b ) < 2 && ( b ) > -2 )
 #define ZERO_X_16( b )	(( b ) < 512 && ( b ) > -512 )
 
-/*
-=================
-S_SimpleSpline
-
-NOTE: ripped from hl2 source
-hermite basis function for smooth interpolation
-Similar to Gain() above, but very cheap to call
-value should be between 0 & 1 inclusive
-=================
-*/
-float S_SimpleSpline( float value )
-{
-	float	valueSquared = value * value;
-
-	// nice little ease-in, ease-out spline-like curve
-	return (3 * valueSquared - 2 * valueSquared * value);
-}
-
 //-----------------------------------------------------------------------------
 // Purpose: Search backward for a zero crossing starting at sample
 // Input  : sample - starting point
@@ -131,6 +113,7 @@ int S_ZeroCrossingBefore( wavdata_t *pWaveData, int sample )
 			}
 		}
 	}
+
 	return sample;
 }
 
@@ -227,6 +210,7 @@ int S_ZeroCrossingAfter( wavdata_t *pWaveData, int sample )
 			}
 		}
 	}
+
 	return sample;
 }
 
@@ -256,6 +240,7 @@ int S_ConvertLoopedPosition( wavdata_t *pSource, int samplePosition, qboolean us
 		}
 		// ERROR? if no loopSize
 	}
+
 	return samplePosition;
 }
 
