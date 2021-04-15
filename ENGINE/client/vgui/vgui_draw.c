@@ -21,7 +21,6 @@ GNU General Public License for more details.
 convar_t	*vgui_colorstrings;
 int	g_textures[VGUI_MAX_TEXTURES];
 int	g_textureId = 0;
-int	g_iBoundTexture;
 
 /*
 ================
@@ -32,17 +31,17 @@ Startup VGUI backend
 */
 void VGUI_DrawInit( void )
 {
-	Q_memset( g_textures, 0, sizeof( g_textures ));
-	g_textureId = g_iBoundTexture = 0;
+	memset( g_textures, 0, sizeof( g_textures ));
+	g_textureId = 0;
 
-	vgui_colorstrings = Cvar_Get( "vgui_colorstrings", "0", CVAR_ARCHIVE, "allow colorstrings in VGUI texts" );
+	vgui_colorstrings = Cvar_Get( "vgui_colorstrings", "0", FCVAR_ARCHIVE, "allow colorstrings in VGUI texts" );
 }
 
 /*
 ================
 VGUI_DrawShutdown
 
-Release all textures
+Release all the textures
 ================
 */
 void VGUI_DrawShutdown( void )
@@ -51,7 +50,7 @@ void VGUI_DrawShutdown( void )
 
 	for( i = 1; i < g_textureId; i++ )
 	{
-		GL_FreeImage( va(  "*vgui%i", i ));
+		GL_FreeTexture( g_textures[i] );
 	}
 }
 
@@ -65,7 +64,7 @@ generate unique texture number
 int VGUI_GenerateTexture( void )
 {
 	if( ++g_textureId >= VGUI_MAX_TEXTURES )
-		Sys_Error( "VGUI_GenerateTexture: VGUI_MAX_TEXTURES limit exceeded\n" );
+		Host_Error( "VGUI_GenerateTexture: VGUI_MAX_TEXTURES limit exceeded\n" );
 	return g_textureId;
 }
 
@@ -83,11 +82,13 @@ void VGUI_UploadTexture( int id, const char *buffer, int width, int height )
 
 	if( id <= 0 || id >= VGUI_MAX_TEXTURES )
 	{
-		MsgDev( D_ERROR, "VGUI_UploadTexture: bad texture %i. Ignored\n", id );
+		Con_DPrintf( S_ERROR "VGUI_UploadTexture: bad texture %i. Ignored\n", id );
 		return;
 	}
 
 	Q_snprintf( texName, sizeof( texName ), "*vgui%i", id );
+	memset( &r_image, 0, sizeof( r_image ));
+
 	r_image.width = width;
 	r_image.height = height;
 	r_image.type = PF_RGBA_32;
@@ -95,54 +96,16 @@ void VGUI_UploadTexture( int id, const char *buffer, int width, int height )
 	r_image.flags = IMAGE_HAS_COLOR|IMAGE_HAS_ALPHA;
 	r_image.buffer = (byte *)buffer;
 
-	g_textures[id] = GL_LoadTextureInternal( texName, &r_image, TF_IMAGE, false );
-	GL_SetTextureType( g_textures[id], TEX_VGUI );
-	g_iBoundTexture = id;
+	g_textures[id] = GL_LoadTextureInternal( texName, &r_image, TF_IMAGE );
 }
 
 /*
 ================
-VGUI_CreateTexture
+VGUI_SetupDrawingRect
 
-Create empty rgba texture and upload them into video memory
+setup transparency etc
 ================
 */
-void VGUI_CreateTexture( int id, int width, int height )
-{
-	rgbdata_t	r_image;
-	char	texName[32];
-
-	if( id <= 0 || id >= VGUI_MAX_TEXTURES )
-	{
-		MsgDev( D_ERROR, "VGUI_CreateTexture: bad texture %i. Ignored\n", id );
-		return;
-	}
-
-	Q_snprintf( texName, sizeof( texName ), "*vgui%i", id );
-	r_image.width = width;
-	r_image.height = height;
-	r_image.type = PF_RGBA_32;
-	r_image.size = r_image.width * r_image.height * 4;
-	r_image.flags = IMAGE_HAS_ALPHA;
-	r_image.buffer = NULL;
-
-	g_textures[id] = GL_LoadTextureInternal( texName, &r_image, TF_IMAGE|TF_NEAREST, false );
-	GL_SetTextureType( g_textures[id], TEX_VGUI );
-	g_iBoundTexture = id;
-}
-
-void VGUI_UploadTextureBlock( int id, int drawX, int drawY, const byte *rgba, int blockWidth, int blockHeight )
-{
-	if( id <= 0 || id >= VGUI_MAX_TEXTURES || g_textures[id] == 0 || g_textures[id] == cls.fillImage )
-	{
-		MsgDev( D_ERROR, "VGUI_UploadTextureBlock: bad texture %i. Ignored\n", id );
-		return;
-	}
-
-	pglTexSubImage2D( GL_TEXTURE_2D, 0, drawX, drawY, blockWidth, blockHeight, GL_RGBA, GL_UNSIGNED_BYTE, rgba );
-	g_iBoundTexture = id;
-}
-
 void VGUI_SetupDrawingRect( int *pColor )
 {
 	pglEnable( GL_BLEND );
@@ -151,60 +114,40 @@ void VGUI_SetupDrawingRect( int *pColor )
 	pglColor4ub( pColor[0], pColor[1], pColor[2], 255 - pColor[3] );
 }
 
-void VGUI_SetupDrawingText( int *pColor )
-{
-	pglEnable( GL_BLEND );
-	pglEnable( GL_ALPHA_TEST );
-	pglAlphaFunc( GL_GREATER, 0.0f );
-	pglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-	pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-	pglColor4ub( pColor[0], pColor[1], pColor[2], 255 - pColor[3] );
-}
+/*
+================
+VGUI_SetupDrawingImage
 
+setup transparency etc
+================
+*/
 void VGUI_SetupDrawingImage( int *pColor )
 {
 	pglEnable( GL_BLEND );
 	pglEnable( GL_ALPHA_TEST );
-	pglAlphaFunc( GL_GREATER, 0.0f );
 	pglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 	pglColor4ub( pColor[0], pColor[1], pColor[2], 255 - pColor[3] );
 }
 
+/*
+================
+VGUI_BindTexture
+
+bind VGUI texture through private index
+================
+*/
 void VGUI_BindTexture( int id )
 {
 	if( id > 0 && id < VGUI_MAX_TEXTURES && g_textures[id] )
 	{
 		GL_Bind( GL_TEXTURE0, g_textures[id] );
-		g_iBoundTexture = id;
 	}
 	else
 	{
 		// NOTE: same as bogus index 2700 in GoldSrc
-		id = g_iBoundTexture = 1;
-		GL_Bind( GL_TEXTURE0, g_textures[id] );
+		GL_Bind( GL_TEXTURE0, g_textures[1] );
 	}
-}
-
-/*
-================
-VGUI_GetTextureSizes
-
-returns wide and tall for currently binded texture
-================
-*/
-void VGUI_GetTextureSizes( int *width, int *height )
-{
-	gltexture_t	*glt;
-	int		texnum;
-
-	if( g_iBoundTexture )
-		texnum = g_textures[g_iBoundTexture];
-	else texnum = tr.defaultTexture;
-
-	glt = R_GetTexture( texnum );
-	if( width ) *width = glt->srcWidth;
-	if( height ) *height = glt->srcHeight;
 }
 
 /*
@@ -229,8 +172,6 @@ generic method to fill rectangle
 */
 void VGUI_DrawQuad( const vpoint_t *ul, const vpoint_t *lr )
 {
-	ASSERT( ul != NULL && lr != NULL );
-
 	pglBegin( GL_QUADS );
 		pglTexCoord2f( ul->coord[0], ul->coord[1] );
 		pglVertex2f( ul->point[0], ul->point[1] );
@@ -244,4 +185,34 @@ void VGUI_DrawQuad( const vpoint_t *ul, const vpoint_t *lr )
 		pglTexCoord2f( ul->coord[0], lr->coord[1] );
 		pglVertex2f( ul->point[0], lr->point[1] );
 	pglEnd();
+}
+
+/*
+================
+VGUI_DrawBuffer
+
+render the quads array
+================
+*/
+void VGUI_DrawBuffer( const vpoint_t *buffer, int numVerts )
+{
+	if( numVerts <= 0 ) return;
+
+	pglEnable( GL_BLEND );
+	pglEnable( GL_ALPHA_TEST );
+	pglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+	pglEnableClientState( GL_VERTEX_ARRAY );
+	pglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	pglEnableClientState( GL_COLOR_ARRAY );
+
+	pglTexCoordPointer( 2, GL_FLOAT, sizeof( vpoint_t ), &buffer->coord[0] );
+	pglColorPointer( 4, GL_UNSIGNED_BYTE, sizeof( vpoint_t ), &buffer->color[0] );
+	pglVertexPointer( 2, GL_FLOAT, sizeof( vpoint_t ), &buffer->point[0] );
+	pglDrawArrays( GL_QUADS, 0, numVerts );
+
+	pglDisableClientState( GL_VERTEX_ARRAY );
+	pglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+	pglDisableClientState( GL_COLOR_ARRAY );
 }
