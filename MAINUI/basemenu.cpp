@@ -58,9 +58,10 @@ int		uiColorWhite	= 0xFFFFFFFF;	// 255, 255, 255, 255	// useful for bitmaps
 int		uiColorDkGrey	= 0xFF404040;	// 64,  64,  64,  255	// shadow and grayed items
 int		uiColorBlack	= 0xFF000000;	//  0,   0,   0,  255	// some controls background
 int		uiColorConsole	= 0xFFF0B418;	// just for reference 
+int		uiColorSelect	= 0xFF503818;	// 80,  56,  24,  255
 
 // color presets (this is nasty hack to allow color presets to part of text)
-const int g_iColorTable[8] =
+int g_iColorTable[8] =
 {
 0xFF000000, // black
 0xFFFF0000, // red
@@ -68,7 +69,7 @@ const int g_iColorTable[8] =
 0xFFFFFF00, // yellow
 0xFF0000FF, // blue
 0xFF00FFFF, // cyan
-0xFFF0B418, // dialog or button letters color
+0xFFF0B418, // INPUT_TEXT_COLOR
 0xFFFFFFFF, // white
 };
 
@@ -253,9 +254,14 @@ void UI_DrawString( int x, int y, int w, int h, const char *string, const int co
 		{
 			if( IsColorString( l ))
 			{
-				if( !forceColor )
+				int colorNum = ColorIndex( *(l+1) );
+
+				if( colorNum == 7 && color != 0 )
 				{
-					int colorNum = ColorIndex( *(l+1) );
+					modulate = color;
+				}
+				else if( !forceColor )
+				{
 					modulate = PackAlpha( g_iColorTable[colorNum], UnpackAlpha( color ));
 				}
 
@@ -335,36 +341,104 @@ void UI_DrawBackground_Callback( void *self )
 		return;
 	}
 
-	int xpos, ypos;
 	float xScale, yScale;
 
 	// work out scaling factors
-	xScale = ScreenWidth / uiStatic.m_flTotalWidth;
-	yScale = ScreenHeight / uiStatic.m_flTotalHeight;
+	if( ScreenWidth * uiStatic.m_flTotalHeight > ScreenHeight * uiStatic.m_flTotalWidth )
+	{
+		xScale = ScreenWidth / uiStatic.m_flTotalWidth;
+		yScale = xScale;
+	}
+	else
+	{
+		yScale = ScreenHeight / uiStatic.m_flTotalHeight;
+		xScale = yScale;
+	}
 
 	// iterate and draw all the background pieces
-	ypos = 0;
-	for (int y = 0; y < BACKGROUND_ROWS; y++)
+	for( int i = 0; i < uiStatic.m_iBackgroundCount; i++ )
 	{
-		xpos = 0;
-		for (int x = 0; x < BACKGROUND_COLUMNS; x++)
-		{
-			bimage_t &bimage = uiStatic.m_SteamBackground[y][x];
+		bimage_t &bimage = uiStatic.m_SteamBackground[i];
+		int dx = (int)ceil( bimage.x * xScale );
+		int dy = (int)ceil( bimage.y * yScale );
+		int dw = (int)ceil( bimage.width * xScale );
+		int dt = (int)ceil( bimage.height * yScale );
 
-			int dx = (int)ceil(xpos * xScale);
-			int dy = (int)ceil(ypos * yScale);
-			int dw = (int)ceil(bimage.width * xScale);
-			int dt = (int)ceil(bimage.height * yScale);
-
-			if (x == 0) dx = 0;
-			if (y == 0) dy = 0;
-
-			PIC_Set( bimage.hImage, 255, 255, 255, 255 );
-			PIC_Draw( dx, dy, dw, dt );
-			xpos += bimage.width;
-		}
-		ypos += uiStatic.m_SteamBackground[y][0].height;
+		PIC_Set( bimage.hImage, 255, 255, 255, 255 );
+		PIC_Draw( dx, dy, dw, dt );
 	}
+}
+
+/*
+=================
+UI_LoadSteamBackground
+=================
+*/
+bool UI_LoadSteamBackground( void )
+{
+	char *afile = NULL, *pfile;
+	char token[4096];
+
+	bool loaded = false;
+
+	afile = (char *)LOAD_FILE( "resource/BackgroundLayout.txt", NULL );
+	uiStatic.m_iBackgroundCount = 0;
+
+	if( !afile ) return false;
+
+	pfile = afile;
+
+	pfile = COM_ParseFile( pfile, token );
+	if( !pfile || stricmp( token, "resolution" )) // resolution at first!
+		goto cleanup;
+
+	pfile = COM_ParseFile( pfile, token );
+	if( !pfile ) goto cleanup;
+
+	uiStatic.m_flTotalWidth = atoi( token );
+
+	pfile = COM_ParseFile( pfile, token );
+	if( !pfile ) goto cleanup;
+
+	uiStatic.m_flTotalHeight = atoi( token );
+
+	// Now read all tiled background list
+	while(( pfile = COM_ParseFile( pfile, token )) != NULL )
+	{
+		bimage_t img;
+
+		if( !FILE_EXISTS( token ))
+			goto cleanup;
+
+		img.hImage = PIC_Load( token, PIC_NOFLIP_TGA );
+
+		if( !img.hImage ) goto cleanup;
+
+		// ignore "scaled" attribute. What does it mean?
+		pfile = COM_ParseFile( pfile, token );
+		if( !pfile ) goto cleanup;
+
+		pfile = COM_ParseFile( pfile, token );
+		if( !pfile ) goto cleanup;
+		img.x = atoi( token );
+
+		pfile = COM_ParseFile( pfile, token );
+		if( !pfile ) goto cleanup;
+		img.y = atoi( token );
+
+		img.width = PIC_Width( img.hImage );
+		img.height = PIC_Height( img.hImage );
+
+		uiStatic.m_SteamBackground[uiStatic.m_iBackgroundCount] = img;
+		uiStatic.m_iBackgroundCount++;
+	}
+
+	loaded = true;
+
+cleanup:
+	FREE_FILE( afile );
+
+	return loaded;
 }
 
 /*
@@ -374,44 +448,14 @@ UI_LoadBackgroundImage
 */
 void UI_LoadBackgroundImage( void )
 {
-	int num_background_images = 0;
-	char filename[512];
-
-	for( int y = 0; y < BACKGROUND_ROWS; y++ )
+	if( UI_LoadSteamBackground( ))
 	{
-		for( int x = 0; x < BACKGROUND_COLUMNS; x++ )
-		{
-			sprintf( filename, "resource/background/800_%d_%c_loading.tga", y + 1, 'a' + x );
-			if (g_engfuncs.pfnFileExists( filename, TRUE ))
-				num_background_images++;
-		}
-	}
-
-	if (num_background_images == (BACKGROUND_COLUMNS * BACKGROUND_ROWS))
 		uiStatic.m_fHaveSteamBackground = TRUE;
-	else uiStatic.m_fHaveSteamBackground = FALSE;
-
-	if (uiStatic.m_fHaveSteamBackground)
-	{
-		uiStatic.m_flTotalWidth = uiStatic.m_flTotalHeight = 0.0f;
-
-		for( int y = 0; y < BACKGROUND_ROWS; y++ )
-		{
-			for( int x = 0; x < BACKGROUND_COLUMNS; x++ )
-			{
-				bimage_t &bimage = uiStatic.m_SteamBackground[y][x];
-				sprintf(filename, "resource/background/800_%d_%c_loading.tga", y + 1, 'a' + x);
-				bimage.hImage = PIC_Load( filename, PIC_NOFLIP_TGA );
-				bimage.width = PIC_Width( bimage.hImage );
-				bimage.height = PIC_Height( bimage.hImage );
-
-				if (y==0) uiStatic.m_flTotalWidth += bimage.width;
-				if (x==0) uiStatic.m_flTotalHeight += bimage.height;
-			}
-		}
 	}
 	else
 	{
+		uiStatic.m_fHaveSteamBackground = FALSE;
+
 		if( g_engfuncs.pfnFileExists( "gfx/shell/splash.bmp", TRUE ))
 		{
 			// if we doesn't have logo.avi in gamedir we don't want to draw it
@@ -1224,6 +1268,9 @@ void UI_SetActiveMenu( int fActive )
 	KEY_ClearStates();
 	uiStatic.framecount = 0;
 
+	if( fActive && uiStatic.visible )
+		return; // don't reset the menu
+
 	if( fActive )
 	{
 		KEY_SetDest( KEY_MENU );
@@ -1249,6 +1296,10 @@ void UI_AddServerToList( netadr_t adr, const char *info )
 
 	if( uiStatic.numServers == UI_MAX_SERVERS )
 		return;	// full
+
+	// ignore games from difference game folder
+	if( stricmp( gMenu.m_gameinfo.gamefolder, Info_ValueForKey( info, "gamedir" )))
+		return;
 
 	// ignore if duplicated
 	for( i = 0; i < uiStatic.numServers; i++ )
@@ -1412,12 +1463,21 @@ void UI_ApplyCustomColors( void )
 		{
 			UI_ParseColor( pfile, &uiColorConsole );
 		}
+		else if( !stricmp( token, "SELECT_TEXT_COLOR" ))
+		{
+			UI_ParseColor( pfile, &uiColorSelect );
+		}
 	}
 
 	int	r, g, b;
 
 	UnpackRGB( r, g, b, uiColorConsole );
 	ConsoleSetColor( r, g, b );
+
+	// replace some colors in table (key controls)
+	g_iColorTable[3] = uiPromptFocusColor;
+	g_iColorTable[6] = uiInputTextColor;
+
 
 	FREE_FILE( afile );
 }
@@ -1444,7 +1504,7 @@ static void UI_LoadBackgroundMapList( void )
 		// skip the numbers (old format list)
 		if( isdigit( token[0] )) continue;
 
-		strncpy( uiStatic.bgmaps[uiStatic.bgmapcount], token, sizeof( uiStatic.bgmaps[0] ));
+		strncpy( uiStatic.bgmaps[uiStatic.bgmapcount], token, sizeof( uiStatic.bgmaps[0] ) - 1 );
 		if( ++uiStatic.bgmapcount > UI_MAX_BGMAPS )
 			break; // list is full
 	}
@@ -1532,7 +1592,7 @@ void UI_Init( void )
 	Cmd_AddCommand( "menu_multiplayer", UI_MultiPlayer_Menu );
 	Cmd_AddCommand( "menu_options", UI_Options_Menu );
 	Cmd_AddCommand( "menu_langame", UI_LanGame_Menu );
-	Cmd_AddCommand( "menu_intenetgames", UI_InternetGames_Menu );
+	Cmd_AddCommand( "menu_internetgames", UI_InternetGames_Menu );
 	Cmd_AddCommand( "menu_playersetup", UI_PlayerSetup_Menu );
 	Cmd_AddCommand( "menu_controls", UI_Controls_Menu );
 	Cmd_AddCommand( "menu_advcontrols", UI_AdvControls_Menu );
@@ -1576,7 +1636,7 @@ void UI_Shutdown( void )
 	Cmd_RemoveCommand( "menu_saveload" );
 	Cmd_RemoveCommand( "menu_multiplayer" );
 	Cmd_RemoveCommand( "menu_options" );
-	Cmd_RemoveCommand( "menu_intenetgames" );
+	Cmd_RemoveCommand( "menu_internetgames" );
 	Cmd_RemoveCommand( "menu_langame" );
 	Cmd_RemoveCommand( "menu_playersetup" );
 	Cmd_RemoveCommand( "menu_controls" );
@@ -1593,7 +1653,6 @@ void UI_Shutdown( void )
 	Cmd_RemoveCommand( "menu_defaults" );
 	Cmd_RemoveCommand( "menu_cinematics" );
 	Cmd_RemoveCommand( "menu_customgame" );
-	Cmd_RemoveCommand( "menu_quit" );
 
 	memset( &uiStatic, 0, sizeof( uiStatic_t ));
 }
