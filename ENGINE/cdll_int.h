@@ -28,11 +28,10 @@ extern "C" {
 
 #include "const.h"
 
-
 // this file is included by both the engine and the client-dll,
 // so make sure engine declarations aren't done twice
 
-typedef int HLSPRITE;	// handle to a graphic
+typedef int HSPRITE;	// handle to a graphic
 typedef int (*pfnUserMsgHook)( const char *pszName, int iSize, void *pbuf );
 
 #include "wrect.h"
@@ -102,11 +101,11 @@ typedef struct hud_player_info_s
 typedef struct cl_enginefuncs_s
 {
 	// sprite handlers
-	HLSPRITE	(*pfnSPR_Load)( const char *szPicName );
-	int	(*pfnSPR_Frames)( HLSPRITE hPic );
-	int	(*pfnSPR_Height)( HLSPRITE hPic, int frame );
-	int	(*pfnSPR_Width)( HLSPRITE hPic, int frame );
-	void	(*pfnSPR_Set)( HLSPRITE hPic, int r, int g, int b );
+	HSPRITE	(*pfnSPR_Load)( const char *szPicName );
+	int	(*pfnSPR_Frames)( HSPRITE hPic );
+	int	(*pfnSPR_Height)( HSPRITE hPic, int frame );
+	int	(*pfnSPR_Width)( HSPRITE hPic, int frame );
+	void	(*pfnSPR_Set)( HSPRITE hPic, int r, int g, int b );
 	void	(*pfnSPR_Draw)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawHoles)( int frame, int x, int y, const wrect_t *prc );
 	void	(*pfnSPR_DrawAdditive)( int frame, int x, int y, const wrect_t *prc );
@@ -117,7 +116,7 @@ typedef struct cl_enginefuncs_s
 	// screen handlers
 	void	(*pfnFillRGBA)( int x, int y, int width, int height, int r, int g, int b, int a );
 	int	(*pfnGetScreenInfo)( SCREENINFO *pscrinfo );
-	void	(*pfnSetCrosshair)( HLSPRITE hspr, wrect_t rc, int r, int g, int b );
+	void	(*pfnSetCrosshair)( HSPRITE hspr, wrect_t rc, int r, int g, int b );
 
 	// cvar handlers
 	struct cvar_s *(*pfnRegisterVariable)( char *szName, char *szValue, int flags );
@@ -188,7 +187,7 @@ typedef struct cl_enginefuncs_s
 	struct model_s *(*CL_LoadModel)( const char *modelname, int *index );
 	int	(*CL_CreateVisibleEntity)( int type, struct cl_entity_s *ent );
 
-	const struct model_s* (*GetSpritePointer)( HLSPRITE hSprite );
+	const struct model_s* (*GetSpritePointer)( HSPRITE hSprite );
 	void	(*pfnPlaySoundByNameAtLocation)( char *szSound, float volume, float *origin );
 	
 	unsigned short (*pfnPrecacheEvent)( int type, const char* psz );
@@ -249,145 +248,42 @@ typedef struct cl_enginefuncs_s
 	void	(*pfnGetMousePos)( struct tagPOINT *ppt );
 	void	(*pfnSetMousePos)( int x, int y );
 	void	(*pfnSetMouseEnable)( qboolean fEnable );
-
-	// Returns pointer to start of registered cvar linked list. Added for VGUI console autocomplete?
-	void*	(*pfnGetCvarList)( void );
-
-	// Returns pointer to start of registered command linked list. Added for VGUI console autocomplete?
-	void*	(*pfnGetCmdList)( void );
-
-	// Not sure about this - convert cvar_t pointer to cvar name? Why?
-	char*	(*pfnCvarNameFromPointer)( void *pointer );
-
-	// Not sure abput this - convert cmd_function_t pointer to command name? Why?
-	char*	(*pfnCmdNameFromPointer)( void *pointer );
-
-	// Returns current time for this client? Why is this needed when GetClientTime() already exists?
-	float	(*pfnGetCurrentTime)( void );
-
-	// Unsure - always seems to return 800.0f (no, it's not horizontal resolution)
-	float	(*pfnGetGravityFactor)( void );
-
-	// Appears to be identical to function in IEngineStudio
-	void*	(*pfnGetModelByIndex)( int index );
-
-	// Appears to modifies hidden cvar gl_texsort.
-	void	(*pfnSetGL_TexSort)( int value );
-
-	// Colour scaling values for screen.  Only works when gl_texsort is active.
-	void	(*pfnSetGL_TexSort_Colour)( float red, float green, float blue );
-
-	// Final scaling factor for screen.  Only works when gl_texsort is active.
-	void	(*pfnSetGL_TexSort_Scale)( float scale );
-
-	// Seems to be a client entry point to the pfnSequenceGet function introduced for CS:CZ
-	void*	(*pfnSequenceGet)( const char *fileName, const char *entryName );
-
-	// Draws a sprite on the screen - parameters are likely incorrect.
-	void	(*pfnDrawSpriteGeneric)( int frame, int x, int y, const wrect_t *prc, int u1, int u2, int u3, int u4 );
-
-	// Seems to be a client entry point to the pfnSequencePickSentence function introduced for CS:CZ
-	void*	(*pfnSequencePickSentence)( const char *groupName, int pickMethod, int *picked );
-
-	// Unknown (deals with wchar_t's)
-	void	(*pfnUnknownFunction6)( void *u1, void *u2, void *u3, void *u4, void *u5, void *u6 );
-
-	// Unknown (deals with wchar_t's)
-	void	(*pfnUnknownFunction7)( void *u1, void *u2 );
-
-	// Unknown (something to do with players infostring?)
-	char*	(*pfnUnknownFunction8)( char *u1 );
-
-	// Completely unknown
-	void	(*pfnUnknownFunction9)( void *u1, void *u2 );
-
-	// Completely unknown
-	void	(*pfnUnknownFunction10)( void *u1, void *u2, void *u3, void *u4, void *u5 );
-
-	// Seems to be a client entry point to the pfnGetApproxWavePlayLen function introduced for CS:CZ
-	unsigned int (*pfnGetApproxWavePlayLen)( char *filename );
-
-	// Completely unknown
-	int	(*pfnUnknownFunction11)( void );
-
-	// Sets cvar value - why is this needed when Cvar_SetValue already exists?
+	void	(*pfnUnused1)( void );
+	void	(*pfnUnused2)( void );
+	void	(*pfnUnused3)( void );
+	void	(*pfnUnused4)( void );
+	float	(*pfnGetClientOldTime)( void );
+	float	(*pfnGetGravity)( void );
+	struct model_s*(*pfnGetModelByIndex)( int index );
+	void	(*pfnUnused5)( void );
+	void	(*pfnUnused6)( void );
+	void	(*pfnUnused7)( void );
+	void	(*pfnUnused8)( void );
+	void	(*pfnUnused9)( void );
+	void	(*pfnUnused10)( void );
+	void	(*pfnUnused11)( void );
+	void	(*pfnUnused12)( void );
+	const char*(*LocalPlayerInfo_ValueForKey)( const char* key );
+	void	(*pfnUnused13)( void );
+	void	(*pfnUnused14)( void );
+	void	(*pfnUnused15)( void );
+	void	(*pfnUnused16)( void );
 	void	(*Cvar_Set)( char *name, char *value );
-
-	// Seems to be a client entry point to the pfnIsCareerMatch function introduced for CS:CZ
-	int	(*pfnIsCareerMatch)( void );
-
-	// Starts a local sound - why is this needed?
-	void	(*pfnStartDynamicSound)( char *filename, float volume, float pitch );
-
-	// MP3 interface - unsure what int parameter is. Just queues the sound up - have to issue command "mp3 play" to start it. */
-	void	(*pfnMP3_InitStream)( char *filename, int i1 );
-
-	// Returns unknown, constantly increasing float.  Timing? (calls QueryPerformanceCounters)
-	float	(*pfnUnknownFunction12)( void );
-
-	// Seems to be a client entry point to the pfnProcessTutorMessageDecayBuffer function introduced for CS:CZ
-	void	(*pfnProcessTutorMessageDecayBuffer)( int *buffer, int buflen );
-
-	// Seems to be a client entry point to the pfnConstructTutorMessageDecayBuffer function introduced for CS:CZ
-	void	(*pfnConstructTutorMessageDecayBuffer)( int *buffer, int buflen );
-
-	// Seems to be a client entry point to the pfnResetTutorMessageDecayData function introduced for CS:CZ
-	void	(*pfnResetTutorMessageDecayData)( void );
-
-	// Seems to be an exact copy of the previous StartDynamicSound function???
-	void	(*pfnStartDynamicSound2)( char *filename, float volume, float pitch );
-
-	// Seems to be an exact copy of the previous FillRGBA function???
-	void	(*pfnFillRGBA2)( int x, int y, int width, int height, int r, int g, int b, int a );
-
+	void	(*pfnUnused17)( void );
+	void	(*pfnUnused18)( void );
+	void	(*pfnUnused19)( void );
+	double	(*pfnSys_FloatTime)( void );
+	void	(*pfnUnused20)( void );
+	void	(*pfnUnused21)( void );
+	void	(*pfnUnused22)( void );
+	void	(*pfnUnused23)( void );
+	void	(*pfnFillRGBABlend)( int x, int y, int width, int height, int r, int g, int b, int a );
+	int	(*pfnGetAppID)( void );
+	void	(*pfnUnused24)( void );
+	void	(*pfnUnused25)( void );
 } cl_enginefunc_t;
 
 #define CLDLL_INTERFACE_VERSION	7
-
-extern void ClientDLL_Init( void ); // from cdll_int.c
-extern void ClientDLL_Shutdown( void );
-extern void ClientDLL_HudInit( void );
-extern void ClientDLL_HudVidInit( void );
-extern void	ClientDLL_UpdateClientData( void );
-extern void ClientDLL_Frame( double time );
-extern void ClientDLL_HudRedraw( int intermission );
-extern void ClientDLL_MoveClient( struct playermove_s *ppmove );
-extern void ClientDLL_ClientMoveInit( struct playermove_s *ppmove );
-extern char ClientDLL_ClientTextureType( char *name );
-
-extern void ClientDLL_CreateMove( float frametime, struct usercmd_s *cmd, int active );
-extern void ClientDLL_ActivateMouse( void );
-extern void ClientDLL_DeactivateMouse( void );
-extern void ClientDLL_MouseEvent( int mstate );
-extern void ClientDLL_ClearStates( void );
-extern int ClientDLL_IsThirdPerson( void );
-extern void ClientDLL_GetCameraOffsets( float *ofs );
-extern int ClientDLL_GraphKeyDown( void );
-extern struct kbutton_s *ClientDLL_FindKey( const char *name );
-extern void ClientDLL_CAM_Think( void );
-extern void ClientDLL_IN_Accumulate( void );
-extern void ClientDLL_CalcRefdef( struct ref_params_s *pparams );
-extern int ClientDLL_AddEntity( int type, struct cl_entity_s *ent );
-extern void ClientDLL_CreateEntities( void );
-
-extern void ClientDLL_DrawNormalTriangles( void );
-extern void ClientDLL_DrawTransparentTriangles( void );
-extern void ClientDLL_StudioEvent( const struct mstudioevent_s *event, const struct cl_entity_s *entity );
-extern void ClientDLL_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed );
-extern void ClientDLL_TxferLocalOverrides( struct entity_state_s *state, const struct clientdata_s *client );
-extern void ClientDLL_ProcessPlayerState( struct entity_state_s *dst, const struct entity_state_s *src );
-extern void ClientDLL_TxferPredictionData ( struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd );
-extern void ClientDLL_ReadDemoBuffer( int size, unsigned char *buffer );
-extern int ClientDLL_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size );
-extern int ClientDLL_GetHullBounds( int hullnumber, float *mins, float *maxs );
-
-extern void ClientDLL_VGui_ConsolePrint(const char* text);
-
-extern int ClientDLL_Key_Event( int down, int keynum, const char *pszCurrentBinding );
-extern void ClientDLL_TempEntUpdate( double ft, double ct, double grav, struct tempent_s **ppFreeTE, struct tempent_s **ppActiveTE, int ( *addTEntity )( struct cl_entity_s *pEntity ), void ( *playTESound )( struct tempent_s *pTemp, float damp ) );
-extern struct cl_entity_s *ClientDLL_GetUserEntity( int index );
-extern void ClientDLL_VoiceStatus(int entindex, qboolean bTalking);
-extern void ClientDLL_DirectorMessage( int iSize, void *pbuf );
 
 #ifdef __cplusplus
 }
