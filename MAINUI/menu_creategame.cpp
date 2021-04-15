@@ -36,8 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_MAXCLIENTS	7
 #define ID_HOSTNAME		8
 #define ID_PASSWORD		9
-#define ID_HLTV		10
-#define ID_DEDICATED	11
+#define ID_DEDICATED	10
 
 #define ID_MSGBOX	 	12
 #define ID_MSGTEXT	 	13
@@ -64,7 +63,6 @@ typedef struct
 	menuField_s	maxClients;
 	menuField_s	hostName;
 	menuField_s	password;
-	menuCheckBox_s	hltv;
 	menuCheckBox_s	dedicatedServer;
 
 	// newgame prompt dialog
@@ -88,38 +86,37 @@ UI_CreateGame_Begin
 */
 static void UI_CreateGame_Begin( void )
 {
-	if( !MAP_IS_VALID( uiCreateGame.mapName[uiCreateGame.mapsList.curItem] ))
+	char	*pMapName = uiCreateGame.mapName[uiCreateGame.mapsList.curItem];
+	int	maxPlayers = atoi( uiCreateGame.maxClients.buffer );
+	int	loc = CVAR_GET_FLOAT( "sv_lan" );
+	int	pub = CVAR_GET_FLOAT( "public" );
+
+	if( !MAP_IS_VALID( pMapName ))
 		return;	// bad map
+
+	CVAR_SET_STRING( "hostname", uiCreateGame.hostName.buffer );
+	HOST_WRITECONFIG ( "game.cfg" );
 
 	if( CVAR_GET_FLOAT( "host_serverstate" ) && CVAR_GET_FLOAT( "maxplayers" ) == 1 )
 		HOST_ENDGAME( "end of the game" );
 
-	CVAR_SET_FLOAT( "deathmatch", 1.0f );	// start deathmatch as default
-	CVAR_SET_FLOAT( "maxplayers", atoi( uiCreateGame.maxClients.buffer ));
-	CVAR_SET_STRING( "hostname", uiCreateGame.hostName.buffer );
-	CVAR_SET_STRING( "defaultmap", uiCreateGame.mapName[uiCreateGame.mapsList.curItem] );
-	CVAR_SET_FLOAT( "hltv", uiCreateGame.hltv.enabled );
-
-	BACKGROUND_TRACK( NULL, NULL );
+	CVAR_SET_FLOAT( "deathmatch", 1.0f ); // start deathmatch as default
+	CVAR_SET_FLOAT( "maxplayers", maxPlayers );
+	BACKGROUND_TRACK ( NULL, NULL );
 
 	// all done, start server
 	if( uiCreateGame.dedicatedServer.enabled )
 	{
-		HOST_WRITECONFIG ( CVAR_GET_STRING( "servercfgfile" ));
+		char cmd[128], msg[128];
+		sprintf( cmd, "#%s +maxplayers %i +sv_lan %i +public %i +map %s", gMenu.m_gameinfo.gamefolder, maxPlayers, loc, pub, pMapName );
+		sprintf( msg, "startup dedicated server from '%s'", gMenu.m_gameinfo.gamefolder );
 
-		char cmd[128];
-		sprintf( cmd, "#%s", gMenu.m_gameinfo.gamefolder );
-
-		// NOTE: dedicated server will be executed "defaultmap"
-		// from engine after restarting
-		HOST_CHANGEGAME( cmd, "Starting dedicated server...\n" );
+		HOST_CHANGEGAME( cmd, msg );
 	}
 	else
 	{
-		HOST_WRITECONFIG ( CVAR_GET_STRING( "lservercfgfile" ));
-
 		char cmd[128];
-		sprintf( cmd, "exec %s\nmap %s\n", CVAR_GET_STRING( "lservercfgfile" ), CVAR_GET_STRING( "defaultmap" ));
+		sprintf( cmd, "map %s\n", pMapName );
 	
 		CLIENT_COMMAND( FALSE, cmd );
 	}
@@ -142,7 +139,6 @@ static void UI_PromptDialog( void )
 	uiCreateGame.hostName.generic.flags ^= QMF_INACTIVE;
 	uiCreateGame.password.generic.flags ^= QMF_INACTIVE;
 	uiCreateGame.dedicatedServer.generic.flags ^= QMF_INACTIVE;
-	uiCreateGame.hltv.generic.flags ^= QMF_INACTIVE;
 	uiCreateGame.mapsList.generic.flags ^= QMF_INACTIVE;
 
 	uiCreateGame.msgBox.generic.flags ^= QMF_HIDDEN;
@@ -232,7 +228,6 @@ static void UI_CreateGame_Callback( void *self, int event )
 
 	switch( item->id )
 	{
-	case ID_HLTV:
 	case ID_DEDICATED:
 		if( event == QM_PRESSED )
 			((menuCheckBox_s *)self)->focusPic = UI_CHECKBOX_PRESSED;
@@ -340,15 +335,6 @@ static void UI_CreateGame_Init( void )
 	uiCreateGame.dedicatedServer.generic.callback = UI_CreateGame_Callback;
 	uiCreateGame.dedicatedServer.generic.statusText = "faster, but you can't join the server from this machine";
 
-	uiCreateGame.hltv.generic.id = ID_HLTV;
-	uiCreateGame.hltv.generic.type = QMTYPE_CHECKBOX;
-	uiCreateGame.hltv.generic.flags = QMF_HIGHLIGHTIFFOCUS|QMF_ACT_ONRELEASE|QMF_MOUSEONLY|QMF_DROPSHADOW;
-	uiCreateGame.hltv.generic.name = "HLTV";
-	uiCreateGame.hltv.generic.x = 72;
-	uiCreateGame.hltv.generic.y = 635;
-	uiCreateGame.hltv.generic.callback = UI_CreateGame_Callback;
-	uiCreateGame.hltv.generic.statusText = "enable hltv mode in multiplayer";
-
 	uiCreateGame.hintMessage.generic.id = ID_TABLEHINT;
 	uiCreateGame.hintMessage.generic.type = QMTYPE_ACTION;
 	uiCreateGame.hintMessage.generic.flags = QMF_INACTIVE|QMF_SMALLFONT;
@@ -375,7 +361,7 @@ static void UI_CreateGame_Init( void )
 	uiCreateGame.hostName.generic.width = 205;
 	uiCreateGame.hostName.generic.height = 32;
 	uiCreateGame.hostName.generic.callback = UI_CreateGame_Callback;
-	uiCreateGame.hostName.maxLength = 16;
+	uiCreateGame.hostName.maxLength = 28;
 	strcpy( uiCreateGame.hostName.buffer, CVAR_GET_STRING( "hostname" ));
 
 	uiCreateGame.maxClients.generic.id = ID_MAXCLIENTS;
@@ -457,7 +443,6 @@ static void UI_CreateGame_Init( void )
 	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.hostName );
 	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.password );
 	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.dedicatedServer );
-	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.hltv );
 	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.hintMessage );
 	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.mapsList );
 	UI_AddItem( &uiCreateGame.menu, (void *)&uiCreateGame.msgBox );
