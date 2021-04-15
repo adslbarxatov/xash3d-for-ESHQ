@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -20,8 +20,8 @@
 // Most came from server.h
 
 // edict->flags
-#define FL_FLY		(1<<0)	// Changes the SV_Movestep() behavior to not need to be on ground
-#define FL_SWIM		(1<<1)	// Changes the SV_Movestep() behavior to not need to be on ground (but stay in water)
+#define FL_FLY			(1<<0)	// Changes the SV_Movestep() behavior to not need to be on ground
+#define FL_SWIM			(1<<1)	// Changes the SV_Movestep() behavior to not need to be on ground (but stay in water)
 #define FL_CONVEYOR		(1<<2)
 #define FL_CLIENT		(1<<3)
 #define FL_INWATER		(1<<4)
@@ -43,9 +43,6 @@
 #define FL_IMMUNE_SLIME	(1<<18)
 #define FL_IMMUNE_LAVA	(1<<19)
 
-// Добавим туман
-//#define FL_INFOG		(1<<19)
-
 #define FL_PROXY		(1<<20)	// This is a spectator proxy
 #define FL_ALWAYSTHINK	(1<<21)	// Brush model flag -- call think every frame regardless of nextthink - ltime (for constantly changing velocity/path)
 #define FL_BASEVELOCITY	(1<<22)	// Base velocity has been applied this frame (used to convert base velocity into momentum)
@@ -53,6 +50,8 @@
 #define FL_ONTRAIN		(1<<24)	// Player is _controlling_ a train, so movement commands should be ignored on client during prediction.
 #define FL_WORLDBRUSH	(1<<25)	// Not moveable/removeable brush entity (really part of the world, but represented as an entity for transparency or something)
 #define FL_SPECTATOR	(1<<26)	// This client is a spectator, don't run touch functions, etc.
+#define FL_LASERDOT		(1<<27)	// Predicted laser spot from rocket launcher
+
 #define FL_CUSTOMENTITY	(1<<29)	// This is a custom entity
 #define FL_KILLME		(1<<30)	// This entity is marked for death -- This allows the engine to kill ents at the appropriate time
 #define FL_DORMANT		(1<<31)	// Entity is dormant, no updates to client
@@ -63,8 +62,8 @@
 
 // walkmove modes
 #define WALKMOVE_NORMAL		0	// normal walkmove
-#define WALKMOVE_WORLDONLY		1	// doesn't hit ANY entities, no matter what the solid type
-#define WALKMOVE_CHECKONLY		2	// move, but don't touch triggers
+#define WALKMOVE_WORLDONLY	1	// doesn't hit ANY entities, no matter what the solid type
+#define WALKMOVE_CHECKONLY	2	// move, but don't touch triggers
 
 // edict->movetype values
 #define MOVETYPE_NONE		0	// never moves
@@ -76,12 +75,12 @@
 #define MOVETYPE_TOSS		6	// gravity/collisions
 #define MOVETYPE_PUSH		7	// no clip to world, push and crush
 #define MOVETYPE_NOCLIP		8	// No gravity, no collisions, still do velocity/avelocity
-#define MOVETYPE_FLYMISSILE		9	// extra size to monsters
+#define MOVETYPE_FLYMISSILE	9	// extra size to monsters
 #define MOVETYPE_BOUNCE		10	// Just like Toss, but reflect velocity when contacting surfaces
 #define MOVETYPE_BOUNCEMISSILE	11	// bounce w/o gravity
 #define MOVETYPE_FOLLOW		12	// track movement of aiment
-#define MOVETYPE_PUSHSTEP		13	// BSP model that needs physics/world collisions (uses nearest hull for world collision)
-#define MOVETYPE_COMPOUND		14	// glue two entities together (simple movewith)
+#define MOVETYPE_PUSHSTEP	13	// BSP model that needs physics/world collisions (uses nearest hull for world collision)
+#define MOVETYPE_COMPOUND	14	// glue two entities together (simple movewith)
 
 // edict->solid values
 // NOTE: Some movetypes will cause collisions independent of SOLID_NOT/SOLID_TRIGGER when the entity moves
@@ -92,13 +91,14 @@
 #define SOLID_SLIDEBOX		3	// touch on edge, but not an onground
 #define SOLID_BSP			4	// bsp clip, touch on edge, block
 #define SOLID_CUSTOM		5	// call external callbacks for tracing
+#define SOLID_PORTAL		6	// borrowed from FTE
 
 // edict->deadflag values
-#define DEAD_NO			0 	// alive
+#define DEAD_NO				0 	// alive
 #define DEAD_DYING			1 	// playing death animation or still falling off of a ledge waiting to hit ground
 #define DEAD_DEAD			2 	// dead. lying still.
-#define DEAD_RESPAWNABLE		3
-#define DEAD_DISCARDBODY		4
+#define DEAD_RESPAWNABLE	3
+#define DEAD_DISCARDBODY	4
 
 #define DAMAGE_NO			0
 #define DAMAGE_YES			1
@@ -114,20 +114,16 @@
 #define EF_LIGHT			64	// rocket flare glow sprite
 #define EF_NODRAW			128	// don't draw entity
 
-
-
-#define EF_NOREFLECT		(1<<24)	// Entity won't reflecting in mirrors
-#define EF_REFLECTONLY		(1<<25)	// Entity will be drawing only in mirrors
-#define EF_NOWATERCSG		(1<<26)	// Do not remove sides for func_water entity
+#define EF_WATERSIDES		(1<<26)	// Do not remove sides for func_water entity
 #define EF_FULLBRIGHT		(1<<27)	// Just get fullbright
 #define EF_NOSHADOW			(1<<28)	// ignore shadow for this entity
-#define EF_MERGE_VISIBILITY		(1<<29)	// this entity allowed to merge vis (e.g. env_sky or portal camera)
+#define EF_MERGE_VISIBILITY	(1<<29)	// this entity allowed to merge vis (e.g. env_sky or portal camera)
 #define EF_REQUEST_PHS		(1<<30)	// This entity requested phs bitvector instead of pvsbitvector in AddToFullPack calls
 // g-cont. one reserved bit here for me
 
 // entity flags
 #define EFLAG_SLERP			1	// do studio interpolation of this entity
-		
+
 //
 // temp entity events
 //
@@ -170,26 +166,26 @@
 // The Explosion effect has some flags to control performance/aesthetic features:
 #define TE_EXPLFLAG_NONE		0	// all flags clear makes default Half-Life explosion
 #define TE_EXPLFLAG_NOADDITIVE	1	// sprite will be drawn opaque (ensure that the sprite you send is a non-additive sprite)
-#define TE_EXPLFLAG_NODLIGHTS		2	// do not render dynamic lights
+#define TE_EXPLFLAG_NODLIGHTS	2	// do not render dynamic lights
 #define TE_EXPLFLAG_NOSOUND		4	// do not play client explosion sound
 #define TE_EXPLFLAG_NOPARTICLES	8	// do not draw particles
-#define TE_EXPLFLAG_DRAWALPHA		16	// sprite will be drawn alpha
+#define TE_EXPLFLAG_DRAWALPHA	16	// sprite will be drawn alpha
 #define TE_EXPLFLAG_ROTATE		32	// rotate the sprite randomly
 
-#define	TE_TAREXPLOSION		4	// Quake1 "tarbaby" explosion with sound
+#define	TE_TAREXPLOSION			4	// Quake1 "tarbaby" explosion with sound
 // coord coord coord (position) 
 
-#define	TE_SMOKE			5	// alphablend sprite, move vertically 30 pps
+#define	TE_SMOKE				5	// alphablend sprite, move vertically 30 pps
 // coord coord coord (position) 
 // short (sprite index)
 // byte (scale in 0.1's)
 // byte (framerate)
 
-#define	TE_TRACER			6	// tracer effect from point to point
+#define	TE_TRACER				6	// tracer effect from point to point
 // coord, coord, coord (start) 
 // coord, coord, coord (end)
 
-#define	TE_LIGHTNING		7	// TE_BEAMPOINTS with simplified parameters
+#define	TE_LIGHTNING			7	// TE_BEAMPOINTS with simplified parameters
 // coord, coord, coord (start) 
 // coord, coord, coord (end) 
 // byte (life in 0.1's) 
@@ -197,7 +193,7 @@
 // byte (amplitude in 0.01's)
 // short (sprite model index)
 
-#define	TE_BEAMENTS		8		
+#define	TE_BEAMENTS				8		
 // short (start entity) 
 // short (end entity) 
 // short (sprite index) 
@@ -210,33 +206,33 @@
 // byte (brightness)
 // byte (scroll speed in 0.1's)
 
-#define	TE_SPARKS			9	// 8 random tracers with gravity, ricochet sprite
+#define	TE_SPARKS				9	// 8 random tracers with gravity, ricochet sprite
 // coord coord coord (position) 
 
-#define	TE_LAVASPLASH		10	// Quake1 lava splash
+#define	TE_LAVASPLASH			10	// Quake1 lava splash
 // coord coord coord (position) 
 
-#define	TE_TELEPORT		11	// Quake1 teleport splash
+#define	TE_TELEPORT				11	// Quake1 teleport splash
 // coord coord coord (position) 
 
-#define TE_EXPLOSION2		12	// Quake1 colormaped (base palette) particle explosion with sound
+#define TE_EXPLOSION2			12	// Quake1 colormaped (base palette) particle explosion with sound
 // coord coord coord (position) 
 // byte (starting color)
 // byte (num colors)
 
-#define TE_BSPDECAL			13	// Decal from the .BSP file 
+#define TE_BSPDECAL				13	// Decal from the .BSP file 
 // coord, coord, coord (x,y,z), decal position (center of texture in world)
 // short (texture index of precached decal texture name)
 // short (entity index)
 // [optional - only included if previous short is non-zero (not the world)] short (index of model of above entity)
 
-#define TE_IMPLOSION		14	// tracers moving toward a point
+#define TE_IMPLOSION			14	// tracers moving toward a point
 // coord, coord, coord (position)
 // byte (radius)
 // byte (count)
 // byte (life in 0.1's) 
 
-#define TE_SPRITETRAIL		15	// line of moving glow sprites with gravity, fadeout, and collisions
+#define TE_SPRITETRAIL			15	// line of moving glow sprites with gravity, fadeout, and collisions
 // coord, coord, coord (start) 
 // coord, coord, coord (end) 
 // short (sprite index)
@@ -246,21 +242,21 @@
 // byte (velocity along vector in 10's)
 // byte (randomness of velocity in 10's)
 
-#define TE_BEAM			16	// obsolete
+#define TE_BEAM					16	// obsolete
 
-#define TE_SPRITE			17	// additive sprite, plays 1 cycle
+#define TE_SPRITE				17	// additive sprite, plays 1 cycle
 // coord, coord, coord (position) 
 // short (sprite index) 
 // byte (scale in 0.1's) 
 // byte (brightness)
 
-#define TE_BEAMSPRITE		18	// A beam with a sprite at the end
+#define TE_BEAMSPRITE			18	// A beam with a sprite at the end
 // coord, coord, coord (start position) 
 // coord, coord, coord (end position) 
 // short (beam sprite index) 
 // short (end sprite index) 
 
-#define TE_BEAMTORUS		19	// screen aligned beam ring, expands to max radius over lifetime
+#define TE_BEAMTORUS			19	// screen aligned beam ring, expands to max radius over lifetime
 // coord coord coord (center position) 
 // coord coord coord (axis and radius) 
 // short (sprite index) 
@@ -273,7 +269,7 @@
 // byte (brightness)
 // byte (scroll speed in 0.1's)
 
-#define TE_BEAMDISK			20	// disk that expands to max radius over lifetime
+#define TE_BEAMDISK				20	// disk that expands to max radius over lifetime
 // coord coord coord (center position) 
 // coord coord coord (axis and radius) 
 // short (sprite index) 
@@ -286,7 +282,7 @@
 // byte (brightness)
 // byte (scroll speed in 0.1's)
 
-#define TE_BEAMCYLINDER		21	// cylinder that expands to max radius over lifetime
+#define TE_BEAMCYLINDER			21	// cylinder that expands to max radius over lifetime
 // coord coord coord (center position) 
 // coord coord coord (axis and radius) 
 // short (sprite index) 
@@ -299,7 +295,7 @@
 // byte (brightness)
 // byte (scroll speed in 0.1's)
 
-#define TE_BEAMFOLLOW		22	// create a line of decaying beam segments until entity stops moving
+#define TE_BEAMFOLLOW			22	// create a line of decaying beam segments until entity stops moving
 // short (entity:attachment to follow)
 // short (sprite index)
 // byte (life in 0.1's) 
@@ -307,10 +303,10 @@
 // byte,byte,byte (color)
 // byte (brightness)
 
-#define TE_GLOWSPRITE		23		
+#define TE_GLOWSPRITE			23		
 // coord, coord, coord (pos) short (model index) byte (scale / 10)
 
-#define TE_BEAMRING			24	// connect a beam ring to two entities
+#define TE_BEAMRING				24	// connect a beam ring to two entities
 // short (start entity) 
 // short (end entity) 
 // short (sprite index) 
@@ -323,7 +319,7 @@
 // byte (brightness)
 // byte (scroll speed in 0.1's)
 
-#define TE_STREAK_SPLASH	25		// oriented shower of tracers
+#define TE_STREAK_SPLASH		25		// oriented shower of tracers
 // coord coord coord (start position) 
 // coord coord coord (direction vector) 
 // byte (color)
@@ -331,16 +327,16 @@
 // short (base speed)
 // short (random velocity)
 
-#define TE_BEAMHOSE			26	// obsolete
+#define TE_BEAMHOSE				26	// obsolete
 
-#define TE_DLIGHT			27	// dynamic light, effect world, minor entity effect
+#define TE_DLIGHT				27	// dynamic light, effect world, minor entity effect
 // coord, coord, coord (pos) 
 // byte (radius in 10's) 
 // byte byte byte (color)
 // byte (life in 10's)
 // byte (decay rate in 10's)
 
-#define TE_ELIGHT			28	// point entity light, no world effect
+#define TE_ELIGHT				28	// point entity light, no world effect
 // short (entity:attachment to follow)
 // coord coord coord (initial position) 
 // coord (radius)
@@ -348,7 +344,7 @@
 // byte (life in 0.1's)
 // coord (decay rate)
 
-#define TE_TEXTMESSAGE		29
+#define TE_TEXTMESSAGE			29
 // short 1.2.13 x (-1 = center)
 // short 1.2.13 y (-1 = center)
 // byte Effect 0 = fade in/fade out
@@ -361,53 +357,53 @@
 // ushort 8.8 hold time
 // optional ushort 8.8 fxtime	(time the highlight lags behing the leading text in effect 2)
 // string text message		(512 chars max sz string)
-#define TE_LINE			30
+#define TE_LINE					30
 // coord, coord, coord	startpos
 // coord, coord, coord	endpos
 // short life in 0.1 s
 // 3 bytes r, g, b
 
-#define TE_BOX			31
+#define TE_BOX					31
 // coord, coord, coord	boxmins
 // coord, coord, coord	boxmaxs
 // short life in 0.1 s
 // 3 bytes r, g, b
 
-#define TE_KILLBEAM			99	// kill all beams attached to entity
+#define TE_KILLBEAM				99	// kill all beams attached to entity
 // short (entity)
 
-#define TE_LARGEFUNNEL		100
+#define TE_LARGEFUNNEL			100
 // coord coord coord (funnel position)
 // short (sprite index) 
 // short (flags) 
 
-#define	TE_BLOODSTREAM		101	// particle spray
+#define	TE_BLOODSTREAM			101	// particle spray
 // coord coord coord (start position)
 // coord coord coord (spray vector)
 // byte (color)
 // byte (speed)
 
-#define	TE_SHOWLINE		102	// line of particles every 5 units, dies in 30 seconds
+#define	TE_SHOWLINE				102	// line of particles every 5 units, dies in 30 seconds
 // coord coord coord (start position)
 // coord coord coord (end position)
 
-#define TE_BLOOD			103	// particle spray
+#define TE_BLOOD				103	// particle spray
 // coord coord coord (start position)
 // coord coord coord (spray vector)
 // byte (color)
 // byte (speed)
 
-#define TE_DECAL			104	// Decal applied to a brush entity (not the world)
+#define TE_DECAL				104	// Decal applied to a brush entity (not the world)
 // coord, coord, coord (x,y,z), decal position (center of texture in world)
 // byte (texture index of precached decal texture name)
 // short (entity index)
 
-#define TE_FIZZ			105	// create alpha sprites inside of entity, float upwards
+#define TE_FIZZ					105	// create alpha sprites inside of entity, float upwards
 // short (entity)
 // short (sprite index)
 // byte (density)
 
-#define TE_MODEL			106	// create a moving model that bounces and makes a sound when it hits
+#define TE_MODEL				106	// create a moving model that bounces and makes a sound when it hits
 // coord, coord, coord (position) 
 // coord, coord, coord (velocity)
 // angle (initial yaw)
@@ -415,14 +411,14 @@
 // byte (bounce sound type)
 // byte (life in 0.1's)
 
-#define TE_EXPLODEMODEL		107	// spherical shower of models, picks from set
+#define TE_EXPLODEMODEL			107	// spherical shower of models, picks from set
 // coord, coord, coord (origin)
 // coord (velocity)
 // short (model index)
 // short (count)
 // byte (life in 0.1's)
 
-#define TE_BREAKMODEL		108	// box of models or sprites
+#define TE_BREAKMODEL			108	// box of models or sprites
 // coord, coord, coord (position)
 // coord, coord, coord (size)
 // coord, coord, coord (velocity)
@@ -432,12 +428,12 @@
 // byte (life in 0.1 secs)
 // byte (flags)
 
-#define TE_GUNSHOTDECAL		109	// decal and ricochet sound
+#define TE_GUNSHOTDECAL			109	// decal and ricochet sound
 // coord, coord, coord (position)
 // short (entity index???)
 // byte (decal???)
 
-#define TE_SPRITE_SPRAY		110	// spay of alpha sprites
+#define TE_SPRITE_SPRAY			110	// spay of alpha sprites
 // coord, coord, coord (position)
 // coord, coord, coord (velocity)
 // short (sprite index)
@@ -449,14 +445,14 @@
 // coord, coord, coord (position)
 // byte (scale in 0.1's)
 
-#define TE_PLAYERDECAL		112	// ???
+#define TE_PLAYERDECAL			112	// ???
 // byte (playerindex)
 // coord, coord, coord (position)
 // short (entity???)
 // byte (decal number???)
 // [optional] short (model index???)
 
-#define TE_BUBBLES			113	// create alpha sprites inside of box, float upwards
+#define TE_BUBBLES				113	// create alpha sprites inside of box, float upwards
 // coord, coord, coord (min start position)
 // coord, coord, coord (max start position)
 // coord (float height)
@@ -464,7 +460,7 @@
 // byte (count)
 // coord (speed)
 
-#define TE_BUBBLETRAIL		114	// create alpha sprites along a line, float upwards
+#define TE_BUBBLETRAIL			114	// create alpha sprites along a line, float upwards
 // coord, coord, coord (min start position)
 // coord, coord, coord (max start position)
 // coord (float height)
@@ -472,14 +468,14 @@
 // byte (count)
 // coord (speed)
 
-#define TE_BLOODSPRITE		115	// spray of opaque sprite1's that fall, single sprite2 for 1..2 secs (this is a high-priority tent)
+#define TE_BLOODSPRITE			115	// spray of opaque sprite1's that fall, single sprite2 for 1..2 secs (this is a high-priority tent)
 // coord, coord, coord (position)
 // short (sprite1 index)
 // short (sprite2 index)
 // byte (color)
 // byte (scale)
 
-#define TE_WORLDDECAL		116	// Decal applied to the world brush
+#define TE_WORLDDECAL			116	// Decal applied to the world brush
 // coord, coord, coord (x,y,z), decal position (center of texture in world)
 // byte (texture index of precached decal texture name)
 
@@ -487,19 +483,19 @@
 // coord, coord, coord (x,y,z), decal position (center of texture in world)
 // byte (texture index of precached decal texture name - 256)
 
-#define TE_DECALHIGH		118	// Same as TE_DECAL, but the texture index was greater than 256
+#define TE_DECALHIGH			118	// Same as TE_DECAL, but the texture index was greater than 256
 // coord, coord, coord (x,y,z), decal position (center of texture in world)
 // byte (texture index of precached decal texture name - 256)
 // short (entity index)
 
-#define TE_PROJECTILE		119	// Makes a projectile (like a nail) (this is a high-priority tent)
+#define TE_PROJECTILE			119	// Makes a projectile (like a nail) (this is a high-priority tent)
 // coord, coord, coord (position)
 // coord, coord, coord (velocity)
 // short (modelindex)
 // byte (life)
 // byte (owner)  projectile won't collide with owner (if owner == 0, projectile will hit any client).
 
-#define TE_SPRAY			120	// Throws a shower of sprites or models
+#define TE_SPRAY				120	// Throws a shower of sprites or models
 // coord, coord, coord (position)
 // coord, coord, coord (direction)
 // short (modelindex)
@@ -520,7 +516,7 @@
 // byte (particle color)
 // byte (duration * 10) (will be randomized a bit)
 
-#define TE_FIREFIELD		123	// makes a field of fire.
+#define TE_FIREFIELD			123	// makes a field of fire.
 // coord (origin)
 // short (radius) (fire is made in a square around origin. -radius, -radius to radius, radius)
 // short (modelindex)
@@ -531,9 +527,10 @@
 // to keep network traffic low, this message has associated flags that fit into a byte:
 #define TEFIRE_FLAG_ALLFLOAT	1 // all sprites will drift upwards as they animate
 #define TEFIRE_FLAG_SOMEFLOAT	2 // some of the sprites will drift upwards. (50% chance)
-#define TEFIRE_FLAG_LOOP	4 // if set, sprite plays at 15 fps, otherwise plays at whatever rate stretches the animation over the sprite's duration.
-#define TEFIRE_FLAG_ALPHA	8 // if set, sprite is rendered alpha blended at 50% else, opaque
-#define TEFIRE_FLAG_PLANAR	16 // if set, all fire sprites have same initial Z instead of randomly filling a cube. 
+#define TEFIRE_FLAG_LOOP		4 // if set, sprite plays at 15 fps, otherwise plays at whatever rate stretches the animation over the sprite's duration.
+#define TEFIRE_FLAG_ALPHA		8 // if set, sprite is rendered alpha blended at 50% else, opaque
+#define TEFIRE_FLAG_PLANAR		16 // if set, all fire sprites have same initial Z instead of randomly filling a cube. 
+#define TEFIRE_FLAG_ADDITIVE	32 // if set, sprite is rendered as additive
 
 #define TE_PLAYERATTACHMENT		124	// attaches a TENT to a player (this is a high-priority tent)
 // byte (entity index of player)
@@ -582,8 +579,7 @@
 #define MSG_PAS				5	// Ents in PAS of org
 #define MSG_PVS_R			6	// Reliable to PVS
 #define MSG_PAS_R			7	// Reliable to PAS
-#define MSG_ONE_UNRELIABLE	8	// Send to one client, but don't put in reliable stream, put in unreliable datagram
-								// (could be dropped)
+#define MSG_ONE_UNRELIABLE	8	// Send to one client, but don't put in reliable stream, put in unreliable datagram ( could be dropped )
 #define MSG_SPEC			9	// Sends to all spectator proxies
 
 // contents of a spot in the world
@@ -608,7 +604,7 @@
 
 #define CONTENT_FLYFIELD		-17
 #define CONTENT_GRAVITY_FLYFIELD	-18
-#define CONTENT_FOG				-19
+#define CONTENT_FOG			-19
 
 #define CONTENT_EMPTY		-1
 #define CONTENT_SOLID		-2
@@ -626,13 +622,13 @@
 #define CHAN_STREAM			5	// allocate stream channel from the static or dynamic area
 #define CHAN_STATIC			6	// allocate channel from the static area 
 #define CHAN_NETWORKVOICE_BASE	7	// voice data coming across the network
-#define CHAN_NETWORKVOICE_END		500	// network voice data reserves slots (CHAN_NETWORKVOICE_BASE through CHAN_NETWORKVOICE_END).
+#define CHAN_NETWORKVOICE_END	500	// network voice data reserves slots (CHAN_NETWORKVOICE_BASE through CHAN_NETWORKVOICE_END).
 
 // attenuation values
 #define ATTN_NONE			0
 #define ATTN_NORM			(float)0.8
-#define ATTN_STATIC			(float)1.25 
 #define ATTN_IDLE			(float)2
+#define ATTN_STATIC			(float)1.25 
 
 // Так будет понятнее
 #define ATTN_EVERYWHERE		ATTN_NONE
@@ -649,7 +645,7 @@
 #define VOL_NORM			1.0
 
 // plats
-#define	PLAT_LOW_TRIGGER	1
+#define PLAT_LOW_TRIGGER		1
 
 // Trains
 #define SF_TRAIN_WAIT_RETRIGGER	1
@@ -657,22 +653,22 @@
 #define SF_TRAIN_PASSABLE		8	// Train is not solid -- used to make water trains
 
 // buttons
-#define IN_ATTACK			(1<<0)
-#define IN_JUMP				(1<<1)
-#define IN_DUCK				(1<<2)
-#define IN_FORWARD			(1<<3)
-#define IN_BACK				(1<<4)
-#define IN_USE				(1<<5)
-#define IN_CANCEL			(1<<6)
-#define IN_LEFT				(1<<7)
-#define IN_RIGHT			(1<<8)
-#define IN_MOVELEFT			(1<<9)
-#define IN_MOVERIGHT		(1<<10)
-#define IN_ATTACK2			(1<<11)
-#define IN_RUN				(1<<12)
-#define IN_RELOAD			(1<<13)
-#define IN_ALT1				(1<<14)
-#define IN_SCORE			(1<<15)   // Used by client.dll for when scoreboard is held down
+#define IN_ATTACK		(1<<0)
+#define IN_JUMP			(1<<1)
+#define IN_DUCK			(1<<2)
+#define IN_FORWARD		(1<<3)
+#define IN_BACK			(1<<4)
+#define IN_USE			(1<<5)
+#define IN_CANCEL		(1<<6)
+#define IN_LEFT			(1<<7)
+#define IN_RIGHT		(1<<8)
+#define IN_MOVELEFT		(1<<9)
+#define IN_MOVERIGHT	(1<<10)
+#define IN_ATTACK2		(1<<11)
+#define IN_RUN			(1<<12)
+#define IN_RELOAD		(1<<13)
+#define IN_ALT1			(1<<14)
+#define IN_SCORE		(1<<15)   // Used by client.dll for when scoreboard is held down
 
 // Break Model Defines
 #define BREAK_TYPEMASK		0x4F
@@ -708,7 +704,7 @@ enum
 	kRenderTransTexture,	// src*a+dest*(1-a)
 	kRenderGlow,			// src*a+dest -- No Z buffer checks
 	kRenderTransAlpha,		// src*srca+dest*(1-srca)
-	kRenderTransAdd			// src*a+dest
+	kRenderTransAdd,		// src*a+dest
 	};
 
 enum
@@ -742,6 +738,8 @@ typedef int		string_t;
 typedef unsigned char	byte;
 typedef unsigned short	word;
 
+#define Q_isspace( ch )	(ch < 32 || ch > 255)
+
 #undef true
 #undef false
 
@@ -761,19 +759,6 @@ typedef struct
 	unsigned	r, g, b, a;
 	} colorVec;
 
-#ifdef _WIN32
-#pragma pack( push, 2 )
-#endif
-
-typedef struct
-	{
-	unsigned short r, g, b, a;
-	} PackedColorVec;
-
-#ifdef _WIN32
-#pragma pack( pop )
-#endif
-
 typedef struct link_s
 	{
 	struct link_s* prev, * next;
@@ -790,13 +775,13 @@ typedef struct
 typedef struct
 	{
 	qboolean	allsolid;		// if true, plane is not valid
-	qboolean	startsolid;		// if true, the initial point was in a solid area
+	qboolean	startsolid;	// if true, the initial point was in a solid area
 	qboolean	inopen, inwater;
-	float	fraction;			// time completed, 1.0 = didn't hit anything
-	vec3_t	endpos;				// final position
-	plane_t	plane;				// surface normal at impact
-	edict_t* ent;				// entity the surface is on
-	int	hitgroup;				// 0 == generic, non zero is specific body part
+	float		fraction;		// time completed, 1.0 = didn't hit anything
+	vec3_t		endpos;		// final position
+	plane_t		plane;		// surface normal at impact
+	edict_t*	ent;		// entity the surface is on
+	int			hitgroup;		// 0 == generic, non zero is specific body part
 	} trace_t;
 
 #endif//CONST_H
