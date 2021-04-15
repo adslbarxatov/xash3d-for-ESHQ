@@ -64,37 +64,38 @@ typedef struct imglib_s
 	const savepixformat_t	*saveformats;
 
 	// current 2d image state
-	word		width;
-	word		height;
-	uint		type;		// main type switcher
-	uint		flags;		// additional image flags
-	size_t		size;		// image rgba size (for bounds checking)
-	uint		ptr;		// safe image pointer
-	byte		*rgba;		// image pointer (see image_type for details)
+	word			width;
+	word			height;
+	word			depth;
+	byte			num_mips;		// mipmap count
+	word			encode;		// custom encode type
+	uint			type;		// main type switcher
+	uint			flags;		// additional image flags
+	size_t			size;		// image rgba size (for bounds checking)
+	uint			ptr;		// safe image pointer
+	int			bpp;		// PFDesc[type].bpp
+	byte			*rgba;		// image pointer (see image_type for details)
 
 	// current cubemap state
-	int		source_width;	// locked cubemap dims (all wrong sides will be automatically resampled)
-	int		source_height;
-	uint		source_type;	// shared image type for all mipmaps or cubemap sides
-	int		num_sides;	// how much sides is loaded 
-	byte		*cubemap;		// cubemap pack
+	int			source_width;	// locked cubemap dims (all wrong sides will be automatically resampled)
+	int			source_height;
+	uint			source_type;	// shared image type for all mipmaps or cubemap sides
+	int			num_sides;	// how much sides is loaded 
+	byte			*cubemap;		// cubemap pack
 
 	// indexed images state
-	uint		*d_currentpal;	// installed version of internal palette
-	int		d_rendermode;	// palette rendermode
-	byte		*palette;		// palette pointer
+	uint			*d_currentpal;	// installed version of internal palette
+	int			d_rendermode;	// palette rendermode
+	byte			*palette;		// palette pointer
 
 	// global parms
-	int		bpp;		// PFDesc[type].bpp
-	int		SizeOfFile;	// total size
-	qboolean		(*decompress)( uint, int, uint, uint, uint, const void* );
+	rgba_t			fogParams;	// some water textures has info about underwater fog
 
-	rgba_t		fogParams;	// some water textures has info about underwater fog
-
-	image_hint_t	hint;		// hint for some loaders
-	byte		*tempbuffer;	// for convert operations
-	int		cmd_flags;
-	int		force_flags;	// user-specified force flags
+	image_hint_t		hint;		// hint for some loaders
+	byte			*tempbuffer;	// for convert operations
+	int			cmd_flags;	// global imglib flags
+	int			force_flags;	// override cmd_flags
+	qboolean			custom_palette;	// custom palette was installed
 } imglib_t;
 
 /*
@@ -153,73 +154,116 @@ typedef struct tga_s
 /*
 ========================================================================
 
-.JPG image format
+.DDS image format
 
 ========================================================================
 */
-typedef struct huffman_table_s
+#define DDSHEADER	((' '<<24)+('S'<<16)+('D'<<8)+'D') // little-endian "DDS "
+
+// various four-cc types
+#define TYPE_DXT1	(('1'<<24)+('T'<<16)+('X'<<8)+'D') // little-endian "DXT1"
+#define TYPE_DXT2	(('2'<<24)+('T'<<16)+('X'<<8)+'D') // little-endian "DXT2"
+#define TYPE_DXT3	(('3'<<24)+('T'<<16)+('X'<<8)+'D') // little-endian "DXT3"
+#define TYPE_DXT4	(('4'<<24)+('T'<<16)+('X'<<8)+'D') // little-endian "DXT4"
+#define TYPE_DXT5	(('5'<<24)+('T'<<16)+('X'<<8)+'D') // little-endian "DXT5"
+#define TYPE_ATI1	(('1'<<24)+('I'<<16)+('T'<<8)+'A') // little-endian "ATI1"
+#define TYPE_ATI2	(('2'<<24)+('I'<<16)+('T'<<8)+'A') // little-endian "ATI2"
+#define TYPE_RXGB	(('B'<<24)+('G'<<16)+('X'<<8)+'R') // little-endian "RXGB" doom3 normalmaps
+#define TYPE_$	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'$') // little-endian "$"
+#define TYPE_o	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'o') // little-endian "o"
+#define TYPE_p	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'p') // little-endian "p"
+#define TYPE_q	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'q') // little-endian "q"
+#define TYPE_r	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'r') // little-endian "r"
+#define TYPE_s	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'s') // little-endian "s"
+#define TYPE_t	(('\0'<<24)+('\0'<<16)+('\0'<<8)+'t') // little-endian "t"
+
+// dwFlags1
+#define DDS_CAPS				0x00000001L
+#define DDS_HEIGHT				0x00000002L
+#define DDS_WIDTH				0x00000004L
+#define DDS_PITCH				0x00000008L
+#define DDS_PIXELFORMAT			0x00001000L
+#define DDS_MIPMAPCOUNT			0x00020000L
+#define DDS_LINEARSIZE			0x00080000L
+#define DDS_DEPTH				0x00800000L
+
+// dwFlags2
+#define DDS_ALPHAPIXELS			0x00000001L
+#define DDS_ALPHA				0x00000002L
+#define DDS_FOURCC				0x00000004L
+#define DDS_RGB				0x00000040L
+#define DDS_RGBA				0x00000041L	// (DDS_RGB|DDS_ALPHAPIXELS)
+#define DDS_LUMINANCE			0x00020000L
+#define DDS_DUDV				0x00080000L
+
+// dwCaps1
+#define DDS_COMPLEX				0x00000008L
+#define DDS_TEXTURE				0x00001000L
+#define DDS_MIPMAP				0x00400000L
+
+// dwCaps2
+#define DDS_CUBEMAP				0x00000200L
+#define DDS_CUBEMAP_POSITIVEX			0x00000400L
+#define DDS_CUBEMAP_NEGATIVEX			0x00000800L
+#define DDS_CUBEMAP_POSITIVEY			0x00001000L
+#define DDS_CUBEMAP_NEGATIVEY			0x00002000L
+#define DDS_CUBEMAP_POSITIVEZ			0x00004000L
+#define DDS_CUBEMAP_NEGATIVEZ			0x00008000L
+#define DDS_CUBEMAP_ALL_SIDES			0x0000FC00L
+#define DDS_VOLUME				0x00200000L
+
+typedef struct dds_pf_s
 {
-	// Huffman coding tables
-	byte	bits[16];
-	byte	hval[256];
-	byte	size[256];
-	word	code[256];
-} huffman_table_t;
+	uint	dwSize;
+	uint	dwFlags;
+	uint	dwFourCC;
+	uint	dwRGBBitCount;
+	uint	dwRBitMask;
+	uint	dwGBitMask;
+	uint	dwBBitMask;
+	uint	dwABitMask;
+} dds_pixf_t;
 
-typedef struct jpg_s
+//  DDCAPS2
+typedef struct dds_caps_s
 {
-	// not a real header
-	file_t	*file;		// file
-	byte	*buffer;		// jpg buffer
-	
-	int	width;		// width image
-	int	height;		// height image
-	byte	*data;		// image
-	int	data_precision;	// bit per component
-	int	num_components;	// number component
-	int	restart_interval;	// restart interval
-	qboolean	progressive_mode;	// progressive format
+	uint	dwCaps1;
+	uint	dwCaps2;
+	uint	dwCaps3;			// currently unused
+	uint	dwCaps4;			// currently unused
+} dds_caps_t;
 
-	struct
-	{
-		int     id;	// identifier
-		int     h;	// horizontal sampling factor
-		int     v;	// vertical sampling factor
-		int     t;	// quantization table selector
-		int     td;	// DC table selector
-		int     ta;	// AC table selector
-	} component_info[3];	// RGB (alpha not supported)
-    
-	huffman_table_t hac[4];	// AC table
-	huffman_table_t hdc[4];	// DC table
-
-	int	qtable[4][64];	// quantization table
-
-	struct
-	{
-		int     ss,se;	// progressive jpeg spectral selection
-		int     ah,al;	// progressive jpeg successive approx
-	} scan;
-
-	int	dc[3];
-	int	curbit;
-	byte	curbyte;
-
-} jpg_t;
+typedef struct dds_s
+{
+	uint		dwIdent;		// must matched with DDSHEADER
+	uint		dwSize;
+	uint		dwFlags;		// determines what fields are valid
+	uint		dwHeight;
+	uint		dwWidth;
+	uint		dwLinearSize;	// Formless late-allocated optimized surface size
+	uint		dwDepth;		// depth if a volume texture
+	uint		dwMipMapCount;	// number of mip-map levels requested
+	uint		dwAlphaBitDepth;	// depth of alpha buffer requested
+	uint		dwReserved1[10];	// reserved for future expansions
+	dds_pixf_t	dsPixelFormat;
+	dds_caps_t	dsCaps;
+	uint		dwTextureStage;
+} dds_t;
 
 // imagelib definitions
-#define IMAGE_MAXWIDTH	4096
-#define IMAGE_MAXHEIGHT	4096
+#define IMAGE_MAXWIDTH	8192
+#define IMAGE_MAXHEIGHT	8192
 #define LUMP_MAXWIDTH	1024	// WorldCraft limits
 #define LUMP_MAXHEIGHT	1024
 
 enum
 {
-	LUMP_NORMAL = 0,
-	LUMP_TRANSPARENT,
-	LUMP_DECAL,
-	LUMP_QFONT,
-	LUMP_EXTENDED		// bmp images have extened palette with alpha-channel
+	LUMP_NORMAL = 0,		// no alpha
+	LUMP_MASKED,		// 1-bit alpha channel masked texture
+	LUMP_GRADIENT,		// gradient image (decals)
+	LUMP_EXTENDED,		// bmp images have extened palette with alpha-channel
+	LUMP_HALFLIFE,		// get predefined half-life palette
+	LUMP_QUAKE1		// get predefined quake palette
 };
 
 enum
@@ -232,19 +276,17 @@ enum
 
 extern imglib_t image;
 
-void Image_RoundDimensions( int *scaled_width, int *scaled_height );
 byte *Image_ResampleInternal( const void *indata, int in_w, int in_h, int out_w, int out_h, int intype, qboolean *done );
 byte *Image_FlipInternal( const byte *in, word *srcwidth, word *srcheight, int type, int flags );
-void Image_FreeImage( rgbdata_t *pack );
-void Image_Save( const char *filename, rgbdata_t *pix );
 rgbdata_t *Image_Load(const char *filename, const byte *buffer, size_t buffsize );
 qboolean Image_Copy8bitRGBA( const byte *in, byte *out, int pixels );
 qboolean Image_AddIndexedImageToPack( const byte *in, int width, int height );
 qboolean Image_AddRGBAImageToPack( uint imageSize, const void* data );
-void Image_ConvertPalTo24bit( rgbdata_t *pic );
+void Image_Save( const char *filename, rgbdata_t *pix );
 void Image_GetPaletteLMP( const byte *pal, int rendermode );
 void Image_GetPaletteBMP( const byte *pal );
 int Image_ComparePalette( const byte *pal );
+void Image_FreeImage( rgbdata_t *pack );
 void Image_CopyPalette24bit( void );
 void Image_CopyPalette32bit( void );
 void Image_SetPixelFormat( void );
@@ -259,10 +301,10 @@ qboolean Image_LoadMDL( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadSPR( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadBMP( const char *name, const byte *buffer, size_t filesize );
+qboolean Image_LoadDDS( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadFNT( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadLMP( const char *name, const byte *buffer, size_t filesize );
 qboolean Image_LoadPAL( const char *name, const byte *buffer, size_t filesize );
-qboolean Image_LoadJPG( const char *name, const byte *buffer, size_t filesize );
 
 //
 // formats save

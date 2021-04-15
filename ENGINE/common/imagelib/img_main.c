@@ -22,7 +22,7 @@ typedef struct suffix_s
 {
 	const char	*suf;
 	uint		flags;
-	image_hint_t	hint;
+	side_hint_t	hint;
 } suffix_t;
 
 static const suffix_t skybox_qv1[6] =
@@ -47,16 +47,6 @@ static const suffix_t skybox_qv2[6] =
 
 static const suffix_t cubemap_v1[6] =
 {
-{ "posx", 0, CB_HINT_POSX },
-{ "negx", 0, CB_HINT_NEGX },
-{ "posy", 0, CB_HINT_POSY },
-{ "negy", 0, CB_HINT_NEGY },
-{ "posz", 0, CB_HINT_POSZ },
-{ "negz", 0, CB_HINT_NEGZ },
-};
-
-static const suffix_t cubemap_v2[6] =
-{
 { "px", 0, CB_HINT_POSX },
 { "nx", 0, CB_HINT_NEGX },
 { "py", 0, CB_HINT_POSY },
@@ -75,8 +65,7 @@ static const cubepack_t load_cubemap[] =
 {
 { "3Ds Sky1", skybox_qv1 },
 { "3Ds Sky2", skybox_qv2 },
-{ "3Ds Cube", cubemap_v2 },
-{ "Tenebrae", cubemap_v1 },
+{ "3Ds Cube", cubemap_v1 },
 { NULL, NULL },
 };
 
@@ -90,15 +79,20 @@ const bpc_desc_t PFDesc[] =
 {PF_BGRA_32,	"BGRA 32",0x80E1, 4 },
 {PF_RGB_24,	"RGB 24",	0x1908, 3 },
 {PF_BGR_24,	"BGR 24",	0x80E0, 3 },
+{PF_DXT1,		"DXT 1",	0x83F1, 4 },
+{PF_DXT3,		"DXT 3",	0x83F2, 4 },
+{PF_DXT5,		"DXT 5",	0x83F3, 4 },
+{PF_ATI2,		"ATI 2",	0x8837, 4 },
 };
 
 void Image_Reset( void )
 {
 	// reset global variables
-	image.width = image.height = 0;
+	image.width = image.height = image.depth = 0;
 	image.source_width = image.source_height = 0;
+	image.source_type = image.num_mips = 0;
 	image.num_sides = image.flags = 0;
-	image.source_type = 0;
+	image.encode = DXT_ENCODE_DEFAULT;
 	image.type = PF_UNKNOWN;
 	image.fogParams[0] = 0;
 	image.fogParams[1] = 0;
@@ -116,15 +110,14 @@ void Image_Reset( void )
 
 rgbdata_t *ImagePack( void )
 {
-	rgbdata_t	*pack = Mem_Alloc( host.imagepool, sizeof( rgbdata_t ));
+	rgbdata_t	*pack = Mem_Calloc( host.imagepool, sizeof( rgbdata_t ));
 
 	// clear any force flags
 	image.force_flags = 0;
 
 	if( image.cubemap && image.num_sides != 6 )
 	{
-		// this neved be happens, just in case
-		MsgDev( D_NOTE, "ImagePack: inconsistent cubemap pack %d\n", image.num_sides );
+		// this never be happens, just in case
 		FS_FreeImage( pack );
 		return NULL;
 	}
@@ -143,6 +136,7 @@ rgbdata_t *ImagePack( void )
 		pack->buffer = image.rgba;
 		pack->width = image.width;
 		pack->height = image.height;
+		pack->depth = image.depth;
 		pack->type = image.type;
 		pack->size = image.size;
 	}
@@ -154,7 +148,9 @@ rgbdata_t *ImagePack( void )
 	pack->fogParams[3] = image.fogParams[3];
 
 	pack->flags = image.flags;
+	pack->numMips = image.num_mips;
 	pack->palette = image.palette;
+	pack->encode = image.encode;
 	
 	return pack;
 }
@@ -196,7 +192,7 @@ qboolean FS_AddSideToPack( const char *name, int adjust_flags )
 	if( resampled ) image.rgba = Image_Copy( image.size );
 
 	image.cubemap = Mem_Realloc( host.imagepool, image.cubemap, image.ptr + image.size );
-	Q_memcpy( image.cubemap + image.ptr, image.rgba, image.size ); // add new side
+	memcpy( image.cubemap + image.ptr, image.rgba, image.size ); // add new side
 
 	Mem_Free( image.rgba );	// release source buffer
 	image.ptr += image.size; 	// move to next
@@ -214,7 +210,7 @@ loading and unpack to rgba any known image
 */
 rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 {
-          const char	*ext = FS_FileExtension( filename );
+	const char	*ext = COM_FileExtension( filename );
 	string		path, loadname, sidename;
 	qboolean		anyformat = true;
 	int		i, filesize = 0;
@@ -222,8 +218,8 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 	const cubepack_t	*cmap;
 	byte		*f;
 
-	Image_Reset(); // clear old image
 	Q_strncpy( loadname, filename, sizeof( loadname ));
+	Image_Reset(); // clear old image
 
 	if( Q_stricmp( ext, "" ))
 	{
@@ -233,15 +229,16 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 		{
 			if( !Q_stricmp( format->ext, ext ))
 			{
-				FS_StripExtension( loadname );
+				COM_StripExtension( loadname );
 				anyformat = false;
 				break;
 			}
 		}
 	}
 
-	// HACKHACK: skip any checks, load file from buffer
-	if( filename[0] == '#' && buffer && size ) goto load_internal;
+	// special mode: skip any checks, load file from buffer
+	if( filename[0] == '#' && buffer && size )
+		goto load_internal;
 
 	// now try all the formats in the selected list
 	for( format = image.loadformats; format && format->formatstring; format++)
@@ -251,6 +248,7 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 			Q_sprintf( path, format->formatstring, loadname, "", format->ext );
 			image.hint = format->hint;
 			f = FS_LoadFile( path, &filesize, false );
+
 			if( f && filesize > 0 )
 			{
 				if( format->loadfunc( path, f, filesize ))
@@ -258,7 +256,7 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 					Mem_Free( f ); // release buffer
 					return ImagePack(); // loaded
 				}
-				else Mem_Free(f); // release buffer 
+				else Mem_Free( f ); // release buffer 
 			}
 		}
 	}
@@ -300,8 +298,6 @@ rgbdata_t *FS_LoadImage( const char *filename, const byte *buffer, size_t size )
 				// first side not found, probably it's not cubemap
 				// it contain info about image_type and dimensions, don't generate black cubemaps 
 				if( !image.cubemap ) break;
-				MsgDev( D_ERROR, "FS_LoadImage: couldn't load (%s%s), create black image\n", loadname, cmap->type[i].suf );
-
 				// Mem_Alloc already filled memblock with 0x00, no need to do it again
 				image.cubemap = Mem_Realloc( host.imagepool, image.cubemap, image.ptr + image.size );
 				image.ptr += image.size; // move to next
@@ -337,10 +333,8 @@ load_internal:
 		}
 	}
 
-	if( !image.loadformats || image.loadformats->ext == NULL )
-		MsgDev( D_NOTE, "FS_LoadImage: imagelib offline\n" );
-	else if( filename[0] != '#' )
-		MsgDev( D_WARN, "FS_LoadImage: couldn't load \"%s\"\n", loadname );
+	if( filename[0] != '#' )
+		Con_Reportf( S_WARN "FS_LoadImage: couldn't load \"%s\"\n", loadname );
 
 	// clear any force flags
 	image.force_flags = 0;
@@ -357,7 +351,7 @@ writes image as any known format
 */
 qboolean FS_SaveImage( const char *filename, rgbdata_t *pix )
 {
-          const char	*ext = FS_FileExtension( filename );
+	const char	*ext = COM_FileExtension( filename );
 	qboolean		anyformat = !Q_stricmp( ext, "" ) ? true : false;
 	string		path, savename;
 	const savepixformat_t *format;
@@ -370,9 +364,9 @@ qboolean FS_SaveImage( const char *filename, rgbdata_t *pix )
 	}
 
 	Q_strncpy( savename, filename, sizeof( savename ));
-	FS_StripExtension( savename ); // remove extension if needed
+	COM_StripExtension( savename ); // remove extension if needed
 
-	if( pix->flags & (IMAGE_CUBEMAP|IMAGE_SKYBOX) && Q_stricmp( ext, "dds" ))
+	if( pix->flags & (IMAGE_CUBEMAP|IMAGE_SKYBOX))
 	{
 		size_t		realSize = pix->size; // keep real pic size
 		byte		*picBuffer; // to avoid corrupt memory on free data
@@ -382,7 +376,7 @@ qboolean FS_SaveImage( const char *filename, rgbdata_t *pix )
 		if( pix->flags & IMAGE_SKYBOX )
 			box = skybox_qv1;
 		else if( pix->flags & IMAGE_CUBEMAP )
-			box = cubemap_v2;
+			box = cubemap_v1;
 		else
 		{
 			// clear any force flags
@@ -390,7 +384,7 @@ qboolean FS_SaveImage( const char *filename, rgbdata_t *pix )
 			return false;	// do not happens
 		}
 
-		pix->size /= 6;	// now set as side size 
+		pix->size /= 6; // now set as side size 
 		picBuffer = pix->buffer;
 
 		// save all sides seperately
@@ -448,13 +442,10 @@ free RGBA buffer
 */
 void FS_FreeImage( rgbdata_t *pack )
 {
-	if( pack )
-	{
-		if( pack->buffer ) Mem_Free( pack->buffer );
-		if( pack->palette ) Mem_Free( pack->palette );
-		Mem_Free( pack );
-	}
-	else MsgDev( D_WARN, "FS_FreeImage: trying to free NULL image\n" );
+	if( !pack ) return;
+	if( pack->buffer ) Mem_Free( pack->buffer );
+	if( pack->palette ) Mem_Free( pack->palette );
+	Mem_Free( pack );
 }
 
 /*
@@ -471,7 +462,7 @@ rgbdata_t *FS_CopyImage( rgbdata_t *in )
 
 	if( !in ) return NULL;
 
-	out = Mem_Alloc( host.imagepool, sizeof( rgbdata_t ));
+	out = Mem_Malloc( host.imagepool, sizeof( rgbdata_t ));
 	*out = *in;
 
 	switch( in->type )
@@ -486,14 +477,14 @@ rgbdata_t *FS_CopyImage( rgbdata_t *in )
 
 	if( palSize )
 	{
-		out->palette = Mem_Alloc( host.imagepool, palSize );
-		Q_memcpy( out->palette, in->palette, palSize );
+		out->palette = Mem_Malloc( host.imagepool, palSize );
+		memcpy( out->palette, in->palette, palSize );
 	}
 
 	if( in->size )
 	{
-		out->buffer = Mem_Alloc( host.imagepool, in->size );
-		Q_memcpy( out->buffer, in->buffer, in->size );
+		out->buffer = Mem_Malloc( host.imagepool, in->size );
+		memcpy( out->buffer, in->buffer, in->size );
 	}
 
 	return out;

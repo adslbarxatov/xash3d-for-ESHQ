@@ -15,10 +15,11 @@ GNU General Public License for more details.
 
 #include "imagelib.h"
 #include "mathlib.h"
-
-convar_t *gl_round_down;
+#include "mod_local.h"
+#include "gl_export.h"
 
 #define LERPBYTE( i )	r = resamplerow1[i]; out[i] = (byte)(((( resamplerow2[i] - r ) * lerp)>>16 ) + r )
+#define FILTER_SIZE		5
 
 uint d_8toQ1table[256];
 uint d_8toHLtable[256];
@@ -80,6 +81,15 @@ static byte palette_hl[768] =
 147,255,247,199,255,255,255,159,91,83
 };
 
+static float img_emboss[FILTER_SIZE][FILTER_SIZE] = 
+{
+{-0.7f, -0.7f, -0.7f, -0.7f, 0.0f }, 
+{-0.7f, -0.7f, -0.7f,  0.0f, 0.7f }, 
+{-0.7f, -0.7f,  0.0f,  0.7f, 0.7f }, 
+{-0.7f,  0.0f,  0.7f,  0.7f, 0.7f }, 
+{ 0.0f,  0.7f,  0.7f,  0.7f, 0.7f }, 
+}; 
+
 /*
 =============================================================================
 
@@ -95,15 +105,15 @@ static const loadpixformat_t load_null[] =
 
 static const loadpixformat_t load_game[] =
 {
-{ "%s%s.%s", "bmp", Image_LoadBMP, IL_HINT_NO },	// WON menu images
+{ "%s%s.%s", "dds", Image_LoadDDS, IL_HINT_NO },	// dds for world and studio models
 { "%s%s.%s", "tga", Image_LoadTGA, IL_HINT_NO },	// hl vgui menus
-{ "%s%s.%s", "jpg", Image_LoadJPG, IL_HINT_NO },	// hl skyboxes
+{ "%s%s.%s", "bmp", Image_LoadBMP, IL_HINT_NO },	// WON menu images
 { "%s%s.%s", "mip", Image_LoadMIP, IL_HINT_NO },	// hl textures from wad or buffer
 { "%s%s.%s", "mdl", Image_LoadMDL, IL_HINT_HL },	// hl studio model skins
 { "%s%s.%s", "spr", Image_LoadSPR, IL_HINT_HL },	// hl sprite frames
-{ "%s%s.%s", "lmp", Image_LoadLMP, IL_HINT_HL },	// hl menu images (cached.wad etc)
-{ "%s%s.%s", "fnt", Image_LoadFNT, IL_HINT_HL },	// hl menu images (cached.wad etc)
-{ "%s%s.%s", "pal", Image_LoadPAL, IL_HINT_NO },	// install studio palette
+{ "%s%s.%s", "lmp", Image_LoadLMP, IL_HINT_NO },	// hl menu images (cached.wad etc)
+{ "%s%s.%s", "fnt", Image_LoadFNT, IL_HINT_HL },	// hl console font (fonts.wad etc)
+{ "%s%s.%s", "pal", Image_LoadPAL, IL_HINT_NO },	// install studio\sprite palette
 { NULL, NULL, NULL, IL_HINT_NO }
 };
 
@@ -132,7 +142,6 @@ void Image_Init( void )
 {
 	// init pools
 	host.imagepool = Mem_AllocPool( "ImageLib Pool" );
-	gl_round_down = Cvar_Get( "gl_round_down", "0", CVAR_RENDERINFO, "down size non-power of two textures" );
 
 	// install image formats (can be re-install later by Image_Setup)
 	switch( host.type )
@@ -142,11 +151,13 @@ void Image_Init( void )
 		image.loadformats = load_game;
 		image.saveformats = save_game;
 		break;
-	default:	// all other instances not using imagelib or will be reinstalling later
-		image.loadformats = load_null;
+	default:	// all other instances not using imagelib
+		image.cmd_flags = 0;		
+		image.loadformats = load_game;
 		image.saveformats = save_null;
 		break;
 	}
+
 	image.tempbuffer = NULL;
 }
 
@@ -160,9 +171,20 @@ byte *Image_Copy( size_t size )
 {
 	byte	*out;
 
-	out = Mem_Alloc( host.imagepool, size );
-	Q_memcpy( out, image.tempbuffer, size );
+	out = Mem_Malloc( host.imagepool, size );
+	memcpy( out, image.tempbuffer, size );
+
 	return out; 
+}
+
+/*
+=================
+Image_CustomPalette
+=================
+*/
+qboolean Image_CustomPalette( void )
+{
+	return image.custom_palette;
 }
 
 /*
@@ -172,10 +194,10 @@ Image_CheckFlag
 */
 qboolean Image_CheckFlag( int bit )
 {
-	if( image.force_flags & bit )
+	if( FBitSet( image.force_flags, bit ))
 		return true;
 
-	if( image.cmd_flags & bit )
+	if( FBitSet( image.cmd_flags, bit ))
 		return true;
 
 	return false;
@@ -188,26 +210,34 @@ Image_SetForceFlags
 */
 void Image_SetForceFlags( uint flags )
 {
-	image.force_flags = flags;
+	SetBits( image.force_flags, flags );
 }
 
 /*
 =================
-Image_RoundDimensions
+Image_ClearForceFlags
 =================
 */
-void Image_RoundDimensions( int *width, int *height )
+void Image_ClearForceFlags( void )
 {
-	// find nearest power of two, rounding down if desired
-	*width = NearestPOW( *width, gl_round_down->integer );
-	*height = NearestPOW( *height, gl_round_down->integer );
+	image.force_flags = 0;
+}
+
+/*
+=================
+Image_AddCmdFlags
+=================
+*/
+void Image_AddCmdFlags( uint flags )
+{
+	SetBits( image.cmd_flags, flags );
 }
 
 qboolean Image_ValidSize( const char *name )
 {
 	if( image.width > IMAGE_MAXWIDTH || image.height > IMAGE_MAXHEIGHT || image.width <= 0 || image.height <= 0 )
 	{
-		MsgDev( D_ERROR, "Image: %s has invalid sizes %i x %i\n", name, image.width, image.height );
+		Con_DPrintf( S_ERROR "Image: (%s) dims out of range [%dx%d]\n", name, image.width, image.height );
 		return false;
 	}
 	return true;
@@ -217,7 +247,7 @@ qboolean Image_LumpValidSize( const char *name )
 {
 	if( image.width > LUMP_MAXWIDTH || image.height > LUMP_MAXHEIGHT || image.width <= 0 || image.height <= 0 )
 	{
-		MsgDev(D_WARN, "Image_LumpValidSize: (%s) dims out of range[%dx%d]\n", name, image.width,image.height );
+		Con_DPrintf( S_ERROR "Image: (%s) dims out of range [%dx%d]\n", name, image.width,image.height );
 		return false;
 	}
 	return true;
@@ -232,51 +262,21 @@ int Image_ComparePalette( const byte *pal )
 {
 	if( pal == NULL )
 		return PAL_INVALID;
-	else if( !memcmp( palette_q1, pal, 768 ))
+	else if( !memcmp( palette_q1, pal, 765 )) // last color was changed
 		return PAL_QUAKE1;
-	else if( !memcmp( palette_hl, pal, 768 ))
+	else if( !memcmp( palette_hl, pal, 765 ))
 		return PAL_HALFLIFE;
 	return PAL_CUSTOM;		
 }
 
 void Image_SetPalette( const byte *pal, uint *d_table )
 {
-	int	i;
 	byte	rgba[4];
-	
+	int	i;	
+
 	// setup palette
 	switch( image.d_rendermode )
 	{
-	case LUMP_DECAL:
-		for( i = 0; i < 256; i++ )
-		{
-			rgba[0] = pal[765];
-			rgba[1] = pal[766];
-			rgba[2] = pal[767];
-			rgba[3] = i;
-			d_table[i] = *(uint *)rgba;
-		}
-		break;
-	case LUMP_TRANSPARENT:
-		for( i = 0; i < 256; i++ )
-		{
-			rgba[0] = pal[i*3+0];
-			rgba[1] = pal[i*3+1];
-			rgba[2] = pal[i*3+2];
-			rgba[3] = pal[i] == 255 ? pal[i] : 0xFF;
-			d_table[i] = *(uint *)rgba;
-		}
-		break;
-	case LUMP_QFONT:
-		for( i = 0; i < 256; i++ )
-		{
-			rgba[0] = pal[i*3+0];
-			rgba[1] = pal[i*3+1];
-			rgba[2] = pal[i*3+2];
-			rgba[3] = 0xFF;
-			d_table[i] = *(uint *)rgba;
-		}
-		break;
 	case LUMP_NORMAL:
 		for( i = 0; i < 256; i++ )
 		{
@@ -286,6 +286,27 @@ void Image_SetPalette( const byte *pal, uint *d_table )
 			rgba[3] = 0xFF;
 			d_table[i] = *(uint *)rgba;
 		}
+		break;
+	case LUMP_GRADIENT:
+		for( i = 0; i < 256; i++ )
+		{
+			rgba[0] = pal[765];
+			rgba[1] = pal[766];
+			rgba[2] = pal[767];
+			rgba[3] = i;
+			d_table[i] = *(uint *)rgba;
+		}
+		break;
+	case LUMP_MASKED:
+		for( i = 0; i < 255; i++ )
+		{
+			rgba[0] = pal[i*3+0];
+			rgba[1] = pal[i*3+1];
+			rgba[2] = pal[i*3+2];
+			rgba[3] = 0xFF;
+			d_table[i] = *(uint *)rgba;
+		}
+		d_table[255] = 0;
 		break;
 	case LUMP_EXTENDED:
 		for( i = 0; i < 256; i++ )
@@ -300,29 +321,82 @@ void Image_SetPalette( const byte *pal, uint *d_table )
 	}
 }
 
+static void Image_ConvertPalTo24bit( rgbdata_t *pic )
+{
+	byte	*pal32, *pal24;
+	byte	*converted;
+	int	i;
+
+	if( pic->type == PF_INDEXED_24 )
+		return; // does nothing
+
+	pal24 = converted = Mem_Malloc( host.imagepool, 768 );
+	pal32 = pic->palette;
+
+	for( i = 0; i < 256; i++, pal24 += 3, pal32 += 4 )
+	{
+		pal24[0] = pal32[0];
+		pal24[1] = pal32[1];
+		pal24[2] = pal32[2];
+	}
+
+	Mem_Free( pic->palette );
+	pic->palette = converted;
+	pic->type = PF_INDEXED_24;
+}
+
+void Image_CopyPalette32bit( void )
+{
+	if( image.palette ) return; // already created ?
+	image.palette = Mem_Malloc( host.imagepool, 1024 );
+	memcpy( image.palette, image.d_currentpal, 1024 );
+}
+
+void Image_CheckPaletteQ1( void )
+{
+	rgbdata_t	*pic = FS_LoadImage( DEFAULT_INTERNAL_PALETTE, NULL, 0 );
+
+	if( pic && pic->size == 1024 )
+	{
+		Image_ConvertPalTo24bit( pic );
+		if( Image_ComparePalette( pic->palette ) == PAL_CUSTOM )
+		{
+			image.d_rendermode = LUMP_NORMAL;
+			Con_DPrintf( "custom quake palette detected\n" );
+			Image_SetPalette( pic->palette, d_8toQ1table );
+			d_8toQ1table[255] = 0; // 255 is transparent
+			image.custom_palette = true;
+			q1palette_init = true;
+		}
+	}
+
+	if( pic ) FS_FreeImage( pic );
+}
+
 void Image_GetPaletteQ1( void )
 {
-	image.d_rendermode = LUMP_NORMAL;
-
 	if( !q1palette_init )
 	{
+		image.d_rendermode = LUMP_NORMAL;
 		Image_SetPalette( palette_q1, d_8toQ1table );
 		d_8toQ1table[255] = 0; // 255 is transparent
 		q1palette_init = true;
 	}
+
+	image.d_rendermode = LUMP_QUAKE1;
 	image.d_currentpal = d_8toQ1table;
 }
 
 void Image_GetPaletteHL( void )
 {
-	image.d_rendermode = LUMP_NORMAL;
-
 	if( !hlpalette_init )
 	{
+		image.d_rendermode = LUMP_NORMAL;
 		Image_SetPalette( palette_hl, d_8toHLtable );
-		d_8toHLtable[255] = 0; // 255 is transparent
 		hlpalette_init = true;
 	}
+
+	image.d_rendermode = LUMP_HALFLIFE;
 	image.d_currentpal = d_8toHLtable;
 }
 
@@ -344,57 +418,139 @@ void Image_GetPaletteLMP( const byte *pal, int rendermode )
 	if( pal )
 	{
 		Image_SetPalette( pal, d_8to24table );
-		if( rendermode != LUMP_DECAL )
-			d_8to24table[255] &= 0xFFFFFF;
 		image.d_currentpal = d_8to24table;
 	}
-	else if( rendermode == LUMP_QFONT )
+	else
 	{
-		// quake1 base palette and font palette have some diferences
-		Image_SetPalette( palette_q1, d_8to24table );
-		d_8to24table[0] = 0;
-		image.d_currentpal = d_8to24table;
+		switch( rendermode )
+		{
+		case LUMP_QUAKE1:
+			Image_GetPaletteQ1();
+			break;
+		case LUMP_HALFLIFE:
+			Image_GetPaletteHL();
+			break;
+		default:
+			// defaulting to half-life palette
+			Image_GetPaletteHL();
+			break;
+		}
 	}
-	else Image_GetPaletteHL(); // default half-life palette          
 }
 
-void Image_ConvertPalTo24bit( rgbdata_t *pic )
+void Image_PaletteHueReplace( byte *palSrc, int newHue, int start, int end, int pal_size )
 {
-	byte	*pal32, *pal24;
-	byte	*converted;
+	float	r, g, b;
+	float	maxcol, mincol;
+	float	hue, val, sat;
 	int	i;
 
-	if( !pic->palette )
-	{
-		MsgDev( D_ERROR, "Image_ConvertPalTo24bit: no palette found\n" );
-		return;
-	}
+	hue = (float)(newHue * ( 360.0f / 255 ));
+	pal_size = bound( 3, pal_size, 4 );
 
-	if( pic->type == PF_INDEXED_24 )
+	for( i = start; i <= end; i++ )
 	{
-		MsgDev( D_ERROR, "Image_ConvertPalTo24bit: palette already converted\n" );
-		return;
-	}
+		r = palSrc[i*pal_size+0];
+		g = palSrc[i*pal_size+1];
+		b = palSrc[i*pal_size+2];
+		
+		maxcol = max( max( r, g ), b ) / 255.0f;
+		mincol = min( min( r, g ), b ) / 255.0f;
 
-	pal24 = converted = Mem_Alloc( host.imagepool, 768 );
-	pal32 = pic->palette;
+		if( maxcol == 0 ) continue;
+		
+		val = maxcol;
+		sat = (maxcol - mincol) / maxcol;
 
-	for( i = 0; i < 256; i++, pal24 += 3, pal32 += 4 )
-	{
-		pal24[0] = pal32[0];
-		pal24[1] = pal32[1];
-		pal24[2] = pal32[2];
+		mincol = val * (1.0f - sat);
+
+		if( hue <= 120.0f )
+		{
+			b = mincol;
+			if( hue < 60 )
+			{
+				r = val;
+				g = mincol + hue * (val - mincol) / (120.0f - hue);
+			}
+			else
+			{
+				g = val;
+				r = mincol + (120.0f - hue) * (val - mincol) / hue;
+			}
+		}
+		else if( hue <= 240.0f )
+		{
+			r = mincol;
+			if( hue < 180.0f )
+			{
+				g = val;
+				b = mincol + (hue - 120.0f) * (val - mincol) / (240.0f - hue);
+			}
+			else
+			{
+				b = val;
+				g = mincol + (240.0f - hue) * (val - mincol) / (hue - 120.0f);
+			}
+		}
+		else
+		{
+			g = mincol;
+			if( hue < 300.0f )
+			{
+				b = val;
+				r = mincol + (hue - 240.0f) * (val - mincol) / (360.0f - hue);
+			}
+			else
+			{
+				r = val;
+				b = mincol + (360.0f - hue) * (val - mincol) / (hue - 240.0f);
+			}
+		}
+
+		palSrc[i*pal_size+0] = (byte)(r * 255);
+		palSrc[i*pal_size+1] = (byte)(g * 255);
+		palSrc[i*pal_size+2] = (byte)(b * 255);
 	}
-	Mem_Free( pic->palette );
-	pic->palette = converted;
-	pic->type = PF_INDEXED_24;
 }
 
-void Image_CopyPalette32bit( void )
+void Image_PaletteTranslate( byte *palSrc, int top, int bottom, int pal_size )
 {
-	if( image.palette ) return; // already created ?
-	image.palette = Mem_Alloc( host.imagepool, 1024 );
-	Q_memcpy( image.palette, image.d_currentpal, 1024 );
+	byte	dst[256], src[256];
+	int	i;
+
+	pal_size = bound( 3, pal_size, 4 );
+	for( i = 0; i < 256; i++ )
+		src[i] = i;
+	memcpy( dst, src, 256 );
+
+	if( top < 128 )
+	{
+		// the artists made some backwards ranges. sigh.
+		memcpy( dst + SHIRT_HUE_START, src + top, 16 );
+	}
+	else
+	{
+		for( i = 0; i < 16; i++ )
+			dst[SHIRT_HUE_START+i] = src[top + 15 - i];
+	}
+
+	if( bottom < 128 )
+	{
+		memcpy( dst + PANTS_HUE_START, src + bottom, 16 );
+	}
+	else
+	{
+		for( i = 0; i < 16; i++ )
+			dst[PANTS_HUE_START + i] = src[bottom + 15 - i];
+	}
+
+	// last color isn't changed
+	for( i = 0; i < 255; i++ )
+	{
+		palSrc[i*pal_size+0] = palette_q1[dst[i]*3+0];
+		palSrc[i*pal_size+1] = palette_q1[dst[i]*3+1];
+		palSrc[i*pal_size+2] = palette_q1[dst[i]*3+2];
+	}
 }
 
 void Image_CopyParms( rgbdata_t *src )
@@ -408,7 +564,7 @@ void Image_CopyParms( rgbdata_t *src )
 	image.size = src->size;
 	image.palette = src->palette;	// may be NULL
 
-	Q_memcpy( image.fogParams, src->fogParams, sizeof( image.fogParams ));
+	memcpy( image.fogParams, src->fogParams, sizeof( image.fogParams ));
 }
 
 /*
@@ -422,26 +578,28 @@ qboolean Image_Copy8bitRGBA( const byte *in, byte *out, int pixels )
 {
 	int	*iout = (int *)out;
 	byte	*fin = (byte *)in;
-	rgba_t	*col;
+	byte	*col;
 	int	i;
 
-	if( !image.d_currentpal )
-	{
-		MsgDev( D_ERROR, "Image_Copy8bitRGBA: no palette set\n" );
+	if( !in || !image.d_currentpal )
 		return false;
-	}
-
-	if( !in )
-	{
-		MsgDev( D_ERROR, "Image_Copy8bitRGBA: no input image\n" );
-		return false;
-	}
 
 	// this is a base image with luma - clear luma pixels
 	if( image.flags & IMAGE_HAS_LUMA )
 	{
 		for( i = 0; i < image.width * image.height; i++ )
 			fin[i] = fin[i] < 224 ? fin[i] : 0;
+	}
+
+	// check for color
+	for( i = 0; i < 256; i++ )
+	{
+		col = (byte *)&image.d_currentpal[i];
+		if( col[0] != col[1] || col[1] != col[2] )
+		{
+			image.flags |= IMAGE_HAS_COLOR;
+			break;
+		}
 	}
 
 	while( pixels >= 8 )
@@ -454,10 +612,6 @@ qboolean Image_Copy8bitRGBA( const byte *in, byte *out, int pixels )
 		iout[5] = image.d_currentpal[in[5]];
 		iout[6] = image.d_currentpal[in[6]];
 		iout[7] = image.d_currentpal[in[7]];
-
-		col = (rgba_t *)iout;
-		if( col[0] != col[1] || col[1] != col[2] )
-			image.flags |= IMAGE_HAS_COLOR;
 
 		in += 8;
 		iout += 8;
@@ -484,8 +638,8 @@ qboolean Image_Copy8bitRGBA( const byte *in, byte *out, int pixels )
 
 	if( pixels & 1 ) // last byte
 		iout[0] = image.d_currentpal[in[0]];
-
 	image.type = PF_RGBA_32;	// update image type;
+
 	return true;
 }
 
@@ -532,11 +686,13 @@ static void Image_Resample24LerpLine( const byte *in, byte *out, int inwidth, in
 	for( j = 0, f = 0; j < outwidth; j++, f += fstep )
 	{
 		xi = f>>16;
+
 		if( xi != oldx )
 		{
 			in += (xi - oldx) * 3;
 			oldx = xi;
 		}
+
 		if( xi < endx )
 		{
 			lerp = f & 0xFFFF;
@@ -555,18 +711,17 @@ static void Image_Resample24LerpLine( const byte *in, byte *out, int inwidth, in
 
 void Image_Resample32Lerp( const void *indata, int inwidth, int inheight, void *outdata, int outwidth, int outheight )
 {
+	const byte *inrow;
 	int	i, j, r, yi, oldy = 0, f, fstep, lerp, endy = (inheight - 1);
 	int	inwidth4 = inwidth * 4;
 	int	outwidth4 = outwidth * 4;
-	const byte *inrow;
-	byte	*out;
+	byte	*out = (byte *)outdata;
 	byte	*resamplerow1;
 	byte	*resamplerow2;
 
-	out = (byte *)outdata;
-	fstep = (int)(inheight * 65536.0f/outheight);
+	fstep = (int)(inheight * 65536.0f / outheight);
 
-	resamplerow1 = (byte *)Mem_Alloc( host.imagepool, outwidth * 4 * 2);
+	resamplerow1 = (byte *)Mem_Malloc( host.imagepool, outwidth * 4 * 2);
 	resamplerow2 = resamplerow1 + outwidth * 4;
 
 	inrow = (const byte *)indata;
@@ -584,12 +739,14 @@ void Image_Resample32Lerp( const void *indata, int inwidth, int inheight, void *
 			if( yi != oldy )
 			{
 				inrow = (byte *)indata + inwidth4 * yi;
-				if (yi == oldy+1) Q_memcpy( resamplerow1, resamplerow2, outwidth4 );
+				if( yi == oldy + 1 ) memcpy( resamplerow1, resamplerow2, outwidth4 );
 				else Image_Resample32LerpLine( inrow, resamplerow1, inwidth, outwidth );
 				Image_Resample32LerpLine( inrow + inwidth4, resamplerow2, inwidth, outwidth );
 				oldy = yi;
 			}
+
 			j = outwidth - 4;
+
 			while( j >= 0 )
 			{
 				LERPBYTE( 0);
@@ -613,6 +770,7 @@ void Image_Resample32Lerp( const void *indata, int inwidth, int inheight, void *
 				resamplerow2 += 16;
 				j -= 4;
 			}
+
 			if( j & 2 )
 			{
 				LERPBYTE( 0);
@@ -627,6 +785,7 @@ void Image_Resample32Lerp( const void *indata, int inwidth, int inheight, void *
 				resamplerow1 += 8;
 				resamplerow2 += 8;
 			}
+
 			if( j & 1 )
 			{
 				LERPBYTE( 0);
@@ -637,6 +796,7 @@ void Image_Resample32Lerp( const void *indata, int inwidth, int inheight, void *
 				resamplerow1 += 4;
 				resamplerow2 += 4;
 			}
+
 			resamplerow1 -= outwidth4;
 			resamplerow2 -= outwidth4;
 		}
@@ -644,18 +804,17 @@ void Image_Resample32Lerp( const void *indata, int inwidth, int inheight, void *
 		{
 			if( yi != oldy )
 			{
-				inrow = (byte *)indata + inwidth4*yi;
-				if( yi == oldy + 1 ) Q_memcpy( resamplerow1, resamplerow2, outwidth4 );
+				inrow = (byte *)indata + inwidth4 * yi;
+				if( yi == oldy + 1 ) memcpy( resamplerow1, resamplerow2, outwidth4 );
 				else Image_Resample32LerpLine( inrow, resamplerow1, inwidth, outwidth);
 				oldy = yi;
 			}
-			Q_memcpy( out, resamplerow1, outwidth4 );
+
+			memcpy( out, resamplerow1, outwidth4 );
 		}
 	}
 
 	Mem_Free( resamplerow1 );
-	resamplerow1 = NULL;
-	resamplerow2 = NULL;
 }
 
 void Image_Resample32Nolerp( const void *indata, int inwidth, int inheight, void *outdata, int outwidth, int outheight )
@@ -664,11 +823,11 @@ void Image_Resample32Nolerp( const void *indata, int inwidth, int inheight, void
 	uint	frac, fracstep;
 	int	*inrow, *out = (int *)outdata; // relies on int being 4 bytes
 
-	fracstep = inwidth * 0x10000/outwidth;
+	fracstep = inwidth * 0x10000 / outwidth;
 
 	for( i = 0; i < outheight; i++)
 	{
-		inrow = (int *)indata + inwidth * (i * inheight/outheight);
+		inrow = (int *)indata + inwidth * (i * inheight / outheight);
 		frac = fracstep>>1;
 		j = outwidth - 4;
 
@@ -681,12 +840,14 @@ void Image_Resample32Nolerp( const void *indata, int inwidth, int inheight, void
 			out += 4;
 			j -= 4;
 		}
+
 		if( j & 2 )
 		{
 			out[0] = inrow[frac >> 16];frac += fracstep;
 			out[1] = inrow[frac >> 16];frac += fracstep;
 			out += 2;
 		}
+
 		if( j & 1 )
 		{
 			out[0] = inrow[frac >> 16];frac += fracstep;
@@ -697,17 +858,17 @@ void Image_Resample32Nolerp( const void *indata, int inwidth, int inheight, void
 
 void Image_Resample24Lerp( const void *indata, int inwidth, int inheight, void *outdata, int outwidth, int outheight )
 {
+	const byte *inrow;
 	int	i, j, r, yi, oldy, f, fstep, lerp, endy = (inheight - 1);
 	int	inwidth3 = inwidth * 3;
 	int	outwidth3 = outwidth * 3;
-	const byte *inrow;
 	byte	*out = (byte *)outdata;
 	byte	*resamplerow1;
 	byte	*resamplerow2;
 	
 	fstep = (int)(inheight * 65536.0f / outheight);
 
-	resamplerow1 = (byte *)Mem_Alloc( host.imagepool, outwidth * 3 * 2 );
+	resamplerow1 = (byte *)Mem_Malloc( host.imagepool, outwidth * 3 * 2 );
 	resamplerow2 = resamplerow1 + outwidth*3;
 
 	inrow = (const byte *)indata;
@@ -725,12 +886,14 @@ void Image_Resample24Lerp( const void *indata, int inwidth, int inheight, void *
 			if( yi != oldy )
 			{
 				inrow = (byte *)indata + inwidth3 * yi;
-				if( yi == oldy + 1) Q_memcpy( resamplerow1, resamplerow2, outwidth3 );
+				if( yi == oldy + 1) memcpy( resamplerow1, resamplerow2, outwidth3 );
 				else Image_Resample24LerpLine( inrow, resamplerow1, inwidth, outwidth );
 				Image_Resample24LerpLine( inrow + inwidth3, resamplerow2, inwidth, outwidth );
 				oldy = yi;
 			}
+
 			j = outwidth - 4;
+
 			while( j >= 0 )
 			{
 				LERPBYTE( 0);
@@ -750,6 +913,7 @@ void Image_Resample24Lerp( const void *indata, int inwidth, int inheight, void *
 				resamplerow2 += 12;
 				j -= 4;
 			}
+
 			if( j & 2 )
 			{
 				LERPBYTE( 0);
@@ -762,6 +926,7 @@ void Image_Resample24Lerp( const void *indata, int inwidth, int inheight, void *
 				resamplerow1 += 6;
 				resamplerow2 += 6;
 			}
+
 			if( j & 1 )
 			{
 				LERPBYTE( 0);
@@ -771,6 +936,7 @@ void Image_Resample24Lerp( const void *indata, int inwidth, int inheight, void *
 				resamplerow1 += 3;
 				resamplerow2 += 3;
 			}
+
 			resamplerow1 -= outwidth3;
 			resamplerow2 -= outwidth3;
 		}
@@ -779,22 +945,22 @@ void Image_Resample24Lerp( const void *indata, int inwidth, int inheight, void *
 			if( yi != oldy )
 			{
 				inrow = (byte *)indata + inwidth3*yi;
-				if( yi == oldy + 1) Q_memcpy( resamplerow1, resamplerow2, outwidth3 );
+				if( yi == oldy + 1) memcpy( resamplerow1, resamplerow2, outwidth3 );
 				else Image_Resample24LerpLine( inrow, resamplerow1, inwidth, outwidth );
 				oldy = yi;
 			}
-			Q_memcpy( out, resamplerow1, outwidth3 );
+
+			memcpy( out, resamplerow1, outwidth3 );
 		}
 	}
+
 	Mem_Free( resamplerow1 );
-	resamplerow1 = NULL;
-	resamplerow2 = NULL;
 }
 
 void Image_Resample24Nolerp( const void *indata, int inwidth, int inheight, void *outdata, int outwidth, int outheight )
 {
-	int	i, j, f, inwidth3 = inwidth * 3;
 	uint	frac, fracstep;
+	int	i, j, f, inwidth3 = inwidth * 3;
 	byte	*inrow, *out = (byte *)outdata;
 
 	fracstep = inwidth * 0x10000 / outwidth;
@@ -829,6 +995,7 @@ void Image_Resample24Nolerp( const void *indata, int inwidth, int inheight, void
 			frac += fracstep;
 			j -= 4;
 		}
+
 		if( j & 2 )
 		{
 			f = (frac >> 16)*3;
@@ -843,6 +1010,7 @@ void Image_Resample24Nolerp( const void *indata, int inwidth, int inheight, void
 			frac += fracstep;
 			out += 2;
 		}
+
 		if( j & 1 )
 		{
 			f = (frac >> 16)*3;
@@ -864,10 +1032,12 @@ void Image_Resample8Nolerp( const void *indata, int inwidth, int inheight, void 
 
 	in = (byte *)indata;
 	fracstep = inwidth * 0x10000 / outwidth;
+
 	for( i = 0; i < outheight; i++, out += outwidth )
 	{
 		inrow = in + inwidth*(i*inheight/outheight);
 		frac = fracstep>>1;
+
 		for( j = 0; j < outwidth; j++ )
 		{
 			out[j] = inrow[frac>>16];
@@ -901,77 +1071,20 @@ byte *Image_ResampleInternal( const void *indata, int inwidth, int inheight, int
 		Image_Resample8Nolerp( indata, inwidth, inheight, image.tempbuffer, outwidth, outheight );
 		break;		
 	case PF_RGB_24:
+	case PF_BGR_24:
 		image.tempbuffer = (byte *)Mem_Realloc( host.imagepool, image.tempbuffer, outwidth * outheight * 3 );
 		if( quality ) Image_Resample24Lerp( indata, inwidth, inheight, image.tempbuffer, outwidth, outheight );
 		else Image_Resample24Nolerp( indata, inwidth, inheight, image.tempbuffer, outwidth, outheight );
 		break;
 	case PF_RGBA_32:
+	case PF_BGRA_32:
 		image.tempbuffer = (byte *)Mem_Realloc( host.imagepool, image.tempbuffer, outwidth * outheight * 4 );
 		if( quality ) Image_Resample32Lerp( indata, inwidth, inheight, image.tempbuffer, outwidth, outheight );
 		else Image_Resample32Nolerp( indata, inwidth, inheight, image.tempbuffer, outwidth, outheight );
 		break;
 	default:
-		MsgDev( D_WARN, "Image_Resample: unsupported format %s\n", PFDesc[type].name );
 		*resampled = false;
 		return (byte *)indata;	
-	}
-
-	*resampled = true;
-	return image.tempbuffer;
-}
-
-/*
-================
-Image_Flood
-================
-*/
-byte *Image_FloodInternal( const byte *indata, int inwidth, int inheight, int outwidth, int outheight, int type, qboolean *resampled )
-{
-	qboolean	quality = Image_CheckFlag( IL_USE_LERPING );
-	int	samples = PFDesc[type].bpp;
-	int	newsize, x, y, i;
-	byte	*in, *out;
-
-	// nothing to reflood ?
-	if( inwidth == outwidth && inheight == outheight )
-	{
-		*resampled = false;
-		return (byte *)indata;
-	}
-
-	// alloc new buffer
-	switch( type )
-	{
-	case PF_INDEXED_24:
-	case PF_INDEXED_32:
-	case PF_RGB_24:
-	case PF_BGR_24:
-	case PF_BGRA_32:
-	case PF_RGBA_32:
-		in = ( byte *)indata;
-		newsize = outwidth * outheight * samples;
-		out = image.tempbuffer = (byte *)Mem_Realloc( host.imagepool, image.tempbuffer, newsize );
-		break;
-	default:
-		MsgDev( D_WARN, "Image_Flood: unsupported format %s\n", PFDesc[type].name );
-		*resampled = false;
-		return (byte *)indata;	
-	}
-
-	if( samples == 1 ) Q_memset( out, 0xFF, newsize );	// last palette color
-	else Q_memset( out, 0x00808080, newsize );		// gray (alpha leaved 0x00)
-
-	for( y = 0; y < outheight; y++ )
-	{
-		for( x = 0; y < inheight && x < outwidth; x++ )
-		{
-			for( i = 0; i < samples; i++ )
-			{
-				if( x < inwidth )
-					*out++ = *in++;
-				else *out++;
-			}
-		}
 	}
 
 	*resampled = true;
@@ -989,9 +1102,9 @@ byte *Image_FlipInternal( const byte *in, word *srcwidth, word *srcheight, int t
 	word	width = *srcwidth;
 	word	height = *srcheight; 
 	int	samples = PFDesc[type].bpp;
-	qboolean	flip_x = ( flags & IMAGE_FLIP_X ) ? true : false;
-	qboolean	flip_y = ( flags & IMAGE_FLIP_Y ) ? true : false;
-	qboolean	flip_i = ( flags & IMAGE_ROT_90 ) ? true : false;
+	qboolean	flip_x = FBitSet( flags, IMAGE_FLIP_X ) ? true : false;
+	qboolean	flip_y = FBitSet( flags, IMAGE_FLIP_Y ) ? true : false;
+	qboolean	flip_i = FBitSet( flags, IMAGE_ROT_90 ) ? true : false;
 	int	row_inc = ( flip_y ? -samples : samples ) * width;
 	int	col_inc = ( flip_x ? -samples : samples );
 	int	row_ofs = ( flip_y ? ( height - 1 ) * width * samples : 0 );
@@ -1000,7 +1113,7 @@ byte *Image_FlipInternal( const byte *in, word *srcwidth, word *srcheight, int t
 	byte	*out;
 
 	// nothing to process
-	if(!(flags & (IMAGE_FLIP_X|IMAGE_FLIP_Y|IMAGE_ROT_90)))
+	if( !FBitSet( flags, IMAGE_FLIP_X|IMAGE_FLIP_Y|IMAGE_ROT_90 ))
 		return (byte *)in;
 
 	switch( type )
@@ -1008,14 +1121,15 @@ byte *Image_FlipInternal( const byte *in, word *srcwidth, word *srcheight, int t
 	case PF_INDEXED_24:
 	case PF_INDEXED_32:
 	case PF_RGB_24:
+	case PF_BGR_24:
 	case PF_RGBA_32:
+	case PF_BGRA_32:
 		image.tempbuffer = Mem_Realloc( host.imagepool, image.tempbuffer, width * height * samples );
 		break;
 	default:
-		// we can flip DXT without expanding to RGBA? hmmm...
-		MsgDev( D_WARN, "Image_Flip: unsupported format %s\n", PFDesc[type].name );
 		return (byte *)in;	
 	}
+
 	out = image.tempbuffer;
 
 	if( flip_i )
@@ -1034,7 +1148,7 @@ byte *Image_FlipInternal( const byte *in, word *srcwidth, word *srcheight, int t
 	}
 
 	// update dims
-	if( flags & IMAGE_ROT_90 )
+	if( FBitSet( flags, IMAGE_ROT_90 ))
 	{
 		*srcwidth = height;
 		*srcheight = width;		
@@ -1044,6 +1158,7 @@ byte *Image_FlipInternal( const byte *in, word *srcwidth, word *srcheight, int t
 		*srcwidth = width;
 		*srcheight = height;	
 	}
+
 	return image.tempbuffer;
 }
 
@@ -1052,11 +1167,8 @@ byte *Image_CreateLumaInternal( byte *fin, int width, int height, int type, int 
 	byte	*out;
 	int	i;
 
-	if(!( flags & IMAGE_HAS_LUMA ))
-	{
-		MsgDev( D_WARN, "Image_MakeLuma: image doesn't has luma pixels\n" );
+	if( !FBitSet( flags, IMAGE_HAS_LUMA ))
 		return (byte *)fin;	  
-	}
 
 	switch( type )
 	{
@@ -1066,31 +1178,12 @@ byte *Image_CreateLumaInternal( byte *fin, int width, int height, int type, int 
 		for( i = 0; i < width * height; i++ )
 			*out++ = fin[i] >= 224 ? fin[i] : 0;
 		break;
-	case PF_RGB_24:
-	case PF_BGR_24:
-		// clearing any gray pixels
-		for( i = 0; i < width * height; i++ )
-		{
-			if( fin[i*3+0] < 32 ) fin[i*3+0] = 0;
-			if( fin[i*3+1] < 32 ) fin[i*3+1] = 0;
-			if( fin[i*3+2] < 32 ) fin[i*3+2] = 0;
-		}
-		return (byte *)fin;
-	case PF_RGBA_32:
-	case PF_BGRA_32:
-		// clearing any gray pixels
-		for( i = 0; i < width * height; i++ )
-		{
-			if( fin[i*4+0] < 32 ) fin[i*4+0] = 0;
-			if( fin[i*4+1] < 32 ) fin[i*4+1] = 0;
-			if( fin[i*4+2] < 32 ) fin[i*4+2] = 0;
-		}
-		return (byte *)fin;
 	default:
 		// another formats does ugly result :(
-		MsgDev( D_WARN, "Image_MakeLuma: unsupported format %s\n", PFDesc[type].name );
+		Con_Printf( S_ERROR "Image_MakeLuma: unsupported format %s\n", PFDesc[type].name );
 		return (byte *)fin;	
 	}
+
 	return image.tempbuffer;
 }
 
@@ -1101,7 +1194,7 @@ qboolean Image_AddIndexedImageToPack( const byte *in, int width, int height )
 
 	if( Image_CheckFlag( IL_KEEP_8BIT ))
 		expand_to_rgba = false;
-	else if( host.type == HOST_NORMAL && ( image.flags & ( IMAGE_HAS_LUMA|IMAGE_QUAKESKY )))
+	else if( FBitSet( image.flags, IMAGE_HAS_LUMA|IMAGE_QUAKESKY ))
 		expand_to_rgba = false;
 
 	image.size = mipsize;
@@ -1110,8 +1203,8 @@ qboolean Image_AddIndexedImageToPack( const byte *in, int width, int height )
 	else Image_CopyPalette32bit(); 
 
 	// reallocate image buffer
-	image.rgba = Mem_Alloc( host.imagepool, image.size );	
-	if( expand_to_rgba == false ) Q_memcpy( image.rgba, in, image.size );
+	image.rgba = Mem_Malloc( host.imagepool, image.size );	
+	if( !expand_to_rgba ) memcpy( image.rgba, in, image.size );
 	else if( !Image_Copy8bitRGBA( in, image.rgba, mipsize ))
 		return false; // probably pallette not installed
 
@@ -1143,8 +1236,8 @@ qboolean Image_Decompress( const byte *data )
 		if( image.flags & IMAGE_HAS_ALPHA )
 		{
 			if( image.flags & IMAGE_COLORINDEX )
-				Image_GetPaletteLMP( image.palette, LUMP_DECAL ); 
-			else Image_GetPaletteLMP( image.palette, LUMP_TRANSPARENT ); 
+				Image_GetPaletteLMP( image.palette, LUMP_GRADIENT ); 
+			else Image_GetPaletteLMP( image.palette, LUMP_MASKED ); 
 		}
 		else Image_GetPaletteLMP( image.palette, LUMP_NORMAL );
 		// intentional falltrough
@@ -1152,15 +1245,6 @@ qboolean Image_Decompress( const byte *data )
 		if( !image.d_currentpal ) image.d_currentpal = (uint *)image.palette;
 		if( !Image_Copy8bitRGBA( fin, fout, image.width * image.height ))
 			return false;
-		break;
-	case PF_RGB_24:
-		for (i = 0; i < image.width * image.height; i++ )
-		{
-			fout[(i<<2)+0] = fin[i*3+0];
-			fout[(i<<2)+1] = fin[i*3+1];
-			fout[(i<<2)+2] = fin[i*3+2];
-			fout[(i<<2)+3] = 255;
-		}
 		break;
 	case PF_BGR_24:
 		for (i = 0; i < image.width * image.height; i++ )
@@ -1171,8 +1255,14 @@ qboolean Image_Decompress( const byte *data )
 			fout[(i<<2)+3] = 255;
 		}
 		break;
-	case PF_RGBA_32:
-		Q_memcpy( fout, fin, size );
+	case PF_RGB_24:
+		for (i = 0; i < image.width * image.height; i++ )
+		{
+			fout[(i<<2)+0] = fin[i*3+0];
+			fout[(i<<2)+1] = fin[i*3+1];
+			fout[(i<<2)+2] = fin[i*3+2];
+			fout[(i<<2)+3] = 255;
+		}
 		break;
 	case PF_BGRA_32:
 		for( i = 0; i < image.width * image.height; i++ )
@@ -1182,6 +1272,10 @@ qboolean Image_Decompress( const byte *data )
 			fout[i*4+2] = fin[i*4+0];
 			fout[i*4+3] = fin[i*4+3];
 		}
+		break;
+	case PF_RGBA_32:
+		// fast default case
+		memcpy( fout, fin, size );
 		break;
 	default: return false;
 	}
@@ -1207,7 +1301,7 @@ rgbdata_t *Image_DecompressInternal( rgbdata_t *pic )
 	pic->type = PF_RGBA_32;
 
 	pic->buffer = Mem_Realloc( host.imagepool, pic->buffer, image.size );
-	Q_memcpy( pic->buffer, image.tempbuffer, image.size );
+	memcpy( pic->buffer, image.tempbuffer, image.size );
 	if( pic->palette ) Mem_Free( pic->palette );
 	pic->flags = image.flags;
 	pic->palette = NULL;
@@ -1215,37 +1309,152 @@ rgbdata_t *Image_DecompressInternal( rgbdata_t *pic )
 	return pic;
 }
 
-rgbdata_t *Image_LightGamma( rgbdata_t *pic, float texGamma )
+rgbdata_t *Image_LightGamma( rgbdata_t *pic )
 {
 	byte	*in = (byte *)pic->buffer;
-	byte	gammatable[256];
-	int	i, inf;
-	double	f;
+	int	i;
 
 	if( pic->type != PF_RGBA_32 )
 		return pic;
 
-	texGamma = bound( 1.8f, texGamma, 3.0f );
-
-	// build the gamma table
-	for( i = 0; i < 256; i++ )
-	{
-		f = 255.0 * pow(( float )i / 255.0f, 2.2f / texGamma );
-		inf = (int)(f + 0.5f);
-		gammatable[i] = bound( 0, inf, 255 );
-	}
-
 	for( i = 0; i < pic->width * pic->height; i++, in += 4 )
 	{
-		in[0] = gammatable[in[0]];
-		in[1] = gammatable[in[1]];
-		in[2] = gammatable[in[2]];
+		in[0] = LightToTexGamma( in[0] );
+		in[1] = LightToTexGamma( in[1] );
+		in[2] = LightToTexGamma( in[2] );
 	}
 
 	return pic;
 }
 
-qboolean Image_Process( rgbdata_t **pix, int width, int height, float gamma, uint flags )
+qboolean Image_RemapInternal( rgbdata_t *pic, int topColor, int bottomColor )
+{
+	if( !pic->palette )
+		return false;
+
+	switch( pic->type )
+	{
+	case PF_INDEXED_24:
+		break;
+	case PF_INDEXED_32:
+		Image_ConvertPalTo24bit( pic );
+		break;
+	default:
+		return false;
+	}
+
+	if( Image_ComparePalette( pic->palette ) == PAL_QUAKE1 )
+	{
+		Image_PaletteTranslate( pic->palette, topColor * 16, bottomColor * 16, 3 );
+	}
+	else
+	{
+		// g-cont. preview images has a swapped top and bottom colors. I don't know why.
+		Image_PaletteHueReplace( pic->palette, topColor, SUIT_HUE_START, SUIT_HUE_END, 3 );
+		Image_PaletteHueReplace( pic->palette, bottomColor, PLATE_HUE_START, PLATE_HUE_END, 3 );
+	}
+
+	return true;
+}
+
+/* 
+================== 
+Image_ApplyFilter
+
+Applies a 5 x 5 filtering matrix to the texture, then runs it through a simulated OpenGL texture environment 
+blend with the original data to derive a new texture.  Freaky, funky, and *f--king* *fantastic*.  You can do 
+reasonable enough "fake bumpmapping" with this baby... 
+
+Filtering algorithm from http://www.student.kuleuven.ac.be/~m0216922/CG/filtering.html 
+All credit due 
+================== 
+*/
+static void Image_ApplyFilter( rgbdata_t *pic, float factor )
+{ 
+	int	i, x, y; 
+	uint	*fin, *fout; 
+	size_t	size;
+
+	// first expand the image into 32-bit buffer
+	pic = Image_DecompressInternal( pic );
+	factor = bound( 0.0f, factor, 1.0f );
+	size = image.width * image.height * 4;
+	image.tempbuffer = Mem_Realloc( host.imagepool, image.tempbuffer, size );
+	fout = (uint *)image.tempbuffer;
+	fin = (uint *)pic->buffer;
+
+	for( x = 0; x < image.width; x++ ) 
+	{ 
+		for( y = 0; y < image.height; y++ ) 
+		{ 
+			vec3_t	vout = { 0.0f, 0.0f, 0.0f }; 
+			int	pos_x, pos_y;
+			float	avg;
+
+			for( pos_x = 0; pos_x < FILTER_SIZE; pos_x++ ) 
+			{ 
+				for( pos_y = 0; pos_y < FILTER_SIZE; pos_y++ ) 
+				{ 
+					int	img_x = (x - (FILTER_SIZE / 2) + pos_x + image.width) % image.width; 
+					int	img_y = (y - (FILTER_SIZE / 2) + pos_y + image.height) % image.height; 
+
+					// casting's a unary operation anyway, so the othermost set of brackets in the left part 
+					// of the rvalue should not be necessary... but i'm paranoid when it comes to C... 
+					vout[0] += ((float)((byte *)&fin[img_y * image.width + img_x])[0]) * img_emboss[pos_x][pos_y]; 
+					vout[1] += ((float)((byte *)&fin[img_y * image.width + img_x])[1]) * img_emboss[pos_x][pos_y]; 
+					vout[2] += ((float)((byte *)&fin[img_y * image.width + img_x])[2]) * img_emboss[pos_x][pos_y]; 
+				} 
+			} 
+
+			// multiply by factor, add bias, and clamp 
+			for( i = 0; i < 3; i++ ) 
+			{ 
+				vout[i] *= factor; 
+				vout[i] += 128.0f; // base 
+				vout[i] = bound( 0.0f, vout[i], 255.0f );
+			} 
+
+			// NTSC greyscale conversion standard 
+			avg = (vout[0] * 30.0f + vout[1] * 59.0f + vout[2] * 11.0f) / 100.0f; 
+
+			// divide by 255 so GL operations work as expected 
+			vout[0] = avg / 255.0f; 
+			vout[1] = avg / 255.0f; 
+			vout[2] = avg / 255.0f; 
+
+			// write to temp - first, write data in (to get the alpha channel quickly and 
+			// easily, which will be left well alone by this particular operation...!) 
+			fout[y * image.width + x] = fin[y * image.width + x]; 
+
+			// now write in each element, applying the blend operator.  blend 
+			// operators are based on standard OpenGL TexEnv modes, and the 
+			// formulas are derived from the OpenGL specs (http://www.opengl.org). 
+			for( i = 0; i < 3; i++ ) 
+			{ 
+				// divide by 255 so GL operations work as expected 
+				float	src = ((float)((byte *)&fin[y * image.width + x])[i]) / 255.0f; 
+				float	tmp;
+
+				// default is GL_BLEND here 
+				// CsS + CdD works out as Src * Dst * 2 
+				tmp = vout[i] * src * 2.0f; 
+
+				// multiply back by 255 to get the proper byte scale 
+				tmp *= 255.0f; 
+
+				// bound the temp target again now, cos the operation may have thrown it out 
+				tmp = bound( 0.0f, tmp, 255.0f );
+				// and copy it in 
+				((byte *)&fout[y * image.width + x])[i] = (byte)tmp; 
+			} 
+		} 
+	} 
+
+	// copy result back
+	memcpy( fin, fout, size );
+}
+
+qboolean Image_Process( rgbdata_t **pix, int width, int height, uint flags, float bumpscale )
 {
 	rgbdata_t	*pic = *pix;
 	qboolean	result = true;
@@ -1254,7 +1463,6 @@ qboolean Image_Process( rgbdata_t **pix, int width, int height, float gamma, uin
 	// check for buffers
 	if( !pic || !pic->buffer )
 	{
-		MsgDev( D_WARN, "Image_Process: NULL image\n" );
 		image.force_flags = 0;
 		return false;
 	}
@@ -1263,72 +1471,63 @@ qboolean Image_Process( rgbdata_t **pix, int width, int height, float gamma, uin
 	{
 		// clear any force flags
 		image.force_flags = 0;
-		return false;	// no operation specfied
+		return false; // no operation specfied
 	}
 
-	if( flags & IMAGE_MAKE_LUMA )
+	if( FBitSet( flags, IMAGE_MAKE_LUMA ))
 	{
 		out = Image_CreateLumaInternal( pic->buffer, pic->width, pic->height, pic->type, pic->flags );
-		if( pic->buffer != out ) Q_memcpy( pic->buffer, image.tempbuffer, pic->size );
-		pic->flags &= ~IMAGE_HAS_LUMA;
+		if( pic->buffer != out ) memcpy( pic->buffer, image.tempbuffer, pic->size );
+		ClearBits( pic->flags, IMAGE_HAS_LUMA );
+	}
+
+	if( FBitSet( flags, IMAGE_REMAP ))
+	{
+		// NOTE: user should keep copy of indexed image manually for new changes
+		if( Image_RemapInternal( pic, width, height ))
+			pic = Image_DecompressInternal( pic );
 	}
 
 	// update format to RGBA if any
-	if( flags & IMAGE_FORCE_RGBA ) pic = Image_DecompressInternal( pic );
-	if( flags & IMAGE_LIGHTGAMMA ) pic = Image_LightGamma( pic, gamma );
+	if( FBitSet( flags, IMAGE_FORCE_RGBA ))
+		pic = Image_DecompressInternal( pic );
 
-	// quantize image
-	if( flags & IMAGE_QUANTIZE ) pic = Image_Quantize( pic );
+	if( FBitSet( flags, IMAGE_LIGHTGAMMA ))
+		pic = Image_LightGamma( pic );
 
-	// NOTE: flip and resample algorythms can't difference palette size
-	if( flags & IMAGE_PALTO24 ) Image_ConvertPalTo24bit( pic );
+	if( FBitSet( flags, IMAGE_EMBOSS ))
+		Image_ApplyFilter( pic, bumpscale );
+
 	out = Image_FlipInternal( pic->buffer, &pic->width, &pic->height, pic->type, flags );
-	if( pic->buffer != out ) Q_memcpy( pic->buffer, image.tempbuffer, pic->size );
+	if( pic->buffer != out ) memcpy( pic->buffer, image.tempbuffer, pic->size );
 
-	if(( flags & IMAGE_RESAMPLE && width > 0 && height > 0 ) || flags & IMAGE_ROUND || flags & IMAGE_ROUNDFILLER )
+	if( FBitSet( flags, IMAGE_RESAMPLE ) && width > 0 && height > 0 )
 	{
-		int	w, h;
+		int	w = bound( 1, width, IMAGE_MAXWIDTH );	// 1 - 4096
+		int	h = bound( 1, height, IMAGE_MAXHEIGHT);	// 1 - 4096
 		qboolean	resampled = false;
 
-		if( flags & IMAGE_ROUND || flags & IMAGE_ROUNDFILLER )
-		{
-			w = pic->width;
-			h = pic->height;
-
-			// round to nearest pow
-			// NOTE: images with dims less than 8x8 may causing problems
-			if( flags & IMAGE_ROUNDFILLER )
-			{
-				// roundfiller always must roundup
-				w = NearestPOW( w, false );
-				h = NearestPOW( h, false );
-			}
-			else Image_RoundDimensions( &w, &h );
-
-			w = bound( 8, w, IMAGE_MAXWIDTH );	// 8 - 4096
-			h = bound( 8, h, IMAGE_MAXHEIGHT);	// 8 - 4096
-		}
-		else
-		{
-			// custom size (user choise without limitations)
-			w = bound( 1, width, IMAGE_MAXWIDTH );	// 1 - 4096
-			h = bound( 1, height, IMAGE_MAXHEIGHT);	// 1 - 4096
-		}
-
-		if( flags & IMAGE_ROUNDFILLER )
-	         		out = Image_FloodInternal( pic->buffer, pic->width, pic->height, w, h, pic->type, &resampled );
-		else out = Image_ResampleInternal((uint *)pic->buffer, pic->width, pic->height, w, h, pic->type, &resampled );
+		out = Image_ResampleInternal((uint *)pic->buffer, pic->width, pic->height, w, h, pic->type, &resampled );
 
 		if( resampled ) // resampled or filled
 		{
-			MsgDev( D_NOTE, "Image_Resample: from[%d x %d] to [%d x %d]\n", pic->width, pic->height, w, h );
+			Con_Reportf( "Image_Resample: from[%d x %d] to [%d x %d]\n", pic->width, pic->height, w, h );
 			pic->width = w, pic->height = h;
 			pic->size = w * h * PFDesc[pic->type].bpp;
 			Mem_Free( pic->buffer );		// free original image buffer
 			pic->buffer = Image_Copy( pic->size );	// unzone buffer (don't touch image.tempbuffer)
 		}
-		else result = false; // not a resampled or filled
+		else
+		{
+			// not a resampled or filled
+			result = false;
+		}
 	}
+
+	// quantize image
+	if( FBitSet( flags, IMAGE_QUANTIZE ))
+		pic = Image_Quantize( pic );
+
 	*pix = pic;
 
 	// clear any force flags

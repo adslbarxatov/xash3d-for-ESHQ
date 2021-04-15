@@ -23,16 +23,16 @@ GNU General Public License for more details.
 =============================================================================
 */
 // stub
-static const loadwavformat_t load_null[] =
+static const loadwavfmt_t load_null[] =
 {
 { NULL, NULL, NULL }
 };
 
-static const loadwavformat_t load_game[] =
+static const loadwavfmt_t load_game[] =
 {
-{ "sound/%s%s.%s", "wav", Sound_LoadWAV },
+{ DEFAULT_SOUNDPATH "%s%s.%s", "wav", Sound_LoadWAV },
 { "%s%s.%s", "wav", Sound_LoadWAV },
-{ "sound/%s%s.%s", "mp3", Sound_LoadMPG },
+{ DEFAULT_SOUNDPATH "%s%s.%s", "mp3", Sound_LoadMPG },
 { "%s%s.%s", "mp3", Sound_LoadMPG },
 { NULL, NULL, NULL }
 };
@@ -45,16 +45,16 @@ static const loadwavformat_t load_game[] =
 =============================================================================
 */
 // stub
-static const streamformat_t stream_null[] =
+static const streamfmt_t stream_null[] =
 {
-{ NULL, NULL, NULL, NULL, NULL }
+{ NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
-static const streamformat_t stream_game[] =
+static const streamfmt_t stream_game[] =
 {
-{ "%s%s.%s", "mp3", Stream_OpenMPG, Stream_ReadMPG, Stream_FreeMPG },
-{ "%s%s.%s", "wav", Stream_OpenWAV, Stream_ReadWAV, Stream_FreeWAV },
-{ NULL, NULL, NULL, NULL, NULL }
+{ "%s%s.%s", "mp3", Stream_OpenMPG, Stream_ReadMPG, Stream_SetPosMPG, Stream_GetPosMPG, Stream_FreeMPG },
+{ "%s%s.%s", "wav", Stream_OpenWAV, Stream_ReadWAV, Stream_SetPosWAV, Stream_GetPosWAV, Stream_FreeWAV },
+{ NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
 void Sound_Init( void )
@@ -87,52 +87,10 @@ byte *Sound_Copy( size_t size )
 {
 	byte	*out;
 
-	out = Mem_Alloc( host.soundpool, size );
-	Q_memcpy( out, sound.tempbuffer, size );
+	out = Mem_Malloc( host.soundpool, size );
+	memcpy( out, sound.tempbuffer, size );
+
 	return out; 
-}
-
-uint Sound_GetApproxWavePlayLen( const char *filepath )
-{
-	file_t	*f;
-	wavehdr_t	wav;
-	size_t	filesize;
-	float	seconds;
-	uint	samples;
-
-	f = FS_Open( filepath, "rb", false );
-	if( !f ) return 0;
-
-	if( FS_Read( f, &wav, sizeof( wav )) != sizeof( wav ))
-	{
-		FS_Close( f );
-		return 0;
-	}
-
-	filesize = FS_FileLength( f );
-	filesize -= ( sizeof( wavehdr_t ) + sizeof( chunkhdr_t ));
-
-	FS_Close( f );
-
-	// is real wav file ?
-	if( wav.riff_id != RIFFHEADER || wav.wave_id != WAVEHEADER || wav.fmt_id != FORMHEADER )
-		return 0;
-
-	if( wav.wFormatTag != 1 )
-		return 0;
-
-	if( wav.nChannels != 1 && wav.nChannels != 2 )
-		return 0;
-
-	if( wav.nBitsPerSample != 8 && wav.nBitsPerSample != 16 )
-		return 0;
-
-	// calc samplecount
-	seconds = (float)filesize / wav.nAvgBytesPerSec / wav.nChannels;
-	samples = (uint)(( wav.nSamplesPerSec * wav.nChannels ) * seconds );
-
-	// g-cont. this function returns samplecount or time in milliseconds ???
-	return (uint)(seconds * 1000);
 }
 
 /*
@@ -242,8 +200,7 @@ qboolean Sound_ResampleInternal( wavdata_t *sc, int inrate, int inwidth, int out
 			}
 		}
 
-		MsgDev( D_NOTE, "Sound_Resample: from[%d bit %d kHz] to [%d bit %d kHz]\n",
-			inwidth * 8, inrate, outwidth * 8, outrate );
+		Con_Reportf( "Sound_Resample: from[%d bit %d kHz] to [%d bit %d kHz]\n", inwidth * 8, inrate, outwidth * 8, outrate );
 	}
 
 	sc->rate = outrate;
@@ -259,20 +216,22 @@ qboolean Sound_Process( wavdata_t **wav, int rate, int width, uint flags )
 				
 	// check for buffers
 	if( !snd || !snd->buffer )
-	{
-		MsgDev( D_WARN, "Sound_Process: NULL sound\n" );
 		return false;
-	}
 
-	if( flags & SOUND_RESAMPLE && ( width > 0 || rate > 0 ))
+	if(( flags & SOUND_RESAMPLE ) && ( width > 0 || rate > 0 ))
 	{
 		if( Sound_ResampleInternal( snd, snd->rate, snd->width, rate, width ))
 		{
 			Mem_Free( snd->buffer );		// free original image buffer
 			snd->buffer = Sound_Copy( snd->size );	// unzone buffer (don't touch image.tempbuffer)
 		}
-		else result = false; // not a resampled
+		else
+		{
+			// not resampled
+			result = false;
+		}
 	}
+
 	*wav = snd;
 
 	return false;

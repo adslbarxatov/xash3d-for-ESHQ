@@ -14,6 +14,7 @@ GNU General Public License for more details.
 */
 
 #include "imagelib.h"
+#include "mathlib.h"
 
 /*
 =============
@@ -26,6 +27,7 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 	byte	*buf_p, *pixbuf, *targa_rgba;
 	byte	palette[256][4], red = 0, green = 0, blue = 0, alpha = 0;
 	int	readpixelcount, pixelcount;
+	int	reflectivity[3] = { 0, 0, 0 };
 	qboolean	compressed;
 	tga_t	targa_header;
 
@@ -58,17 +60,17 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 		// uncompressed colormapped image
 		if( targa_header.pixel_size != 8 )
 		{
-			MsgDev( D_WARN, "Image_LoadTGA: (%s) Only 8 bit images supported for type 1 and 9\n", name );
+			Con_DPrintf( S_ERROR "Image_LoadTGA: (%s) Only 8 bit images supported for type 1 and 9\n", name );
 			return false;
 		}
 		if( targa_header.colormap_length != 256 )
 		{
-			MsgDev( D_WARN, "Image_LoadTGA: (%s) Only 8 bit colormaps are supported for type 1 and 9\n", name );
+			Con_DPrintf( S_ERROR "Image_LoadTGA: (%s) Only 8 bit colormaps are supported for type 1 and 9\n", name );
 			return false;
 		}
 		if( targa_header.colormap_index )
 		{
-			MsgDev( D_WARN, "Image_LoadTGA: (%s) colormap_index is not supported for type 1 and 9\n", name );
+			Con_DPrintf( S_ERROR "Image_LoadTGA: (%s) colormap_index is not supported for type 1 and 9\n", name );
 			return false;
 		}
 		if( targa_header.colormap_size == 24 )
@@ -93,7 +95,7 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 		}
 		else
 		{
-			MsgDev( D_WARN, "Image_LoadTGA: (%s) only 24 and 32 bit colormaps are supported for type 1 and 9\n", name );
+			Con_DPrintf( S_ERROR "Image_LoadTGA: (%s) only 24 and 32 bit colormaps are supported for type 1 and 9\n", name );
 			return false;
 		}
 	}
@@ -102,7 +104,7 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 		// uncompressed or RLE compressed RGB
 		if( targa_header.pixel_size != 32 && targa_header.pixel_size != 24 )
 		{
-			MsgDev( D_WARN, "Image_LoadTGA: (%s) Only 32 or 24 bit images supported for type 2 and 10\n", name );
+			Con_DPrintf( S_ERROR "Image_LoadTGA: (%s) Only 32 or 24 bit images supported for type 2 and 10\n", name );
 			return false;
 		}
 	}
@@ -111,19 +113,16 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 		// uncompressed greyscale
 		if( targa_header.pixel_size != 8 )
 		{
-			MsgDev( D_WARN, "Image_LoadTGA: (%s) Only 8 bit images supported for type 3 and 11\n", name );
+			Con_DPrintf( S_ERROR "Image_LoadTGA: (%s) Only 8 bit images supported for type 3 and 11\n", name );
 			return false;
 		}
 	}
-
-	// HACKHACK: detect luma textures by name
-	if( Q_stristr( name, "_luma" )) image.flags |= IMAGE_HAS_LUMA;
 
 	columns = targa_header.width;
 	rows = targa_header.height;
 
 	image.size = image.width * image.height * 4;
-	targa_rgba = image.rgba = Mem_Alloc( host.imagepool, image.size );
+	targa_rgba = image.rgba = Mem_Malloc( host.imagepool, image.size );
 
 	// if bit 5 of attributes isn't set, the image has been stored from bottom to top
 	if( !Image_CheckFlag( IL_DONTFLIP_TGA ) && targa_header.attributes & 0x20 )
@@ -193,6 +192,10 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 			if( red != green || green != blue )
 				image.flags |= IMAGE_HAS_COLOR;
 
+			reflectivity[0] += red;
+			reflectivity[1] += green;
+			reflectivity[2] += blue;
+
 			*pixbuf++ = red;
 			*pixbuf++ = green;
 			*pixbuf++ = blue;
@@ -206,6 +209,10 @@ qboolean Image_LoadTGA( const char *name, const byte *buffer, size_t filesize )
 			}
 		}
 	}
+
+	VectorDivide( reflectivity, ( image.width * image.height ), image.fogParams );
+	image.depth = 1;
+
 	return true;
 }
 
@@ -228,8 +235,7 @@ qboolean Image_SaveTGA( const char *name, rgbdata_t *pix )
 		outsize = pix->width * pix->height * 4 + 18 + Q_strlen( comment );
 	else outsize = pix->width * pix->height * 3 + 18 + Q_strlen( comment );
 
-	buffer = (byte *)Mem_Alloc( host.imagepool, outsize );
-	Q_memset( buffer, 0, 18 );
+	buffer = (byte *)Mem_Calloc( host.imagepool, outsize );
 
 	// prepare header
 	buffer[0] = Q_strlen( comment ); // tga comment length
@@ -251,7 +257,6 @@ qboolean Image_SaveTGA( const char *name, rgbdata_t *pix )
 	case PF_RGBA_32:
 	case PF_BGRA_32: pixel_size = 4; break;	
 	default:
-		MsgDev( D_ERROR, "Image_SaveTGA: unsupported image type %s\n", PFDesc[pix->type].name );
 		Mem_Free( buffer );
 		return false;
 	}
