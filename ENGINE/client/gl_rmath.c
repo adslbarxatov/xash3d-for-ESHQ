@@ -16,6 +16,7 @@ GNU General Public License for more details.
 #include "common.h"
 #include "gl_local.h"
 #include "mathlib.h"
+#include "client.h"
 
 /*
 ====================
@@ -26,11 +27,8 @@ float V_CalcFov( float *fov_x, float width, float height )
 {
 	float	x, half_fov_y;
 
-	if( *fov_x < 1 || *fov_x > 170 )
-	{
-		MsgDev( D_ERROR, "V_CalcFov: bad fov %g!\n", *fov_x );
-		*fov_x = 90;
-	}
+	if( *fov_x < 1.0f || *fov_x > 179.0f )
+		*fov_x = 90.0f; // default value
 
 	x = width / tan( DEG2RAD( *fov_x ) * 0.5f );
 	half_fov_y = atan( height / x );
@@ -101,7 +99,7 @@ Matrix4x4_CreateProjection
 NOTE: produce quake style world orientation
 ================
 */
-void Matrix4x4_CreateProjection(matrix4x4 out, float xMax, float xMin, float yMax, float yMin, float zNear, float zFar)
+void Matrix4x4_CreateProjection( matrix4x4 out, float xMax, float xMin, float yMax, float yMin, float zNear, float zFar )
 {
 	out[0][0] = ( 2.0f * zNear ) / ( xMax - xMin );
 	out[1][1] = ( 2.0f * zNear ) / ( yMax - yMin );
@@ -116,7 +114,7 @@ void Matrix4x4_CreateProjection(matrix4x4 out, float xMax, float xMin, float yMa
 	out[2][3] = -( 2.0f * zFar * zNear ) / ( zFar - zNear );
 }
 
-void Matrix4x4_CreateOrtho(matrix4x4 out, float xLeft, float xRight, float yBottom, float yTop, float zNear, float zFar)
+void Matrix4x4_CreateOrtho( matrix4x4 out, float xLeft, float xRight, float yBottom, float yTop, float zNear, float zFar )
 {
 	out[0][0] = 2.0f / (xRight - xLeft);
 	out[1][1] = 2.0f / (yTop - yBottom);

@@ -20,21 +20,16 @@ GNU General Public License for more details.
 #include "library.h"
 #include "beamdef.h"
 #include "particledef.h"
+#include "entity_types.h"
 
 #define IsLiquidContents( cnt )	( cnt == CONTENTS_WATER || cnt == CONTENTS_SLIME || cnt == CONTENTS_LAVA )
 
-msurface_t	*r_debug_surface;
-const char	*r_debug_hitbox;
 float		gldepthmin, gldepthmax;
-ref_params_t	r_lastRefdef;
-ref_instance_t	RI, prevRI;
+ref_instance_t	RI;
 
-mleaf_t		*r_viewleaf, *r_oldviewleaf;
-mleaf_t		*r_viewleaf2, *r_oldviewleaf2;
-
-static int R_RankForRenderMode( cl_entity_t *ent )
+static int R_RankForRenderMode( int rendermode )
 {
-	switch( ent->curstate.rendermode )
+	switch( rendermode )
 	{
 	case kRenderTransTexture:
 		return 1;	// draw second
@@ -46,57 +41,22 @@ static int R_RankForRenderMode( cl_entity_t *ent )
 	return 0;
 }
 
-/*
-===============
-R_StaticEntity
-
-Static entity is the brush which has no custom origin and not rotated
-typically is a func_wall, func_breakable, func_ladder etc
-===============
-*/
-static qboolean R_StaticEntity( cl_entity_t *ent )
+void R_AllowFog( int allowed )
 {
-	if( !gl_allow_static->integer )
-		return false;
+	static int	isFogEnabled;
 
-	if( ent->curstate.rendermode != kRenderNormal )
-		return false;
+	if( allowed )
+	{
+		if( isFogEnabled )
+			pglEnable( GL_FOG );
+	}
+	else
+	{
+		isFogEnabled = pglIsEnabled( GL_FOG );
 
-	if( ent->model->type != mod_brush )
-		return false;
-
-	if( ent->curstate.frame || ent->model->flags & MODEL_CONVEYOR )
-		return false;
-
-	if( ent->curstate.scale ) // waveheight specified
-		return false;
-
-	if( !VectorIsNull( ent->origin ) || !VectorIsNull( ent->angles ))
-		return false;
-
-	return true;
-}
-
-/*
-===============
-R_FollowEntity
-
-Follow entity is attached to another studiomodel and used last cached bones
-from parent
-===============
-*/
-static qboolean R_FollowEntity( cl_entity_t *ent )
-{
-	if( ent->model->type != mod_studio )
-		return false;
-
-	if( ent->curstate.movetype != MOVETYPE_FOLLOW )
-		return false;
-
-	if( ent->curstate.aiment <= 0 )
-		return false;
-
-	return true;
+		if( isFogEnabled )
+			pglDisable( GL_FOG );
+	}
 }
 
 /*
@@ -108,38 +68,9 @@ Opaque entity can be brush or studio model but sprite
 */
 static qboolean R_OpaqueEntity( cl_entity_t *ent )
 {
-	if( ent->curstate.rendermode == kRenderNormal )
+	if( R_GetEntityRenderMode( ent ) == kRenderNormal )
 		return true;
-
-	if( ent->model->type == mod_sprite )
-		return false;
-
-	if( ent->curstate.rendermode == kRenderTransAlpha )
-		return true;
-
 	return false;
-}
-
-/*
-===============
-R_SolidEntityCompare
-
-Sorting opaque entities by model type
-===============
-*/
-static int R_SolidEntityCompare( const cl_entity_t **a, const cl_entity_t **b )
-{
-	cl_entity_t	*ent1, *ent2;
-
-	ent1 = (cl_entity_t *)*a;
-	ent2 = (cl_entity_t *)*b;
-
-	if( ent1->model->type > ent2->model->type )
-		return 1;
-	if( ent1->model->type < ent2->model->type )
-		return -1;
-
-	return 0;
 }
 
 /*
@@ -153,44 +84,56 @@ static int R_TransEntityCompare( const cl_entity_t **a, const cl_entity_t **b )
 {
 	cl_entity_t	*ent1, *ent2;
 	vec3_t		vecLen, org;
-	float		len1, len2;
+	float		dist1, dist2;
+	int		rendermode1;
+	int		rendermode2;
 
 	ent1 = (cl_entity_t *)*a;
 	ent2 = (cl_entity_t *)*b;
+	rendermode1 = R_GetEntityRenderMode( ent1 );
+	rendermode2 = R_GetEntityRenderMode( ent2 );
 
-	// now sort by rendermode
-	if( R_RankForRenderMode( ent1 ) > R_RankForRenderMode( ent2 ))
-		return 1;
-	if( R_RankForRenderMode( ent1 ) < R_RankForRenderMode( ent2 ))
-		return -1;
-
-	// then by distance
-	if( ent1->model->type == mod_brush )
+	// sort by distance
+	if( ent1->model->type != mod_brush || rendermode1 != kRenderTransAlpha )
 	{
 		VectorAverage( ent1->model->mins, ent1->model->maxs, org );
 		VectorAdd( ent1->origin, org, org );
 		VectorSubtract( RI.vieworg, org, vecLen );
+		dist1 = DotProduct( vecLen, vecLen );
 	}
-	else VectorSubtract( RI.vieworg, ent1->origin, vecLen );
-	len1 = VectorLength( vecLen );
+	else dist1 = 1000000000;
 
-	if( ent2->model->type == mod_brush )
+	if( ent2->model->type != mod_brush || rendermode2 != kRenderTransAlpha )
 	{
 		VectorAverage( ent2->model->mins, ent2->model->maxs, org );
 		VectorAdd( ent2->origin, org, org );
 		VectorSubtract( RI.vieworg, org, vecLen );
+		dist2 = DotProduct( vecLen, vecLen );
 	}
-	else VectorSubtract( RI.vieworg, ent2->origin, vecLen );
-	len2 = VectorLength( vecLen );
+	else dist2 = 1000000000;
 
-	if( len1 > len2 )
+	if( dist1 > dist2 )
 		return -1;
-	if( len1 < len2 )
+	if( dist1 < dist2 )
 		return 1;
+
+	// then sort by rendermode
+	if( R_RankForRenderMode( rendermode1 ) > R_RankForRenderMode( rendermode2 ))
+		return 1;
+	if( R_RankForRenderMode( rendermode1 ) < R_RankForRenderMode( rendermode2 ))
+		return -1;
 
 	return 0;
 }
 
+/*
+===============
+R_WorldToScreen
+
+Convert a given point from world into screen space
+Returns true if we behind to screen
+===============
+*/
 qboolean R_WorldToScreen( const vec3_t point, vec3_t screen )
 {
 	matrix4x4	worldToScreen;
@@ -198,180 +141,78 @@ qboolean R_WorldToScreen( const vec3_t point, vec3_t screen )
 	float	w;
 
 	if( !point || !screen )
-		return false;
+		return true;
 
 	Matrix4x4_Copy( worldToScreen, RI.worldviewProjectionMatrix );
 	screen[0] = worldToScreen[0][0] * point[0] + worldToScreen[0][1] * point[1] + worldToScreen[0][2] * point[2] + worldToScreen[0][3];
 	screen[1] = worldToScreen[1][0] * point[0] + worldToScreen[1][1] * point[1] + worldToScreen[1][2] * point[2] + worldToScreen[1][3];
-//	z = worldToScreen[2][0] * point[0] + worldToScreen[2][1] * point[1] + worldToScreen[2][2] * point[2] + worldToScreen[2][3];
 	w = worldToScreen[3][0] * point[0] + worldToScreen[3][1] * point[1] + worldToScreen[3][2] * point[2] + worldToScreen[3][3];
 	screen[2] = 0.0f; // just so we have something valid here
 
 	if( w < 0.001f )
 	{
-		behind = true;
 		screen[0] *= 100000;
 		screen[1] *= 100000;
+		behind = true;
 	}
 	else
 	{
 		float invw = 1.0f / w;
-		behind = false;
 		screen[0] *= invw;
 		screen[1] *= invw;
+		behind = false;
 	}
+
 	return behind;
 }
 
+/*
+===============
+R_ScreenToWorld
+
+Convert a given point from screen into world space
+===============
+*/
 void R_ScreenToWorld( const vec3_t screen, vec3_t point )
 {
 	matrix4x4	screenToWorld;
-	vec3_t	temp;
 	float	w;
 
 	if( !point || !screen )
 		return;
 
-	// g-cont. does we need a full invert here?
-	Matrix4x4_Invert_Simple( screenToWorld, RI.worldviewProjectionMatrix );
-	temp[0] = 2.0f * (screen[0] - RI.viewport[0]) / RI.viewport[2] - 1;
-	temp[1] = -2.0f * (screen[1] - RI.viewport[1]) / RI.viewport[3] + 1;
-	temp[2] = 0.0f; // just so we have something valid here
+	Matrix4x4_Invert_Full( screenToWorld, RI.worldviewProjectionMatrix );
 
-	point[0] = temp[0] * screenToWorld[0][0] + temp[1] * screenToWorld[0][1] + temp[2] * screenToWorld[0][2] + screenToWorld[0][3];
-	point[1] = temp[0] * screenToWorld[1][0] + temp[1] * screenToWorld[1][1] + temp[2] * screenToWorld[1][2] + screenToWorld[1][3];
-	point[2] = temp[0] * screenToWorld[2][0] + temp[1] * screenToWorld[2][1] + temp[2] * screenToWorld[2][2] + screenToWorld[2][3];
-	w = temp[0] * screenToWorld[3][0] + temp[1] * screenToWorld[3][1] + temp[2] * screenToWorld[3][2] + screenToWorld[3][3];
-	if( w ) VectorScale( point, ( 1.0f / w ), point );
+	point[0] = screen[0] * screenToWorld[0][0] + screen[1] * screenToWorld[0][1] + screen[2] * screenToWorld[0][2] + screenToWorld[0][3];
+	point[1] = screen[0] * screenToWorld[1][0] + screen[1] * screenToWorld[1][1] + screen[2] * screenToWorld[1][2] + screenToWorld[1][3];
+	point[2] = screen[0] * screenToWorld[2][0] + screen[1] * screenToWorld[2][1] + screen[2] * screenToWorld[2][2] + screenToWorld[2][3];
+	w = screen[0] * screenToWorld[3][0] + screen[1] * screenToWorld[3][1] + screen[2] * screenToWorld[3][2] + screenToWorld[3][3];
+	if( w != 0.0f ) VectorScale( point, ( 1.0f / w ), point );
 }
 
 /*
 ===============
-R_ComputeFxBlend
+R_PushScene
 ===============
 */
-int R_ComputeFxBlend( cl_entity_t *e )
+void R_PushScene( void )
 {
-	int		blend = 0, renderAmt;
-	float		offset, dist;
-	vec3_t		tmp;
+	if( ++tr.draw_stack_pos >= MAX_DRAW_STACK )
+		Host_Error( "draw stack overflow\n" );
 
-	offset = ((int)e->index ) * 363.0f; // Use ent index to de-sync these fx
-	renderAmt = e->curstate.renderamt;
+	tr.draw_list = &tr.draw_stack[tr.draw_stack_pos];
+}
 
-	switch( e->curstate.renderfx ) 
-	{
-	case kRenderFxPulseSlowWide:
-		blend = renderAmt + 0x40 * sin( RI.refdef.time * 2 + offset );	
-		break;
-	case kRenderFxPulseFastWide:
-		blend = renderAmt + 0x40 * sin( RI.refdef.time * 8 + offset );
-		break;
-	case kRenderFxPulseSlow:
-		blend = renderAmt + 0x10 * sin( RI.refdef.time * 2 + offset );
-		break;
-	case kRenderFxPulseFast:
-		blend = renderAmt + 0x10 * sin( RI.refdef.time * 8 + offset );
-		break;
-	// JAY: HACK for now -- not time based
-	case kRenderFxFadeSlow:			
-		if( renderAmt > 0 ) 
-			renderAmt -= 1;
-		else renderAmt = 0;
-		blend = renderAmt;
-		break;
-	case kRenderFxFadeFast:
-		if( renderAmt > 3 ) 
-			renderAmt -= 4;
-		else renderAmt = 0;
-		blend = renderAmt;
-		break;
-	case kRenderFxSolidSlow:
-		if( renderAmt < 255 ) 
-			renderAmt += 1;
-		else renderAmt = 255;
-		blend = renderAmt;
-		break;
-	case kRenderFxSolidFast:
-		if( renderAmt < 252 ) 
-			renderAmt += 4;
-		else renderAmt = 255;
-		blend = renderAmt;
-		break;
-	case kRenderFxStrobeSlow:
-		blend = 20 * sin( RI.refdef.time * 4 + offset );
-		if( blend < 0 ) blend = 0;
-		else blend = renderAmt;
-		break;
-	case kRenderFxStrobeFast:
-		blend = 20 * sin( RI.refdef.time * 16 + offset );
-		if( blend < 0 ) blend = 0;
-		else blend = renderAmt;
-		break;
-	case kRenderFxStrobeFaster:
-		blend = 20 * sin( RI.refdef.time * 36 + offset );
-		if( blend < 0 ) blend = 0;
-		else blend = renderAmt;
-		break;
-	case kRenderFxFlickerSlow:
-		blend = 20 * (sin( RI.refdef.time * 2 ) + sin( RI.refdef.time * 17 + offset ));
-		if( blend < 0 ) blend = 0;
-		else blend = renderAmt;
-		break;
-	case kRenderFxFlickerFast:
-		blend = 20 * (sin( RI.refdef.time * 16 ) + sin( RI.refdef.time * 23 + offset ));
-		if( blend < 0 ) blend = 0;
-		else blend = renderAmt;
-		break;
-	case kRenderFxHologram:
-	case kRenderFxDistort:
-		VectorCopy( e->origin, tmp );
-		VectorSubtract( tmp, RI.refdef.vieworg, tmp );
-		dist = DotProduct( tmp, RI.refdef.forward );
-			
-		// Turn off distance fade
-		if( e->curstate.renderfx == kRenderFxDistort )
-			dist = 1;
-
-		if( dist <= 0 )
-		{
-			blend = 0;
-		}
-		else 
-		{
-			renderAmt = 180;
-			if( dist <= 100 ) blend = renderAmt;
-			else blend = (int) ((1.0f - ( dist - 100 ) * ( 1.0f / 400.0f )) * renderAmt );
-			blend += Com_RandomLong( -32, 31 );
-		}
-		break;
-	case kRenderFxGlowShell:	// safe current renderamt because it's shell scale!
-	case kRenderFxDeadPlayer:	// safe current renderamt because it's player index!
-		blend = renderAmt;
-		break;
-	case kRenderFxNone:
-	case kRenderFxClampMinScale:
-	default:
-		if( e->curstate.rendermode == kRenderNormal )
-			blend = 255;
-		else blend = renderAmt;
-		break;	
-	}
-
-	if( RI.currentmodel->type != mod_brush )
-	{
-		// NOTE: never pass sprites with rendercolor '0 0 0' it's a stupid Valve Hammer Editor bug
-		if( !e->curstate.rendercolor.r && !e->curstate.rendercolor.g && !e->curstate.rendercolor.b )
-			e->curstate.rendercolor.r = e->curstate.rendercolor.g = e->curstate.rendercolor.b = 255;
-	}
-
-	// apply scale to studiomodels and sprites only
-	if( e->model && e->model->type != mod_brush && !e->curstate.scale )
-		e->curstate.scale = 1.0f;
-
-	blend = bound( 0, blend, 255 );
-
-	return blend;
+/*
+===============
+R_PushScene
+===============
+*/
+void R_PopScene( void )
+{
+	if( --tr.draw_stack_pos < 0 )
+		Host_Error( "draw stack underflow\n" );
+	tr.draw_list = &tr.draw_stack[tr.draw_stack_pos];
 }
 
 /*
@@ -381,9 +222,9 @@ R_ClearScene
 */
 void R_ClearScene( void )
 {
-	tr.num_solid_entities = tr.num_trans_entities = 0;
-	tr.num_static_entities = tr.num_mirror_entities = 0;
-	tr.num_child_entities = 0;
+	tr.draw_list->num_solid_entities = 0;
+	tr.draw_list->num_trans_entities = 0;
+	tr.draw_list->num_beam_entities = 0;
 }
 
 /*
@@ -391,64 +232,42 @@ void R_ClearScene( void )
 R_AddEntity
 ===============
 */
-qboolean R_AddEntity( struct cl_entity_s *clent, int entityType )
+qboolean R_AddEntity( struct cl_entity_s *clent, int type )
 {
-	if( !r_drawentities->integer )
+	if( !r_drawentities->value )
 		return false; // not allow to drawing
 
 	if( !clent || !clent->model )
 		return false; // if set to invisible, skip
 
-	if( clent->curstate.effects & EF_NODRAW )
+	if( FBitSet( clent->curstate.effects, EF_NODRAW ))
 		return false; // done
 
-	if( clent->curstate.rendermode != kRenderNormal && clent->curstate.renderamt <= 0.0f )
-		return true; // done
+	if( !R_ModelOpaque( clent->curstate.rendermode ) && CL_FxBlend( clent ) <= 0 )
+		return true; // invisible
 
-	clent->curstate.entityType = entityType;
-
-	if( R_FollowEntity( clent ))
-	{
-		// follow entity
-		if( tr.num_child_entities >= MAX_VISIBLE_PACKET )
-			return false;
-
-		tr.child_entities[tr.num_child_entities] = clent;
-		tr.num_child_entities++;
-
-		return true;
-	}
+	if( type == ET_FRAGMENTED )
+		r_stats.c_client_ents++;
 
 	if( R_OpaqueEntity( clent ))
 	{
-		if( R_StaticEntity( clent ))
-		{
-			// opaque static
-			if( tr.num_static_entities >= MAX_VISIBLE_PACKET )
-				return false;
+		// opaque
+		if( tr.draw_list->num_solid_entities >= MAX_VISIBLE_PACKET )
+			return false;
 
-			tr.static_entities[tr.num_static_entities] = clent;
-			tr.num_static_entities++;
-		}
-		else
-		{
-			// opaque moving
-			if( tr.num_solid_entities >= MAX_VISIBLE_PACKET )
-				return false;
-
-			tr.solid_entities[tr.num_solid_entities] = clent;
-			tr.num_solid_entities++;
-		}
+		tr.draw_list->solid_entities[tr.draw_list->num_solid_entities] = clent;
+		tr.draw_list->num_solid_entities++;
 	}
 	else
 	{
 		// translucent
-		if( tr.num_trans_entities >= MAX_VISIBLE_PACKET )
+		if( tr.draw_list->num_trans_entities >= MAX_VISIBLE_PACKET )
 			return false;
 
-		tr.trans_entities[tr.num_trans_entities] = clent;
-		tr.num_trans_entities++;
+		tr.draw_list->trans_entities[tr.draw_list->num_trans_entities] = clent;
+		tr.draw_list->num_trans_entities++;
 	}
+
 	return true;
 }
 
@@ -461,14 +280,12 @@ static void R_Clear( int bitMask )
 {
 	int	bits;
 
-	if( gl_overview->integer )
+	if( CL_IsDevOverviewMode( ))
 		pglClearColor( 0.0f, 1.0f, 0.0f, 1.0f ); // green background (Valve rules)
 	else pglClearColor( 0.5f, 0.5f, 0.5f, 1.0f );
 
 	bits = GL_DEPTH_BUFFER_BIT;
 
-	if( RI.drawWorld && r_fastsky->integer )
-		bits |= GL_COLOR_BUFFER_BIT;
 	if( glState.stencilEnabled )
 		bits |= GL_STENCIL_BUFFER_BIT;
 
@@ -501,57 +318,8 @@ R_GetFarClip
 static float R_GetFarClip( void )
 {
 	if( cl.worldmodel && RI.drawWorld )
-		return RI.refdef.movevars->zmax * 1.5f;
+		return clgame.movevars.zmax * 1.73f;
 	return 2048.0f;
-}
-
-/*
-===============
-R_SetupFrustumOrtho
-===============
-*/
-static void R_SetupFrustumOrtho( void )
-{
-	ref_overview_t	*ov = &clgame.overView;
-	float		orgOffset;
-	int		i;
-
-	// 0 - left
-	// 1 - right
-	// 2 - down
-	// 3 - up
-	// 4 - farclip
-	// 5 - nearclip
-
-	// setup the near and far planes.
-	orgOffset = DotProduct( RI.cullorigin, RI.cull_vforward );
-	VectorNegate( RI.cull_vforward, RI.frustum[4].normal );
-	RI.frustum[4].dist = -ov->zFar - orgOffset;
-
-	VectorCopy( RI.cull_vforward, RI.frustum[5].normal );
-	RI.frustum[5].dist = ov->zNear + orgOffset;
-
-	// left and right planes...
-	orgOffset = DotProduct( RI.cullorigin, RI.cull_vright );
-	VectorCopy( RI.cull_vright, RI.frustum[0].normal );
-	RI.frustum[0].dist = ov->xLeft + orgOffset;
-
-	VectorNegate( RI.cull_vright, RI.frustum[1].normal );
-	RI.frustum[1].dist = -ov->xRight - orgOffset;
-
-	// top and buttom planes...
-	orgOffset = DotProduct( RI.cullorigin, RI.cull_vup );
-	VectorCopy( RI.cull_vup, RI.frustum[3].normal );
-	RI.frustum[3].dist = ov->xTop + orgOffset;
-
-	VectorNegate( RI.cull_vup, RI.frustum[2].normal );
-	RI.frustum[2].dist = -ov->xBottom - orgOffset;
-
-	for( i = 0; i < 6; i++ )
-	{
-		RI.frustum[i].type = PLANE_NONAXIAL;
-		RI.frustum[i].signbits = SignbitsForPlane( RI.frustum[i].normal );
-	}
 }
 
 /*
@@ -561,44 +329,28 @@ R_SetupFrustum
 */
 void R_SetupFrustum( void )
 {
-	vec3_t	farPoint;
-	int	i;
+	ref_overview_t	*ov = &clgame.overView;
 
-	// 0 - left
-	// 1 - right
-	// 2 - down
-	// 3 - up
-	// 4 - farclip
-	// 5 - nearclip
+	if( RP_NORMALPASS() && ( cl.local.waterlevel >= 3 ))
+	{
+		RI.fov_x = atan( tan( DEG2RAD( RI.fov_x ) / 2 ) * ( 0.97 + sin( cl.time * 1.5 ) * 0.03 )) * 2 / (M_PI / 180.0);
+		RI.fov_y = atan( tan( DEG2RAD( RI.fov_y ) / 2 ) * ( 1.03 - sin( cl.time * 1.5 ) * 0.03 )) * 2 / (M_PI / 180.0);
+	}
+
+	// build the transformation matrix for the given view angles
+	AngleVectors( RI.viewangles, RI.vforward, RI.vright, RI.vup );
+
+	if( !r_lockfrustum->value )
+	{
+		VectorCopy( RI.vieworg, RI.cullorigin );
+		VectorCopy( RI.vforward, RI.cull_vforward );
+		VectorCopy( RI.vright, RI.cull_vright );
+		VectorCopy( RI.vup, RI.cull_vup );
+	}
 
 	if( RI.drawOrtho )
-	{
-		R_SetupFrustumOrtho();
-		return;
-	}
-
-	// rotate RI.vforward right by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[0].normal, RI.cull_vup, RI.cull_vforward, -( 90 - RI.refdef.fov_x / 2 ));
-	// rotate RI.vforward left by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[1].normal, RI.cull_vup, RI.cull_vforward, 90 - RI.refdef.fov_x / 2 );
-	// rotate RI.vforward up by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[2].normal, RI.cull_vright, RI.cull_vforward, 90 - RI.refdef.fov_y / 2 );
-	// rotate RI.vforward down by FOV_X/2 degrees
-	RotatePointAroundVector( RI.frustum[3].normal, RI.cull_vright, RI.cull_vforward, -( 90 - RI.refdef.fov_y / 2 ));
-	// negate forward vector
-	VectorNegate( RI.cull_vforward, RI.frustum[4].normal );
-
-	for( i = 0; i < 4; i++ )
-	{
-		RI.frustum[i].type = PLANE_NONAXIAL;
-		RI.frustum[i].dist = DotProduct( RI.cullorigin, RI.frustum[i].normal );
-		RI.frustum[i].signbits = SignbitsForPlane( RI.frustum[i].normal );
-	}
-
-	VectorMA( RI.cullorigin, R_GetFarClip(), RI.cull_vforward, farPoint );
-	RI.frustum[i].type = PLANE_NONAXIAL;
-	RI.frustum[i].dist = DotProduct( farPoint, RI.frustum[i].normal );
-	RI.frustum[i].signbits = SignbitsForPlane( RI.frustum[i].normal );
+		GL_FrustumInitOrtho( &RI.frustum, ov->xLeft, ov->xRight, ov->yTop, ov->yBottom, ov->zNear, ov->zFar );
+	else GL_FrustumInitProj( &RI.frustum, 0.0f, R_GetFarClip(), RI.fov_x, RI.fov_y ); // NOTE: we ignore nearplane here (mirrors only)
 }
 
 /*
@@ -606,14 +358,14 @@ void R_SetupFrustum( void )
 R_SetupProjectionMatrix
 =============
 */
-static void R_SetupProjectionMatrix( const ref_params_t *fd, matrix4x4 m )
+static void R_SetupProjectionMatrix( matrix4x4 m )
 {
 	GLdouble	xMin, xMax, yMin, yMax, zNear, zFar;
 
 	if( RI.drawOrtho )
 	{
 		ref_overview_t *ov = &clgame.overView;
-		Matrix4x4_CreateOrtho( m, ov->xLeft, ov->xRight, ov->xTop, ov->xBottom, ov->zNear, ov->zFar );
+		Matrix4x4_CreateOrtho( m, ov->xLeft, ov->xRight, ov->yTop, ov->yBottom, ov->zNear, ov->zFar );
 		return;
 	}
 
@@ -622,10 +374,10 @@ static void R_SetupProjectionMatrix( const ref_params_t *fd, matrix4x4 m )
 	zNear = 4.0f;
 	zFar = max( 256.0f, RI.farClip );
 
-	yMax = zNear * tan( fd->fov_y * M_PI / 360.0 );
+	yMax = zNear * tan( RI.fov_y * M_PI / 360.0 );
 	yMin = -yMax;
 
-	xMax = zNear * tan( fd->fov_x * M_PI / 360.0 );
+	xMax = zNear * tan( RI.fov_x * M_PI / 360.0 );
 	xMin = -xMax;
 
 	Matrix4x4_CreateProjection( m, xMax, xMin, yMax, yMin, zNear, zFar );
@@ -636,19 +388,13 @@ static void R_SetupProjectionMatrix( const ref_params_t *fd, matrix4x4 m )
 R_SetupModelviewMatrix
 =============
 */
-static void R_SetupModelviewMatrix( const ref_params_t *fd, matrix4x4 m )
+static void R_SetupModelviewMatrix( matrix4x4 m )
 {
-#if 0
-	Matrix4x4_LoadIdentity( m );
-	Matrix4x4_ConcatRotate( m, -90, 1, 0, 0 );
-	Matrix4x4_ConcatRotate( m, 90, 0, 0, 1 );
-#else
 	Matrix4x4_CreateModelview( m );
-#endif
-	Matrix4x4_ConcatRotate( m, -fd->viewangles[2], 1, 0, 0 );
-	Matrix4x4_ConcatRotate( m, -fd->viewangles[0], 0, 1, 0 );
-	Matrix4x4_ConcatRotate( m, -fd->viewangles[1], 0, 0, 1 );
-	Matrix4x4_ConcatTranslate( m, -fd->vieworg[0], -fd->vieworg[1], -fd->vieworg[2] );
+	Matrix4x4_ConcatRotate( m, -RI.viewangles[2], 1, 0, 0 );
+	Matrix4x4_ConcatRotate( m, -RI.viewangles[0], 0, 1, 0 );
+	Matrix4x4_ConcatRotate( m, -RI.viewangles[1], 0, 0, 1 );
+	Matrix4x4_ConcatTranslate( m, -RI.vieworg[0], -RI.vieworg[1], -RI.vieworg[2] );
 }
 
 /*
@@ -677,7 +423,7 @@ void R_RotateForEntity( cl_entity_t *e )
 {
 	float	scale = 1.0f;
 
-	if( e == clgame.entities || R_StaticEntity( e ))
+	if( e == clgame.entities )
 	{
 		R_LoadIdentity();
 		return;
@@ -703,7 +449,7 @@ void R_TranslateForEntity( cl_entity_t *e )
 {
 	float	scale = 1.0f;
 
-	if( e == clgame.entities || R_StaticEntity( e ))
+	if( e == clgame.entities )
 	{
 		R_LoadIdentity();
 		return;
@@ -727,35 +473,8 @@ R_FindViewLeaf
 */
 void R_FindViewLeaf( void )
 {
-	float	height;
-	mleaf_t	*leaf;
-	vec3_t	tmp;
-
-	r_oldviewleaf = r_viewleaf;
-	r_oldviewleaf2 = r_viewleaf2;
-	leaf = Mod_PointInLeaf( RI.pvsorigin, cl.worldmodel->nodes );
-	r_viewleaf2 = r_viewleaf = leaf;
-	height = RI.waveHeight ? RI.waveHeight : 16;
-
-	// check above and below so crossing solid water doesn't draw wrong
-	if( leaf->contents == CONTENTS_EMPTY )
-	{
-		// look down a bit
-		VectorCopy( RI.pvsorigin, tmp );
-		tmp[2] -= height;
-		leaf = Mod_PointInLeaf( tmp, cl.worldmodel->nodes );
-		if(( leaf->contents != CONTENTS_SOLID ) && ( leaf != r_viewleaf2 ))
-		r_viewleaf2 = leaf;
-	}
-	else
-	{
-		// look up a bit
-		VectorCopy( RI.pvsorigin, tmp );
-		tmp[2] += height;
-		leaf = Mod_PointInLeaf( tmp, cl.worldmodel->nodes );
-		if(( leaf->contents != CONTENTS_SOLID ) && ( leaf != r_viewleaf2 ))
-		r_viewleaf2 = leaf;
-	}
+	RI.oldviewleaf = RI.viewleaf;
+	RI.viewleaf = Mod_PointInLeaf( RI.pvsorigin, cl.worldmodel->nodes );
 }
 
 /*
@@ -765,34 +484,20 @@ R_SetupFrame
 */
 static void R_SetupFrame( void )
 {
-	// build the transformation matrix for the given view angles
-	VectorCopy( RI.refdef.vieworg, RI.vieworg );
-	AngleVectors( RI.refdef.viewangles, RI.vforward, RI.vright, RI.vup );
+	// setup viewplane dist
+	RI.viewplanedist = DotProduct( RI.vieworg, RI.vforward );
 
-	if( !r_lockcull->integer )
+	if( !gl_nosort->value )
 	{
-		VectorCopy( RI.vforward, RI.cull_vforward );
-		VectorCopy( RI.vright, RI.cull_vright );
-		VectorCopy( RI.vup, RI.cull_vup );
+		// sort translucents entities by rendermode and distance
+		qsort( tr.draw_list->trans_entities, tr.draw_list->num_trans_entities, sizeof( cl_entity_t* ), R_TransEntityCompare );
 	}
-
-	R_AnimateLight();
-	R_RunViewmodelEvents();
-
-	// sort opaque entities by model type to avoid drawing model shadows under alpha-surfaces
-	qsort( tr.solid_entities, tr.num_solid_entities, sizeof( cl_entity_t* ), R_SolidEntityCompare );
-
-	// sort translucents entities by rendermode and distance
-	qsort( tr.trans_entities, tr.num_trans_entities, sizeof( cl_entity_t* ), R_TransEntityCompare );
 
 	// current viewleaf
 	if( RI.drawWorld )
 	{
-		RI.waveHeight = RI.refdef.movevars->waveHeight * 2.0f;	// set global waveheight
 		RI.isSkyVisible = false; // unknown at this moment
-
-		if(!( RI.params & RP_OLDVIEWLEAF ))
-			R_FindViewLeaf();
+		R_FindViewLeaf();
 	}
 }
 
@@ -801,24 +506,32 @@ static void R_SetupFrame( void )
 R_SetupGL
 =============
 */
-static void R_SetupGL( void )
+void R_SetupGL( qboolean set_gl_state )
 {
-	if( RI.refdef.waterlevel >= 3 )	// Видимо, бульканье
-	{
-		float	f;
-		f = sin( cl.time * 0.4f * ( M_PI * 2.7f ));
-		RI.refdef.fov_x += f;
-		RI.refdef.fov_y -= f;
-	}
-
-	R_SetupModelviewMatrix( &RI.refdef, RI.worldviewMatrix );
-	R_SetupProjectionMatrix( &RI.refdef, RI.projectionMatrix );
-	if( RI.params & RP_MIRRORVIEW ) RI.projectionMatrix[0][0] = -RI.projectionMatrix[0][0];
+	R_SetupModelviewMatrix( RI.worldviewMatrix );
+	R_SetupProjectionMatrix( RI.projectionMatrix );
 
 	Matrix4x4_Concat( RI.worldviewProjectionMatrix, RI.projectionMatrix, RI.worldviewMatrix );
 
-	pglScissor( RI.scissor[0], RI.scissor[1], RI.scissor[2], RI.scissor[3] );
-	pglViewport( RI.viewport[0], RI.viewport[1], RI.viewport[2], RI.viewport[3] );
+	if( !set_gl_state ) return;
+
+	if( RP_NORMALPASS( ))
+	{
+		int	x, x2, y, y2;
+
+		// set up viewport (main, playersetup)
+		x = floor( RI.viewport[0] * glState.width / glState.width );
+		x2 = ceil(( RI.viewport[0] + RI.viewport[2] ) * glState.width / glState.width );
+		y = floor( glState.height - RI.viewport[1] * glState.height / glState.height );
+		y2 = ceil( glState.height - ( RI.viewport[1] + RI.viewport[3] ) * glState.height / glState.height );
+
+		pglViewport( x, y2, x2 - x, y - y2 );
+	}
+	else
+	{
+		// envpass, mirrorpass
+		pglViewport( RI.viewport[0], RI.viewport[1], RI.viewport[2], RI.viewport[3] );
+	}
 
 	pglMatrixMode( GL_PROJECTION );
 	GL_LoadMatrix( RI.projectionMatrix );
@@ -826,7 +539,7 @@ static void R_SetupGL( void )
 	pglMatrixMode( GL_MODELVIEW );
 	GL_LoadMatrix( RI.worldviewMatrix );
 
-	if( RI.params & RP_CLIPPLANE )
+	if( FBitSet( RI.params, RP_CLIPPLANE ))
 	{
 		GLdouble	clip[4];
 		mplane_t	*p = &RI.clipPlane;
@@ -839,9 +552,6 @@ static void R_SetupGL( void )
 		pglClipPlane( GL_CLIP_PLANE0, clip );
 		pglEnable( GL_CLIP_PLANE0 );
 	}
-
-	if( RI.params & RP_FLIPFRONTFACE )
-		GL_FrontFace( !glState.frontFace );
 
 	GL_Cull( GL_FRONT );
 
@@ -857,11 +567,79 @@ R_EndGL
 */
 static void R_EndGL( void )
 {
-	if( RI.params & RP_FLIPFRONTFACE )
-		GL_FrontFace( !glState.frontFace );
-
 	if( RI.params & RP_CLIPPLANE )
 		pglDisable( GL_CLIP_PLANE0 );
+}
+
+/*
+=============
+R_RecursiveFindWaterTexture
+
+using to find source waterleaf with
+watertexture to grab fog values from it
+=============
+*/
+static gl_texture_t *R_RecursiveFindWaterTexture( const mnode_t *node, const mnode_t *ignore, qboolean down )
+{
+	gl_texture_t *tex = NULL;
+
+	// assure the initial node is not null
+	// we could check it here, but we would rather check it 
+	// outside the call to get rid of one additional recursion level
+	Assert( node != NULL );
+
+	// ignore solid nodes
+	if( node->contents == CONTENTS_SOLID )
+		return NULL;
+
+	if( node->contents < 0 )
+	{
+		mleaf_t		*pleaf;
+		msurface_t	**mark;
+		int		i, c;
+
+		// ignore non-liquid leaves
+		if( node->contents != CONTENTS_WATER && node->contents != CONTENTS_LAVA && node->contents != CONTENTS_SLIME )
+			 return NULL;
+
+		// find texture
+		pleaf = (mleaf_t *)node;
+		mark = pleaf->firstmarksurface;
+		c = pleaf->nummarksurfaces;	
+
+		for( i = 0; i < c; i++, mark++ )
+		{
+			if( (*mark)->flags & SURF_DRAWTURB && (*mark)->texinfo && (*mark)->texinfo->texture )
+				return R_GetTexture( (*mark)->texinfo->texture->gl_texturenum );
+		}
+
+		// texture not found
+		return NULL;
+	}
+
+	// this is a regular node
+	// traverse children
+	if( node->children[0] && ( node->children[0] != ignore ))
+	{
+		tex = R_RecursiveFindWaterTexture( node->children[0], node, true );
+		if( tex ) return tex;
+	}
+
+	if( node->children[1] && ( node->children[1] != ignore ))
+	{
+		tex = R_RecursiveFindWaterTexture( node->children[1], node, true );
+		if( tex )	return tex;
+	}
+
+	// for down recursion, return immediately
+	if( down ) return NULL;
+
+	// texture not found, step up if any
+	if( node->parent )
+		return R_RecursiveFindWaterTexture( node->parent, node, false );
+
+	// top-level node, bail out
+	return NULL;
 }
 
 /*
@@ -869,34 +647,60 @@ static void R_EndGL( void )
 R_CheckFog
 
 check for underwater fog
-UNDONE: this code is wrong, we need to compute fog volumes (as water volumes)
-and get fog params from texture water on a surface.
+Using backward recursion to find waterline leaf
+from underwater leaf (idea: XaeroX)
 =============
 */
 static void R_CheckFog( void )
 {
 	cl_entity_t	*ent;
-	gltexture_t	*tex;
+	gl_texture_t	*tex;
 	int		i, cnt, count;
+
+	// quake global fog
+	if( CL_IsQuakeCompatible( ))
+	{
+		if( !clgame.movevars.fog_settings )
+		{
+			if( pglIsEnabled( GL_FOG ))
+				pglDisable( GL_FOG );
+			RI.fogEnabled = false;
+			return;
+		}
+
+		// quake-style global fog
+		RI.fogColor[0] = ((clgame.movevars.fog_settings & 0xFF000000) >> 24) / 255.0f;
+		RI.fogColor[1] = ((clgame.movevars.fog_settings & 0xFF0000) >> 16) / 255.0f;
+		RI.fogColor[2] = ((clgame.movevars.fog_settings & 0xFF00) >> 8) / 255.0f;
+		RI.fogDensity = ((clgame.movevars.fog_settings & 0xFF) / 255.0f) * 0.01f;
+		RI.fogStart = RI.fogEnd = 0.0f;
+		RI.fogColor[3] = 1.0f;
+		RI.fogCustom = false;
+		RI.fogEnabled = true;
+		RI.fogSkybox = true;
+		return;
+	}
 
 	RI.fogEnabled = false;
 
-	if( (RI.refdef.waterlevel < 2) /*&& !RI.refdef.in_fog*/ || !RI.drawWorld || !r_viewleaf )	// Туман
+	if( RI.onlyClientDraw || cl.local.waterlevel < 3 || !RI.drawWorld || !RI.viewleaf )
+	{
+		if( RI.cached_waterlevel == 3 )
+                    {
+			// in some cases waterlevel jumps from 3 to 1. Catch it
+			RI.cached_waterlevel = cl.local.waterlevel;
+			RI.cached_contents = CONTENTS_EMPTY;
+			if( !RI.fogCustom ) pglDisable( GL_FOG );
+		}
 		return;
+	}
 
 	ent = CL_GetWaterEntity( RI.vieworg );
 	if( ent && ent->model && ent->model->type == mod_brush && ent->curstate.skin < 0 )
 		cnt = ent->curstate.skin;
-	else cnt = r_viewleaf->contents;
+	else cnt = RI.viewleaf->contents;
 
-	if( IsLiquidContents( RI.cached_contents ) && !IsLiquidContents( cnt ))
-	{
-		RI.cached_contents = CONTENTS_EMPTY;
-		return;
-	}
-
-	if( /*(*/RI.refdef.waterlevel < 3/*) && !RI.refdef.in_fog*/ )	// Туман
-		return;
+	RI.cached_waterlevel = cl.local.waterlevel;
 
 	if( !IsLiquidContents( RI.cached_contents ) && IsLiquidContents( cnt ))
 	{
@@ -921,23 +725,11 @@ static void R_CheckFog( void )
 		}
 		else
 		{
-			msurface_t	**surf;
-
-			count = r_viewleaf->nummarksurfaces;	
-
-			for( i = 0, surf = r_viewleaf->firstmarksurface; i < count; i++, surf++ )
-			{
-				if((*surf)->flags & SURF_DRAWTURB && (*surf)->texinfo && (*surf)->texinfo->texture )
-				{
-					tex = R_GetTexture( (*surf)->texinfo->texture->gl_texturenum );
-					RI.cached_contents = r_viewleaf->contents;
-					break;
-				}
-			}
+			tex = R_RecursiveFindWaterTexture( RI.viewleaf->parent, NULL, false );
+			if( tex ) RI.cached_contents = RI.viewleaf->contents;
 		}
 
-		if( i == count || !tex )
-			return;	// no valid fogs
+		if( !tex ) return;	// no valid fogs
 
 		// copy fog params
 		RI.fogColor[0] = tex->fogParams[0] / 255.0f;
@@ -945,14 +737,37 @@ static void R_CheckFog( void )
 		RI.fogColor[2] = tex->fogParams[2] / 255.0f;
 		RI.fogDensity = tex->fogParams[3] * 0.000025f;
 		RI.fogStart = RI.fogEnd = 0.0f;
+		RI.fogColor[3] = 1.0f;
 		RI.fogCustom = false;
 		RI.fogEnabled = true;
+		RI.fogSkybox = true;
 	}
 	else
 	{
 		RI.fogCustom = false;
 		RI.fogEnabled = true;
+		RI.fogSkybox = true;
 	}
+}
+
+/*
+=============
+R_CheckGLFog
+
+special condition for Spirit 1.9
+that used direct calls of glFog-functions
+=============
+*/
+static void R_CheckGLFog( void )
+{
+#ifdef HACKS_RELATED_HLMODS
+	if(( !RI.fogEnabled && !RI.fogCustom ) && pglIsEnabled( GL_FOG ) && VectorIsNull( RI.fogColor ))
+	{
+		// fill the fog color from GL-state machine
+		pglGetFloatv( GL_FOG_COLOR, RI.fogColor );
+		RI.fogSkybox = true;
+	}
+#endif
 }
 
 /*
@@ -963,11 +778,12 @@ R_DrawFog
 */
 void R_DrawFog( void )
 {
-	if( !RI.fogEnabled || RI.refdef.onlyClientDraw )
-		return;
+	if( !RI.fogEnabled ) return;
 
 	pglEnable( GL_FOG );
-	pglFogi( GL_FOG_MODE, GL_EXP );
+	if( CL_IsQuakeCompatible( ))
+		pglFogi( GL_FOG_MODE, GL_EXP2 );
+	else pglFogi( GL_FOG_MODE, GL_EXP );
 	pglFogf( GL_FOG_DENSITY, RI.fogDensity );
 	pglFogfv( GL_FOG_COLOR, RI.fogColor );
 	pglHint( GL_FOG_HINT, GL_NICEST );
@@ -982,76 +798,95 @@ void R_DrawEntitiesOnList( void )
 {
 	int	i;
 
-	glState.drawTrans = false;
-
-	// draw the solid submodels fog
-	R_DrawFog ();
+	tr.blend = 1.0f;
+	GL_CheckForErrors();
 
 	// first draw solid entities
-	for( i = 0; i < tr.num_solid_entities; i++ )
+	for( i = 0; i < tr.draw_list->num_solid_entities && !RI.onlyClientDraw; i++ )
 	{
-		if( RI.refdef.onlyClientDraw )
-			break;
-
-		RI.currententity = tr.solid_entities[i];
+		RI.currententity = tr.draw_list->solid_entities[i];
 		RI.currentmodel = RI.currententity->model;
-	
-		ASSERT( RI.currententity != NULL );
-		ASSERT( RI.currententity->model != NULL );
 
-		RI.currententity->curstate.renderamt = R_ComputeFxBlend( RI.currententity );
+		Assert( RI.currententity != NULL );
+		Assert( RI.currentmodel != NULL );
 
 		switch( RI.currentmodel->type )
 		{
 		case mod_brush:
 			R_DrawBrushModel( RI.currententity );
 			break;
+		case mod_alias:
+			R_DrawAliasModel( RI.currententity );
+			break;
 		case mod_studio:
 			R_DrawStudioModel( RI.currententity );
-			break;
-		case mod_sprite:
-			R_DrawSpriteModel( RI.currententity );
 			break;
 		default:
 			break;
 		}
 	}
 
-	if( !RI.refdef.onlyClientDraw )
+	GL_CheckForErrors();
+
+	// quake-specific feature
+	R_DrawAlphaTextureChains();
+
+	GL_CheckForErrors();
+
+	// draw sprites seperately, because of alpha blending
+	for( i = 0; i < tr.draw_list->num_solid_entities && !RI.onlyClientDraw; i++ )
+	{
+		RI.currententity = tr.draw_list->solid_entities[i];
+		RI.currentmodel = RI.currententity->model;
+
+		Assert( RI.currententity != NULL );
+		Assert( RI.currentmodel != NULL );
+
+		switch( RI.currentmodel->type )
+		{
+		case mod_sprite:
+			R_DrawSpriteModel( RI.currententity );
+			break;
+		}
+	}
+
+	GL_CheckForErrors();
+
+	if( !RI.onlyClientDraw )
           {
 		CL_DrawBeams( false );
 	}
 
+	GL_CheckForErrors();
+
 	if( RI.drawWorld )
 		clgame.dllFuncs.pfnDrawNormalTriangles();
 
-	// NOTE: some mods with custom renderer may generate glErrors
-	// so we clear it here
-	while( pglGetError() != GL_NO_ERROR );
-
-	// don't fogging translucent surfaces
-	pglDisable( GL_FOG );
-	pglDepthMask( GL_FALSE );
-	glState.drawTrans = true;
+	GL_CheckForErrors();
 
 	// then draw translucent entities
-	for( i = 0; i < tr.num_trans_entities; i++ )
+	for( i = 0; i < tr.draw_list->num_trans_entities && !RI.onlyClientDraw; i++ )
 	{
-		if( RI.refdef.onlyClientDraw )
-			break;
-
-		RI.currententity = tr.trans_entities[i];
+		RI.currententity = tr.draw_list->trans_entities[i];
 		RI.currentmodel = RI.currententity->model;
-	
-		ASSERT( RI.currententity != NULL );
-		ASSERT( RI.currententity->model != NULL );
 
-		RI.currententity->curstate.renderamt = R_ComputeFxBlend( RI.currententity );
+		// handle studiomodels with custom rendermodes on texture
+		if( RI.currententity->curstate.rendermode != kRenderNormal )
+			tr.blend = CL_FxBlend( RI.currententity ) / 255.0f;
+		else tr.blend = 1.0f; // draw as solid but sorted by distance
+
+		if( tr.blend <= 0.0f ) continue;
+	
+		Assert( RI.currententity != NULL );
+		Assert( RI.currentmodel != NULL );
 
 		switch( RI.currentmodel->type )
 		{
 		case mod_brush:
 			R_DrawBrushModel( RI.currententity );
+			break;
+		case mod_alias:
+			R_DrawAliasModel( RI.currententity );
 			break;
 		case mod_studio:
 			R_DrawStudioModel( RI.currententity );
@@ -1064,52 +899,69 @@ void R_DrawEntitiesOnList( void )
 		}
 	}
 
-	if( RI.drawWorld )
-		clgame.dllFuncs.pfnDrawTransparentTriangles ();
+	GL_CheckForErrors();
 
-	if( !RI.refdef.onlyClientDraw )
+	if( RI.drawWorld )
 	{
-		CL_DrawBeams( true );
-		CL_DrawParticles();
+		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+		clgame.dllFuncs.pfnDrawTransparentTriangles ();
 	}
 
-	// NOTE: some mods with custom renderer may generate glErrors
-	// so we clear it here
-	while( pglGetError() != GL_NO_ERROR );
+	GL_CheckForErrors();
 
-	glState.drawTrans = false;
-	pglDepthMask( GL_TRUE );
+	if( !RI.onlyClientDraw )
+	{
+		R_AllowFog( false );
+		CL_DrawBeams( true );
+		CL_DrawParticles( tr.frametime );
+		CL_DrawTracers( tr.frametime );
+		R_AllowFog( true );
+	}
+
+	GL_CheckForErrors();
+
 	pglDisable( GL_BLEND );	// Trinity Render issues
 
-	R_DrawViewModel();
-
+	if( !RI.onlyClientDraw )
+		R_DrawViewModel();
 	CL_ExtraUpdate();
+
+	GL_CheckForErrors();
 }
 
 /*
 ================
 R_RenderScene
 
-RI.refdef must be set before the first call
+R_SetupRefParams must be called right before
 ================
 */
-void R_RenderScene( const ref_params_t *fd )
+void R_RenderScene( void )
 {
-	RI.refdef = *fd;
-
 	if( !cl.worldmodel && RI.drawWorld )
 		Host_Error( "R_RenderView: NULL worldmodel\n" );
 
+	// frametime is valid only for normal pass
+	if( RP_NORMALPASS( ))
+		tr.frametime = cl.time - cl.oldtime;
+	else tr.frametime = 0.0;
+
+	// begin a new frame
+	tr.framecount++;
+
 	R_PushDlights();
 
-	R_SetupFrame();
 	R_SetupFrustum();
-	R_SetupGL();
+	R_SetupFrame();
+	R_SetupGL( true );
 	R_Clear( ~0 );
 
 	R_MarkLeaves();
-	R_CheckFog();
+	R_DrawFog ();
+
+	R_CheckGLFog();	
 	R_DrawWorld();
+	R_CheckFog();
 
 	CL_ExtraUpdate ();	// don't let sound get messed up if going slow
 
@@ -1122,30 +974,69 @@ void R_RenderScene( const ref_params_t *fd )
 
 /*
 ===============
+R_DoResetGamma
+
+gamma will be reset for
+some type of screenshots
+===============
+*/
+qboolean R_DoResetGamma( void )
+{
+	// FIXME: this looks ugly. apply the backward gamma changes to the output image
+	return false;
+
+	switch( cls.scrshot_action )
+	{
+	case scrshot_normal:
+		if( CL_IsDevOverviewMode( ))
+			return true;
+		return false;
+	case scrshot_snapshot:
+		if( CL_IsDevOverviewMode( ))
+			return true;
+		return false;
+	case scrshot_plaque:
+	case scrshot_savegame:
+	case scrshot_envshot:
+	case scrshot_skyshot:
+	case scrshot_mapshot:
+		return true;
+	default:
+		return false;
+	}
+}
+
+/*
+===============
 R_BeginFrame
 ===============
 */
 void R_BeginFrame( qboolean clearScene )
 {
-	if(( gl_clear->integer || gl_overview->integer ) && clearScene && cls.state != ca_cinematic )
+	glConfig.softwareGammaUpdate = false;	// in case of possible fails
+
+	if(( gl_clear->value || CL_IsDevOverviewMode( )) && clearScene && cls.state != ca_cinematic )
 	{
 		pglClear( GL_COLOR_BUFFER_BIT );
 	}
 
-	// update gamma
-	if( vid_gamma->modified )
+	if( R_DoResetGamma( ))
 	{
-		if( glConfig.deviceSupportsGamma )
-		{
-			SCR_RebuildGammaTable();
-			GL_UpdateGammaRamp();
-			vid_gamma->modified = false;
-		}
-		else
-		{
-			BuildGammaTable( vid_gamma->value, vid_texgamma->value );
-			GL_RebuildLightmaps();
-		}
+		BuildGammaTable( 1.8f, 0.0f );
+		glConfig.softwareGammaUpdate = true;
+		GL_RebuildLightmaps();
+		glConfig.softwareGammaUpdate = false;
+
+		// next frame will be restored gamma
+		SetBits( vid_brightness->flags, FCVAR_CHANGED );
+		SetBits( vid_gamma->flags, FCVAR_CHANGED );
+	}
+	else if( FBitSet( vid_gamma->flags, FCVAR_CHANGED ) || FBitSet( vid_brightness->flags, FCVAR_CHANGED ))
+	{
+		BuildGammaTable( vid_gamma->value, vid_brightness->value );
+		glConfig.softwareGammaUpdate = true;
+		GL_RebuildLightmaps();
+		glConfig.softwareGammaUpdate = false;
 	}
 
 	R_Set2DMode( true );
@@ -1153,9 +1044,8 @@ void R_BeginFrame( qboolean clearScene )
 	// draw buffer stuff
 	pglDrawBuffer( GL_BACK );
 
-	// texturemode stuff
 	// update texture parameters
-	if( gl_texturemode->modified || gl_texture_anisotropy->modified || gl_texture_lodbias ->modified )
+	if( FBitSet( gl_texture_nearest->flags|gl_lightmap_nearest->flags|gl_texture_anisotropy->flags|gl_texture_lodbias->flags, FCVAR_CHANGED ))
 		R_SetTextureParameters();
 
 	// swapinterval stuff
@@ -1166,61 +1056,81 @@ void R_BeginFrame( qboolean clearScene )
 
 /*
 ===============
+R_SetupRefParams
+
+set initial params for renderer
+===============
+*/
+void R_SetupRefParams( const ref_viewpass_t *rvp )
+{
+	RI.params = RP_NONE;
+	RI.drawWorld = FBitSet( rvp->flags, RF_DRAW_WORLD );
+	RI.onlyClientDraw = FBitSet( rvp->flags, RF_ONLY_CLIENTDRAW );
+	RI.farClip = 0;
+
+	if( !FBitSet( rvp->flags, RF_DRAW_CUBEMAP ))
+		RI.drawOrtho = FBitSet( rvp->flags, RF_DRAW_OVERVIEW );
+	else RI.drawOrtho = false;
+
+	// setup viewport
+	RI.viewport[0] = rvp->viewport[0];
+	RI.viewport[1] = rvp->viewport[1];
+	RI.viewport[2] = rvp->viewport[2];
+	RI.viewport[3] = rvp->viewport[3];
+
+	// calc FOV
+	RI.fov_x = rvp->fov_x;
+	RI.fov_y = rvp->fov_y;
+
+	VectorCopy( rvp->vieworigin, RI.vieworg );
+	VectorCopy( rvp->viewangles, RI.viewangles );
+	VectorCopy( rvp->vieworigin, RI.pvsorigin );
+}
+
+/*
+===============
 R_RenderFrame
 ===============
 */
-void R_RenderFrame( const ref_params_t *fd, qboolean drawWorld )
+void R_RenderFrame( const ref_viewpass_t *rvp )
 {
-	if( r_norefresh->integer )
+	if( r_norefresh->value )
 		return;
+
+	// setup the initial render params
+	R_SetupRefParams( rvp );
+
+	if( gl_finish->value && RI.drawWorld )
+		pglFinish();
+
+	if( glConfig.max_multisamples > 1 && FBitSet( gl_msaa->flags, FCVAR_CHANGED ))
+	{
+		if( CVAR_TO_BOOL( gl_msaa ))
+			pglEnable( GL_MULTISAMPLE_ARB );
+		else pglDisable( GL_MULTISAMPLE_ARB );
+		ClearBits( gl_msaa->flags, FCVAR_CHANGED );
+	}
 
 	// completely override rendering
 	if( clgame.drawFuncs.GL_RenderFrame != NULL )
 	{
-		if( clgame.drawFuncs.GL_RenderFrame( fd, drawWorld ))
+		tr.fCustomRendering = true;
+
+		if( clgame.drawFuncs.GL_RenderFrame( rvp ))
+		{
+			R_GatherPlayerLight();
+			tr.realframecount++;
+			tr.fResetVis = true;
 			return;
+		}
 	}
 
-	if( drawWorld ) r_lastRefdef = *fd;
+	tr.fCustomRendering = false;
+	if( !RI.onlyClientDraw )
+		R_RunViewmodelEvents();
 
-	RI.params = RP_NONE;
-	RI.farClip = 0;
-	RI.clipFlags = 15;
-	RI.drawWorld = drawWorld;
-	RI.thirdPerson = cl.thirdperson;
-	RI.drawOrtho = gl_overview->integer;
-
-	GL_BackendStartFrame();
-
-	if( !r_lockcull->integer )
-		VectorCopy( fd->vieworg, RI.cullorigin );
-	VectorCopy( fd->vieworg, RI.pvsorigin );
-		
-	// setup scissor
-	RI.scissor[0] = fd->viewport[0];
-	RI.scissor[1] = glState.height - fd->viewport[3] - fd->viewport[1];
-	RI.scissor[2] = fd->viewport[2];
-	RI.scissor[3] = fd->viewport[3];
-
-	// setup viewport
-	RI.viewport[0] = fd->viewport[0];
-	RI.viewport[1] = glState.height - fd->viewport[3] - fd->viewport[1];
-	RI.viewport[2] = fd->viewport[2];
-	RI.viewport[3] = fd->viewport[3];
-
-	if( gl_finish->integer && drawWorld )
-		pglFinish();
-
-	if( gl_allow_mirrors->integer )
-	{
-		// render mirrors
-		R_FindMirrors( fd );
-		R_DrawMirrors ();
-	}
-
-	R_RenderScene( fd );
-
-	GL_BackendEndFrame();
+	tr.realframecount++; // right called after viewmodel events
+	R_RenderScene();
 }
 
 /*
@@ -1234,7 +1144,7 @@ void R_EndFrame( void )
 	R_Set2DMode( false );
 
 	if( !pwglSwapBuffers( glw_state.hDC ))
-		Sys_Error( "wglSwapBuffers() failed!\n" );
+		Sys_Error( "failed to swap buffers\nCheck your video driver and as possible of reinstall it" );
 }
 
 /*
@@ -1244,60 +1154,29 @@ R_DrawCubemapView
 */
 void R_DrawCubemapView( const vec3_t origin, const vec3_t angles, int size )
 {
-	ref_params_t *fd;
+	ref_viewpass_t rvp;
 
-	fd = &RI.refdef;
-	*fd = r_lastRefdef;
-	fd->time = 0;
-	fd->viewport[0] = RI.refdef.viewport[1] = 0;
-	fd->viewport[2] = size;
-	fd->viewport[3] = size;
-	fd->fov_x = 90;
-	fd->fov_y = 90;
-	VectorCopy( origin, fd->vieworg );
-	VectorCopy( angles, fd->viewangles );
-	VectorCopy( fd->vieworg, RI.pvsorigin );
+	// basic params
+	rvp.flags = rvp.viewentity = 0;
+	SetBits( rvp.flags, RF_DRAW_WORLD );
+	SetBits( rvp.flags, RF_DRAW_CUBEMAP );
 
-	R_Set2DMode( false );
-		
-	// setup scissor
-	RI.scissor[0] = fd->viewport[0];
-	RI.scissor[1] = glState.height - fd->viewport[3] - fd->viewport[1];
-	RI.scissor[2] = fd->viewport[2];
-	RI.scissor[3] = fd->viewport[3];
+	rvp.viewport[0] = rvp.viewport[1] = 0;
+	rvp.viewport[2] = rvp.viewport[3] = size;
+	rvp.fov_x = rvp.fov_y = 90.0f; // this is a final fov value
 
-	// setup viewport
-	RI.viewport[0] = fd->viewport[0];
-	RI.viewport[1] = glState.height - fd->viewport[3] - fd->viewport[1];
-	RI.viewport[2] = fd->viewport[2];
-	RI.viewport[3] = fd->viewport[3];
+	// setup origin & angles
+	VectorCopy( origin, rvp.vieworigin );
+	VectorCopy( angles, rvp.viewangles );
 
-	R_RenderScene( fd );
+	R_RenderFrame( &rvp );
 
-	r_oldviewleaf = r_viewleaf = NULL;		// force markleafs next frame
-}
-
-static void R_GetDetailScaleForTexture( int texture, float *xScale, float *yScale )
-{
-	gltexture_t *glt = R_GetTexture( texture );
-
-	if( xScale ) *xScale = glt->xscale;
-	if( yScale ) *yScale = glt->yscale;
-}
-
-static void R_GetFogParamsForTexture( int texture, byte *red, byte *green, byte *blue, byte *density )
-{
-	gltexture_t *glt = R_GetTexture( texture );
-
-	if( red ) *red = glt->fogParams[0];
-	if( green ) *green = glt->fogParams[1];
-	if( blue ) *blue = glt->fogParams[2];
-	if( density ) *density = glt->fogParams[3];
+	RI.viewleaf = NULL;		// force markleafs next frame
 }
 
 static int GL_RenderGetParm( int parm, int arg )
 {
-	gltexture_t *glt;
+	gl_texture_t *glt;
 
 	switch( parm )
 	{
@@ -1313,18 +1192,35 @@ static int GL_RenderGetParm( int parm, int arg )
 	case PARM_TEX_SRC_HEIGHT:
 		glt = R_GetTexture( arg );
 		return glt->srcHeight;
+	case PARM_TEX_GLFORMAT:
+		glt = R_GetTexture( arg );
+		return glt->format;
+	case PARM_TEX_ENCODE:
+		glt = R_GetTexture( arg );
+		return glt->encode;
+	case PARM_TEX_MIPCOUNT:
+		glt = R_GetTexture( arg );
+		return glt->numMips;
+	case PARM_TEX_DEPTH:
+		glt = R_GetTexture( arg );
+		return glt->depth;
+	case PARM_BSP2_SUPPORTED:
+#ifdef SUPPORT_BSP2_FORMAT
+		return 1;
+#endif
+		return 0;
 	case PARM_TEX_SKYBOX:
-		ASSERT( arg >= 0 && arg < 6 );
+		Assert( arg >= 0 && arg < 6 );
 		return tr.skyboxTextures[arg];
 	case PARM_TEX_SKYTEXNUM:
 		return tr.skytexturenum;
 	case PARM_TEX_LIGHTMAP:
-		ASSERT( arg >= 0 && arg < MAX_LIGHTMAPS );
+		arg = bound( 0, arg, MAX_LIGHTMAPS - 1 );
 		return tr.lightmapTextures[arg];
 	case PARM_SKY_SPHERE:
-		return world.sky_sphere;
-	case PARM_WORLD_VERSION:
-		return world.version;
+		return FBitSet( world.flags, FWORLD_SKYSPHERE ) && !FBitSet( world.flags, FWORLD_CUSTOM_SKYBOX );
+	case PARAM_GAMEPAUSED:
+		return cl.paused;
 	case PARM_WIDESCREEN:
 		return glState.wideScreen;
 	case PARM_FULLSCREEN:
@@ -1333,12 +1229,68 @@ static int GL_RenderGetParm( int parm, int arg )
 		return glState.width;
 	case PARM_SCREEN_HEIGHT:
 		return glState.height;
-	case PARM_MAP_HAS_MIRRORS:
-		return world.has_mirrors;
 	case PARM_CLIENT_INGAME:
 		return CL_IsInGame();
+	case PARM_MAX_ENTITIES:
+		return clgame.maxEntities;
+	case PARM_TEX_TARGET:
+		glt = R_GetTexture( arg );
+		return glt->target;
+	case PARM_TEX_TEXNUM:
+		glt = R_GetTexture( arg );
+		return glt->texnum;
+	case PARM_TEX_FLAGS:
+		glt = R_GetTexture( arg );
+		return glt->flags;
+	case PARM_FEATURES:
+		return host.features;
+	case PARM_ACTIVE_TMU:
+		return glState.activeTMU;
+	case PARM_LIGHTSTYLEVALUE:
+		arg = bound( 0, arg, MAX_LIGHTSTYLES - 1 );
+		return tr.lightstylevalue[arg];
+	case PARM_MAP_HAS_DELUXE:
+		return FBitSet( world.flags, FWORLD_HAS_DELUXEMAP );
+	case PARM_MAX_IMAGE_UNITS:
+		return GL_MaxTextureUnits();
+	case PARM_CLIENT_ACTIVE:
+		return (cls.state == ca_active);
+	case PARM_REBUILD_GAMMA:
+		return glConfig.softwareGammaUpdate;
+	case PARM_DEDICATED_SERVER:
+		return (host.type == HOST_DEDICATED);
+	case PARM_SURF_SAMPLESIZE:
+		if( arg >= 0 && arg < cl.worldmodel->numsurfaces )
+			return Mod_SampleSizeForFace( &cl.worldmodel->surfaces[arg] );
+		return LM_SAMPLE_SIZE;
+	case PARM_GL_CONTEXT_TYPE:
+		return glConfig.context;
+	case PARM_GLES_WRAPPER:
+		return glConfig.wrapper;
+	case PARM_STENCIL_ACTIVE:
+		return glState.stencilEnabled;
+	case PARM_WATER_ALPHA:
+		return FBitSet( world.flags, FWORLD_WATERALPHA );
 	}
 	return 0;
+}
+
+static void R_GetDetailScaleForTexture( int texture, float *xScale, float *yScale )
+{
+	gl_texture_t *glt = R_GetTexture( texture );
+
+	if( xScale ) *xScale = glt->xscale;
+	if( yScale ) *yScale = glt->yscale;
+}
+
+static void R_GetExtraParmsForTexture( int texture, byte *red, byte *green, byte *blue, byte *density )
+{
+	gl_texture_t *glt = R_GetTexture( texture );
+
+	if( red ) *red = glt->fogParams[0];
+	if( green ) *green = glt->fogParams[1];
+	if( blue ) *blue = glt->fogParams[2];
+	if( density ) *density = glt->fogParams[3];
 }
 
 /*
@@ -1347,20 +1299,17 @@ R_EnvShot
 
 =================
 */
-static void R_EnvShot( const float *vieworg, const char *name, int skyshot )
+static void R_EnvShot( const float *vieworg, const char *name, int skyshot, int shotsize )
 {
 	static vec3_t viewPoint;
 
-	if( !name )
-	{
-		MsgDev( D_ERROR, "R_%sShot: bad name\n", skyshot ? "Sky" : "Env" );
+	if( !COM_CheckString( name ))
 		return; 
-	}
 
 	if( cls.scrshot_action != scrshot_inactive )
 	{
 		if( cls.scrshot_action != scrshot_skyshot && cls.scrshot_action != scrshot_envshot )
-			MsgDev( D_ERROR, "R_%sShot: subsystem is busy, try later.\n", skyshot ? "Sky" : "Env" );
+			Con_Printf( S_ERROR "R_%sShot: subsystem is busy, try for next frame.\n", skyshot ? "Sky" : "Env" );
 		return;
 	}
 
@@ -1372,11 +1321,15 @@ static void R_EnvShot( const float *vieworg, const char *name, int skyshot )
 		// make sure what viewpoint don't temporare
 		VectorCopy( vieworg, viewPoint );
 		cls.envshot_vieworg = viewPoint;
+		cls.envshot_disable_vis = true;
 	}
 
 	// make request for envshot
 	if( skyshot ) cls.scrshot_action = scrshot_skyshot;
 	else cls.scrshot_action = scrshot_envshot;
+
+	// catch negative values
+	cls.envshot_viewsize = max( 0, shotsize );
 }
 
 static void R_SetCurrentEntity( cl_entity_t *ent )
@@ -1395,71 +1348,180 @@ static void R_SetCurrentModel( model_t *mod )
 	RI.currentmodel = mod;
 }
 
+static int R_FatPVS( const vec3_t org, float radius, byte *visbuffer, qboolean merge, qboolean fullvis )
+{
+	return Mod_FatPVS( org, radius, visbuffer, world.visbytes, merge, fullvis );
+}
+
 static lightstyle_t *CL_GetLightStyle( int number )
 {
-	ASSERT( number >= 0 && number < MAX_LIGHTSTYLES );
+	Assert( number >= 0 && number < MAX_LIGHTSTYLES );
 	return &cl.lightstyles[number];
 }
 
 static dlight_t *CL_GetDynamicLight( int number )
 {
-	ASSERT( number >= 0 && number < MAX_DLIGHTS );
+	Assert( number >= 0 && number < MAX_DLIGHTS );
 	return &cl_dlights[number];
 }
 
 static dlight_t *CL_GetEntityLight( int number )
 {
-	ASSERT( number >= 0 && number < MAX_ELIGHTS );
+	Assert( number >= 0 && number < MAX_ELIGHTS );
 	return &cl_elights[number];
 }
 
-static void CL_GetBeamChains( BEAM ***active_beams, BEAM ***free_beams, particle_t ***free_trails )
+static float R_GetFrameTime( void )
 {
-	*active_beams = &cl_active_beams;
-	*free_beams = &cl_free_beams;
-	*free_trails = &cl_free_trails; 
+	return tr.frametime;
 }
 
-static void GL_SetWorldviewProjectionMatrix( const float *glmatrix )
+static const char *GL_TextureName( unsigned int texnum )
 {
-	if( !glmatrix ) return;
+	return R_GetTexture( texnum )->name;	
+}
 
-	Matrix4x4_FromArrayFloatGL( RI.worldviewProjectionMatrix, glmatrix );
+const byte *GL_TextureData( unsigned int texnum )
+{
+	rgbdata_t *pic = R_GetTexture( texnum )->original;
+
+	if( pic != NULL )
+		return pic->buffer;
+	return NULL;	
+}
+
+static const ref_overview_t *GL_GetOverviewParms( void )
+{
+	return &clgame.overView;
+}
+
+static void *R_Mem_Alloc( size_t cb, const char *filename, const int fileline )
+{
+	return _Mem_Alloc( cls.mempool, cb, true, filename, fileline );
+}
+
+static void R_Mem_Free( void *mem, const char *filename, const int fileline )
+{
+	if( !mem ) return;
+	_Mem_Free( mem, filename, fileline );
+}
+
+/*
+=========
+pfnGetFilesList
+
+=========
+*/
+static char **pfnGetFilesList( const char *pattern, int *numFiles, int gamedironly )
+{
+	static search_t	*t = NULL;
+
+	if( t ) Mem_Free( t ); // release prev search
+
+	t = FS_Search( pattern, true, gamedironly );
+
+	if( !t )
+	{
+		if( numFiles ) *numFiles = 0;
+		return NULL;
+	}
+
+	if( numFiles ) *numFiles = t->numfilenames;
+	return t->filenames;
+}
+
+static uint pfnFileBufferCRC32( const void *buffer, const int length )
+{
+	uint	modelCRC = 0;
+
+	if( !buffer || length <= 0 )
+		return modelCRC;
+
+	CRC32_Init( &modelCRC );
+	CRC32_ProcessBuffer( &modelCRC, buffer, length );
+	return CRC32_Final( modelCRC );
+}
+
+/*
+=============
+CL_GenericHandle
+
+=============
+*/
+const char *CL_GenericHandle( int fileindex )
+{
+	if( fileindex < 0 || fileindex >= MAX_CUSTOM )
+		return 0;
+	return cl.files_precache[fileindex];
 }
 	
 static render_api_t gRenderAPI =
 {
-	DrawSingleDecal,
-	R_GetDetailScaleForTexture,
-	R_GetFogParamsForTexture,
 	GL_RenderGetParm,
-	R_EnvShot,
-	GL_LoadTexture,
-	GL_CreateTexture,
-	GL_FindTexture,
-	GL_FreeTexture,
-	R_SetCurrentEntity,
-	R_SetCurrentModel,
-	R_StoreEfrags,
-	Host_Error,
+	R_GetDetailScaleForTexture,
+	R_GetExtraParmsForTexture,
 	CL_GetLightStyle,
 	CL_GetDynamicLight,
 	CL_GetEntityLight,
-	GL_Bind,
-	TextureToTexGamma,
-	CL_GetBeamChains,
-	CL_DrawParticlesExternal,
-	GL_SetWorldviewProjectionMatrix,
-	COM_CompareFileTime,
+	LightToTexGamma,
+	R_GetFrameTime,
+	R_SetCurrentEntity,
+	R_SetCurrentModel,
+	R_FatPVS,
+	R_StoreEfrags,
+	GL_FindTexture,
+	GL_TextureName,
+	GL_TextureData,
+	GL_LoadTexture,
+	GL_CreateTexture,
+	GL_LoadTextureArray,
+	GL_CreateTextureArray,
+	GL_FreeTexture,
+	DrawSingleDecal,
+	R_DecalSetupVerts,
+	R_EntityRemoveDecals,
 	AVI_LoadVideo,
 	AVI_GetVideoInfo,
-	AVI_GetAudioInfo,
-	AVI_GetAudioChunk,
 	AVI_GetVideoFrameNumber,
 	AVI_GetVideoFrame,
 	R_UploadStretchRaw,
 	AVI_FreeVideo,
 	AVI_IsActive,
+	S_StreamAviSamples,
+	NULL,
+	NULL,
+	GL_Bind,
+	GL_SelectTexture,
+	GL_LoadTexMatrixExt,
+	GL_LoadIdentityTexMatrix,
+	GL_CleanUpTextureUnits,
+	GL_TexGen,
+	GL_TextureTarget,
+	GL_SetTexCoordArrayMode,
+	GL_GetProcAddress,
+	GL_UpdateTexSize,
+	NULL,
+	NULL,
+	CL_DrawParticlesExternal,
+	R_EnvShot,
+	pfnSPR_LoadExt,
+	R_LightVec,
+	R_StudioGetTexture,
+	GL_GetOverviewParms,
+	CL_GenericHandle,
+	NULL,
+	NULL,
+	R_Mem_Alloc,
+	R_Mem_Free,
+	pfnGetFilesList,
+	pfnFileBufferCRC32,
+	COM_CompareFileTime,
+	Host_Error,
+	CL_ModelHandle,
+	pfnTime,
+	Cvar_Set,
+	S_FadeMusicVolume,
+	COM_SetRandomSeed,
 };
 
 /*
@@ -1471,16 +1533,19 @@ Initialize client external rendering
 */
 qboolean R_InitRenderAPI( void )
 {
+	// make sure what render functions is cleared
+	memset( &clgame.drawFuncs, 0, sizeof( clgame.drawFuncs ));
+
 	if( clgame.dllFuncs.pfnGetRenderInterface )
 	{
 		if( clgame.dllFuncs.pfnGetRenderInterface( CL_RENDER_INTERFACE_VERSION, &gRenderAPI, &clgame.drawFuncs ))
 		{
-			MsgDev( D_AICONSOLE, "CL_LoadProgs: ^2initailized extended RenderAPI ^7ver. %i\n", CL_RENDER_INTERFACE_VERSION );
+			Con_Reportf( "CL_LoadProgs: ^2initailized extended RenderAPI ^7ver. %i\n", CL_RENDER_INTERFACE_VERSION );
 			return true;
 		}
 
 		// make sure what render functions is cleared
-		Q_memset( &clgame.drawFuncs, 0, sizeof( clgame.drawFuncs ));
+		memset( &clgame.drawFuncs, 0, sizeof( clgame.drawFuncs ));
 
 		return false; // just tell user about problems
 	}
