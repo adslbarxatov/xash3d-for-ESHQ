@@ -28,11 +28,38 @@ R_SpeedsMessage
 */
 qboolean R_SpeedsMessage( char *out, size_t size )
 {
-	if( r_speeds->integer <= 0 ) return false;
+	if( clgame.drawFuncs.R_SpeedsMessage != NULL )
+	{
+		if( clgame.drawFuncs.R_SpeedsMessage( out, size ))
+			return true;
+		// otherwise pass to default handler
+	}
+
+	if( r_speeds->value <= 0 ) return false;
 	if( !out || !size ) return false;
 
 	Q_strncpy( out, r_speeds_msg, size );
+
 	return true;
+}
+
+/*
+==============
+R_Speeds_Printf
+
+helper to print into r_speeds message
+==============
+*/
+void R_Speeds_Printf( const char *msg, ... )
+{
+	va_list	argptr;
+	char	text[2048];
+
+	va_start( argptr, msg );
+	Q_vsprintf( text, msg, argptr );
+	va_end( argptr );
+
+	Q_strncat( r_speeds_msg, text, sizeof( r_speeds_msg ));
 }
 
 /*
@@ -43,8 +70,6 @@ GL_BackendStartFrame
 void GL_BackendStartFrame( void )
 {
 	r_speeds_msg[0] = '\0';
-
-	if( !RI.drawWorld ) R_Set2DMode( false );
 }
 
 /*
@@ -54,36 +79,42 @@ GL_BackendEndFrame
 */
 void GL_BackendEndFrame( void )
 {
-	// go into 2D mode (in case we draw PlayerSetup between two 2d calls)
-	if( !RI.drawWorld ) R_Set2DMode( true );
+	mleaf_t	*curleaf;
 
-	if( r_speeds->integer <= 0 || !RI.drawWorld )
+	if( r_speeds->value <= 0 || !RI.drawWorld )
 		return;
 
-	switch( r_speeds->integer )
+	if( !RI.viewleaf )
+		curleaf = cl.worldmodel->leafs;
+	else curleaf = RI.viewleaf;
+
+	R_Speeds_Printf( "Renderer: ^1Engine^7\n\n" );
+
+	switch( (int)r_speeds->value )
 	{
 	case 1:
-		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i wpoly, %3i bpoly\n%3i epoly, %3i spoly",
-		r_stats.c_world_polys, r_stats.c_brush_polys, r_stats.c_studio_polys, r_stats.c_sprite_polys );
+		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i wpoly, %3i apoly\n%3i epoly, %3i spoly",
+		r_stats.c_world_polys, r_stats.c_alias_polys, r_stats.c_studio_polys, r_stats.c_sprite_polys );
 		break;		
 	case 2:
-		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "visible leafs:\n%3i leafs\ncurrent leaf %3i",
-		r_stats.c_world_leafs, r_viewleaf - cl.worldmodel->leafs );
+		R_Speeds_Printf( "visible leafs:\n%3i leafs\ncurrent leaf %3i\n", r_stats.c_world_leafs, curleaf - cl.worldmodel->leafs );
+		R_Speeds_Printf( "ReciusiveWorldNode: %3lf secs\nDrawTextureChains %lf\n", r_stats.t_world_node, r_stats.t_world_draw );
 		break;
 	case 3:
-		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i studio models drawn\n%3i sprites drawn",
-		r_stats.c_studio_models_drawn, r_stats.c_sprite_models_drawn );
+		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i alias models drawn\n%3i studio models drawn\n%3i sprites drawn",
+		r_stats.c_alias_models_drawn, r_stats.c_studio_models_drawn, r_stats.c_sprite_models_drawn );
 		break;
 	case 4:
-		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i static entities\n%3i normal entities",
-		r_numStatics, r_numEntities );
+		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i static entities\n%3i normal entities\n%3i server entities",
+		r_numStatics, r_numEntities - r_numStatics, pfnNumberOfEntities( ));
 		break;
 	case 5:
 		Q_snprintf( r_speeds_msg, sizeof( r_speeds_msg ), "%3i tempents\n%3i viewbeams\n%3i particles",
 		r_stats.c_active_tents_count, r_stats.c_view_beams_count, r_stats.c_particle_count );
+		break;
 	}
 
-	Q_memset( &r_stats, 0, sizeof( r_stats ));
+	memset( &r_stats, 0, sizeof( r_stats ));
 }
 
 /*
@@ -95,6 +126,19 @@ void GL_LoadTexMatrix( const matrix4x4 m )
 {
 	pglMatrixMode( GL_TEXTURE );
 	GL_LoadMatrix( m );
+	glState.texIdentityMatrix[glState.activeTMU] = false;
+}
+
+/*
+=================
+GL_LoadTexMatrixExt
+=================
+*/
+void GL_LoadTexMatrixExt( const float *glmatrix )
+{
+	Assert( glmatrix != NULL );
+	pglMatrixMode( GL_TEXTURE );
+	pglLoadMatrixf( glmatrix );
 	glState.texIdentityMatrix[glState.activeTMU] = false;
 }
 
@@ -131,54 +175,31 @@ void GL_LoadIdentityTexMatrix( void )
 GL_SelectTexture
 =================
 */
-void GL_SelectTexture( GLenum texture )
+void GL_SelectTexture( GLint tmu )
 {
 	if( !GL_Support( GL_ARB_MULTITEXTURE ))
 		return;
 
-	if( glState.activeTMU == texture )
+	// don't allow negative texture units
+	if( tmu < 0 ) return;
+
+	if( tmu >= GL_MaxTextureUnits( ))
+	{
+		Con_Reportf( S_ERROR "GL_SelectTexture: bad tmu state %i\n", tmu );
+		return; 
+	}
+
+	if( glState.activeTMU == tmu )
 		return;
 
-	glState.activeTMU = texture;
+	glState.activeTMU = tmu;
 
 	if( pglActiveTextureARB )
 	{
-		pglActiveTextureARB( texture + GL_TEXTURE0_ARB );
-		pglClientActiveTextureARB( texture + GL_TEXTURE0_ARB );
-	}
-	else if( pglSelectTextureSGIS )
-	{
-		pglSelectTextureSGIS( texture + GL_TEXTURE0_SGIS );
-	}
-}
+		pglActiveTextureARB( tmu + GL_TEXTURE0_ARB );
 
-/*
-=================
-GL_DisableMultitexture
-=================
-*/
-void GL_DisableMultitexture( void ) 
-{
-	if( glState.mtexEnabled )
-	{
-		pglDisable( GL_TEXTURE_2D );
-		GL_SelectTexture( GL_TEXTURE0 );
-		glState.mtexEnabled = false;
-	}
-}
-
-/*
-=================
-GL_EnableMultitexture
-=================
-*/
-void GL_EnableMultitexture( void ) 
-{
-	if( GL_Support( GL_ARB_MULTITEXTURE ))
-	{
-		GL_SelectTexture( GL_TEXTURE1 );
-		pglEnable( GL_TEXTURE_2D );
-		glState.mtexEnabled = true;
+		if( tmu < glConfig.max_texture_coords )
+			pglClientActiveTextureARB( tmu + GL_TEXTURE0_ARB );
 	}
 }
 
@@ -204,12 +225,34 @@ void GL_CleanUpTextureUnits( int last )
 {
 	int	i;
 
-	for( i = glState.activeTMU; i > last - 1; i-- )
+	for( i = glState.activeTMU; i > (last - 1); i-- )
 	{
+		// disable upper units
+		if( glState.currentTextureTargets[i] != GL_NONE )
+		{
+			pglDisable( glState.currentTextureTargets[i] );
+			glState.currentTextureTargets[i] = GL_NONE;
+			glState.currentTextures[i] = -1; // unbind texture
+		}
+
+		GL_SetTexCoordArrayMode( GL_NONE );
+		GL_LoadIdentityTexMatrix();
 		GL_DisableAllTexGens();
-		pglDisable( GL_TEXTURE_2D );
 		GL_SelectTexture( i - 1 );
 	}
+}
+
+/*
+==============
+GL_CleanupAllTextureUnits
+==============
+*/
+void GL_CleanupAllTextureUnits( void )
+{
+	if( !glw_state.initialized ) return;
+	// force to cleanup all the units
+	GL_SelectTexture( GL_MaxTextureUnits() - 1 );
+	GL_CleanUpTextureUnits( 0 );
 }
 
 /*
@@ -219,13 +262,33 @@ GL_MultiTexCoord2f
 */
 void GL_MultiTexCoord2f( GLenum texture, GLfloat s, GLfloat t )
 {
-	if( pglMultiTexCoord2f )
-	{
+	if( !GL_Support( GL_ARB_MULTITEXTURE ))
+		return;
+
+	if( pglMultiTexCoord2f != NULL )
 		pglMultiTexCoord2f( texture + GL_TEXTURE0_ARB, s, t );
-	}
-	else if( pglMTexCoord2fSGIS )
+}
+
+/*
+=================
+GL_TextureTarget
+=================
+*/
+void GL_TextureTarget( uint target )
+{
+	if( glState.activeTMU < 0 || glState.activeTMU >= GL_MaxTextureUnits( ))
 	{
-		pglMTexCoord2fSGIS( texture + GL_TEXTURE0_SGIS, s, t );
+		Con_Reportf( S_ERROR "GL_TextureTarget: bad tmu state %i\n", glState.activeTMU );
+		return; 
+	}
+
+	if( glState.currentTextureTargets[glState.activeTMU] != target )
+	{
+		if( glState.currentTextureTargets[glState.activeTMU] != GL_NONE )
+			pglDisable( glState.currentTextureTargets[glState.activeTMU] );
+		glState.currentTextureTargets[glState.activeTMU] = target;
+		if( target != GL_NONE )
+			pglEnable( glState.currentTextureTargets[glState.activeTMU] );
 	}
 }
 
@@ -236,7 +299,7 @@ GL_TexGen
 */
 void GL_TexGen( GLenum coord, GLenum mode )
 {
-	int	tmu = glState.activeTMU;
+	int	tmu = min( glConfig.max_texture_coords, glState.activeTMU );
 	int	bit, gen;
 
 	switch( coord )
@@ -262,7 +325,7 @@ void GL_TexGen( GLenum coord, GLenum mode )
 
 	if( mode )
 	{
-		if(!( glState.genSTEnabled[tmu] & bit ))
+		if( !( glState.genSTEnabled[tmu] & bit ))
 		{
 			pglEnable( gen );
 			glState.genSTEnabled[tmu] |= bit;
@@ -276,6 +339,34 @@ void GL_TexGen( GLenum coord, GLenum mode )
 			pglDisable( gen );
 			glState.genSTEnabled[tmu] &= ~bit;
 		}
+	}
+}
+
+/*
+=================
+GL_SetTexCoordArrayMode
+=================
+*/
+void GL_SetTexCoordArrayMode( GLenum mode )
+{
+	int	tmu = min( glConfig.max_texture_coords, glState.activeTMU );
+	int	bit, cmode = glState.texCoordArrayMode[tmu];
+
+	if( mode == GL_TEXTURE_COORD_ARRAY )
+		bit = 1;
+	else if( mode == GL_TEXTURE_CUBE_MAP_ARB )
+		bit = 2;
+	else bit = 0;
+
+	if( cmode != bit )
+	{
+		if( cmode == 1 ) pglDisableClientState( GL_TEXTURE_COORD_ARRAY );
+		else if( cmode == 2 ) pglDisable( GL_TEXTURE_CUBE_MAP_ARB );
+
+		if( bit == 1 ) pglEnableClientState( GL_TEXTURE_COORD_ARRAY );
+		else if( bit == 2 ) pglEnable( GL_TEXTURE_CUBE_MAP_ARB );
+
+		glState.texCoordArrayMode[tmu] = bit;
 	}
 }
 
@@ -298,55 +389,32 @@ void GL_Cull( GLenum cull )
 	glState.faceCull = cull;
 }
 
-/*
-=================
-GL_FrontFace
-=================
-*/
-void GL_FrontFace( GLenum front )
-{
-	pglFrontFace( front ? GL_CW : GL_CCW );
-	glState.frontFace = front;
-}
-
 void GL_SetRenderMode( int mode )
 {
+	pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
 	switch( mode )
 	{
 	case kRenderNormal:
 	default:
 		pglDisable( GL_BLEND );
 		pglDisable( GL_ALPHA_TEST );
-		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 		break;
 	case kRenderTransColor:
-		pglEnable( GL_BLEND );
-		pglDisable( GL_ALPHA_TEST );
-		pglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		break;
-	case kRenderTransAlpha:
-		pglDisable( GL_BLEND );
-		pglEnable( GL_ALPHA_TEST );
-		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		break;
 	case kRenderTransTexture:
 		pglEnable( GL_BLEND );
 		pglDisable( GL_ALPHA_TEST );
 		pglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+		break;
+	case kRenderTransAlpha:
+		pglDisable( GL_BLEND );
+		pglEnable( GL_ALPHA_TEST );
 		break;
 	case kRenderGlow:
-		pglEnable( GL_BLEND );
-		pglDisable( GL_ALPHA_TEST );
-		pglBlendFunc( GL_SRC_ALPHA, GL_ONE );
-		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		break;
 	case kRenderTransAdd:
 		pglEnable( GL_BLEND );
 		pglDisable( GL_ALPHA_TEST );
 		pglBlendFunc( GL_SRC_ALPHA, GL_ONE );
-		pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 		break;
 	}
 }
@@ -382,35 +450,38 @@ const envmap_t r_envMapInfo[6] =
 {{  0,  90,   0}, 0 },
 {{  0, 270, 180}, 0 },
 {{-90, 180, -90}, 0 },
-{{ 90, 180,  90}, 0 }
+{{ 90,   0,  90}, 0 }
 };
 
 /*
-================
-VID_ImageAdjustGamma
-================
+===============
+VID_WriteOverviewScript
+
+Create overview script file
+===============
 */
-void VID_ImageAdjustGamma( byte *in, uint width, uint height )
+void VID_WriteOverviewScript( void )
 {
-	int	i, c = width * height;
-	float	g = 1.0f / bound( 0.5f, vid_gamma->value, 2.3f );
-	byte	r_gammaTable[256];	// adjust screenshot gamma
-	byte	*p = in;
+	ref_overview_t	*ov = &clgame.overView;
+	string		filename;
+	file_t		*f;
 
-	// rebuild the gamma table	
-	for( i = 0; i < 256; i++ )
-	{
-		if ( g == 1.0f ) r_gammaTable[i] = i;
-		else r_gammaTable[i] = bound( 0, 255 * pow((i + 0.5) / 255.5f, g ) + 0.5f, 255 );
-	}
+	Q_snprintf( filename, sizeof( filename ), "overviews/%s.txt", clgame.mapname );
 
-	// adjust screenshots gamma
-	for( i = 0; i < c; i++, p += 3 )
-	{
-		p[0] = r_gammaTable[p[0]];
-		p[1] = r_gammaTable[p[1]];
-		p[2] = r_gammaTable[p[2]];
-	}
+	f = FS_Open( filename, "w", false );
+	if( !f ) return;
+
+	FS_Printf( f, "// overview description file for %s.bsp\n\n", clgame.mapname );
+	FS_Print( f, "global\n{\n" );
+	FS_Printf( f, "\tZOOM\t%.2f\n", ov->flZoom );
+	FS_Printf( f, "\tORIGIN\t%.2f\t%.2f\t%.2f\n", ov->origin[0], ov->origin[1], ov->origin[2] );
+	FS_Printf( f, "\tROTATED\t%i\n", ov->rotated ? 1 : 0 );
+	FS_Print( f, "}\n\nlayer\n{\n" );
+	FS_Printf( f, "\tIMAGE\t\"overviews/%s.bmp\"\n", clgame.mapname );
+	FS_Printf( f, "\tHEIGHT\t%.2f\n", ov->zFar );	// ???
+	FS_Print( f, "}\n" );
+
+	FS_Close( f );
 }
 
 qboolean VID_ScreenShot( const char *filename, int shot_type )
@@ -420,31 +491,37 @@ qboolean VID_ScreenShot( const char *filename, int shot_type )
 	int	width = 0, height = 0;
 	qboolean	result;
 
-	r_shot = Mem_Alloc( r_temppool, sizeof( rgbdata_t ));
-	r_shot->width = glState.width;
-	r_shot->height = glState.height;
+	r_shot = Mem_Calloc( r_temppool, sizeof( rgbdata_t ));
+	r_shot->width = (glState.width + 3) & ~3;
+	r_shot->height = (glState.height + 3) & ~3;
 	r_shot->flags = IMAGE_HAS_COLOR;
 	r_shot->type = PF_RGB_24;
 	r_shot->size = r_shot->width * r_shot->height * PFDesc[r_shot->type].bpp;
 	r_shot->palette = NULL;
-	r_shot->buffer = Mem_Alloc( r_temppool, r_shot->size );
+	r_shot->buffer = Mem_Malloc( r_temppool, r_shot->size );
 
 	// get screen frame
-	pglReadPixels( 0, 0, glState.width, glState.height, GL_RGB, GL_UNSIGNED_BYTE, r_shot->buffer );
+	pglReadPixels( 0, 0, r_shot->width, r_shot->height, GL_RGB, GL_UNSIGNED_BYTE, r_shot->buffer );
 
 	switch( shot_type )
 	{
 	case VID_SCREENSHOT:
-		if( !gl_overview->integer )
-			VID_ImageAdjustGamma( r_shot->buffer, r_shot->width, r_shot->height ); // scrshot gamma
 		break;
 	case VID_SNAPSHOT:
 		FS_AllowDirectPaths( true );
 		break;
 	case VID_LEVELSHOT:
 		flags |= IMAGE_RESAMPLE;
-		height = 384;
-		width = 512;
+		if( glState.wideScreen )
+		{
+			height = 480;
+			width = 800;
+		}
+		else
+		{
+			height = 480;
+			width = 640;
+		}
 		break;
 	case VID_MINISHOT:
 		flags |= IMAGE_RESAMPLE;
@@ -452,17 +529,18 @@ qboolean VID_ScreenShot( const char *filename, int shot_type )
 		width = 320;
 		break;
 	case VID_MAPSHOT:
-		V_WriteOverviewScript();		// store overview script too
+		VID_WriteOverviewScript();		// store overview script too
 		flags |= IMAGE_RESAMPLE|IMAGE_QUANTIZE;	// GoldSrc request overviews in 8-bit format
 		height = 768;
 		width = 1024;
 		break;
 	}
 
-	Image_Process( &r_shot, width, height, 0.0f, flags );
+	Image_Process( &r_shot, width, height, flags, 0.0f );
 
 	// write image
 	result = FS_SaveImage( filename, r_shot );
+	host.write_to_clipboard = false;		// disable write to clipboard
 	FS_AllowDirectPaths( false );			// always reset after store screenshot
 	FS_FreeImage( r_shot );
 
@@ -496,16 +574,19 @@ qboolean VID_CubemapShot( const char *base, uint size, const float *vieworg, qbo
 	RI.params |= RP_ENVVIEW;	// do not render non-bmodel entities
 
 	// alloc space
-	temp = Mem_Alloc( r_temppool, size * size * 3 );
-	buffer = Mem_Alloc( r_temppool, size * size * 3 * 6 );
-	r_shot = Mem_Alloc( r_temppool, sizeof( rgbdata_t ));
-	r_side = Mem_Alloc( r_temppool, sizeof( rgbdata_t ));
+	temp = Mem_Malloc( r_temppool, size * size * 3 );
+	buffer = Mem_Malloc( r_temppool, size * size * 3 * 6 );
+	r_shot = Mem_Calloc( r_temppool, sizeof( rgbdata_t ));
+	r_side = Mem_Calloc( r_temppool, sizeof( rgbdata_t ));
 
 	// use client vieworg
-	if( !vieworg ) vieworg = r_lastRefdef.vieworg;
+	if( !vieworg ) vieworg = RI.vieworg;
 
 	for( i = 0; i < 6; i++ )
 	{
+		// go into 3d mode
+		R_Set2DMode( false );
+
 		if( skyshot )
 		{
 			R_DrawCubemapView( vieworg, r_skyBoxInfo[i].angles, size );
@@ -515,17 +596,17 @@ qboolean VID_CubemapShot( const char *base, uint size, const float *vieworg, qbo
 		{
 			R_DrawCubemapView( vieworg, r_envMapInfo[i].angles, size );
 			flags = r_envMapInfo[i].flags;
-                    }
+		}
 
-		pglReadPixels( 0, glState.height - size, size, size, GL_RGB, GL_UNSIGNED_BYTE, temp );
+		pglReadPixels( 0, 0, size, size, GL_RGB, GL_UNSIGNED_BYTE, temp );
 		r_side->flags = IMAGE_HAS_COLOR;
 		r_side->width = r_side->height = size;
 		r_side->type = PF_RGB_24;
 		r_side->size = r_side->width * r_side->height * 3;
 		r_side->buffer = temp;
 
-		if( flags ) Image_Process( &r_side, 0, 0, 0.0f, flags );
-		Q_memcpy( buffer + (size * size * 3 * i), r_side->buffer, size * size * 3 );
+		if( flags ) Image_Process( &r_side, 0, 0, flags, 0.0f );
+		memcpy( buffer + (size * size * 3 * i), r_side->buffer, size * size * 3 );
 	}
 
 	RI.params &= ~RP_ENVVIEW;
@@ -541,10 +622,10 @@ qboolean VID_CubemapShot( const char *base, uint size, const float *vieworg, qbo
 
 	// make sure what we have right extension
 	Q_strncpy( basename, base, MAX_STRING );
-	FS_StripExtension( basename );
-	FS_DefaultExtension( basename, ".tga" );
+	COM_StripExtension( basename );
+	COM_DefaultExtension( basename, ".tga" );
 
-	// write image as dds packet
+	// write image as 6 sides
 	result = FS_SaveImage( basename, r_shot );
 	FS_FreeImage( r_shot );
 	FS_FreeImage( r_side );
@@ -564,64 +645,197 @@ was there.  This is used to test for texture thrashing.
 */
 void R_ShowTextures( void )
 {
-	gltexture_t	*image;
+	gl_texture_t	*image;
 	float		x, y, w, h;
-	int		i, j, base_w, base_h;
+	int		total, start, end;
+	int		i, j, k, base_w, base_h;
+	rgba_t		color = { 192, 192, 192, 255 };
+	int		charHeight, numTries = 0;
+	static qboolean	showHelp = true;
+	string		shortname;
 
-	if( !gl_showtextures->integer )
+	if( !CVAR_TO_BOOL( gl_showtextures ))
 		return;
 
-	if( gl_showtextures->integer == TEX_DETAIL )
-		pglClearColor( 1.0f, 0.0f, 0.5f, 1.0f );
+	if( showHelp )
+	{
+		CL_CenterPrint( "use '<-' and '->' keys to change atlas page, ESC to quit", 0.25f );
+		showHelp = false;
+	}
 
+	GL_SetRenderMode( kRenderNormal );
 	pglClear( GL_COLOR_BUFFER_BIT );
 	pglFinish();
 
-	switch( gl_showtextures->integer )
-	{
-	case TEX_LIGHTMAP:
-	case TEX_VGUI:
-	case TEX_DETAIL:
-	case TEX_CUSTOM:
-		// draw lightmaps as big images
-		base_w = 5;
-		base_h = 4;
-		break;
-	default:
-		base_w = 16;
-		base_h = 12;
-		break;	
-	}
+	base_w = 8;	// textures view by horizontal
+	base_h = 6;	// textures view by vertical
+
+rebuild_page:
+	total = base_w * base_h;
+	start = total * (gl_showtextures->value - 1);
+	end = total * gl_showtextures->value;
+	if( end > MAX_TEXTURES ) end = MAX_TEXTURES;
+
+	w = glState.width / base_w;
+	h = glState.height / base_h;
+
+	Con_DrawStringLen( NULL, NULL, &charHeight );
 
 	for( i = j = 0; i < MAX_TEXTURES; i++ )
 	{
 		image = R_GetTexture( i );
-		if( !image->texnum ) continue;
+		if( j == start ) break; // found start
+		if( pglIsTexture( image->texnum )) j++;
+	}
 
-		if( image->texType != gl_showtextures->integer )
+	if( i == MAX_TEXTURES && gl_showtextures->value != 1 )
+	{
+		// bad case, rewind to one and try again
+		Cvar_SetValue( "r_showtextures", max( 1, gl_showtextures->value - 1 ));
+		if( ++numTries < 2 ) goto rebuild_page;	// to prevent infinite loop
+	}
+
+	for( k = 0; i < MAX_TEXTURES; i++ )
+	{
+		if( j == end ) break; // page is full
+
+		image = R_GetTexture( i );
+		if( !pglIsTexture( image->texnum ))
 			continue;
 
-		w = glState.width / base_w;
-		h = glState.height / base_h;
-		x = j % base_w * w;
-		y = j / base_w * h;
+		x = k % base_w * w;
+		y = k / base_w * h;
 
 		pglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
-		GL_Bind( GL_TEXTURE0, i );
+		GL_Bind( GL_TEXTURE0, i ); // NOTE: don't use image->texnum here, because skybox has a 'wrong' indexes
+
+		if( FBitSet( image->flags, TF_DEPTHMAP ) && !FBitSet( image->flags, TF_NOCOMPARE ))
+			pglTexParameteri( image->target, GL_TEXTURE_COMPARE_MODE_ARB, GL_NONE );
 
 		pglBegin( GL_QUADS );
 		pglTexCoord2f( 0, 0 );
 		pglVertex2f( x, y );
-		pglTexCoord2f( 1, 0 );
+		if( image->target == GL_TEXTURE_RECTANGLE_EXT )
+			pglTexCoord2f( image->width, 0 );
+		else pglTexCoord2f( 1, 0 );
 		pglVertex2f( x + w, y );
-		pglTexCoord2f( 1, 1 );
+		if( image->target == GL_TEXTURE_RECTANGLE_EXT )
+			pglTexCoord2f( image->width, image->height );
+		else pglTexCoord2f( 1, 1 );
 		pglVertex2f( x + w, y + h );
-		pglTexCoord2f( 0, 1 );
+		if( image->target == GL_TEXTURE_RECTANGLE_EXT )
+			pglTexCoord2f( 0, image->height );
+		else pglTexCoord2f( 0, 1 );
 		pglVertex2f( x, y + h );
 		pglEnd();
-		j++;
+
+		if( FBitSet( image->flags, TF_DEPTHMAP ) && !FBitSet( image->flags, TF_NOCOMPARE ))
+			pglTexParameteri( image->target, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB );
+
+		COM_FileBase( image->name, shortname );
+		if( Q_strlen( shortname ) > 18 )
+		{
+			// cutoff too long names, it looks ugly
+			shortname[16] = '.';
+			shortname[17] = '.';
+			shortname[18] = '\0';
+		}
+		Con_DrawString( x + 1, y + h - charHeight, shortname, color );
+		j++, k++;
 	}
+
+	CL_DrawCenterPrint ();
 	pglFinish();
 }
 
-//=======================================================
+#define POINT_SIZE		16.0f
+#define NODE_INTERVAL_X(x)	(x * 16.0f)
+#define NODE_INTERVAL_Y(x)	(x * 16.0f)
+
+void R_DrawLeafNode( float x, float y, float scale )
+{
+	float downScale = scale * 0.25f;// * POINT_SIZE;
+
+	R_DrawStretchPic( x - downScale * 0.5f, y - downScale * 0.5f, downScale, downScale, 0, 0, 1, 1, tr.particleTexture );
+}
+
+void R_DrawNodeConnection( float x, float y, float x2, float y2 )
+{
+	pglBegin( GL_LINES );
+		pglVertex2f( x, y );
+		pglVertex2f( x2, y2 );
+	pglEnd();
+}
+
+void R_ShowTree_r( mnode_t *node, float x, float y, float scale, int shownodes )
+{
+	float	downScale = scale * 0.8f;
+
+	downScale = Q_max( downScale, 1.0f );
+
+	if( !node ) return;
+
+	tr.recursion_level++;
+
+	if( node->contents < 0 )
+	{
+		mleaf_t	*leaf = (mleaf_t *)node;
+
+		if( tr.recursion_level > tr.max_recursion )
+			tr.max_recursion = tr.recursion_level;
+
+		if( shownodes == 1 )
+		{
+			if( cl.worldmodel->leafs == leaf )
+				pglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
+			else if( RI.viewleaf && RI.viewleaf == leaf )
+				pglColor4f( 1.0f, 0.0f, 0.0f, 1.0f );
+			else pglColor4f( 0.0f, 1.0f, 0.0f, 1.0f );
+			R_DrawLeafNode( x, y, scale );
+		}
+		tr.recursion_level--;
+		return;
+	}
+
+	if( shownodes == 1 )
+	{
+		pglColor4f( 0.0f, 0.0f, 1.0f, 1.0f );
+		R_DrawLeafNode( x, y, scale );
+	}
+	else if( shownodes == 2 )
+	{
+		R_DrawNodeConnection( x, y, x - scale, y + scale );
+		R_DrawNodeConnection( x, y, x + scale, y + scale );
+	}
+
+	R_ShowTree_r( node->children[1], x - scale, y + scale, downScale, shownodes );
+	R_ShowTree_r( node->children[0], x + scale, y + scale, downScale, shownodes );
+
+	tr.recursion_level--;
+}
+
+void R_ShowTree( void )
+{
+	float	x = (float)((glState.width - (int)POINT_SIZE) >> 1);
+	float	y = NODE_INTERVAL_Y(1.0);
+
+	if( !cl.worldmodel || !CVAR_TO_BOOL( r_showtree ))
+		return;
+
+	tr.recursion_level = 0;
+
+	pglEnable( GL_BLEND );
+	pglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+	pglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+
+	pglLineWidth( 2.0f );
+	pglColor3f( 1, 0.7f, 0 );
+	pglDisable( GL_TEXTURE_2D );
+	R_ShowTree_r( cl.worldmodel->nodes, x, y, tr.max_recursion * 3.5f, 2 );
+	pglEnable( GL_TEXTURE_2D );
+	pglLineWidth( 1.0f );
+
+	R_ShowTree_r( cl.worldmodel->nodes, x, y, tr.max_recursion * 3.5f, 1 );
+
+	Con_NPrintf( 0, "max recursion %d\n", tr.max_recursion );
+}

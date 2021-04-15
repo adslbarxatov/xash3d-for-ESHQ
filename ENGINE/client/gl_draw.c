@@ -24,7 +24,7 @@ R_GetImageParms
 */
 void R_GetTextureParms( int *w, int *h, int texnum )
 {
-	gltexture_t	*glt;
+	gl_texture_t	*glt;
 
 	glt = R_GetTexture( texnum );
 	if( w ) *w = glt->srcWidth;
@@ -94,7 +94,7 @@ refresh window.
 void R_DrawTileClear( int x, int y, int w, int h )
 {
 	float		tw, th;
-	gltexture_t	*glt;
+	gl_texture_t	*glt;
 
 	GL_SetRenderMode( kRenderNormal );
 	pglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
@@ -124,7 +124,7 @@ R_DrawStretchRaw
 void R_DrawStretchRaw( float x, float y, float w, float h, int cols, int rows, const byte *data, qboolean dirty )
 {
 	byte		*raw = NULL;
-	gltexture_t	*tex;
+	gl_texture_t	*tex;
 
 	if( !GL_Support( GL_ARB_TEXTURE_NPOT_EXT ))
 	{
@@ -167,6 +167,7 @@ void R_DrawStretchRaw( float x, float y, float w, float h, int cols, int rows, c
 	}
 	else
 	{
+		tex->size = cols * rows * 4;
 		tex->width = cols;
 		tex->height = rows;
 		if( dirty )
@@ -195,7 +196,7 @@ R_UploadStretchRaw
 void R_UploadStretchRaw( int texture, int cols, int rows, int width, int height, const byte *data )
 {
 	byte		*raw = NULL;
-	gltexture_t	*tex;
+	gl_texture_t	*tex;
 
 	if( !GL_Support( GL_ARB_TEXTURE_NPOT_EXT ))
 	{
@@ -226,11 +227,12 @@ void R_UploadStretchRaw( int texture, int cols, int rows, int width, int height,
 		Host_Error( "R_UploadStretchRaw: size %i exceeds hardware limits\n", rows );
 
 	tex = R_GetTexture( texture );
-	GL_Bind( GL_TEXTURE0, texture );
+	GL_Bind( GL_KEEP_UNIT, texture );
 	tex->width = cols;
 	tex->height = rows;
 
-	pglTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, cols, rows, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw );
+	pglTexImage2D( GL_TEXTURE_2D, 0, tex->format, cols, rows, 0, GL_BGRA, GL_UNSIGNED_BYTE, raw );
+	GL_ApplyTextureParams( tex );
 }
 
 /*
@@ -246,7 +248,6 @@ void R_Set2DMode( qboolean enable )
 			return;
 
 		// set 2D virtual screen size
-		pglScissor( 0, 0, glState.width, glState.height );
 		pglViewport( 0, 0, glState.width, glState.height );
 		pglMatrixMode( GL_PROJECTION );
 		pglLoadIdentity();
@@ -254,10 +255,11 @@ void R_Set2DMode( qboolean enable )
 		pglMatrixMode( GL_MODELVIEW );
 		pglLoadIdentity();
 
-		GL_Cull( 0 );
+		GL_Cull( GL_NONE );
 
 		pglDepthMask( GL_FALSE );
 		pglDisable( GL_DEPTH_TEST );
+		pglEnable( GL_ALPHA_TEST );
 		pglColor4f( 1.0f, 1.0f, 1.0f, 1.0f );
 
 		glState.in2DMode = true;
@@ -276,5 +278,6 @@ void R_Set2DMode( qboolean enable )
 		pglMatrixMode( GL_MODELVIEW );
 		GL_LoadMatrix( RI.worldviewMatrix );
 
+		GL_Cull( GL_FRONT );
 	}
 }

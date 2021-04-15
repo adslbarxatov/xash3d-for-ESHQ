@@ -18,6 +18,7 @@ GNU General Public License for more details.
 #include "gl_local.h"
 #include "mod_local.h"
 #include "entity_types.h"
+#include "studio.h"
 
 /*
 ===============================================================================
@@ -80,7 +81,6 @@ R_SplitEntityOnNode
 static void R_SplitEntityOnNode( mnode_t *node )
 {
 	efrag_t	*ef;
-	mplane_t	*splitplane;
 	mleaf_t	*leaf;
 	int	sides;
 	
@@ -99,7 +99,7 @@ static void R_SplitEntityOnNode( mnode_t *node )
 		ef = clgame.free_efrags;
 		if( !ef )
 		{
-			MsgDev( D_ERROR, "too many efrags!\n" );
+			Con_Printf( S_ERROR "too many efrags!\n" );
 			return; // no free fragments...
 		}
 
@@ -119,8 +119,7 @@ static void R_SplitEntityOnNode( mnode_t *node )
 	}
 	
 	// NODE_MIXED
-	splitplane = node->plane;
-	sides = BOX_ON_PLANE_SIDE( r_emins, r_emaxs, splitplane );
+	sides = BOX_ON_PLANE_SIDE( r_emins, r_emaxs, node->plane );
 	
 	if( sides == 3 )
 	{
@@ -141,6 +140,8 @@ R_AddEfrags
 */
 void R_AddEfrags( cl_entity_t *ent )
 {
+	matrix3x4	transform;
+	vec3_t	outmins, outmaxs;
 	int	i;
 		
 	if( !ent->model )
@@ -150,10 +151,14 @@ void R_AddEfrags( cl_entity_t *ent )
 	lastlink = &ent->efrag;
 	r_pefragtopnode = NULL;
 
+	// handle entity rotation for right bbox expanding
+	Matrix3x4_CreateFromEntity( transform, ent->angles, vec3_origin, 1.0f );
+	Matrix3x4_TransformAABB( transform, ent->model->mins, ent->model->maxs, outmins, outmaxs );
+
 	for( i = 0; i < 3; i++ )
 	{
-		r_emins[i] = ent->origin[i] + ent->model->mins[i];
-		r_emaxs[i] = ent->origin[i] + ent->model->maxs[i];
+		r_emins[i] = ent->origin[i] + outmins[i];
+		r_emaxs[i] = ent->origin[i] + outmaxs[i];
 	}
 
 	R_SplitEntityOnNode( cl.worldmodel->nodes );
@@ -166,7 +171,7 @@ R_StoreEfrags
 
 ================
 */
-void R_StoreEfrags( efrag_t **ppefrag )
+void R_StoreEfrags( efrag_t **ppefrag, int framecount )
 {
 	cl_entity_t	*pent;
 	model_t		*clmodel;
@@ -185,19 +190,19 @@ void R_StoreEfrags( efrag_t **ppefrag )
 		case mod_sprite:
 			pent = pefrag->entity;
 
-			if( pent->visframe != tr.framecount )
+			if( pent->visframe != framecount )
 			{
 				if( CL_AddVisibleEntity( pent, ET_FRAGMENTED ))
 				{
 					// mark that we've recorded this entity for this frame
-					pent->visframe = tr.framecount;
+					pent->curstate.messagenum = cl.parsecount;
+					pent->visframe = framecount;
 				}
 			}
 
 			ppefrag = &pefrag->leafnext;
 			break;
 		default:	
-			Host_Error( "R_StoreEfrags: bad entity type %d\n", clmodel->type );
 			break;
 		}
 	}
