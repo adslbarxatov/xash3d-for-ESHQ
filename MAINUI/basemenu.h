@@ -32,6 +32,8 @@ GNU General Public License for more details.
 #define ColorIndex( c )		((( c ) - '0' ) & 7 )
 #define IsColorString( p )		( p && *( p ) == '^' && *(( p ) + 1) && *(( p ) + 1) >= '0' && *(( p ) + 1 ) <= '9' )
 
+#define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
+
 #include "netadr.h"
 
 #define ART_BACKGROUND		"gfx/shell/splash"
@@ -74,7 +76,7 @@ GNU General Public License for more details.
 #define UI_OUTLINE_WIDTH		uiStatic.outlineWidth	// outline thickness
 
 #define UI_MAXGAMES			900	// slots for savegame/demos
-#define UI_MAX_SERVERS		32
+#define UI_MAX_SERVERS		64
 #define UI_MAX_BGMAPS		32
 
 #define MAX_HINT_TEXT		512
@@ -91,6 +93,8 @@ GNU General Public License for more details.
 #define UI_BUTTON_CHARWIDTH		14	// empirically determined value
 
 #define ID_BACKGROUND		0	// catch warning on change this
+
+#define EMPTY_SAVE_PIC		"gfx\\lambda32"
 
 // Generic types
 typedef enum
@@ -315,12 +319,12 @@ void UI_PicButton_Draw( menuPicButton_s *item );
 extern cvar_t	*ui_precache;
 extern cvar_t	*ui_showmodels;
 
-#define BACKGROUND_ROWS	3
-#define BACKGROUND_COLUMNS	4
+#define MAX_BACKGROUNDS	48 // SC 5.0 have 35 tiled backgrounds!
 
 typedef struct
 {
 	HIMAGE	hImage;
+	int	x, y;
 	int	width;
 	int	height;
 } bimage_t;
@@ -342,7 +346,8 @@ typedef struct
 	HIMAGE		hFont;		// mainfont
 
 	// handle steam background images
-	bimage_t		m_SteamBackground[BACKGROUND_ROWS][BACKGROUND_COLUMNS];
+	bimage_t		m_SteamBackground[MAX_BACKGROUNDS];
+	int		m_iBackgroundCount;
 	float		m_flTotalWidth;
 	float		m_flTotalHeight;
 	bool		m_fHaveSteamBackground;
@@ -396,6 +401,7 @@ extern int	uiPromptFocusColor;
 extern int	uiInputTextColor;
 extern int	uiInputBgColor;
 extern int	uiInputFgColor;
+extern int	uiColorSelect;
 
 extern int	uiColorWhite;
 extern int	uiColorDkGrey;
