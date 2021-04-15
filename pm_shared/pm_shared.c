@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -28,19 +28,19 @@
 #include <ctype.h>  // isspace
 
 #ifdef CLIENT_DLL
-	// Spectator Mode
-	int		iJumpSpectator;
-	float	vJumpOrigin[3];
-	float	vJumpAngles[3];
+// Spectator Mode
+int		iJumpSpectator;
+float	vJumpOrigin[3];
+float	vJumpAngles[3];
 #endif
 
 static int pm_shared_initialized = 0;
 
 #pragma warning( disable : 4305 )
 
-typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
+typedef enum { mod_brush, mod_sprite, mod_alias, mod_studio } modtype_t;
 
-playermove_t *pmove = NULL;
+playermove_t* pmove = NULL;
 
 typedef struct
 	{
@@ -60,7 +60,7 @@ typedef struct mplane_s
 typedef struct hull_s
 	{
 	dclipnode_t* clipnodes;
-	mplane_t*	planes;
+	mplane_t* planes;
 	int			firstclipnode;
 	int			lastclipnode;
 	vec3_t		clip_mins;
@@ -823,6 +823,7 @@ void PM_AddCorrectGravity ()
 
 	PM_CheckVelocity ();
 	}
+
 
 void PM_FixupGravityVelocity ()
 	{
@@ -1590,11 +1591,6 @@ qboolean PM_CheckWater ()
 				pmove->basevelocity);
 			}
 		}
-	/*else
-		{
-		// Управление состоянием тумана
-		pmove->in_fog = (cont == CONTENT_FOG) ? 1 : 0;
-		}*/
 
 	return pmove->waterlevel > 1;
 	}
@@ -1614,11 +1610,11 @@ void PM_CatagorizePosition (void)
 
 	// see if standing on something solid	
 
-	// Doing this before we move may introduce a potential latency in water detection, but
-	// doing it after can get us stuck on the bottom in water if the amount we move up
-	// is less than the 1 pixel 'threshold' we're about to snap to.	Also, we'll call
-	// this several times per frame, so we really need to avoid sticking to the bottom of
-	// water on each call, and the converse case will correct itself if called twice.
+		// Doing this before we move may introduce a potential latency in water detection, but
+		// doing it after can get us stuck on the bottom in water if the amount we move up
+		// is less than the 1 pixel 'threshold' we're about to snap to.	Also, we'll call
+		// this several times per frame, so we really need to avoid sticking to the bottom of
+		// water on each call, and the converse case will correct itself if called twice.
 	PM_CheckWater ();
 
 	point[0] = pmove->origin[0];
@@ -1770,9 +1766,8 @@ int PM_CheckStuck (void)
 
 		PM_ResetStuckOffsets (pmove->player_index, pmove->server);
 
-		if (i >= 27)
-			VectorCopy (test, pmove->origin);
-
+		//if (i >= 27) // Удалено в 4434
+		VectorCopy (test, pmove->origin);
 		return 0;
 		}
 
@@ -2033,8 +2028,8 @@ void PM_Duck (void)
 	int buttonsChanged = (pmove->oldbuttons ^ pmove->cmd.buttons);	// These buttons have changed this frame
 	int nButtonPressed = buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
 
-	int duckchange = buttonsChanged & (IN_DUCK ? 1 : 0);
-	int duckpressed = nButtonPressed & (IN_DUCK ? 1 : 0);
+	int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
+	int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
 
 	if (pmove->cmd.buttons & IN_DUCK)
 		{
@@ -2079,7 +2074,8 @@ void PM_Duck (void)
 			if (pmove->bInDuck)
 				{
 				// Finish ducking immediately if duck time is over or not on ground
-				if (((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) || (pmove->onground == -1))
+				if (((float)pmove->flDuckTime / 1000.0 <= (1.0 - TIME_TO_DUCK)) ||
+					(pmove->onground == -1))
 					{
 					pmove->usehull = 1;
 					pmove->view_ofs[2] = VEC_DUCK_VIEW;
@@ -2182,9 +2178,8 @@ void PM_LadderMove (physent_t* pLadder)
 				VectorScale (vpn, forward, velocity);
 				VectorMA (velocity, right, v_right, velocity);
 
+
 				// Perpendicular in the ladder plane
-				//	Vector perp = CrossProduct( Vector(0,0,1), trace.vecPlaneNormal );
-				//	perp = perp.Normalize();
 				VectorClear (tmp);
 				tmp[2] = 1;
 				CrossProduct (tmp, trace.plane.normal, perp);
@@ -2207,7 +2202,7 @@ void PM_LadderMove (physent_t* pLadder)
 				// velocity through the face of the ladder -- by design.
 				CrossProduct (trace.plane.normal, perp, tmp);
 				VectorMA (lateral, -normal, tmp, pmove->velocity);
-				if (onFloor && (normal > 0))	// On ground moving away from the ladder
+				if (onFloor && normal > 0)	// On ground moving away from the ladder
 					{
 					VectorMA (pmove->velocity, MAX_CLIMB_SPEED, trace.plane.normal, pmove->velocity);
 					}
@@ -2233,7 +2228,7 @@ physent_t* PM_Ladder (void)
 		{
 		pe = &pmove->moveents[i];
 
-		if ((pe->model && (modtype_t)pmove->PM_GetModelType (pe->model) == mod_brush) && (pe->skin == CONTENTS_LADDER))
+		if (pe->model && (modtype_t)pmove->PM_GetModelType (pe->model) == mod_brush && pe->skin == CONTENTS_LADDER)
 			{
 
 			hull = (hull_t*)pmove->PM_HullForBsp (pe, test);
@@ -2295,7 +2290,6 @@ void PM_AddGravity ()
 	pmove->basevelocity[2] = 0;
 	PM_CheckVelocity ();
 	}
-
 /*
 ============
 PM_PushEntity
@@ -2358,8 +2352,8 @@ void PM_Physics_Toss ()
 		PM_AddGravity ();
 
 	// move origin
-	// Base velocity is not properly accounted for since this entity will move again after the bounce without
-	// taking it into account
+		// Base velocity is not properly accounted for since this entity will move again after the bounce without
+		// taking it into account
 	VectorAdd (pmove->velocity, pmove->basevelocity, pmove->velocity);
 
 	PM_CheckVelocity ();
@@ -2383,6 +2377,7 @@ void PM_Physics_Toss ()
 		PM_CheckWater ();
 		return;
 		}
+
 
 	if (pmove->movetype == MOVETYPE_BOUNCE)
 		backoff = 2.0 - pmove->friction;
@@ -2411,7 +2406,7 @@ void PM_Physics_Toss ()
 
 		// Con_DPrintf("%f %f: %.0f %.0f %.0f\n", vel, trace.fraction, ent->velocity[0], ent->velocity[1], ent->velocity[2] );
 
-		if ((vel < (30 * 30)) || (pmove->movetype != MOVETYPE_BOUNCE) && (pmove->movetype != MOVETYPE_BOUNCEMISSILE))
+		if (vel < (30 * 30) || (pmove->movetype != MOVETYPE_BOUNCE && pmove->movetype != MOVETYPE_BOUNCEMISSILE))
 			{
 			pmove->onground = trace.ent;
 			VectorCopy (vec3_origin, pmove->velocity);
@@ -2459,13 +2454,14 @@ void PM_NoClip ()
 	// Zero out the velocity so that we don't accumulate a huge downward velocity from
 	//  gravity, etc.
 	VectorClear (pmove->velocity);
+
 	}
 
 // Only allow bunny jumping up to 1.7x server / player maxspeed setting
 #define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
 
 //-----------------------------------------------------------------------------
-// Purpose: Corrects bunny jumping (where player initiates a bunny jump) before other
+// Purpose: Corrects bunny jumping (where player initiates a bunny jump before other
 //  movement logic runs, thus making onground == -1 thus making PM_Friction get skipped and
 //  running PM_AirMove, which doesn't crop velocity to maxspeed like the ground / other
 //  movement logic does.
@@ -2918,6 +2914,7 @@ void PM_CheckParamters (void)
 		{
 		pmove->angles[YAW] -= 360.0f;
 		}
+
 	}
 
 void PM_ReduceTimers (void)
@@ -2979,7 +2976,7 @@ void PM_PlayerMove (qboolean server)
 	// Convert view angles to vectors
 	AngleVectors (pmove->angles, pmove->forward, pmove->right, pmove->up);
 
-	//PM_ShowClipBox();
+	// PM_ShowClipBox();
 
 	// Special handling for spectator and observers. (iuser1 is set if the player's in observer mode)
 	if (pmove->spectator || pmove->iuser1 > 0)
@@ -3321,8 +3318,10 @@ void PM_CreateStuckTable (void)
 		}
 	}
 
+
+
 /*
-This modume implements the shared player physics code between any particular game and 
+This modume implements the shared player physics code between any particular game and
 the engine.  The same PM_Move routine is built into the game .dll and the client .dll and is
 invoked by each side as appropriate.  There should be no distinction, internally, between server
 and client.  This will ensure that prediction behaves appropriately.
