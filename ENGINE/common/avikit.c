@@ -58,6 +58,7 @@ dll_info_t msacm_dll = { "msacm32.dll", msacm_funcs, false };
 static int (_stdcall *pAVIStreamInfo)( PAVISTREAM pavi, AVISTREAMINFO *psi, LONG lSize );
 static int (_stdcall *pAVIStreamRead)( PAVISTREAM pavi, LONG lStart, LONG lSamples, void *lpBuffer, LONG cbBuffer, LONG *plBytes, LONG *plSamples );
 static PGETFRAME (_stdcall *pAVIStreamGetFrameOpen)( PAVISTREAM pavi, LPBITMAPINFOHEADER lpbiWanted );
+static long (_stdcall *pAVIStreamTimeToSample)( PAVISTREAM pavi, LONG lTime );
 static void* (_stdcall *pAVIStreamGetFrame)( PGETFRAME pg, LONG lPos );
 static int (_stdcall *pAVIStreamGetFrameClose)( PGETFRAME pg );
 static dword (_stdcall *pAVIStreamRelease)( PAVISTREAM pavi );
@@ -84,6 +85,7 @@ static dllfunc_t avifile_funcs[] =
 { "AVIStreamReadFormat", (void **) &pAVIStreamReadFormat },
 { "AVIStreamRelease", (void **) &pAVIStreamRelease },
 { "AVIStreamStart", (void **) &pAVIStreamStart },
+{ "AVIStreamTimeToSample", (void **) &pAVIStreamTimeToSample },
 { NULL, NULL }
 };
 
@@ -92,7 +94,6 @@ dll_info_t avifile_dll = { "avifil32.dll", avifile_funcs, false };
 typedef struct movie_state_s
 {
 	qboolean		active;
-	qboolean		ignore_hwgamma;	// ignore hw gamma-correction
 	qboolean		quiet;		// ignore error messages
 
 	PAVIFILE		pfile;		// avi file pointer
@@ -139,12 +140,11 @@ qboolean AVI_ACMConvertAudio( movie_state_t *Avi )
 	dword		dest_length;
 	short		bits;
 
-	ASSERT( Avi != NULL );
-
 	// WMA codecs, both versions - they simply don't work.
 	if( Avi->audio_header->wFormatTag == 0x160 || Avi->audio_header->wFormatTag == 0x161 )
 	{
-		if( !Avi->quiet ) MsgDev( D_ERROR, "ACM does not support this audio codec.\n" );
+		if( !Avi->quiet )
+			Con_Reportf( S_ERROR "ACM does not support this audio codec.\n" );
 		return false;
 	}
 
@@ -153,7 +153,8 @@ qboolean AVI_ACMConvertAudio( movie_state_t *Avi )
 
 	if( Avi->audio_header_size < sizeof( WAVEFORMATEX ))
 	{
-		if( !Avi->quiet ) MsgDev( D_ERROR, "ACM failed to open conversion stream.\n" );
+		if( !Avi->quiet )
+			Con_Reportf( S_ERROR "ACM failed to open conversion stream.\n" );
 		return false;
 	}
 
@@ -183,7 +184,8 @@ qboolean AVI_ACMConvertAudio( movie_state_t *Avi )
 
 		if( pacmStreamOpen( &Avi->cpa_conversion_stream, NULL, sh, dh, NULL, 0, 0, 0 ) != MMSYSERR_NOERROR )
 		{
-			if( !Avi->quiet ) MsgDev( D_ERROR, "ACM failed to open conversion stream.\n" );
+			if( !Avi->quiet )
+				Con_Reportf( S_ERROR "ACM failed to open conversion stream.\n" );
 			return false;
 		}
 	}
@@ -203,13 +205,14 @@ qboolean AVI_ACMConvertAudio( movie_state_t *Avi )
 	// get the size of the output buffer for streaming the compressed audio
 	if( pacmStreamSize( Avi->cpa_conversion_stream, Avi->cpa_blockalign, &dest_length, ACM_STREAMSIZEF_SOURCE ) != MMSYSERR_NOERROR )
 	{
-		if( !Avi->quiet ) MsgDev( D_ERROR, "Couldn't get ACM conversion stream size.\n" );
+		if( !Avi->quiet )
+			Con_Reportf( S_ERROR "Couldn't get ACM conversion stream size.\n" );
 		pacmStreamClose( Avi->cpa_conversion_stream, 0 );
 		return false;
 	}
 
-	Avi->cpa_srcbuffer = (byte *)Mem_Alloc( cls.mempool, Avi->cpa_blockalign );
-	Avi->cpa_dstbuffer = (byte *)Mem_Alloc( cls.mempool, dest_length ); // maintained buffer for raw data
+	Avi->cpa_srcbuffer = (byte *)Mem_Malloc( cls.mempool, Avi->cpa_blockalign );
+	Avi->cpa_dstbuffer = (byte *)Mem_Malloc( cls.mempool, dest_length ); // maintained buffer for raw data
 
 	// prep the headers!
 	Avi->cpa_conversion_header.cbStruct = sizeof( ACMSTREAMHEADER );
@@ -226,7 +229,8 @@ qboolean AVI_ACMConvertAudio( movie_state_t *Avi )
 
 	if( pacmStreamPrepareHeader( Avi->cpa_conversion_stream, &Avi->cpa_conversion_header, 0 ) != MMSYSERR_NOERROR )
 	{
-		if( !Avi->quiet ) MsgDev( D_ERROR, "couldn't prep headers.\n" );
+		if( !Avi->quiet )
+			Con_Reportf( S_ERROR "couldn't prepare stream headers.\n" );
 		pacmStreamClose( Avi->cpa_conversion_stream, 0 );
 		return false;
 	}
@@ -249,8 +253,6 @@ qboolean AVI_ACMConvertAudio( movie_state_t *Avi )
 
 qboolean AVI_GetVideoInfo( movie_state_t *Avi, long *xres, long *yres, float *duration )
 {
-	ASSERT( Avi != NULL );
-
 	if( !Avi->active )
 		return false;
 
@@ -269,22 +271,34 @@ qboolean AVI_GetVideoInfo( movie_state_t *Avi, long *xres, long *yres, float *du
 // returns a unique frame identifier
 long AVI_GetVideoFrameNumber( movie_state_t *Avi, float time )
 {
-	ASSERT( Avi != NULL );
-
 	if( !Avi->active )
 		return 0;
 
 	return (time * Avi->video_fps);
 }
 
+long AVI_GetVideoFrameCount( movie_state_t *Avi )
+{
+	if( !Avi->active )
+		return 0;
+
+	return Avi->video_frames;
+}
+
+long AVI_TimeToSoundPosition( movie_state_t *Avi, long time )
+{
+	if( !Avi->active || !Avi->audio_stream )
+		return 0;
+
+	// UNDONE: what about compressed audio?
+	return pAVIStreamTimeToSample( Avi->audio_stream, time ) * Avi->audio_bytes_per_sample;
+}
+
 // gets the raw frame data
 byte *AVI_GetVideoFrame( movie_state_t *Avi, long frame )
 {
 	LPBITMAPINFOHEADER	frame_info;
-	byte		*frame_raw, *tmp;
-	int		i;
-
-	ASSERT( Avi != NULL );
+	byte		*frame_raw;
 
 	if( !Avi->active ) return NULL;
 
@@ -295,23 +309,11 @@ byte *AVI_GetVideoFrame( movie_state_t *Avi, long frame )
 	frame_raw = (byte *)frame_info + frame_info->biSize + frame_info->biClrUsed * sizeof( RGBQUAD );
 	pDrawDibDraw( Avi->hDD, Avi->hDC, 0, 0, Avi->video_xres, Avi->video_yres, frame_info, frame_raw, 0, 0, Avi->video_xres, Avi->video_yres, 0 );
 
-	// adjust gamma only if hardware gamma is enabled
-	if( Avi->ignore_hwgamma && glConfig.deviceSupportsGamma )
-	{
-		tmp = Avi->pframe_data;
-
-		// renormalize gamma
-		for( i = 0; i < Avi->video_xres * Avi->video_yres * 4; i++, tmp++ )
-			*tmp = clgame.ds.gammaTable[*tmp];
-	}
-
 	return Avi->pframe_data;
 }
 
 qboolean AVI_GetAudioInfo( movie_state_t *Avi, wavdata_t *snd_info )
 {
-	ASSERT( Avi != NULL );
-
 	if( !Avi->active || Avi->audio_stream == NULL || snd_info == NULL )
 	{
 		return false;
@@ -325,7 +327,7 @@ qboolean AVI_GetAudioInfo( movie_state_t *Avi, wavdata_t *snd_info )
 	else snd_info->width = 2; // assume compressed audio is always 16 bit
 
 	snd_info->size = snd_info->rate * snd_info->width * snd_info->channels;
-	snd_info->loopStart = 0;	// HACKHACK: use loopStart as streampos
+	snd_info->loopStart = 0; // using loopStart as streampos
 
 	return true;
 }
@@ -335,12 +337,10 @@ qboolean AVI_SeekPosition( movie_state_t *Avi, dword offset )
 {
 	int	breaker;
 
-	ASSERT( Avi != NULL );
-
 	if( offset < Avi->cpa_blockoffset ) // well, shit. we can't seek backwards... restart
 	{
 		if( Avi->cpa_blockoffset - offset < 500000 )
-			return false; // don't bother if it's gonna catch up soon (cheap hack! works!)
+			return false; // don't bother if it's gonna catch up soon
 
 		Avi->cpa_blocknum = 0; // start at 0, eh.
 		Avi->cpa_blockpos = 0;
@@ -382,12 +382,10 @@ qboolean AVI_SeekPosition( movie_state_t *Avi, dword offset )
 }
 
 // get a chunk of audio from the stream (in bytes)
-fs_offset_t AVI_GetAudioChunk( movie_state_t *Avi, char *audiodata, long offset, long length )
+long AVI_GetAudioChunk( movie_state_t *Avi, char *audiodata, long offset, long length )
 {
-	int	i;
 	long	result = 0;
-
-	ASSERT( Avi != NULL );
+	int	i;
 
 	// zero data past the end of the file
 	if( offset + length > Avi->audio_length )
@@ -403,8 +401,11 @@ fs_offset_t AVI_GetAudioChunk( movie_state_t *Avi, char *audiodata, long offset,
 		}
 		else
 		{
+			// we out of soundtrack, just zeroing buffer
 			for( i = 0; i < length; i++ )
 				audiodata[i] = 0;
+
+			return length;
 		}
 	}
 
@@ -444,20 +445,19 @@ fs_offset_t AVI_GetAudioChunk( movie_state_t *Avi, char *audiodata, long offset,
 				blockread = length;
 
 			// copy the data
-			Q_memcpy( audiodata + result, (void *)( Avi->cpa_dstbuffer + Avi->cpa_blockpos ), blockread );
+			memcpy( audiodata + result, (void *)( Avi->cpa_dstbuffer + Avi->cpa_blockpos ), blockread );
 
 			Avi->cpa_blockpos += blockread;
 			result += blockread;
 			length -= blockread;
 		}
+
 		return result;
 	}
 }
 
 void AVI_CloseVideo( movie_state_t *Avi )
 {
-	ASSERT( Avi != NULL );
-
 	if( Avi->active )
 	{
 		pAVIStreamGetFrameClose( Avi->video_getframe );
@@ -483,17 +483,15 @@ void AVI_CloseVideo( movie_state_t *Avi )
 		DeleteDC( Avi->hDC );
 	}
 
-	Q_memset( Avi, 0, sizeof( movie_state_t ));
+	memset( Avi, 0, sizeof( movie_state_t ));
 }
 
-void AVI_OpenVideo( movie_state_t *Avi, const char *filename, qboolean load_audio, qboolean ignore_hwgamma, int quiet )
+void AVI_OpenVideo( movie_state_t *Avi, const char *filename, qboolean load_audio, int quiet )
 {
-	AVISTREAMINFO	stream_info;
 	BITMAPINFOHEADER	bmih;
+	AVISTREAMINFO	stream_info;
 	long		opened_streams = 0;
 	LONG		hr;
-
-	ASSERT( Avi != NULL );
 
 	// default state: non-working.
 	Avi->active = false;
@@ -510,20 +508,25 @@ void AVI_OpenVideo( movie_state_t *Avi, const char *filename, qboolean load_audi
 		switch( hr )
 		{
 		case AVIERR_BADFORMAT:
-			if( !Avi->quiet ) MsgDev( D_ERROR, "corrupt file or unknown format.\n" );
+			if( !Avi->quiet )
+				Con_DPrintf( S_ERROR "corrupt file or unknown format.\n" );
 			break;
 		case AVIERR_MEMORY:
-			if( !Avi->quiet ) MsgDev( D_ERROR, "insufficient memory to open file.\n" );
+			if( !Avi->quiet )
+				Con_DPrintf( S_ERROR "insufficient memory to open file.\n" );
 			break;
 		case AVIERR_FILEREAD:
-			if( !Avi->quiet ) MsgDev( D_ERROR, "disk error reading file.\n" );
+			if( !Avi->quiet )
+				Con_DPrintf( S_ERROR "disk error reading file.\n" );
 			break;
 		case AVIERR_FILEOPEN:
-			if( !Avi->quiet ) MsgDev( D_ERROR, "disk error opening file.\n" );
+			if( !Avi->quiet )
+				Con_DPrintf( S_ERROR "disk error opening file.\n" );
 			break;
 		case REGDB_E_CLASSNOTREG:
 		default:
-			if( !Avi->quiet ) MsgDev( D_ERROR, "no handler found (or file not found).\n" );
+			if( !Avi->quiet )
+				Con_DPrintf( S_ERROR "no handler found (or file not found).\n" );
 			break;
 		}
 		return;
@@ -561,7 +564,7 @@ void AVI_OpenVideo( movie_state_t *Avi, const char *filename, qboolean load_audi
 			// read the audio header
 			pAVIStreamReadFormat( Avi->audio_stream, pAVIStreamStart( Avi->audio_stream ), 0, &size );
 
-			Avi->audio_header = (WAVEFORMAT *)Mem_Alloc( cls.mempool, size );
+			Avi->audio_header = (WAVEFORMAT *)Mem_Malloc( cls.mempool, size );
 			pAVIStreamReadFormat( Avi->audio_stream, pAVIStreamStart( Avi->audio_stream ), Avi->audio_header, &size );
 			Avi->audio_header_size = size;
 			Avi->audio_codec = Avi->audio_header->wFormatTag;
@@ -593,7 +596,8 @@ void AVI_OpenVideo( movie_state_t *Avi, const char *filename, qboolean load_audi
 	{
 		if( Avi->pfile ) // if file is open, close it 
 			pAVIFileRelease( Avi->pfile );
-		if( !Avi->quiet ) MsgDev( D_ERROR, "couldn't find a valid video stream.\n" );
+		if( !Avi->quiet )
+			Con_DPrintf( S_ERROR "couldn't find a valid video stream.\n" );
 		return;
 	}
 
@@ -602,11 +606,10 @@ void AVI_OpenVideo( movie_state_t *Avi, const char *filename, qboolean load_audi
 
 	if( Avi->video_getframe == NULL )
 	{
-		if( !Avi->quiet ) MsgDev( D_ERROR, "error attempting to read video frames.\n" );
+		if( !Avi->quiet )
+			Con_DPrintf( S_ERROR "error attempting to read video frames.\n" );
 		return; // couldn't open frame getter.
 	}
-
-	Avi->ignore_hwgamma = ignore_hwgamma;
 
 	bmih.biSize = sizeof( BITMAPINFOHEADER );
 	bmih.biPlanes = 1;	
@@ -641,7 +644,7 @@ AVIKit user interface
 
 =============
 */
-movie_state_t *AVI_LoadVideo( const char *filename, qboolean load_audio, qboolean ignore_hwgamma )
+movie_state_t *AVI_LoadVideo( const char *filename, qboolean load_audio )
 {
 	movie_state_t	*Avi;
 	string		path;
@@ -649,24 +652,21 @@ movie_state_t *AVI_LoadVideo( const char *filename, qboolean load_audio, qboolea
 
 	// fast reject
 	if( !avi_initialized )
-	{
-		MsgDev( D_ERROR, "AVI_LoadVideo: movie support is disabled\n" );
 		return NULL;
-	}	
 
 	// open cinematic
 	Q_snprintf( path, sizeof( path ), "media/%s", filename );
-	FS_DefaultExtension( path, ".avi" );
+	COM_DefaultExtension( path, ".avi" );
 	fullpath = FS_GetDiskPath( path, false );
 
 	if( FS_FileExists( path, false ) && !fullpath )
 	{
-		MsgDev( D_ERROR, "AVI_LoadVideo: Couldn't load %s from packfile. Please extract it\n", path );
+		Con_Printf( "Couldn't load %s from packfile. Please extract it\n", path );
 		return NULL;
 	}
 
-	Avi = Mem_Alloc( cls.mempool, sizeof( movie_state_t ));
-	AVI_OpenVideo( Avi, fullpath, load_audio, ignore_hwgamma, false );
+	Avi = Mem_Malloc( cls.mempool, sizeof( movie_state_t ));
+	AVI_OpenVideo( Avi, fullpath, load_audio, false );
 
 	if( !AVI_IsActive( Avi ))
 	{
@@ -693,35 +693,29 @@ qboolean AVI_Initailize( void )
 {
 	if( Sys_CheckParm( "-noavi" ))
 	{
-		MsgDev( D_INFO, "AVI: Disabled\n" );
+		Con_Printf( "AVI: Disabled\n" );
 		return false;
 	}
 
 	if( !Sys_LoadLibrary( &avifile_dll ))
-	{
-		MsgDev( D_ERROR, "AVI_Initailize: failed\n" );
 		return false;
-	}
 
 	if( !Sys_LoadLibrary( &msvfw_dll ))
 	{
-		MsgDev( D_ERROR, "AVI_Initailize: failed\n" );
 		Sys_FreeLibrary( &avifile_dll );
 		return false;
 	}
 
 	if( !Sys_LoadLibrary( &msacm_dll ))
 	{
-		MsgDev( D_ERROR, "AVI_Initailize: failed\n" );
 		Sys_FreeLibrary( &avifile_dll );
 		Sys_FreeLibrary( &msvfw_dll );
 		return false;
 	}
 
-	pAVIFileInit();
 	avi_initialized = true;
-	MsgDev( D_NOTE, "AVI_Initailize: done\n" );
-		
+	pAVIFileInit();
+
 	return true;
 }
 
