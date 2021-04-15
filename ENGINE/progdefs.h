@@ -151,7 +151,7 @@ typedef struct entvars_s
 	float		armortype;
 	float		armorvalue;
 	int		waterlevel;
-	int		collectedItems;			// Туман нафиг не нужен пока. Сделаем накопитель для собираемых объектов
+	int		collectedItems;	
 	int		watertype;
 
 	string_t		target;
