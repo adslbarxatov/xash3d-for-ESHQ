@@ -625,16 +625,16 @@
 #define CHAN_NETWORKVOICE_END	500	// network voice data reserves slots (CHAN_NETWORKVOICE_BASE through CHAN_NETWORKVOICE_END).
 
 // attenuation values
-#define ATTN_NONE			0
-#define ATTN_NORM			(float)0.8
-#define ATTN_IDLE			(float)2
-#define ATTN_STATIC			(float)1.25 
+#define ATTN_NONE0			0
+#define ATTN_NORM0			(float)0.8
+#define ATTN_IDLE0			(float)2
+#define ATTN_STATIC0		(float)1.25
 
 // Так будет понятнее
-#define ATTN_EVERYWHERE		ATTN_NONE
-#define ATTN_LARGE			ATTN_NORM 
-#define ATTN_MEDIUM			ATTN_STATIC
-#define ATTN_SMALL			ATTN_IDLE
+#define ATTN_EVERYWHERE		ATTN_NONE0
+#define ATTN_LARGE			ATTN_NORM0
+#define ATTN_MEDIUM			ATTN_STATIC0
+#define ATTN_SMALL			ATTN_IDLE0
 
 // pitch values
 #define PITCH_NORM			100	// non-pitch shifted

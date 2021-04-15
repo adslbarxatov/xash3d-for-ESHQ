@@ -18,78 +18,6 @@ GNU General Public License for more details.
 #include "gl_local.h"
 #include "studio.h"
 
-static void CL_PaletteHueReplace( byte *palSrc, int newHue, int start, int end )
-{
-	float	r, g, b;
-	float	maxcol, mincol;
-	float	hue, val, sat;
-	int	i;
-
-	hue = (float)(newHue * ( 360.0f / 255 ));
-
-	for( i = start; i <= end; i++ )
-	{
-		r = palSrc[i*3+0];
-		g = palSrc[i*3+1];
-		b = palSrc[i*3+2];
-		
-		maxcol = max( max( r, g ), b ) / 255.0f;
-		mincol = min( min( r, g ), b ) / 255.0f;
-		
-		val = maxcol;
-		sat = (maxcol - mincol) / maxcol;
-
-		mincol = val * (1.0f - sat);
-
-		if( hue <= 120.0f )
-		{
-			b = mincol;
-			if( hue < 60 )
-			{
-				r = val;
-				g = mincol + hue * (val - mincol) / (120.0f - hue);
-			}
-			else
-			{
-				g = val;
-				r = mincol + (120.0f - hue) * (val - mincol) / hue;
-			}
-		}
-		else if( hue <= 240.0f )
-		{
-			r = mincol;
-			if( hue < 180.0f )
-			{
-				g = val;
-				b = mincol + (hue - 120.0f) * (val - mincol) / (240.0f - hue);
-			}
-			else
-			{
-				b = val;
-				g = mincol + (240.0f - hue) * (val - mincol) / (hue - 120.0f);
-			}
-		}
-		else
-		{
-			g = mincol;
-			if( hue < 300.0f )
-			{
-				b = val;
-				r = mincol + (hue - 240.0f) * (val - mincol) / (360.0f - hue);
-			}
-			else
-			{
-				r = val;
-				b = mincol + (360.0f - hue) * (val - mincol) / (hue - 240.0f);
-			}
-		}
-
-		palSrc[i*3+0] = (byte)(r * 255);
-		palSrc[i*3+1] = (byte)(g * 255);
-		palSrc[i*3+2] = (byte)(b * 255);
-	}
-}
-
 /*
 ====================
 CL_GetRemapInfoForEntity
@@ -143,7 +71,7 @@ byte *CL_CreateRawTextureFromPixels( texture_t *tx, size_t *size, int topcolor, 
 	static mstudiotexture_t	pin;
 	byte			*pal;
 
-	ASSERT( size != NULL );
+	Assert( size != NULL );
 
 	*size = sizeof( pin ) + (tx->width * tx->height) + 768;
 
@@ -156,8 +84,8 @@ byte *CL_CreateRawTextureFromPixels( texture_t *tx, size_t *size, int topcolor, 
 
 	// update palette
 	pal = (byte *)(tx + 1) + (tx->width * tx->height);
-	CL_PaletteHueReplace( pal, topcolor, tx->anim_min, tx->anim_max );
-	CL_PaletteHueReplace( pal, bottomcolor, tx->anim_max + 1, tx->anim_total );
+	Image_PaletteHueReplace( pal, topcolor, tx->anim_min, tx->anim_max, 3 );
+	Image_PaletteHueReplace( pal, bottomcolor, tx->anim_max + 1, tx->anim_total, 3 );
 
 	return (byte *)&pin;
 }
@@ -171,14 +99,14 @@ Dupliacte texture with remap pixels
 */
 void CL_DuplicateTexture( mstudiotexture_t *ptexture, int topcolor, int bottomcolor )
 {
-	gltexture_t	*glt;
+	gl_texture_t	*glt;
 	texture_t		*tx = NULL;
 	char		texname[128];
 	int		i, size, index;
 	byte		paletteBackup[768];
 	byte		*raw, *pal;
 
-	// save of the real texture index
+	// save off the real texture index
 	index = ptexture->index;
 	glt = R_GetTexture( index );
 	Q_snprintf( texname, sizeof( texname ), "#%i_%s", RI.currententity->curstate.number, glt->name + 1 );
@@ -191,30 +119,29 @@ void CL_DuplicateTexture( mstudiotexture_t *ptexture, int topcolor, int bottomco
 			break; // found
 	}
 
-	ASSERT( tx != NULL );
+	Assert( tx != NULL );
 
 	// backup original palette
 	pal = (byte *)(tx + 1) + (tx->width * tx->height);
-	Q_memcpy( paletteBackup, pal, 768 );
+	memcpy( paletteBackup, pal, 768 );
 
 	raw = CL_CreateRawTextureFromPixels( tx, &size, topcolor, bottomcolor );
 	ptexture->index = GL_LoadTexture( texname, raw, size, TF_FORCE_COLOR ); // do copy
-	GL_SetTextureType( ptexture->index, TEX_REMAP );
 
 	// restore original palette
-	Q_memcpy( pal, paletteBackup, 768 );
+	memcpy( pal, paletteBackup, 768 );
 }
 
 /*
 ====================
-CL_UpdateTexture
+CL_UpdateStudioTexture
 
 Update texture top and bottom colors
 ====================
 */
-void CL_UpdateTexture( mstudiotexture_t *ptexture, int topcolor, int bottomcolor )
+void CL_UpdateStudioTexture( mstudiotexture_t *ptexture, int topcolor, int bottomcolor )
 {
-	gltexture_t	*glt;
+	gl_texture_t	*glt;
 	rgbdata_t		*pic;
 	texture_t		*tx = NULL;
 	char		texname[128], name[128], mdlname[128];
@@ -222,13 +149,13 @@ void CL_UpdateTexture( mstudiotexture_t *ptexture, int topcolor, int bottomcolor
 	byte		paletteBackup[768];
 	byte		*raw, *pal;
 
-	// save of the real texture index
+	// save off the real texture index
 	glt = R_GetTexture( ptexture->index );
 
 	// build name of original texture
 	Q_strncpy( mdlname, RI.currentmodel->name, sizeof( mdlname ));
-	FS_FileBase( ptexture->name, name );
-	FS_StripExtension( mdlname );
+	COM_FileBase( ptexture->name, name );
+	COM_StripExtension( mdlname );
 
 	Q_snprintf( texname, sizeof( texname ), "#%s/%s.mdl", mdlname, name );
 	index = GL_FindTexture( texname );
@@ -242,27 +169,66 @@ void CL_UpdateTexture( mstudiotexture_t *ptexture, int topcolor, int bottomcolor
 			break; // found
 	}
 
-	ASSERT( tx != NULL );
+	Assert( tx != NULL );
 
 	// backup original palette
 	pal = (byte *)(tx + 1) + (tx->width * tx->height);
-	Q_memcpy( paletteBackup, pal, 768 );
+	memcpy( paletteBackup, pal, 768 );
 
 	raw = CL_CreateRawTextureFromPixels( tx, &size, topcolor, bottomcolor );
 	pic = FS_LoadImage( glt->name, raw, size );
 	if( !pic )
 	{
-		MsgDev( D_ERROR, "Couldn't update texture %s\n", glt->name );
+		Con_DPrintf( S_ERROR "Couldn't update texture %s\n", glt->name );
 		return;
 	}
 
-	index = GL_LoadTextureInternal( glt->name, pic, 0, true );
+	index = GL_UpdateTextureInternal( glt->name, pic, 0 );
 	FS_FreeImage( pic );
 
 	// restore original palette
-	Q_memcpy( pal, paletteBackup, 768 );
+	memcpy( pal, paletteBackup, 768 );
 
-	ASSERT( index == ptexture->index );
+	Assert( index == ptexture->index );
+}
+
+/*
+====================
+CL_UpdateAliasTexture
+
+Update texture top and bottom colors
+====================
+*/
+void CL_UpdateAliasTexture( unsigned short *texture, int skinnum, int topcolor, int bottomcolor )
+{
+	char	texname[MAX_QPATH];
+	rgbdata_t	skin, *pic;
+	texture_t	*tx;
+
+	if( !texture || !RI.currentmodel->textures )
+		return; // no remapinfo in model
+
+	tx = RI.currentmodel->textures[skinnum];
+	if( !tx ) return; // missing texture ?
+
+	if( *texture == 0 )
+	{
+		Q_snprintf( texname, sizeof( texname ), "%s:remap%i_%i", RI.currentmodel->name, skinnum, RI.currententity->index );
+		skin.width = tx->width;
+		skin.height = tx->height;
+		skin.depth = skin.numMips = 1;
+		skin.size = tx->width * tx->height;
+		skin.type = PF_INDEXED_24;
+		skin.flags = IMAGE_HAS_COLOR|IMAGE_QUAKEPAL;
+		skin.encode = DXT_ENCODE_DEFAULT;
+		skin.buffer = (byte *)(tx + 1);
+		skin.palette = skin.buffer + skin.size;
+		pic = FS_CopyImage( &skin ); // because GL_LoadTextureInternal will freed a rgbdata_t at end
+		*texture = GL_LoadTextureInternal( texname, pic, TF_KEEP_SOURCE );
+	}
+
+	// and now we can remap with internal routines
+	GL_ProcessTexture( *texture, -1.0f, topcolor, bottomcolor );
 }
 
 /*
@@ -277,13 +243,14 @@ void CL_AllocRemapInfo( int topcolor, int bottomcolor )
 {
 	remap_info_t	*info;
 	studiohdr_t	*phdr;
+	aliashdr_t	*ahdr;
 	mstudiotexture_t	*src, *dst;
 	int		i, size;
 
 	if( !RI.currententity ) return;
 	i = ( RI.currententity == &clgame.viewent ) ? clgame.maxEntities : RI.currententity->curstate.number;
 
-	if( !RI.currentmodel || RI.currentmodel->type != mod_studio )
+	if( !RI.currentmodel || ( RI.currentmodel->type != mod_alias && RI.currentmodel->type != mod_studio ))
 	{
 		// entity has changed model by another type, release remap info
 		if( clgame.remap_info[i] )
@@ -291,7 +258,7 @@ void CL_AllocRemapInfo( int topcolor, int bottomcolor )
 			CL_FreeRemapInfo( clgame.remap_info[i] );
 			clgame.remap_info[i] = NULL;
 		}
-		return; // missed or hided model, ignore it
+		return; // missed or hide model, ignore it
 	}
 
 	// model doesn't contains remap textures
@@ -306,45 +273,78 @@ void CL_AllocRemapInfo( int topcolor, int bottomcolor )
 		return;
 	}
 
-	phdr = (studiohdr_t *)Mod_Extradata( RI.currentmodel );
-	if( !phdr ) return;	// missed header ???
-
-	src = (mstudiotexture_t *)(((byte *)phdr) + phdr->textureindex);
-	dst = (clgame.remap_info[i] ? clgame.remap_info[i]->ptexture : NULL); 
-
-	// NOTE: we must copy all the structures 'mstudiotexture_t' for easy acces when model is rendering
-	if( !CL_CmpStudioTextures( phdr->numtextures, src, dst ) || clgame.remap_info[i]->model != RI.currentmodel )
+	if( RI.currentmodel->type == mod_studio )
 	{
-		// this code catches studiomodel change with another studiomodel with remap textures
-		// e.g. playermodel 'barney' with playermodel 'gordon'
-		if( clgame.remap_info[i] ) CL_FreeRemapInfo( clgame.remap_info[i] ); // free old info
-		size = sizeof( remap_info_t ) + ( sizeof( mstudiotexture_t ) * phdr->numtextures );
-		info = clgame.remap_info[i] = Mem_Alloc( clgame.mempool, size );	
-		info->ptexture = (mstudiotexture_t *)(info + 1); // textures are immediately comes after remap_info
+		phdr = (studiohdr_t *)Mod_StudioExtradata( RI.currentmodel );
+		if( !phdr ) return;	// bad model?
+
+		src = (mstudiotexture_t *)(((byte *)phdr) + phdr->textureindex);
+		dst = (clgame.remap_info[i] ? clgame.remap_info[i]->ptexture : NULL); 
+
+		// NOTE: we must copy all the structures 'mstudiotexture_t' for easy access when model is rendering
+		if( !CL_CmpStudioTextures( phdr->numtextures, src, dst ) || clgame.remap_info[i]->model != RI.currentmodel )
+		{
+			// this code catches studiomodel change with another studiomodel with remap textures
+			// e.g. playermodel 'barney' with playermodel 'gordon'
+			if( clgame.remap_info[i] ) CL_FreeRemapInfo( clgame.remap_info[i] ); // free old info
+			size = sizeof( remap_info_t ) + ( sizeof( mstudiotexture_t ) * phdr->numtextures );
+			info = clgame.remap_info[i] = Mem_Calloc( clgame.mempool, size );	
+			info->ptexture = (mstudiotexture_t *)(info + 1); // textures are immediately comes after remap_info
+		}
+		else
+		{
+			// studiomodel is valid, nothing to change
+			return;
+		}
+
+		info->numtextures = phdr->numtextures;
+		info->topcolor = topcolor;
+		info->bottomcolor = bottomcolor;
+
+		src = (mstudiotexture_t *)(((byte *)phdr) + phdr->textureindex);
+		dst = info->ptexture;
+
+		// copy unchanged first
+		memcpy( dst, src, sizeof( mstudiotexture_t ) * phdr->numtextures );
+
+		// make local copies for remap textures
+		for( i = 0; i < info->numtextures; i++ )
+		{
+			if( dst[i].flags & STUDIO_NF_COLORMAP )
+				CL_DuplicateTexture( &dst[i], topcolor, bottomcolor );
+		}
+	}
+	else if( RI.currentmodel->type == mod_alias )
+	{
+		ahdr = (aliashdr_t *)Mod_AliasExtradata( RI.currentmodel );
+		if( !ahdr ) return;	// bad model?
+
+		// NOTE: we must copy all the structures 'mstudiotexture_t' for easy access when model is rendering
+		if( !clgame.remap_info[i] || clgame.remap_info[i]->model != RI.currentmodel )
+		{
+			// this code catches studiomodel change with another studiomodel with remap textures
+			// e.g. playermodel 'barney' with playermodel 'gordon'
+			if( clgame.remap_info[i] ) CL_FreeRemapInfo( clgame.remap_info[i] ); // free old info
+			info = clgame.remap_info[i] = Mem_Calloc( clgame.mempool, sizeof( remap_info_t ));	
+		}
+		else
+		{
+			// aliasmodel is valid, nothing to change
+			return;
+		}
+
+		info->numtextures = RI.currentmodel->numtextures;
+
+		// alias remapping is easy
+		CL_UpdateRemapInfo( topcolor, bottomcolor );
 	}
 	else
 	{
-		// studiomodel is valid, nothing to change
+		// only alias & studio models are supposed for remapping
 		return;
 	}
 
-	info->numtextures = phdr->numtextures;
 	info->model = RI.currentmodel;
-	info->topcolor = topcolor;
-	info->bottomcolor = bottomcolor;
-
-	src = (mstudiotexture_t *)(((byte *)phdr) + phdr->textureindex);
-	dst = info->ptexture;
-
-	// copy unchanged first
-	Q_memcpy( dst, src, sizeof( mstudiotexture_t ) * phdr->numtextures );
-
-	// make local copies for remap textures
-	for( i = 0; i < info->numtextures; i++ )
-	{
-		if( dst[i].flags & STUDIO_NF_COLORMAP )
-			CL_DuplicateTexture( &dst[i], topcolor, bottomcolor );
-	}
 }
 
 /*
@@ -357,7 +357,6 @@ Update all remaps per entity
 void CL_UpdateRemapInfo( int topcolor, int bottomcolor )
 {
 	remap_info_t	*info;
-	mstudiotexture_t	*dst;
 	int		i;
 
 	i = ( RI.currententity == &clgame.viewent ) ? clgame.maxEntities : RI.currententity->curstate.number;
@@ -367,12 +366,14 @@ void CL_UpdateRemapInfo( int topcolor, int bottomcolor )
 	if( info->topcolor == topcolor && info->bottomcolor == bottomcolor )
 		return; // values is valid
 
-	dst = info->ptexture;
-
 	for( i = 0; i < info->numtextures; i++ )
 	{
-		if( dst[i].flags & STUDIO_NF_COLORMAP )
-			CL_UpdateTexture( &dst[i], topcolor, bottomcolor );
+		if( info->ptexture != NULL )
+		{
+			if( FBitSet( info->ptexture[i].flags, STUDIO_NF_COLORMAP ))
+				CL_UpdateStudioTexture( &info->ptexture[i], topcolor, bottomcolor );
+		}
+		else CL_UpdateAliasTexture( &info->textures[i], i, topcolor, bottomcolor );
 	}
 
 	info->topcolor = topcolor;
@@ -390,13 +391,19 @@ void CL_FreeRemapInfo( remap_info_t *info )
 {
 	int	i;
 
-	ASSERT( info != NULL );
+	Assert( info != NULL );
 
 	// release all colormap texture copies
 	for( i = 0; i < info->numtextures; i++ )
 	{
-		if( info->ptexture[i].flags & STUDIO_NF_COLORMAP )
-			GL_FreeTexture( info->ptexture[i].index );
+		if( info->ptexture != NULL )
+		{
+			if( FBitSet( info->ptexture[i].flags, STUDIO_NF_COLORMAP ))
+				GL_FreeTexture( info->ptexture[i].index );
+		}
+
+		if( info->textures[i] != 0 )
+			GL_FreeTexture( info->textures[i] );
 	}
 
 	Mem_Free( info ); // release struct	
