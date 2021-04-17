@@ -67,8 +67,6 @@ extern CGraph	WorldGraph;
 #define	FLASH_DRAIN_TIME	 1.2 //100 units/3 minutes
 #define	FLASH_CHARGE_TIME	 0.2 // 100 units/20 seconds  (seconds per unit)
 
-#define LOADSAVED_KILL	0x01
-
 // Global Savedata for player
 TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] = 
 {
@@ -94,6 +92,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_ARRAY( CBasePlayer, m_rgiSuitNoRepeat, FIELD_INTEGER, CSUITNOREPEAT ),
 	DEFINE_ARRAY( CBasePlayer, m_rgflSuitNoRepeatTime, FIELD_TIME, CSUITNOREPEAT ),
 	DEFINE_FIELD( CBasePlayer, m_lastDamageAmount, FIELD_INTEGER ),
+	DEFINE_ARRAY( CBasePlayer, m_szAnimExtention, FIELD_CHARACTER, 32 ),
 
 	DEFINE_ARRAY( CBasePlayer, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES ),
 	DEFINE_FIELD( CBasePlayer, m_pActiveItem, FIELD_CLASSPTR ),
@@ -243,28 +242,18 @@ LINK_ENTITY_TO_CLASS( player, CBasePlayer );
 
 
 void CBasePlayer :: Pain( void )
-	{
-	long flRndSound = RANDOM_LONG (1, 5); 
+{
+	float	flRndSound;//sound randomizer
+
+	flRndSound = RANDOM_FLOAT ( 0 , 1 ); 
 	
-	switch (flRndSound)
-		{
-		case 1:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain4.wav", 1, ATTN_MEDIUM);
-			break;
-
-		case 2:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_MEDIUM);
-			break;
-
-		case 3:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_MEDIUM);
-			break;
-
-		case 4:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_MEDIUM);
-			break;
-		}
-	}
+	if ( flRndSound <= 0.33 )
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM);
+	else if ( flRndSound <= 0.66 )	
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM);
+	else
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM);
+}
 
 /* 
  *
@@ -353,20 +342,26 @@ int TrainSpeed(int iSpeed, int iMax)
 
 void CBasePlayer :: DeathSound( void )
 {
+	// water death sounds
+	/*
+	if (pev->waterlevel == 3)
+	{
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/h2odeath.wav", 1, ATTN_NONE);
+		return;
+	}
+	*/
+
 	// temporarily using pain sounds for death sounds
 	switch (RANDOM_LONG(1,5)) 
 	{
-	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain4.wav", 1, ATTN_MEDIUM);
+	case 1: 
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM);
 		break;
-	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_MEDIUM);
+	case 2: 
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM);
 		break;
-	case 3:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_MEDIUM);
-		break;
-	case 4:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_MEDIUM);
+	case 3: 
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM);
 		break;
 	}
 
@@ -780,7 +775,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	pWeaponBox->pev->angles.x = 0;// don't let weaponbox tilt.
 	pWeaponBox->pev->angles.z = 0;
 
-	pWeaponBox->SetThink (&CWeaponBox::Kill);
+	pWeaponBox->SetThink( CWeaponBox::Kill );
 	pWeaponBox->pev->nextthink = gpGlobals->time + 120;
 
 // back these two lists up to their first elements
@@ -939,7 +934,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->angles.x = 0;
 	pev->angles.z = 0;
 
-	SetThink (&CBasePlayer::PlayerDeathThink);
+	SetThink(PlayerDeathThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -1163,9 +1158,9 @@ void CBasePlayer::WaterMove()
 		
 		// play 'up for air' sound
 		if (pev->air_finished < gpGlobals->time)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade1.wav", 1, ATTN_MEDIUM);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade1.wav", 1, ATTN_NORM);
 		else if (pev->air_finished < gpGlobals->time + 9)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade2.wav", 1, ATTN_MEDIUM);
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_wade2.wav", 1, ATTN_NORM);
 
 		pev->air_finished = gpGlobals->time + AIRTIME;
 		pev->dmg = 2;
@@ -1231,10 +1226,10 @@ void CBasePlayer::WaterMove()
 	{
 		switch (RANDOM_LONG(0,3))
 			{
-			case 0:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim1.wav", 0.8, ATTN_MEDIUM); break;
-			case 1:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim2.wav", 0.8, ATTN_MEDIUM); break;
-			case 2:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim3.wav", 0.8, ATTN_MEDIUM); break;
-			case 3:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim4.wav", 0.8, ATTN_MEDIUM); break;
+			case 0:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim1.wav", 0.8, ATTN_NORM); break;
+			case 1:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim2.wav", 0.8, ATTN_NORM); break;
+			case 2:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim3.wav", 0.8, ATTN_NORM); break;
+			case 3:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim4.wav", 0.8, ATTN_NORM); break;
 		}
 	}
 
@@ -1449,7 +1444,7 @@ void CBasePlayer::PlayerUse ( void )
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed(pTrain->pev->speed, pTrain->pev->impulse);
 					m_iTrain |= TRAIN_NEW;
-					EMIT_SOUND( ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_MEDIUM);
+					EMIT_SOUND( ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
 					return;
 				}
 			}
@@ -1497,7 +1492,7 @@ void CBasePlayer::PlayerUse ( void )
 		int caps = pObject->ObjectCaps();
 
 		if ( m_afButtonPressed & IN_USE )
-			EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_MEDIUM);
+			EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
 
 		if ( ( (pev->button & IN_USE) && (caps & FCAP_CONTINUOUS_USE) ) ||
 			 ( (m_afButtonPressed & IN_USE) && (caps & (FCAP_IMPULSE_USE|FCAP_ONOFF_USE)) ) )
@@ -1516,7 +1511,7 @@ void CBasePlayer::PlayerUse ( void )
 	else
 	{
 		if ( m_afButtonPressed & IN_USE )
-			EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.4, ATTN_MEDIUM);
+			EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.4, ATTN_NORM);
 	}
 }
 
@@ -2047,13 +2042,12 @@ void CBasePlayer::CheckTimeBasedDamage()
 				if (((i == itbd_NerveGas) && (m_rgbTimeBasedDamage[i] < NERVEGAS_DURATION)) ||
 					((i == itbd_Poison)   && (m_rgbTimeBasedDamage[i] < POISON_DURATION)))
 				{
-					// Более не используется как антидот
-					/*if (m_rgItems[ITEM_ANTIDOTE])
+					if (m_rgItems[ITEM_ANTIDOTE])
 					{
 						m_rgbTimeBasedDamage[i] = 0;
 						m_rgItems[ITEM_ANTIDOTE]--;
 						SetSuitUpdate("!HEV_HEAL4", FALSE, SUIT_REPEAT_OK);
-					}*/
+					}
 				}
 
 
@@ -2518,7 +2512,7 @@ void CBasePlayer::PostThink()
 			// BUG - this happens all the time in water, especially when 
 			// BUG - water has current force
 			// if ( !pev->groundentity || VARS(pev->groundentity)->velocity.z == 0 )
-				// EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_MEDIUM);
+				// EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_wade1.wav", 1, ATTN_NORM);
 		}
 		else if ( m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
 		{// after this point, we start doing damage
@@ -2528,18 +2522,7 @@ void CBasePlayer::PostThink()
 			if ( flFallDamage > pev->health )
 			{//splat
 				// note: play on item channel because we play footstep landing on body channel
-				switch (RANDOM_LONG (1, 3))
-					{
-					case 1:
-						EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_MEDIUM);
-						break;
-					case 2:
-						EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat2.wav", 1, ATTN_MEDIUM);
-						break;
-					case 3:
-						EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat3.wav", 1, ATTN_MEDIUM);
-						break;
-					}
+				EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/bodysplat.wav", 1, ATTN_NORM);
 			}
 
 			if ( flFallDamage > 0 )
@@ -2921,7 +2904,7 @@ int CBasePlayer::Save( CSave &save )
 	if ( !CBaseMonster::Save(save) )
 		return 0;
 
-	return save.WriteFields( "PLAYER", this, m_playerSaveData, HLARRAYSIZE(m_playerSaveData) );
+	return save.WriteFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData) );
 }
 
 
@@ -2939,7 +2922,7 @@ int CBasePlayer::Restore( CRestore &restore )
 	if ( !CBaseMonster::Restore(restore) )
 		return 0;
 
-	int status = restore.ReadFields( "PLAYER", this, m_playerSaveData, HLARRAYSIZE(m_playerSaveData) );
+	int status = restore.ReadFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData) );
 
 	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
 	// landmark isn't present.
@@ -3173,7 +3156,7 @@ void CSprayCan::Spawn ( entvars_t *pevOwner )
 	pev->frame = 0;
 
 	pev->nextthink = gpGlobals->time + 0.1;
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/sprayer.wav", 1, ATTN_MEDIUM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/sprayer.wav", 1, ATTN_NORM);
 }
 
 void CSprayCan::Think( void )
@@ -3200,7 +3183,7 @@ void CSprayCan::Think( void )
 	// No customization present.
 	if (nFrames == -1)
 	{
-		UTIL_DecalTrace( &tr, DECAL_RDAAOW );
+		UTIL_DecalTrace( &tr, DECAL_LAMBDA6 );
 		UTIL_Remove( this );
 	}
 	else
@@ -3227,7 +3210,7 @@ void CBloodSplat::Spawn ( entvars_t *pevOwner )
 	pev->angles = pevOwner->v_angle;
 	pev->owner = ENT(pevOwner);
 
-	SetThink (&CBloodSplat::Spray);
+	SetThink ( Spray );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -3242,7 +3225,7 @@ void CBloodSplat::Spray ( void )
 
 		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
 	}
-	SetThink (&CBaseEntity::SUB_Remove);
+	SetThink ( SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -3301,7 +3284,7 @@ void CBasePlayer :: FlashlightTurnOn( void )
 
 	if ( (pev->weapons & (1<<WEAPON_SUIT)) )
 	{
-		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_MEDIUM, 0, PITCH_NORM );
+		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
 		SetBits(pev->effects, EF_DIMLIGHT);
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 		WRITE_BYTE(1);
@@ -3316,7 +3299,7 @@ void CBasePlayer :: FlashlightTurnOn( void )
 
 void CBasePlayer :: FlashlightTurnOff( void )
 {
-	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_MEDIUM, 0, PITCH_NORM );
+	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
     ClearBits(pev->effects, EF_DIMLIGHT);
 	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 	WRITE_BYTE(0);
@@ -3605,7 +3588,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if ( pEntity )
 		{
 			if ( pEntity->pev->takedamage )
-				pEntity->SetThink (&CBaseEntity::SUB_Remove);
+				pEntity->SetThink(SUB_Remove);
 		}
 		break;
 	}
@@ -4742,16 +4725,9 @@ void CRevertSaved :: KeyValue( KeyValueData *pkvd )
 
 void CRevertSaved :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	// "Глушим" игрока, если необходимо
-	if (pActivator && (pev->spawnflags & LOADSAVED_KILL))
-		{
-		pActivator->pev->armorvalue = 0;
-		pActivator->pev->health = 0;
-		}
-
 	UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
 	pev->nextthink = gpGlobals->time + MessageTime();
-	SetThink (&CRevertSaved::MessageThink);
+	SetThink( MessageThink );
 }
 
 
@@ -4762,7 +4738,7 @@ void CRevertSaved :: MessageThink( void )
 	if ( nextThink > 0 ) 
 	{
 		pev->nextthink = gpGlobals->time + nextThink;
-		SetThink (&CRevertSaved::LoadThink);
+		SetThink( LoadThink );
 	}
 	else
 		LoadThink();

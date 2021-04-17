@@ -40,9 +40,6 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void SetYawSpeed( void );
-	int	Classify ( void );
-
-
 	void EXPORT MonsterThink ( void );
 	void Move ( float flInterval );
 	void PickNewDest ( int iCondition );
@@ -51,6 +48,7 @@ public:
 
 	float	m_flLastLightLevel;
 	float	m_flNextSmellTime;
+	int		Classify ( void );
 	void	Look ( int iDistance );
 	int		ISoundMask ( void );
 	
@@ -59,7 +57,6 @@ public:
 	int		m_iMode;
 	// -----------------------------
 };
-
 LINK_ENTITY_TO_CLASS( monster_cockroach, CRoach );
 
 //=========================================================
@@ -168,11 +165,11 @@ void CRoach :: Killed( entvars_t *pevAttacker, int iGib )
 	//random sound
 	if ( RANDOM_LONG(0,4) == 1 )
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "roach/rch_die.wav", 0.8, ATTN_MEDIUM, 0, 80 + RANDOM_LONG(0,39) );
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "roach/rch_die.wav", 0.8, ATTN_NORM, 0, 80 + RANDOM_LONG(0,39) );
 	}
 	else
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "roach/rch_smash.wav", 0.7, ATTN_MEDIUM, 0, 80 + RANDOM_LONG(0,39) );
+		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "roach/rch_smash.wav", 0.7, ATTN_NORM, 0, 80 + RANDOM_LONG(0,39) );
 	}
 	
 	CSoundEnt::InsertSound ( bits_SOUND_WORLD, pev->origin, 128, 1 );
@@ -343,7 +340,7 @@ void CRoach :: PickNewDest ( int iCondition )
 	if ( RANDOM_LONG(0,9) == 1 )
 	{
 		// every once in a while, a roach will play a skitter sound when they decide to run
-		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "roach/rch_walk.wav", 1, ATTN_MEDIUM, 0, 80 + RANDOM_LONG(0,39) );
+		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "roach/rch_walk.wav", 1, ATTN_NORM, 0, 80 + RANDOM_LONG(0,39) );
 	}
 }
 

@@ -17,21 +17,13 @@
 
 
 class CItem : public CBaseEntity
-	{
+{
 public:
-	void	Spawn (void);
-	CBaseEntity*	Respawn (void);
-	void	EXPORT ItemTouch (CBaseEntity *pOther);
-	void	EXPORT Materialize (void);
-	virtual int MyTouch (CBasePlayer *pPlayer) { return -1; };
-
-	// Поддержка триггеринга по факту набора необходимого количества объектов
-	virtual int Save (CSave &save);
-	virtual int Restore (CRestore &restore);
-	static TYPEDESCRIPTION m_SaveData[];
-	void KeyValue (KeyValueData* pkvd);
-
-	int minimumToTrigger;
-	};
+	void	Spawn( void );
+	CBaseEntity*	Respawn( void );
+	void	EXPORT ItemTouch( CBaseEntity *pOther );
+	void	EXPORT Materialize( void );
+	virtual BOOL MyTouch( CBasePlayer *pPlayer ) { return FALSE; };
+};
 
 #endif // ITEMS_H

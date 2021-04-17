@@ -29,7 +29,6 @@
 #include "maprules.h"
 #include "cbase.h"
 #include "player.h"
-#include "weapons.h"
 
 class CRuleEntity : public CBaseEntity
 {
@@ -202,20 +201,13 @@ private:
 LINK_ENTITY_TO_CLASS( game_end, CGameEnd );
 
 
-void CGameEnd::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
-	{
-	if (!CanFireForActivator (pActivator))
+void CGameEnd::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	if ( !CanFireForActivator( pActivator ) )
 		return;
 
-	if (pActivator->IsPlayer () && !g_pGameRules->IsMultiplayer ())	// Фрагмент для singleplayer
-		{
-		CLIENT_COMMAND (pActivator->edict (), "disconnect\n");
-		}
-	else
-		{
-		g_pGameRules->EndMultiplayerGame();
-		}
-	}
+	g_pGameRules->EndMultiplayerGame();
+}
 
 
 //
@@ -656,51 +648,7 @@ void CGamePlayerHurt::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	}
 }
 
-// Объект позволяет задать здоровье и броню игрока в абсолютных значениях
-class CGamePlayerSetHealth : public CRulePointEntity
-{
-public:
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	inline BOOL RemoveOnFire( void ) { return (pev->spawnflags & SF_PKILL_FIREONCE) ? TRUE : FALSE; }
 
-private:
-};
-
-LINK_ENTITY_TO_CLASS( game_player_set_health, CGamePlayerSetHealth );
-
-
-void CGamePlayerSetHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	if ( !CanFireForActivator( pActivator ) )
-		return;
-
-	if ( pActivator->IsPlayer() && (pev->dmg >= 0))
-	{
-		if (pev->dmg <= pActivator->pev->max_health)
-			{
-			pActivator->pev->health = (int)pev->dmg;
-			pActivator->pev->armorvalue = 0;
-			}
-		else if ((pev->dmg > pActivator->pev->max_health) && 
-			(pev->dmg <= pActivator->pev->max_health + MAX_NORMAL_BATTERY))
-			{
-			pActivator->pev->health = (int)pActivator->pev->max_health;
-			pActivator->pev->armorvalue = (int)pev->dmg - (int)pActivator->pev->max_health;
-			}
-		else
-			{
-			pActivator->pev->health = (int)pActivator->pev->max_health;
-			pActivator->pev->armorvalue = MAX_NORMAL_BATTERY;
-			}
-	}
-	
-	SUB_UseTargets( pActivator, useType, value );
-
-	if ( RemoveOnFire() )
-	{
-		UTIL_Remove( this );
-	}
-}
 
 //
 // CGameCounter / game_counter	-- Counts events and fires target

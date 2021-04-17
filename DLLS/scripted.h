@@ -46,36 +46,36 @@ enum SS_INTERRUPT
 class CCineMonster : public CBaseMonster
 {
 public:
-	void Spawn (void );
-	virtual void KeyValue (KeyValueData *pkvd );
-	virtual void Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	virtual void Blocked (CBaseEntity *pOther );
-	virtual void Touch (CBaseEntity *pOther );
-	virtual int	 ObjectCaps (void ) { return (CBaseMonster :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
-	virtual void Activate (void );
+	void Spawn( void );
+	virtual void KeyValue( KeyValueData *pkvd );
+	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	virtual void Blocked( CBaseEntity *pOther );
+	virtual void Touch( CBaseEntity *pOther );
+	virtual int	 ObjectCaps( void ) { return (CBaseMonster :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
+	virtual void Activate( void );
 
-	virtual int		Save (CSave &save );
-	virtual int		Restore (CRestore &restore );
+	virtual int		Save( CSave &save );
+	virtual int		Restore( CRestore &restore );
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	// void EXPORT CineSpawnThink (void );
-	void EXPORT CineThink (void );
-	void Pain (void );
-	void Die (void );
-	void DelayStart (int state );
-	BOOL FindEntity (void );
-	virtual void PossessEntity (void );
+	// void EXPORT CineSpawnThink( void );
+	void EXPORT CineThink( void );
+	void Pain( void );
+	void Die( void );
+	void DelayStart( int state );
+	BOOL FindEntity( void );
+	virtual void PossessEntity( void );
 
-	void ReleaseEntity (CBaseMonster *pEntity );
-	void CancelScript (void );
-	virtual BOOL StartSequence (CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
-	virtual BOOL FCanOverrideState  (void );
-	void SequenceDone  (CBaseMonster *pMonster );
-	virtual void FixScriptMonsterSchedule (CBaseMonster *pMonster );
-	BOOL	CanInterrupt (void );
-	void	AllowInterrupt (BOOL fAllow );
-	int		IgnoreConditions (void );
+	void ReleaseEntity( CBaseMonster *pEntity );
+	void CancelScript( void );
+	virtual BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
+	virtual BOOL FCanOverrideState ( void );
+	void SequenceDone ( CBaseMonster *pMonster );
+	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
+	BOOL	CanInterrupt( void );
+	void	AllowInterrupt( BOOL fAllow );
+	int		IgnoreConditions( void );
 
 	int	m_iszIdle;		// string index for idle animation
 	int	m_iszPlay;		// string index for scripted animation
@@ -97,10 +97,10 @@ public:
 
 class CCineAI : public CCineMonster
 {
-	BOOL StartSequence (CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
-	void PossessEntity (void );
-	BOOL FCanOverrideState  (void );
-	virtual void FixScriptMonsterSchedule (CBaseMonster *pMonster );
+	BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
+	void PossessEntity( void );
+	BOOL FCanOverrideState ( void );
+	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
 };
 
 

@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -59,12 +59,12 @@ typedef enum {
 	ACT_DIEFORWARD,
 	ACT_DIEVIOLENT,
 	ACT_BARNACLE_HIT,		// barnacle tongue hits a monster
-	ACT_BARNACLE_PULL,		// barnacle is lifting the monster  (loop )
+	ACT_BARNACLE_PULL,		// barnacle is lifting the monster ( loop )
 	ACT_BARNACLE_CHOMP,		// barnacle latches on to the monster
-	ACT_BARNACLE_CHEW,		// barnacle is holding the monster in its mouth  (loop )
+	ACT_BARNACLE_CHEW,		// barnacle is holding the monster in its mouth ( loop )
 	ACT_SLEEP,
 	ACT_INSPECT_FLOOR,		// for active idles, look at something on or near the floor
-	ACT_INSPECT_WALL,		// for active idles, look at something directly ahead of you  (doesn't HAVE to be a wall or on a wall )
+	ACT_INSPECT_WALL,		// for active idles, look at something directly ahead of you ( doesn't HAVE to be a wall or on a wall )
 	ACT_IDLE_ANGRY,			// alternate idle animation in which the monster is clearly agitated. (loop)
 	ACT_WALK_HURT,			// limp  (loop)
 	ACT_RUN_HURT,			// limp  (loop)
@@ -79,7 +79,7 @@ typedef enum {
 	ACT_FEAR_DISPLAY,		// monster just saw something that it is afraid of
 	ACT_EXCITED,			// for some reason, monster is excited. Sees something he really likes to eat, or whatever.
 	ACT_SPECIAL_ATTACK1,	// very monster specific special attacks.
-	ACT_SPECIAL_ATTACK2,	
+	ACT_SPECIAL_ATTACK2,
 	ACT_COMBAT_IDLE,		// agitated idle.
 	ACT_WALK_SCARED,
 	ACT_RUN_SCARED,
@@ -95,15 +95,13 @@ typedef enum {
 	ACT_FLINCH_RIGHTARM,
 	ACT_FLINCH_LEFTLEG,
 	ACT_FLINCH_RIGHTLEG,
-} Activity;
-
+	} Activity;
 
 typedef struct {
 	int	type;
-	char *name;
-} activity_map_t;
+	char* name;
+	} activity_map_t;
 
 extern activity_map_t activity_map[];
-
 
 #endif	//ACTIVITY_H

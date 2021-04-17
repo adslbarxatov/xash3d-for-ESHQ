@@ -120,8 +120,8 @@ void CSqueakGrenade :: Spawn( void )
 	UTIL_SetSize(pev, Vector( -4, -4, 0), Vector(4, 4, 8));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetTouch (&CSqueakGrenade::SuperBounceTouch);
-	SetThink (&CSqueakGrenade::HuntThink);
+	SetTouch( SuperBounceTouch );
+	SetThink( HuntThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 	m_flNextHunt = gpGlobals->time + 1E6;
 
@@ -162,7 +162,7 @@ void CSqueakGrenade::Precache( void )
 void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->model = iStringNull;// make invisible
-	SetThink (&CBaseEntity::SUB_Remove);
+	SetThink( SUB_Remove );
 	SetTouch( NULL );
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -192,7 +192,7 @@ void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 
 void CSqueakGrenade :: GibMonster( void )
 {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_MEDIUM, 0, 200);		
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_NORM, 0, 200);		
 }
 
 
@@ -261,7 +261,7 @@ void CSqueakGrenade::HuntThink( void )
 	// squeek if it's about time blow up
 	if ((m_flDie - gpGlobals->time <= 0.5) && (m_flDie - gpGlobals->time >= 0.3))
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_die1.wav", 1, ATTN_MEDIUM, 0, 100 + RANDOM_LONG(0,0x3F));
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_die1.wav", 1, ATTN_NORM, 0, 100 + RANDOM_LONG(0,0x3F));
 		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
 	}
 
@@ -362,7 +362,7 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 				// m_flDie += 2.0; // add more life
 
 				// make bite sound
-				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "squeek/sqk_deploy1.wav", 1.0, ATTN_MEDIUM, 0, (int)flpitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "squeek/sqk_deploy1.wav", 1.0, ATTN_NORM, 0, (int)flpitch);
 				m_flNextAttack = gpGlobals->time + 0.5;
 			}
 		}
@@ -391,11 +391,11 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 		float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 
 		if ( flRndSound <= 0.33 )
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt1.wav", 1, ATTN_MEDIUM, 0, (int)flpitch);		
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt1.wav", 1, ATTN_NORM, 0, (int)flpitch);		
 		else if (flRndSound <= 0.66)
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_MEDIUM, 0, (int)flpitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, (int)flpitch);
 		else 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_MEDIUM, 0, (int)flpitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, (int)flpitch);
 		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
 	}
 	else
@@ -466,9 +466,9 @@ BOOL CSqueak::Deploy( )
 	float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 
 	if ( flRndSound <= 0.5 )
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_MEDIUM, 0, 100);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 100);
 	else 
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_MEDIUM, 0, 100);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 100);
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 
@@ -483,13 +483,13 @@ void CSqueak::Holster( int skiplocal /* = 0 */ )
 	if ( !m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
 	{
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_SNARK);
-		SetThink (&CBasePlayerItem::DestroyItem);
+		SetThink( DestroyItem );
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 	}
 	
 	SendWeaponAnim( SQUEAK_DOWN );
-	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_MEDIUM);
+	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
 }
 
 
@@ -535,9 +535,9 @@ void CSqueak::PrimaryAttack()
 			float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 
 			if ( flRndSound <= 0.5 )
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_MEDIUM, 0, 105);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 105);
 			else 
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_MEDIUM, 0, 105);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
 
 			m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 

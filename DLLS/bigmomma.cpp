@@ -1,18 +1,18 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology"). Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
-* This source code contains proprietary and confidential information of
-* Valve LLC and its suppliers. Access to this code is restricted to
-* persons who have executed a written SDK license with Valve. Any access,
-* use or distribution of this code by or to any unlicensed person is illegal.
+*   This source code contains proprietary and confidential information of
+*   Valve LLC and its suppliers.  Access to this code is restricted to
+*   persons who have executed a written SDK license with Valve.  Any access,
+*   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#if !defined (OEM_BUILD) && !defined (HLDEMO_BUILD)
+#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
 //=========================================================
 // monster template
@@ -30,7 +30,7 @@
 #define SF_INFOBM_WAIT		0x0002
 
 // AI Nodes for Big Momma
-class CInfoBM : public CPointEntity
+class CInfoBM: public CPointEntity
 	{
 	public:
 		void Spawn (void);
@@ -44,18 +44,18 @@ class CInfoBM : public CPointEntity
 		// Reach delay in pev->speed
 		// Reach sequence in pev->netname
 
-		virtual int Save (CSave &save);
-		virtual int Restore (CRestore &restore);
-		static TYPEDESCRIPTION m_SaveData[];
+		virtual int		Save (CSave& save);
+		virtual int		Restore (CRestore& restore);
+		static	TYPEDESCRIPTION m_SaveData[];
 
-		int m_preSequence;
+		int		m_preSequence;
 	};
 
 LINK_ENTITY_TO_CLASS (info_bigmomma, CInfoBM);
 
-TYPEDESCRIPTION	CInfoBM::m_SaveData[] = 
+TYPEDESCRIPTION	CInfoBM::m_SaveData[] =
 	{
-	DEFINE_FIELD (CInfoBM, m_preSequence, FIELD_STRING),
+		DEFINE_FIELD (CInfoBM, m_preSequence, FIELD_STRING),
 	};
 
 IMPLEMENT_SAVERESTORE (CInfoBM, CPointEntity);
@@ -66,29 +66,29 @@ void CInfoBM::Spawn (void)
 
 void CInfoBM::KeyValue (KeyValueData* pkvd)
 	{
-	if (FStrEq(pkvd->szKeyName, "radius"))
+	if (FStrEq (pkvd->szKeyName, "radius"))
 		{
-		pev->scale = atof(pkvd->szValue);
+		pev->scale = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
-	else if (FStrEq(pkvd->szKeyName, "reachdelay"))
+	else if (FStrEq (pkvd->szKeyName, "reachdelay"))
 		{
-		pev->speed = atof(pkvd->szValue);
+		pev->speed = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
-	else if (FStrEq(pkvd->szKeyName, "reachtarget"))
+	else if (FStrEq (pkvd->szKeyName, "reachtarget"))
 		{
-		pev->message = ALLOC_STRING(pkvd->szValue);
+		pev->message = ALLOC_STRING (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
-	else if (FStrEq(pkvd->szKeyName, "reachsequence"))
+	else if (FStrEq (pkvd->szKeyName, "reachsequence"))
 		{
-		pev->netname = ALLOC_STRING(pkvd->szValue);
+		pev->netname = ALLOC_STRING (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
-	else if (FStrEq(pkvd->szKeyName, "presequence"))
+	else if (FStrEq (pkvd->szKeyName, "presequence"))
 		{
-		m_preSequence = ALLOC_STRING(pkvd->szValue);
+		m_preSequence = ALLOC_STRING (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
 	else
@@ -98,27 +98,27 @@ void CInfoBM::KeyValue (KeyValueData* pkvd)
 //=========================================================
 // Mortar shot entity
 //=========================================================
-class CBMortar : public CBaseEntity
+class CBMortar: public CBaseEntity
 	{
 	public:
 		void Spawn (void);
 
-		static CBMortar *Shoot (edict_t *pOwner, Vector vecStart, Vector vecVelocity);
-		void Touch (CBaseEntity *pOther);
+		static CBMortar* Shoot (edict_t* pOwner, Vector vecStart, Vector vecVelocity);
+		void Touch (CBaseEntity* pOther);
 		void EXPORT Animate (void);
 
-		virtual int Save (CSave &save);
-		virtual int Restore (CRestore &restore);
-		static TYPEDESCRIPTION m_SaveData[];
+		virtual int		Save (CSave& save);
+		virtual int		Restore (CRestore& restore);
+		static	TYPEDESCRIPTION m_SaveData[];
 
-		int m_maxFrame;
+		int  m_maxFrame;
 	};
 
 LINK_ENTITY_TO_CLASS (bmortar, CBMortar);
 
-TYPEDESCRIPTION	CBMortar::m_SaveData[] = 
+TYPEDESCRIPTION	CBMortar::m_SaveData[] =
 	{
-	DEFINE_FIELD (CBMortar, m_maxFrame, FIELD_INTEGER),
+		DEFINE_FIELD (CBMortar, m_maxFrame, FIELD_INTEGER),
 	};
 
 IMPLEMENT_SAVERESTORE (CBMortar, CBaseEntity);
@@ -146,12 +146,13 @@ IMPLEMENT_SAVERESTORE (CBMortar, CBaseEntity);
 #define BIG_AE_EARLY_TARGET			50		// Fire target early
 
 // User defined conditions
-#define bits_COND_NODE_SEQUENCE			 (bits_COND_SPECIAL1)		// pev->netname contains the name of a sequence to play
+#define bits_COND_NODE_SEQUENCE			( bits_COND_SPECIAL1 )		// pev->netname contains the name of a sequence to play
 
 // Attack distance constants
 #define	BIG_ATTACKDIST		170
 #define BIG_MORTARDIST		800
 #define BIG_MAXCHILDREN		20			// Max # of live headcrab children
+
 
 #define bits_MEMORY_CHILDPAIR		(bits_MEMORY_CUSTOM1)
 #define bits_MEMORY_ADVANCE_NODE	(bits_MEMORY_CUSTOM2)
@@ -159,40 +160,38 @@ IMPLEMENT_SAVERESTORE (CBMortar, CBaseEntity);
 #define bits_MEMORY_FIRED_NODE		(bits_MEMORY_CUSTOM4)
 
 int gSpitSprite, gSpitDebrisSprite;
-Vector VecCheckSplatToss (entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float maxHeight);
-void MortarSpray (const Vector &position, const Vector &direction, int spriteModel, int count);
+Vector VecCheckSplatToss (entvars_t* pev, const Vector& vecSpot1, Vector vecSpot2, float maxHeight);
+void MortarSpray (const Vector& position, const Vector& direction, int spriteModel, int count);
 
-// UNDONE:	
-//
 #define BIG_CHILDCLASS		"monster_babycrab"
 
-class CBigMomma : public CBaseMonster
+class CBigMomma: public CBaseMonster
 	{
 	public:
 		void Spawn (void);
 		void Precache (void);
-		void KeyValue (KeyValueData *pkvd);
+		void KeyValue (KeyValueData* pkvd);
 		void Activate (void);
-		int TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+		int TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
-		void		RunTask (Task_t *pTask);
-		void		StartTask (Task_t *pTask);
-		Schedule_t	*GetSchedule (void);
-		Schedule_t	*GetScheduleOfType (int Type);
-		void		TraceAttack (entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+		void		RunTask (Task_t* pTask);
+		void		StartTask (Task_t* pTask);
+		Schedule_t* GetSchedule (void);
+		Schedule_t* GetScheduleOfType (int Type);
+		void		TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 
 		void NodeStart (int iszNextNode);
 		void NodeReach (void);
 		BOOL ShouldGoToNode (void);
 
 		void SetYawSpeed (void);
-		int Classify (void);
-		void HandleAnimEvent (MonsterEvent_t *pEvent);
+		int  Classify (void);
+		void HandleAnimEvent (MonsterEvent_t* pEvent);
 		void LayHeadcrab (void);
 
 		int GetNodeSequence (void)
 			{
-			CBaseEntity *pTarget = m_hTargetEnt;
+			CBaseEntity* pTarget = m_hTargetEnt;
 			if (pTarget)
 				{
 				return pTarget->pev->netname;	// netname holds node sequence
@@ -200,9 +199,10 @@ class CBigMomma : public CBaseMonster
 			return 0;
 			}
 
+
 		int GetNodePresequence (void)
 			{
-			CInfoBM *pTarget = (CInfoBM *)(CBaseEntity *)m_hTargetEnt;
+			CInfoBM* pTarget = (CInfoBM*)(CBaseEntity*)m_hTargetEnt;
 			if (pTarget)
 				{
 				return pTarget->m_preSequence;
@@ -212,7 +212,7 @@ class CBigMomma : public CBaseMonster
 
 		float GetNodeDelay (void)
 			{
-			CBaseEntity *pTarget = m_hTargetEnt;
+			CBaseEntity* pTarget = m_hTargetEnt;
 			if (pTarget)
 				{
 				return pTarget->pev->speed;	// Speed holds node delay
@@ -222,7 +222,7 @@ class CBigMomma : public CBaseMonster
 
 		float GetNodeRange (void)
 			{
-			CBaseEntity *pTarget = m_hTargetEnt;
+			CBaseEntity* pTarget = m_hTargetEnt;
 			if (pTarget)
 				{
 				return pTarget->pev->scale;	// Scale holds node delay
@@ -232,7 +232,7 @@ class CBigMomma : public CBaseMonster
 
 		float GetNodeYaw (void)
 			{
-			CBaseEntity *pTarget = m_hTargetEnt;
+			CBaseEntity* pTarget = m_hTargetEnt;
 			if (pTarget)
 				{
 				if (pTarget->pev->angles.y != 0)
@@ -247,17 +247,17 @@ class CBigMomma : public CBaseMonster
 			m_crabCount = 0;
 			}
 
-		void DeathNotice (entvars_t *pevChild);
+		void DeathNotice (entvars_t* pevChild);
 
-		BOOL CanLayCrab (void) 
-			{ 
+		BOOL CanLayCrab (void)
+			{
 			if (m_crabTime < gpGlobals->time && m_crabCount < BIG_MAXCHILDREN)
 				{
 				// Don't spawn crabs inside each other
 				Vector mins = pev->origin - Vector (32, 32, 0);
 				Vector maxs = pev->origin + Vector (32, 32, 0);
 
-				CBaseEntity *pList[2];
+				CBaseEntity* pList[2];
 				int count = UTIL_EntitiesInBox (pList, 2, mins, maxs, FL_MONSTER);
 				for (int i = 0; i < count; i++)
 					{
@@ -282,19 +282,19 @@ class CBigMomma : public CBaseMonster
 		BOOL CheckMeleeAttack2 (float flDot, float flDist);	// Lay a crab
 		BOOL CheckRangeAttack1 (float flDot, float flDist);	// Mortar launch
 
-		virtual int	Save (CSave &save);
-		virtual int	Restore (CRestore &restore);
+		virtual int	Save (CSave& save);
+		virtual int	Restore (CRestore& restore);
 		static	TYPEDESCRIPTION m_SaveData[];
 
-		static const char *pChildDieSounds[];
-		static const char *pSackSounds[];
-		static const char *pDeathSounds[];
-		static const char *pAttackSounds[];
-		static const char *pAttackHitSounds[];
-		static const char *pBirthSounds[];
-		static const char *pAlertSounds[];
-		static const char *pPainSounds[];
-		static const char *pFootSounds[];
+		static const char* pChildDieSounds[];
+		static const char* pSackSounds[];
+		static const char* pDeathSounds[];
+		static const char* pAttackSounds[];
+		static const char* pAttackHitSounds[];
+		static const char* pBirthSounds[];
+		static const char* pAlertSounds[];
+		static const char* pPainSounds[];
+		static const char* pFootSounds[];
 
 		CUSTOM_SCHEDULES;
 
@@ -305,86 +305,86 @@ class CBigMomma : public CBaseMonster
 		float	m_painSoundTime;
 		int		m_crabCount;
 	};
-
 LINK_ENTITY_TO_CLASS (monster_bigmomma, CBigMomma);
 
-TYPEDESCRIPTION	CBigMomma::m_SaveData[] = 
+TYPEDESCRIPTION	CBigMomma::m_SaveData[] =
 	{
-	DEFINE_FIELD (CBigMomma, m_nodeTime, FIELD_TIME),
-	DEFINE_FIELD (CBigMomma, m_crabTime, FIELD_TIME),
-	DEFINE_FIELD (CBigMomma, m_mortarTime, FIELD_TIME),
-	DEFINE_FIELD (CBigMomma, m_painSoundTime, FIELD_TIME),
-	DEFINE_FIELD (CBigMomma, m_crabCount, FIELD_INTEGER),
+		DEFINE_FIELD (CBigMomma, m_nodeTime, FIELD_TIME),
+		DEFINE_FIELD (CBigMomma, m_crabTime, FIELD_TIME),
+		DEFINE_FIELD (CBigMomma, m_mortarTime, FIELD_TIME),
+		DEFINE_FIELD (CBigMomma, m_painSoundTime, FIELD_TIME),
+		DEFINE_FIELD (CBigMomma, m_crabCount, FIELD_INTEGER),
 	};
 
 IMPLEMENT_SAVERESTORE (CBigMomma, CBaseMonster);
 
-const char *CBigMomma::pChildDieSounds[] = 
+const char* CBigMomma::pChildDieSounds[] =
 	{
-	"gonarch/gon_childdie1.wav",
-	"gonarch/gon_childdie2.wav",
-	"gonarch/gon_childdie3.wav",
+		"gonarch/gon_childdie1.wav",
+		"gonarch/gon_childdie2.wav",
+		"gonarch/gon_childdie3.wav",
 	};
 
-const char *CBigMomma::pSackSounds[] = 
+const char* CBigMomma::pSackSounds[] =
 	{
-	"gonarch/gon_sack1.wav",
-	"gonarch/gon_sack2.wav",
-	"gonarch/gon_sack3.wav",
+		"gonarch/gon_sack1.wav",
+		"gonarch/gon_sack2.wav",
+		"gonarch/gon_sack3.wav",
 	};
 
-const char *CBigMomma::pDeathSounds[] = 
+const char* CBigMomma::pDeathSounds[] =
 	{
-	"gonarch/gon_die1.wav",
+		"gonarch/gon_die1.wav",
 	};
 
-const char *CBigMomma::pAttackSounds[] = 
+const char* CBigMomma::pAttackSounds[] =
 	{
-	"gonarch/gon_attack1.wav",
-	"gonarch/gon_attack2.wav",
-	"gonarch/gon_attack3.wav",
-	};
-const char *CBigMomma::pAttackHitSounds[] = 
-	{
-	"zombie/claw_strike1.wav",
-	"zombie/claw_strike2.wav",
-	"zombie/claw_strike3.wav",
+		"gonarch/gon_attack1.wav",
+		"gonarch/gon_attack2.wav",
+		"gonarch/gon_attack3.wav",
 	};
 
-const char *CBigMomma::pBirthSounds[] = 
+const char* CBigMomma::pAttackHitSounds[] =
 	{
-	"gonarch/gon_birth1.wav",
-	"gonarch/gon_birth2.wav",
-	"gonarch/gon_birth3.wav",
+		"zombie/claw_strike1.wav",
+		"zombie/claw_strike2.wav",
+		"zombie/claw_strike3.wav",
 	};
 
-const char *CBigMomma::pAlertSounds[] = 
+const char* CBigMomma::pBirthSounds[] =
 	{
-	"gonarch/gon_alert1.wav",
-	"gonarch/gon_alert2.wav",
-	"gonarch/gon_alert3.wav",
+		"gonarch/gon_birth1.wav",
+		"gonarch/gon_birth2.wav",
+		"gonarch/gon_birth3.wav",
 	};
 
-const char *CBigMomma::pPainSounds[] = 
+const char* CBigMomma::pAlertSounds[] =
 	{
-	"gonarch/gon_pain1.wav",
-	"gonarch/gon_pain2.wav",
-	"gonarch/gon_pain3.wav",
+		"gonarch/gon_alert1.wav",
+		"gonarch/gon_alert2.wav",
+		"gonarch/gon_alert3.wav",
 	};
 
-const char *CBigMomma::pFootSounds[] = 
+const char* CBigMomma::pPainSounds[] =
 	{
-	"gonarch/gon_step1.wav",
-	"gonarch/gon_step2.wav",
-	"gonarch/gon_step3.wav",
+		"gonarch/gon_pain1.wav",
+		"gonarch/gon_pain2.wav",
+		"gonarch/gon_pain3.wav",
 	};
 
-void CBigMomma :: KeyValue (KeyValueData *pkvd)
+const char* CBigMomma::pFootSounds[] =
+	{
+		"gonarch/gon_step1.wav",
+		"gonarch/gon_step2.wav",
+		"gonarch/gon_step3.wav",
+	};
+
+void CBigMomma::KeyValue (KeyValueData* pkvd)
 	{
 #if 0
-	if (FStrEq(pkvd->szKeyName, "volume"))
+	if (FStrEq (pkvd->szKeyName, "volume"))
 		{
-		m_volume = atof(pkvd->szValue);
+		m_volume = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
 	else
@@ -396,7 +396,7 @@ void CBigMomma :: KeyValue (KeyValueData *pkvd)
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CBigMomma :: Classify (void)
+int	CBigMomma::Classify (void)
 	{
 	return	CLASS_ALIEN_MONSTER;
 	}
@@ -405,7 +405,7 @@ int	CBigMomma :: Classify (void)
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CBigMomma :: SetYawSpeed (void)
+void CBigMomma::SetYawSpeed (void)
 	{
 	int ys;
 
@@ -414,11 +414,9 @@ void CBigMomma :: SetYawSpeed (void)
 		case ACT_IDLE:
 			ys = 100;
 			break;
-
 		default:
 			ys = 90;
 		}
-
 	pev->yaw_speed = ys;
 	}
 
@@ -428,134 +426,134 @@ void CBigMomma :: SetYawSpeed (void)
 //
 // Returns number of events handled, 0 if none.
 //=========================================================
-void CBigMomma :: HandleAnimEvent (MonsterEvent_t *pEvent)
+void CBigMomma::HandleAnimEvent (MonsterEvent_t* pEvent)
 	{
 	switch (pEvent->event)
 		{
-	case BIG_AE_MELEE_ATTACKBR:
-	case BIG_AE_MELEE_ATTACKBL:
-	case BIG_AE_MELEE_ATTACK1:
-		{
-		Vector forward, right;
-
-		UTIL_MakeVectorsPrivate (pev->angles, forward, right, NULL);
-
-		Vector center = pev->origin + forward * 128;
-		Vector mins = center - Vector (64, 64, 0);
-		Vector maxs = center + Vector (64, 64, 64);
-
-		CBaseEntity *pList[8];
-		int count = UTIL_EntitiesInBox (pList, 8, mins, maxs, FL_MONSTER|FL_CLIENT);
-		CBaseEntity *pHurt = NULL;
-
-		for (int i = 0; i < count && !pHurt; i++)
+		case BIG_AE_MELEE_ATTACKBR:
+		case BIG_AE_MELEE_ATTACKBL:
+		case BIG_AE_MELEE_ATTACK1:
 			{
-			if (pList[i] != this)
+			Vector forward, right;
+
+			UTIL_MakeVectorsPrivate (pev->angles, forward, right, NULL);
+
+			Vector center = pev->origin + forward * 128;
+			Vector mins = center - Vector (64, 64, 0);
+			Vector maxs = center + Vector (64, 64, 64);
+
+			CBaseEntity* pList[8];
+			int count = UTIL_EntitiesInBox (pList, 8, mins, maxs, FL_MONSTER | FL_CLIENT);
+			CBaseEntity* pHurt = NULL;
+
+			for (int i = 0; i < count && !pHurt; i++)
 				{
-				if (pList[i]->pev->owner != edict())
-					pHurt = pList[i];
-				}
-			}
-
-		if (pHurt)
-			{
-			pHurt->TakeDamage (pev, pev, gSkillData.bigmommaDmgSlash, DMG_CRUSH | DMG_SLASH);
-			pHurt->pev->punchangle.x = 15;
-			switch (pEvent->event)
-				{
-			case BIG_AE_MELEE_ATTACKBR:
-				pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector(0,0,250) - (right * 200);
-				break;
-
-			case BIG_AE_MELEE_ATTACKBL:
-				pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector(0,0,250) + (right * 200);
-				break;
-
-			case BIG_AE_MELEE_ATTACK1:
-				pHurt->pev->velocity = pHurt->pev->velocity + (forward * 220) + Vector(0,0,200);
-				break;
+				if (pList[i] != this)
+					{
+					if (pList[i]->pev->owner != edict ())
+						pHurt = pList[i];
+					}
 				}
 
-			pHurt->pev->flags &= ~FL_ONGROUND;
-			EMIT_SOUND_DYN (edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackHitSounds), 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG(-5,5));
+			if (pHurt)
+				{
+				pHurt->TakeDamage (pev, pev, gSkillData.bigmommaDmgSlash, DMG_CRUSH | DMG_SLASH);
+				pHurt->pev->punchangle.x = 15;
+				switch (pEvent->event)
+					{
+					case BIG_AE_MELEE_ATTACKBR:
+						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector (0, 0, 250) - (right * 200);
+						break;
+
+					case BIG_AE_MELEE_ATTACKBL:
+						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector (0, 0, 250) + (right * 200);
+						break;
+
+					case BIG_AE_MELEE_ATTACK1:
+						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 220) + Vector (0, 0, 200);
+						break;
+					}
+
+				pHurt->pev->flags &= ~FL_ONGROUND;
+				EMIT_SOUND_DYN (edict (), CHAN_WEAPON, RANDOM_SOUND_ARRAY (pAttackHitSounds), 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				}
 			}
-		}
-		break;
+			break;
 
-	case BIG_AE_SCREAM:
-		EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pAlertSounds);
-		break;
+		case BIG_AE_SCREAM:
+			EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pAlertSounds);
+			break;
 
-	case BIG_AE_PAIN_SOUND:
-		EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pPainSounds);
-		break;
+		case BIG_AE_PAIN_SOUND:
+			EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pPainSounds);
+			break;
 
-	case BIG_AE_ATTACK_SOUND:
-		EMIT_SOUND_ARRAY_DYN (CHAN_WEAPON, pAttackSounds);
-		break;
+		case BIG_AE_ATTACK_SOUND:
+			EMIT_SOUND_ARRAY_DYN (CHAN_WEAPON, pAttackSounds);
+			break;
 
-	case BIG_AE_BIRTH_SOUND:
-		EMIT_SOUND_ARRAY_DYN (CHAN_BODY, pBirthSounds);
-		break;
+		case BIG_AE_BIRTH_SOUND:
+			EMIT_SOUND_ARRAY_DYN (CHAN_BODY, pBirthSounds);
+			break;
 
-	case BIG_AE_SACK:
-		if (RANDOM_LONG(0,100) < 30)
-			EMIT_SOUND_ARRAY_DYN (CHAN_BODY, pSackSounds);
-		break;
+		case BIG_AE_SACK:
+			if (RANDOM_LONG (0, 100) < 30)
+				EMIT_SOUND_ARRAY_DYN (CHAN_BODY, pSackSounds);
+			break;
 
-	case BIG_AE_DEATHSOUND:
-		EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pDeathSounds);
-		break;
+		case BIG_AE_DEATHSOUND:
+			EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pDeathSounds);
+			break;
 
-	case BIG_AE_STEP1:		// Footstep left
-	case BIG_AE_STEP3:		// Footstep back left
-		EMIT_SOUND_ARRAY_DYN (CHAN_ITEM, pFootSounds);
-		break;
+		case BIG_AE_STEP1:		// Footstep left
+		case BIG_AE_STEP3:		// Footstep back left
+			EMIT_SOUND_ARRAY_DYN (CHAN_ITEM, pFootSounds);
+			break;
 
-	case BIG_AE_STEP4:		// Footstep back right
-	case BIG_AE_STEP2:		// Footstep right
-		EMIT_SOUND_ARRAY_DYN (CHAN_BODY, pFootSounds);
-		break;
+		case BIG_AE_STEP4:		// Footstep back right
+		case BIG_AE_STEP2:		// Footstep right
+			EMIT_SOUND_ARRAY_DYN (CHAN_BODY, pFootSounds);
+			break;
 
-	case BIG_AE_MORTAR_ATTACK1:
-		LaunchMortar();
-		break;
+		case BIG_AE_MORTAR_ATTACK1:
+			LaunchMortar ();
+			break;
 
-	case BIG_AE_LAY_CRAB:
-		LayHeadcrab();
-		break;
+		case BIG_AE_LAY_CRAB:
+			LayHeadcrab ();
+			break;
 
-	case BIG_AE_JUMP_FORWARD:
-		ClearBits (pev->flags, FL_ONGROUND);
+		case BIG_AE_JUMP_FORWARD:
+			ClearBits (pev->flags, FL_ONGROUND);
 
-		UTIL_SetOrigin (pev, pev->origin + Vector (0 , 0 , 1));// take him off ground so engine doesn't instantly reset onground 
-		UTIL_MakeVectors (pev->angles);
+			UTIL_SetOrigin (pev, pev->origin + Vector (0, 0, 1));// take him off ground so engine doesn't instantly reset onground 
+			UTIL_MakeVectors (pev->angles);
 
-		pev->velocity = (gpGlobals->v_forward * 200) + gpGlobals->v_up * 500;
-		break;
+			pev->velocity = (gpGlobals->v_forward * 200) + gpGlobals->v_up * 500;
+			break;
 
-	case BIG_AE_EARLY_TARGET:
-		{
-		CBaseEntity *pTarget = m_hTargetEnt;
-		if (pTarget && pTarget->pev->message)
-			FireTargets (STRING(pTarget->pev->message), this, this, USE_TOGGLE, 0);
-		Remember (bits_MEMORY_FIRED_NODE);
-		}
-		break;
+		case BIG_AE_EARLY_TARGET:
+			{
+			CBaseEntity* pTarget = m_hTargetEnt;
+			if (pTarget && pTarget->pev->message)
+				FireTargets (STRING (pTarget->pev->message), this, this, USE_TOGGLE, 0);
+			Remember (bits_MEMORY_FIRED_NODE);
+			}
+			break;
 
-	default:
-		CBaseMonster::HandleAnimEvent (pEvent);
-		break;
+		default:
+			CBaseMonster::HandleAnimEvent (pEvent);
+			break;
 		}
 	}
 
-void CBigMomma :: TraceAttack (entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+void CBigMomma::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 	{
 	if (ptr->iHitgroup != 1)
 		{
 		// didn't hit the sack?
 
-		if (pev->dmgtime != gpGlobals->time || (RANDOM_LONG(0,10) < 1))
+		if (pev->dmgtime != gpGlobals->time || (RANDOM_LONG (0, 10) < 1))
 			{
 			UTIL_Ricochet (ptr->vecEndPos, RANDOM_FLOAT (1, 2));
 			pev->dmgtime = gpGlobals->time;
@@ -565,21 +563,21 @@ void CBigMomma :: TraceAttack (entvars_t *pevAttacker, float flDamage, Vector ve
 		}
 	else if (gpGlobals->time > m_painSoundTime)
 		{
-		m_painSoundTime = gpGlobals->time + RANDOM_LONG(1, 3);
+		m_painSoundTime = gpGlobals->time + RANDOM_LONG (1, 3);
 		EMIT_SOUND_ARRAY_DYN (CHAN_VOICE, pPainSounds);
 		}
+
 
 	CBaseMonster::TraceAttack (pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 	}
 
-
-int CBigMomma :: TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
+int CBigMomma::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
 	// Don't take any acid damage -- BigMomma's mortar is acid
 	if (bitsDamageType & DMG_ACID)
 		flDamage = 0;
 
-	if (!HasMemory(bits_MEMORY_PATH_FINISHED))
+	if (!HasMemory (bits_MEMORY_PATH_FINISHED))
 		{
 		if (pev->health <= flDamage)
 			{
@@ -592,9 +590,9 @@ int CBigMomma :: TakeDamage (entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	return CBaseMonster::TakeDamage (pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}
 
-void CBigMomma :: LayHeadcrab (void)
+void CBigMomma::LayHeadcrab (void)
 	{
-	CBaseEntity *pChild = CBaseEntity::Create (BIG_CHILDCLASS, pev->origin, pev->angles, edict());
+	CBaseEntity* pChild = CBaseEntity::Create (BIG_CHILDCLASS, pev->origin, pev->angles, edict ());
 
 	pChild->pev->spawnflags |= SF_MONSTER_FALL_TO_GROUND;
 
@@ -611,18 +609,18 @@ void CBigMomma :: LayHeadcrab (void)
 		}
 
 	TraceResult tr;
-	UTIL_TraceLine (pev->origin, pev->origin - Vector(0,0,100), ignore_monsters, edict(), &tr);
+	UTIL_TraceLine (pev->origin, pev->origin - Vector (0, 0, 100), ignore_monsters, edict (), &tr);
 	UTIL_DecalTrace (&tr, DECAL_MOMMABIRTH);
 
-	EMIT_SOUND_DYN (edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBirthSounds), 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG(-5,5));
+	EMIT_SOUND_DYN (edict (), CHAN_WEAPON, RANDOM_SOUND_ARRAY (pBirthSounds), 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 	m_crabCount++;
 	}
 
-void CBigMomma::DeathNotice (entvars_t *pevChild)
+void CBigMomma::DeathNotice (entvars_t* pevChild)
 	{
 	if (m_crabCount > 0)		// Some babies may cross a transition, but we reset the count then
 		m_crabCount--;
-	if (IsAlive())
+	if (IsAlive ())
 		{
 		// Make the "my baby's dead" noise!
 		EMIT_SOUND_ARRAY_DYN (CHAN_WEAPON, pChildDieSounds);
@@ -636,39 +634,39 @@ void CBigMomma::LaunchMortar (void)
 	Vector startPos = pev->origin;
 	startPos.z += 180;
 
-	EMIT_SOUND_DYN (edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pSackSounds), 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG(-5,5));
-	CBMortar *pBomb = CBMortar::Shoot (edict(), startPos, pev->movedir);
+	EMIT_SOUND_DYN (edict (), CHAN_WEAPON, RANDOM_SOUND_ARRAY (pSackSounds), 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+	CBMortar* pBomb = CBMortar::Shoot (edict (), startPos, pev->movedir);
 	pBomb->pev->gravity = 1.0;
-	MortarSpray (startPos, Vector(0,0,1), gSpitSprite, 24);
+	MortarSpray (startPos, Vector (0, 0, 1), gSpitSprite, 24);
 	}
 
 //=========================================================
 // Spawn
 //=========================================================
-void CBigMomma :: Spawn()
+void CBigMomma::Spawn ()
 	{
 	Precache ();
 
-	SET_MODEL(ENT(pev), "models/big_mom.mdl");
+	SET_MODEL (ENT (pev), "models/big_mom.mdl");
 	UTIL_SetSize (pev, Vector (-32, -32, 0), Vector (32, 32, 64));
 
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
-	pev->health			= 150 * gSkillData.bigmommaHealthFactor;
-	pev->view_ofs		= Vector (0, 0, 128);// position of the eyes relative to monster's origin.
-	m_flFieldOfView		= 0.3;// indicates the width of this monster's forward view cone (as a dotproduct result)
-	m_MonsterState		= MONSTERSTATE_NONE;
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	m_bloodColor = BLOOD_COLOR_GREEN;
+	pev->health = 150 * gSkillData.bigmommaHealthFactor;
+	pev->view_ofs = Vector (0, 0, 128);// position of the eyes relative to monster's origin.
+	m_flFieldOfView = 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_MonsterState = MONSTERSTATE_NONE;
 
-	MonsterInit();
+	MonsterInit ();
 	}
 
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CBigMomma :: Precache()
+void CBigMomma::Precache ()
 	{
-	PRECACHE_MODEL("models/big_mom.mdl");
+	PRECACHE_MODEL ("models/big_mom.mdl");
 
 	PRECACHE_SOUND_ARRAY (pChildDieSounds);
 	PRECACHE_SOUND_ARRAY (pSackSounds);
@@ -683,14 +681,14 @@ void CBigMomma :: Precache()
 	UTIL_PrecacheOther (BIG_CHILDCLASS);
 
 	// TEMP: Squid
-	PRECACHE_MODEL("sprites/mommaspit.spr");// spit projectile.
-	gSpitSprite = PRECACHE_MODEL("sprites/mommaspout.spr");// client side spittle.
-	gSpitDebrisSprite = PRECACHE_MODEL("sprites/mommablob.spr");
+	PRECACHE_MODEL ("sprites/mommaspit.spr");// spit projectile.
+	gSpitSprite = PRECACHE_MODEL ("sprites/mommaspout.spr");// client side spittle.
+	gSpitDebrisSprite = PRECACHE_MODEL ("sprites/mommablob.spr");
 
 	PRECACHE_SOUND ("bullchicken/bc_acid1.wav");
 	PRECACHE_SOUND ("bullchicken/bc_spithit1.wav");
 	PRECACHE_SOUND ("bullchicken/bc_spithit2.wav");
-	}	
+	}
 
 void CBigMomma::Activate (void)
 	{
@@ -702,15 +700,16 @@ void CBigMomma::NodeStart (int iszNextNode)
 	{
 	pev->netname = iszNextNode;
 
-	CBaseEntity *pTarget = NULL;
+	CBaseEntity* pTarget = NULL;
 
 	if (pev->netname)
 		{
-		edict_t *pentTarget = FIND_ENTITY_BY_TARGETNAME (NULL, STRING(pev->netname));
+		edict_t* pentTarget = FIND_ENTITY_BY_TARGETNAME (NULL, STRING (pev->netname));
 
-		if (!FNullEnt(pentTarget))
+		if (!FNullEnt (pentTarget))
 			pTarget = Instance (pentTarget);
 		}
+
 
 	if (!pTarget)
 		{
@@ -724,7 +723,7 @@ void CBigMomma::NodeStart (int iszNextNode)
 
 void CBigMomma::NodeReach (void)
 	{
-	CBaseEntity *pTarget = m_hTargetEnt;
+	CBaseEntity* pTarget = m_hTargetEnt;
 
 	Forget (bits_MEMORY_ADVANCE_NODE);
 
@@ -737,7 +736,7 @@ void CBigMomma::NodeReach (void)
 	if (!HasMemory (bits_MEMORY_FIRED_NODE))
 		{
 		if (pTarget->pev->message)
-			FireTargets (STRING(pTarget->pev->message), this, this, USE_TOGGLE, 0);
+			FireTargets (STRING (pTarget->pev->message), this, this, USE_TOGGLE, 0);
 		}
 	Forget (bits_MEMORY_FIRED_NODE);
 
@@ -760,7 +759,7 @@ BOOL CBigMomma::CheckMeleeAttack1 (float flDot, float flDist)
 // Lay a crab
 BOOL CBigMomma::CheckMeleeAttack2 (float flDot, float flDist)
 	{
-	return CanLayCrab();
+	return CanLayCrab ();
 	}
 
 // Mortar launch
@@ -768,7 +767,7 @@ BOOL CBigMomma::CheckRangeAttack1 (float flDot, float flDist)
 	{
 	if (flDist <= BIG_MORTARDIST && m_mortarTime < gpGlobals->time)
 		{
-		CBaseEntity *pEnemy = m_hEnemy;
+		CBaseEntity* pEnemy = m_hEnemy;
 
 		if (pEnemy)
 			{
@@ -779,7 +778,6 @@ BOOL CBigMomma::CheckRangeAttack1 (float flDot, float flDist)
 				return TRUE;
 			}
 		}
-
 	return FALSE;
 	}
 
@@ -823,12 +821,12 @@ Task_t	tlBigNode[] =
 
 Schedule_t	slBigNode[] =
 	{
-		{ 
-		tlBigNode,
-		HLARRAYSIZE (tlBigNode), 
-		0,
-		0,
-		"Big Node"
+		{
+			tlBigNode,
+			HLARRAYSIZE (tlBigNode),
+			0,
+			0,
+			"Big Node"
 		},
 	};
 
@@ -840,24 +838,24 @@ Task_t	tlNodeFail[] =
 
 Schedule_t	slNodeFail[] =
 	{
-		{ 
-		tlNodeFail,
-		HLARRAYSIZE (tlNodeFail), 
-		0,
-		0,
-		"NodeFail"
+		{
+			tlNodeFail,
+			HLARRAYSIZE (tlNodeFail),
+			0,
+			0,
+			"NodeFail"
 		},
 	};
 
 DEFINE_CUSTOM_SCHEDULES (CBigMomma)
 	{
 	slBigNode,
-	slNodeFail,
+		slNodeFail,
 	};
 
 IMPLEMENT_CUSTOM_SCHEDULES (CBigMomma, CBaseMonster);
 
-Schedule_t *CBigMomma::GetScheduleOfType (int Type)
+Schedule_t* CBigMomma::GetScheduleOfType (int Type)
 	{
 	switch (Type)
 		{
@@ -878,187 +876,184 @@ BOOL CBigMomma::ShouldGoToNode (void)
 	if (HasMemory (bits_MEMORY_ADVANCE_NODE))
 		{
 		if (m_nodeTime < gpGlobals->time)
-			{
 			return TRUE;
-			}
 		}
-
 	return FALSE;
 	}
 
-Schedule_t *CBigMomma::GetSchedule (void)
+Schedule_t* CBigMomma::GetSchedule (void)
 	{
-	if (ShouldGoToNode())
+	if (ShouldGoToNode ())
 		{
 		return GetScheduleOfType (SCHED_BIG_NODE);
 		}
 
-	return CBaseMonster::GetSchedule();
+	return CBaseMonster::GetSchedule ();
 	}
 
-void CBigMomma::StartTask (Task_t *pTask)
+void CBigMomma::StartTask (Task_t* pTask)
 	{
 	switch (pTask->iTask)
 		{
-	case TASK_FIND_NODE:
-		{
-		CBaseEntity *pTarget = m_hTargetEnt;
-		if (!HasMemory (bits_MEMORY_ADVANCE_NODE))
+		case TASK_FIND_NODE:
 			{
-			if (pTarget)
-				pev->netname = m_hTargetEnt->pev->target;
-			}
-		NodeStart (pev->netname);
-		TaskComplete();
-		ALERT (at_aiconsole, "BM: Found node %s\n", STRING(pev->netname));
-		}
-		break;
-
-	case TASK_NODE_DELAY:
-		m_nodeTime = gpGlobals->time + pTask->flData;
-		TaskComplete();
-		ALERT (at_aiconsole, "BM: FAIL! Delay %.2f\n", pTask->flData);
-		break;
-
-	case TASK_PROCESS_NODE:
-		ALERT (at_aiconsole, "BM: Reached node %s\n", STRING(pev->netname));
-		NodeReach();
-		TaskComplete();
-		break;
-
-	case TASK_PLAY_NODE_PRESEQUENCE:
-	case TASK_PLAY_NODE_SEQUENCE:
-		{
-		int sequence;
-		if (pTask->iTask == TASK_PLAY_NODE_SEQUENCE)
-			sequence = GetNodeSequence();
-		else
-			sequence = GetNodePresequence();
-
-		ALERT (at_aiconsole, "BM: Playing node sequence %s\n", STRING(sequence));
-		if (sequence)
-			{
-			sequence = LookupSequence (STRING (sequence));
-			if (sequence != -1)
+			CBaseEntity* pTarget = m_hTargetEnt;
+			if (!HasMemory (bits_MEMORY_ADVANCE_NODE))
 				{
-				pev->sequence = sequence;
-				pev->frame = 0;
-				ResetSequenceInfo ();
-				ALERT (at_aiconsole, "BM: Sequence %s\n", STRING(GetNodeSequence()));
-				return;
+				if (pTarget)
+					pev->netname = m_hTargetEnt->pev->target;
 				}
+			NodeStart (pev->netname);
+			TaskComplete ();
+			ALERT (at_aiconsole, "BM: Found node %s\n", STRING (pev->netname));
 			}
-		TaskComplete();
-		}
-		break;
+			break;
 
-	case TASK_NODE_YAW:
-		pev->ideal_yaw = GetNodeYaw();
-		TaskComplete();
-		break;
+		case TASK_NODE_DELAY:
+			m_nodeTime = gpGlobals->time + pTask->flData;
+			TaskComplete ();
+			ALERT (at_aiconsole, "BM: FAIL! Delay %.2f\n", pTask->flData);
+			break;
 
-	case TASK_WAIT_NODE:
-		m_flWait = gpGlobals->time + GetNodeDelay();
-		if (m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT)
-			ALERT (at_aiconsole, "BM: Wait at node %s forever\n", STRING(pev->netname));
-		else
-			ALERT (at_aiconsole, "BM: Wait at node %s for %.2f\n", STRING(pev->netname), GetNodeDelay());
-		break;
+		case TASK_PROCESS_NODE:
+			ALERT (at_aiconsole, "BM: Reached node %s\n", STRING (pev->netname));
+			NodeReach ();
+			TaskComplete ();
+			break;
 
-
-	case TASK_MOVE_TO_NODE_RANGE:
-		{
-		CBaseEntity *pTarget = m_hTargetEnt;
-		if (!pTarget)
-			TaskFail();
-		else
+		case TASK_PLAY_NODE_PRESEQUENCE:
+		case TASK_PLAY_NODE_SEQUENCE:
 			{
-			if ((pTarget->pev->origin - pev->origin).Length() < GetNodeRange())
-				TaskComplete();
+			int sequence;
+			if (pTask->iTask == TASK_PLAY_NODE_SEQUENCE)
+				sequence = GetNodeSequence ();
+			else
+				sequence = GetNodePresequence ();
+
+			ALERT (at_aiconsole, "BM: Playing node sequence %s\n", STRING (sequence));
+			if (sequence)
+				{
+				sequence = LookupSequence (STRING (sequence));
+				if (sequence != -1)
+					{
+					pev->sequence = sequence;
+					pev->frame = 0;
+					ResetSequenceInfo ();
+					ALERT (at_aiconsole, "BM: Sequence %s\n", STRING (GetNodeSequence ()));
+					return;
+					}
+				}
+			TaskComplete ();
+			}
+			break;
+
+		case TASK_NODE_YAW:
+			pev->ideal_yaw = GetNodeYaw ();
+			TaskComplete ();
+			break;
+
+		case TASK_WAIT_NODE:
+			m_flWait = gpGlobals->time + GetNodeDelay ();
+			if (m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT)
+				ALERT (at_aiconsole, "BM: Wait at node %s forever\n", STRING (pev->netname));
+			else
+				ALERT (at_aiconsole, "BM: Wait at node %s for %.2f\n", STRING (pev->netname), GetNodeDelay ());
+			break;
+
+
+		case TASK_MOVE_TO_NODE_RANGE:
+			{
+			CBaseEntity* pTarget = m_hTargetEnt;
+			if (!pTarget)
+				TaskFail ();
 			else
 				{
-				Activity act = ACT_WALK;
-				if (pTarget->pev->spawnflags & SF_INFOBM_RUN)
-					act = ACT_RUN;
-
-				m_vecMoveGoal = pTarget->pev->origin;
-				if (!MoveToTarget (act, 2))
+				if ((pTarget->pev->origin - pev->origin).Length () < GetNodeRange ())
+					TaskComplete ();
+				else
 					{
-					TaskFail();
+					Activity act = ACT_WALK;
+					if (pTarget->pev->spawnflags & SF_INFOBM_RUN)
+						act = ACT_RUN;
+
+					m_vecMoveGoal = pTarget->pev->origin;
+					if (!MoveToTarget (act, 2))
+						{
+						TaskFail ();
+						}
 					}
 				}
 			}
-		}
-		ALERT (at_aiconsole, "BM: Moving to node %s\n", STRING(pev->netname));
+			ALERT (at_aiconsole, "BM: Moving to node %s\n", STRING (pev->netname));
 
-		break;
+			break;
 
-	case TASK_MELEE_ATTACK1:
-		// Play an attack sound here
-		EMIT_SOUND_DYN (ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_MEDIUM, 0, PITCH_NORM);
-		CBaseMonster::StartTask (pTask);
-		break;
+		case TASK_MELEE_ATTACK1:
+			// Play an attack sound here
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, RANDOM_SOUND_ARRAY (pAttackSounds), 1.0, ATTN_MEDIUM, 0, PITCH_NORM);
+			CBaseMonster::StartTask (pTask);
+			break;
 
-	default: 
-		CBaseMonster::StartTask (pTask);
-		break;
+		default:
+			CBaseMonster::StartTask (pTask);
+			break;
 		}
 	}
 
 //=========================================================
 // RunTask
 //=========================================================
-void CBigMomma::RunTask (Task_t *pTask)
+void CBigMomma::RunTask (Task_t* pTask)
 	{
 	switch (pTask->iTask)
 		{
-	case TASK_MOVE_TO_NODE_RANGE:
-		{
-		float distance;
-
-		if (m_hTargetEnt == NULL)
-			TaskFail();
-		else
+		case TASK_MOVE_TO_NODE_RANGE:
 			{
-			distance = (m_vecMoveGoal - pev->origin).Length2D();
-			// Set the appropriate activity based on an overlapping range
-			// overlap the range to prevent oscillation
-			if ((distance < GetNodeRange()) || MovementIsComplete())
+			float distance;
+
+			if (m_hTargetEnt == NULL)
+				TaskFail ();
+			else
 				{
-				ALERT (at_aiconsole, "BM: Reached node!\n");
-				TaskComplete();
-				RouteClear();		// Stop moving
+				distance = (m_vecMoveGoal - pev->origin).Length2D ();
+				// Set the appropriate activity based on an overlapping range
+				// overlap the range to prevent oscillation
+				if ((distance < GetNodeRange ()) || MovementIsComplete ())
+					{
+					ALERT (at_aiconsole, "BM: Reached node!\n");
+					TaskComplete ();
+					RouteClear ();		// Stop moving
+					}
 				}
 			}
-		}
 
-		break;
+			break;
 
-	case TASK_WAIT_NODE:
-		if (m_hTargetEnt != NULL && (m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT))
-			return;
+		case TASK_WAIT_NODE:
+			if (m_hTargetEnt != NULL && (m_hTargetEnt->pev->spawnflags & SF_INFOBM_WAIT))
+				return;
 
-		if (gpGlobals->time > m_flWaitFinished)
-			TaskComplete();
-		ALERT (at_aiconsole, "BM: The WAIT is over!\n");
-		break;
+			if (gpGlobals->time > m_flWaitFinished)
+				TaskComplete ();
+			ALERT (at_aiconsole, "BM: The WAIT is over!\n");
+			break;
 
-	case TASK_PLAY_NODE_PRESEQUENCE:
-	case TASK_PLAY_NODE_SEQUENCE:
-		if (m_fSequenceFinished)
-			{
-			m_Activity = ACT_RESET;
-			TaskComplete();
-			}
-		break;
+		case TASK_PLAY_NODE_PRESEQUENCE:
+		case TASK_PLAY_NODE_SEQUENCE:
+			if (m_fSequenceFinished)
+				{
+				m_Activity = ACT_RESET;
+				TaskComplete ();
+				}
+			break;
 
-	default:
-		CBaseMonster::RunTask (pTask);
-		break;
+		default:
+			CBaseMonster::RunTask (pTask);
+			break;
 		}
 	}
 
-Vector VecCheckSplatToss (entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float maxHeight)
+Vector VecCheckSplatToss (entvars_t* pev, const Vector& vecSpot1, Vector vecSpot2, float maxHeight)
 	{
 	TraceResult		tr;
 	Vector			vecMidPoint;// halfway point between Spot1 and Spot2
@@ -1070,10 +1065,10 @@ Vector VecCheckSplatToss (entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 
 	// calculate the midpoint and apex of the 'triangle'
 	vecMidPoint = vecSpot1 + (vecSpot2 - vecSpot1) * 0.5;
-	UTIL_TraceLine(vecMidPoint, vecMidPoint + Vector(0,0,maxHeight), ignore_monsters, ENT(pev), &tr);
+	UTIL_TraceLine (vecMidPoint, vecMidPoint + Vector (0, 0, maxHeight), ignore_monsters, ENT (pev), &tr);
 	vecApex = tr.vecEndPos;
 
-	UTIL_TraceLine(vecSpot1, vecApex, dont_ignore_monsters, ENT(pev), &tr);
+	UTIL_TraceLine (vecSpot1, vecApex, dont_ignore_monsters, ENT (pev), &tr);
 	if (tr.flFraction != 1.0)
 		{
 		// fail!
@@ -1091,7 +1086,7 @@ Vector VecCheckSplatToss (entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 	float time = speed / flGravity;
 	vecGrenadeVel = (vecSpot2 - vecSpot1);
 	vecGrenadeVel.z = 0;
-	float distance = vecGrenadeVel.Length();
+	float distance = vecGrenadeVel.Length ();
 
 	// Travel half the distance to the target in that time (apex is at the midpoint)
 	vecGrenadeVel = vecGrenadeVel * (0.5 / time);
@@ -1106,25 +1101,25 @@ Vector VecCheckSplatToss (entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 // Mortar
 //
 // ---------------------------------
-void MortarSpray (const Vector &position, const Vector &direction, int spriteModel, int count)
+void MortarSpray (const Vector& position, const Vector& direction, int spriteModel, int count)
 	{
 	MESSAGE_BEGIN (MSG_PVS, SVC_TEMPENTITY, position);
 	WRITE_BYTE (TE_SPRITE_SPRAY);
 	WRITE_COORD (position.x);	// pos
-	WRITE_COORD (position.y);	
-	WRITE_COORD (position.z);	
+	WRITE_COORD (position.y);
+	WRITE_COORD (position.z);
 	WRITE_COORD (direction.x);	// dir
-	WRITE_COORD (direction.y);	
-	WRITE_COORD (direction.z);	
+	WRITE_COORD (direction.y);
+	WRITE_COORD (direction.z);
 	WRITE_SHORT (spriteModel);	// model
 	WRITE_BYTE (count);			// count
 	WRITE_BYTE (130);			// speed
-	WRITE_BYTE (80);			// noise (client will divide by 100)
-	MESSAGE_END();
+	WRITE_BYTE (80);			// noise ( client will divide by 100 )
+	MESSAGE_END ();
 	}
 
 // UNDONE: right now this is pretty much a copy of the squid spit with minor changes to the way it does damage
-void CBMortar:: Spawn (void)
+void CBMortar::Spawn (void)
 	{
 	pev->movetype = MOVETYPE_TOSS;
 	pev->classname = MAKE_STRING ("bmortar");
@@ -1133,13 +1128,13 @@ void CBMortar:: Spawn (void)
 	pev->rendermode = kRenderTransAlpha;
 	pev->renderamt = 255;
 
-	SET_MODEL(ENT(pev), "sprites/mommaspit.spr");
+	SET_MODEL (ENT (pev), "sprites/mommaspit.spr");
 	pev->frame = 0;
 	pev->scale = 0.5;
 
-	UTIL_SetSize (pev, Vector (0, 0, 0), Vector(0, 0, 0));
+	UTIL_SetSize (pev, Vector (0, 0, 0), Vector (0, 0, 0));
 
-	m_maxFrame = (float) MODEL_FRAMES (pev->modelindex) - 1;
+	m_maxFrame = (float)MODEL_FRAMES (pev->modelindex) - 1;
 	pev->dmgtime = gpGlobals->time + 0.4;
 	}
 
@@ -1150,7 +1145,7 @@ void CBMortar::Animate (void)
 	if (gpGlobals->time > pev->dmgtime)
 		{
 		pev->dmgtime = gpGlobals->time + 0.2;
-		MortarSpray (pev->origin, -pev->velocity.Normalize(), gSpitSprite, 3);
+		MortarSpray (pev->origin, -pev->velocity.Normalize (), gSpitSprite, 3);
 		}
 	if (pev->frame++)
 		{
@@ -1161,22 +1156,22 @@ void CBMortar::Animate (void)
 		}
 	}
 
-CBMortar *CBMortar::Shoot (edict_t *pOwner, Vector vecStart, Vector vecVelocity)
+CBMortar* CBMortar::Shoot (edict_t* pOwner, Vector vecStart, Vector vecVelocity)
 	{
-	CBMortar *pSpit = GetClassPtr ((CBMortar *)NULL);
-	pSpit->Spawn();
+	CBMortar* pSpit = GetClassPtr ((CBMortar*)NULL);
+	pSpit->Spawn ();
 
 	UTIL_SetOrigin (pSpit->pev, vecStart);
 	pSpit->pev->velocity = vecVelocity;
 	pSpit->pev->owner = pOwner;
 	pSpit->pev->scale = 2.5;
-	pSpit->SetThink (&CBMortar::Animate);
+	pSpit->SetThink (Animate);
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
 
 	return pSpit;
 	}
 
-void CBMortar::Touch (CBaseEntity *pOther)
+void CBMortar::Touch (CBaseEntity* pOther)
 	{
 	TraceResult tr;
 	int		iPitch;
@@ -1184,31 +1179,36 @@ void CBMortar::Touch (CBaseEntity *pOther)
 	// splat sound
 	iPitch = RANDOM_FLOAT (90, 110);
 
-	EMIT_SOUND_DYN (ENT(pev), CHAN_VOICE, "bullchicken/bc_acid1.wav", 1, ATTN_MEDIUM, 0, iPitch);	
+	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "bullchicken/bc_acid1.wav", 1, ATTN_MEDIUM, 0, iPitch);
 
 	switch (RANDOM_LONG (0, 1))
 		{
-		case 0: EMIT_SOUND_DYN (ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit1.wav", 1, ATTN_MEDIUM, 0, iPitch); break;
-		case 1: EMIT_SOUND_DYN (ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit2.wav", 1, ATTN_MEDIUM, 0, iPitch); break;
+		case 0:
+			EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_spithit1.wav", 1, ATTN_MEDIUM, 0, iPitch);
+			break;
+		case 1:
+			EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_spithit2.wav", 1, ATTN_MEDIUM, 0, iPitch);
+			break;
 		}
 
-	if (pOther->IsBSPModel())
+	if (pOther->IsBSPModel ())
 		{
+
 		// make a splat on the wall
 		UTIL_TraceLine (pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT (pev), &tr);
-		UTIL_DecalTrace(&tr, DECAL_MOMMASPLAT);
+		UTIL_DecalTrace (&tr, DECAL_MOMMASPLAT);
 		}
 	else
 		{
 		tr.vecEndPos = pev->origin;
-		tr.vecPlaneNormal = -1 * pev->velocity.Normalize();
+		tr.vecPlaneNormal = -1 * pev->velocity.Normalize ();
 		}
 	// make some flecks
 	MortarSpray (tr.vecEndPos, tr.vecPlaneNormal, gSpitSprite, 24);
 
-	entvars_t *pevOwner = NULL;
+	entvars_t* pevOwner = NULL;
 	if (pev->owner)
-		pevOwner = VARS(pev->owner);
+		pevOwner = VARS (pev->owner);
 
 	RadiusDamage (pev->origin, pev, pevOwner, gSkillData.bigmommaDmgBlast, gSkillData.bigmommaRadiusBlast, CLASS_NONE, DMG_ACID);
 	UTIL_Remove (this);

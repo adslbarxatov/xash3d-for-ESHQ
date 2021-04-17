@@ -91,13 +91,6 @@ DLL_DECALLIST gDecals[] = {
 	{ "{smscorch3", 0 },	// DECAL_SMALLSCORCH3,	// Small scorch mark
 	{ "{mommablob", 0 },	// DECAL_MOMMABIRTH		// BM Birth spray
 	{ "{mommablob", 0 },	// DECAL_MOMMASPLAT		// BM Mortar spray?? need decal
-	{ "{gblood1", 0 },		// DECAL_GBLOOD1
-	{ "{gblood2", 0 },		// DECAL_GBLOOD2
-	{ "{gblood3", 0 },		// DECAL_GBLOOD3
-	{ "{gblood4", 0 },		// DECAL_GBLOOD4
-	{ "{gblood5", 0 },		// DECAL_GBLOOD5
-	{ "{gblood6", 0 },		// DECAL_GBLOOD6
-	{ "{rdaaow", 0 },		// DECAL_RDAAOW
 };
 
 /*
@@ -132,15 +125,15 @@ void CDecal :: Spawn( void )
 
 	if ( FStringNull ( pev->targetname ) )
 	{
-		SetThink (&CDecal::StaticDecal);
+		SetThink( StaticDecal );
 		// if there's no targetname, the decal will spray itself on as soon as the world is done spawning.
 		pev->nextthink = gpGlobals->time;
 	}
 	else
 	{
 		// if there IS a targetname, the decal sprays itself on when it is triggered.
-		SetThink (&CBaseEntity::SUB_DoNothing);
-		SetUse (&CDecal::TriggerDecal);
+		SetThink ( SUB_DoNothing );
+		SetUse(TriggerDecal);
 	}
 }
 
@@ -165,7 +158,7 @@ void CDecal :: TriggerDecal ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 			WRITE_SHORT( (int)VARS(trace.pHit)->modelindex );
 	MESSAGE_END();
 
-	SetThink (&CBaseEntity::SUB_Remove);
+	SetThink( SUB_Remove );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -382,13 +375,13 @@ int CGlobalState::Save( CSave &save )
 	int i;
 	globalentity_t *pEntity;
 
-	if ( !save.WriteFields( "GLOBAL", this, m_SaveData, HLARRAYSIZE(m_SaveData) ) )
+	if ( !save.WriteFields( "GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData) ) )
 		return 0;
 	
 	pEntity = m_pList;
 	for ( i = 0; i < m_listCount && pEntity; i++ )
 	{
-		if ( !save.WriteFields( "GENT", pEntity, gGlobalEntitySaveData, HLARRAYSIZE(gGlobalEntitySaveData) ) )
+		if ( !save.WriteFields( "GENT", pEntity, gGlobalEntitySaveData, ARRAYSIZE(gGlobalEntitySaveData) ) )
 			return 0;
 
 		pEntity = pEntity->pNext;
@@ -404,7 +397,7 @@ int CGlobalState::Restore( CRestore &restore )
 
 
 	ClearStates();
-	if ( !restore.ReadFields( "GLOBAL", this, m_SaveData, HLARRAYSIZE(m_SaveData) ) )
+	if ( !restore.ReadFields( "GLOBAL", this, m_SaveData, ARRAYSIZE(m_SaveData) ) )
 		return 0;
 	
 	listCount = m_listCount;	// Get new list count
@@ -412,7 +405,7 @@ int CGlobalState::Restore( CRestore &restore )
 
 	for ( i = 0; i < listCount; i++ )
 	{
-		if ( !restore.ReadFields( "GENT", &tmpEntity, gGlobalEntitySaveData, HLARRAYSIZE(gGlobalEntitySaveData) ) )
+		if ( !restore.ReadFields( "GENT", &tmpEntity, gGlobalEntitySaveData, ARRAYSIZE(gGlobalEntitySaveData) ) )
 			return 0;
 		EntityAdd( MAKE_STRING(tmpEntity.name), MAKE_STRING(tmpEntity.levelName), tmpEntity.state );
 	}
@@ -542,9 +535,7 @@ void CWorld :: Precache( void )
 	PRECACHE_SOUND( "items/suitchargeok1.wav" );//!!! temporary sound for respawning weapons.
 	PRECACHE_SOUND( "items/gunpickup2.wav" );// player picks up a gun.
 
-	PRECACHE_SOUND( "common/bodydrop1.wav" );// dead bodies hitting the ground (animation events)
-	PRECACHE_SOUND( "common/bodydrop2.wav" );
-	PRECACHE_SOUND( "common/bodydrop3.wav" );
+	PRECACHE_SOUND( "common/bodydrop3.wav" );// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND( "common/bodydrop4.wav" );
 	
 	g_Language = (int)CVAR_GET_FLOAT( "sv_language" );
@@ -613,7 +604,7 @@ void CWorld :: Precache( void )
 	// 63 testing
 	LIGHT_STYLE(63, "a");
 
-	for ( int i = 0; i < HLARRAYSIZE(gDecals); i++ )
+	for ( int i = 0; i < ARRAYSIZE(gDecals); i++ )
 		gDecals[i].index = DECAL_INDEX( gDecals[i].name );
 
 // init the WorldGraph.
@@ -651,7 +642,7 @@ void CWorld :: Precache( void )
 		CBaseEntity *pEntity = CBaseEntity::Create( "env_message", g_vecZero, g_vecZero, NULL );
 		if ( pEntity )
 		{
-			pEntity->SetThink (&CBaseEntity::SUB_CallUseToggle);
+			pEntity->SetThink( SUB_CallUseToggle );
 			pEntity->pev->message = pev->netname;
 			pev->netname = 0;
 			pEntity->pev->nextthink = gpGlobals->time + 0.3;

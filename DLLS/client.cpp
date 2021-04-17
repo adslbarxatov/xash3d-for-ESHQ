@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -44,13 +44,13 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
 extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
-extern void CopyToBodyQue(entvars_t* pev);
+extern void CopyToBodyQue (entvars_t* pev);
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
 
 extern int g_teamplay;
 
-void LinkUserMessages (void );
+void LinkUserMessages (void);
 
 /*
  * used by kill command and disconnect command
@@ -68,6 +68,7 @@ void set_suicide_frame (entvars_t* pev)
 	pev->nextthink = -1;
 	}
 
+
 /*
 ===========
 ClientConnect
@@ -84,6 +85,7 @@ BOOL ClientConnect (edict_t* pEntity, const char* pszName, const char* pszAddres
 	//		ExitIntermission ();
 
 	}
+
 
 /*
 ===========
@@ -123,6 +125,7 @@ void ClientDisconnect (edict_t* pEntity)
 
 	g_pGameRules->ClientDisconnected (pEntity);
 	}
+
 
 // called by ClientKill and DeadThink
 void respawn (entvars_t* pev, BOOL fCopyCorpse)
@@ -170,7 +173,7 @@ void ClientKill (edict_t* pEntity)
 
 	//	pev->modelindex = g_ulModelIndexPlayer;
 	//	pev->frags -= 2;		// extra penalty
-	//	respawn (pev );
+	//	respawn( pev );
 	}
 
 /*
@@ -215,7 +218,7 @@ void Host_Say (edict_t* pEntity, int teamonly)
 	const char* cpSay = "say";
 	const char* cpSayTeam = "say_team";
 	const char* pcmd = CMD_ARGV (0);
-	char* pc;
+	byte* pc;
 
 	// We can get a raw string now, without the "say " prepended
 	if (CMD_ARGC () == 0)
@@ -224,7 +227,7 @@ void Host_Say (edict_t* pEntity, int teamonly)
 	entvars_t* pev = &pEntity->v;
 	CBasePlayer* player = GetClassPtr ((CBasePlayer*)pev);
 
-	//Not yet.
+	// Not yet
 	if (player->m_flNextChatTime > gpGlobals->time)
 		return;
 
@@ -262,9 +265,9 @@ void Host_Say (edict_t* pEntity, int teamonly)
 		}
 
 	// make sure the text has content
-	for (pc = p; pc != NULL && *pc != 0; pc++)
+	for (pc = (byte*)p; pc != NULL && *pc != 0; pc++)
 		{
-		if (!isspace (*pc))
+		if (!Q_isspace (*pc))
 			{
 			pc = NULL;	// we've found an alphanumeric character,  so text is valid
 			break;
@@ -285,7 +288,6 @@ void Host_Say (edict_t* pEntity, int teamonly)
 
 	strcat (text, p);
 	strcat (text, "\n");
-
 
 	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
 
@@ -357,6 +359,7 @@ void Host_Say (edict_t* pEntity, int teamonly)
 			p);
 		}
 	}
+
 
 /*
 ===========
@@ -488,6 +491,7 @@ void ClientCommand (edict_t* pEntity)
 		}
 	}
 
+
 /*
 ========================
 ClientUserInfoChanged
@@ -557,7 +561,7 @@ static int g_serveractive = 0;
 
 void ServerDeactivate (void)
 	{
-	//	ALERT (at_console, "ServerDeactivate()\n" );
+	//	ALERT( at_console, "ServerDeactivate()\n" );
 
 		// It's possible that the engine will call this function more times than is necessary
 		//  Therefore, only run it one time for each call to ServerActivate 
@@ -574,10 +578,10 @@ void ServerDeactivate (void)
 
 void ServerActivate (edict_t* pEdictList, int edictCount, int clientMax)
 	{
-	int	i;
+	int				i;
 	CBaseEntity* pClass;
 
-	//	ALERT (at_console, "ServerActivate()\n" );
+	//	ALERT( at_console, "ServerActivate()\n" );
 
 		// Every call to ServerActivate should be matched by a call to ServerDeactivate
 	g_serveractive = 1;
@@ -618,7 +622,7 @@ Called every frame before physics are run
 */
 void PlayerPreThink (edict_t* pEntity)
 	{
-	//	ALERT (at_console, "PreThink (%g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
+	//	ALERT( at_console, "PreThink( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
 
 	entvars_t* pev = &pEntity->v;
 	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE (pEntity);
@@ -636,7 +640,7 @@ Called every frame after physics are run
 */
 void PlayerPostThink (edict_t* pEntity)
 	{
-	//	ALERT (at_console, "PostThink (%g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
+	//	ALERT( at_console, "PostThink( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
 
 	entvars_t* pev = &pEntity->v;
 	CBasePlayer* pPlayer = (CBasePlayer*)GET_PRIVATE (pEntity);
@@ -645,9 +649,12 @@ void PlayerPostThink (edict_t* pEntity)
 		pPlayer->PostThink ();
 	}
 
+
+
 void ParmsNewLevel (void)
 	{
 	}
+
 
 void ParmsChangeLevel (void)
 	{
@@ -658,12 +665,13 @@ void ParmsChangeLevel (void)
 		pSaveData->connectionCount = BuildChangeList (pSaveData->levelList, MAX_LEVEL_CONNECTIONS);
 	}
 
+
 //
 // GLOBALS ASSUMED SET:  g_ulFrameCount
 //
 void StartFrame (void)
 	{
-	//	ALERT (at_console, "SV_Physics (%g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
+	//	ALERT( at_console, "SV_Physics( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
 
 	if (g_pGameRules)
 		g_pGameRules->Think ();
@@ -675,27 +683,28 @@ void StartFrame (void)
 	g_ulFrameCount++;
 	}
 
+
 void ClientPrecache (void)
 	{
 	// setup precaches always needed
 	PRECACHE_SOUND ("player/sprayer.wav");			// spray paint sound for PreAlpha
 
-	// PRECACHE_SOUND("player/pl_jumpland2.wav");		// UNDONE: play 2x step sound
+	// PRECACHE_SOUND("player/pl_jumpland2.wav");	// UNDONE: play 2x step sound
+	// PRECACHE_SOUND ("player/pl_fallpain2.wav");
 
-	//PRECACHE_SOUND("player/pl_fallpain2.wav");		
 	PRECACHE_SOUND ("player/pl_fallpain3.wav");
 
-	PRECACHE_SOUND ("player/pl_step1.wav");		// Движение по бетону/незаданному материалу
+	PRECACHE_SOUND ("player/pl_step1.wav");			// Шаги по бетону / незаданному материалу
 	PRECACHE_SOUND ("player/pl_step2.wav");
 	PRECACHE_SOUND ("player/pl_step3.wav");
 	PRECACHE_SOUND ("player/pl_step4.wav");
 
-	PRECACHE_SOUND ("common/npc_step1.wav");		// Движение другого персонажа
+	PRECACHE_SOUND ("common/npc_step1.wav");		// Шаги NPC
 	PRECACHE_SOUND ("common/npc_step2.wav");
 	PRECACHE_SOUND ("common/npc_step3.wav");
 	PRECACHE_SOUND ("common/npc_step4.wav");
 
-	PRECACHE_SOUND ("player/pl_metal1.wav");		// Движение по металлу
+	PRECACHE_SOUND ("player/pl_metal1.wav");		// Шаги по металлу
 	PRECACHE_SOUND ("player/pl_metal2.wav");
 	PRECACHE_SOUND ("player/pl_metal3.wav");
 	PRECACHE_SOUND ("player/pl_metal4.wav");
@@ -704,74 +713,78 @@ void ClientPrecache (void)
 	PRECACHE_SOUND ("player/pl_metal7.wav");
 	PRECACHE_SOUND ("player/pl_metal8.wav");
 
-	PRECACHE_SOUND ("player/pl_dirt1.wav");		// Движение по песку
+	PRECACHE_SOUND ("player/pl_dirt1.wav");			// Шаги по песку / грязи / коврам
 	PRECACHE_SOUND ("player/pl_dirt2.wav");
 	PRECACHE_SOUND ("player/pl_dirt3.wav");
 	PRECACHE_SOUND ("player/pl_dirt4.wav");
 
-	PRECACHE_SOUND ("player/pl_duct1.wav");		// Движение по жестяной вентиляции
+	PRECACHE_SOUND ("player/pl_duct1.wav");			// Шаги по вентиляции
 	PRECACHE_SOUND ("player/pl_duct2.wav");
 	PRECACHE_SOUND ("player/pl_duct3.wav");
 	PRECACHE_SOUND ("player/pl_duct4.wav");
 
-	PRECACHE_SOUND ("player/pl_grate1.wav");		// Движение по решётке
+	PRECACHE_SOUND ("player/pl_grate1.wav");		// Шаги по решётке
 	PRECACHE_SOUND ("player/pl_grate2.wav");
 	PRECACHE_SOUND ("player/pl_grate3.wav");
 	PRECACHE_SOUND ("player/pl_grate4.wav");
 
-	PRECACHE_SOUND ("player/pl_slosh1.wav");		// Движение по неглубокой воде
+	PRECACHE_SOUND ("player/pl_slosh1.wav");		// Шаги по луже / реке
 	PRECACHE_SOUND ("player/pl_slosh2.wav");
 	PRECACHE_SOUND ("player/pl_slosh3.wav");
 	PRECACHE_SOUND ("player/pl_slosh4.wav");
 
-	PRECACHE_SOUND ("player/pl_wood1.wav");		// Движение по дереву
+	PRECACHE_SOUND ("player/pl_wood1.wav");			// Шаги по дереву
 	PRECACHE_SOUND ("player/pl_wood2.wav");
 	PRECACHE_SOUND ("player/pl_wood3.wav");
 	PRECACHE_SOUND ("player/pl_wood4.wav");
 
-	PRECACHE_SOUND ("player/pl_glass1.wav");		// Движение по стеклу
+	PRECACHE_SOUND ("player/pl_glass1.wav");		// Шаги по стеклу
 	PRECACHE_SOUND ("player/pl_glass2.wav");
 	PRECACHE_SOUND ("player/pl_glass3.wav");
 	PRECACHE_SOUND ("player/pl_glass4.wav");
 
-	PRECACHE_SOUND ("player/pl_snow1.wav");		// Движение по снегу
+	PRECACHE_SOUND ("player/pl_snow1.wav");			// Шаги по снегу
 	PRECACHE_SOUND ("player/pl_snow2.wav");
 	PRECACHE_SOUND ("player/pl_snow3.wav");
 	PRECACHE_SOUND ("player/pl_snow4.wav");
 
-	PRECACHE_SOUND ("player/pl_tile1.wav");		// Движение по кафелю/плитке
+	PRECACHE_SOUND ("player/pl_tile1.wav");			// Шаги по плитке
 	PRECACHE_SOUND ("player/pl_tile2.wav");
 	PRECACHE_SOUND ("player/pl_tile3.wav");
 	PRECACHE_SOUND ("player/pl_tile4.wav");
 	PRECACHE_SOUND ("player/pl_tile5.wav");
 
-	PRECACHE_SOUND ("player/pl_swim1.wav");		// breathe bubbles
+	PRECACHE_SOUND ("player/pl_swim1.wav");			// Плавание
 	PRECACHE_SOUND ("player/pl_swim2.wav");
 	PRECACHE_SOUND ("player/pl_swim3.wav");
 	PRECACHE_SOUND ("player/pl_swim4.wav");
 
-	PRECACHE_SOUND ("player/pl_ladder1.wav");	// climb ladder rung
+	PRECACHE_SOUND ("player/pl_ladder1.wav");		// Лестница
 	PRECACHE_SOUND ("player/pl_ladder2.wav");
 	PRECACHE_SOUND ("player/pl_ladder3.wav");
 	PRECACHE_SOUND ("player/pl_ladder4.wav");
 
-	PRECACHE_SOUND ("player/pl_wade1.wav");		// wade in water
+	PRECACHE_SOUND ("player/pl_wade1.wav");			// Погружение
 	PRECACHE_SOUND ("player/pl_wade2.wav");
 	PRECACHE_SOUND ("player/pl_wade3.wav");
 	PRECACHE_SOUND ("player/pl_wade4.wav");
 
-	PRECACHE_SOUND ("debris/wood5.wav");			// Удар по дереву
+	PRECACHE_SOUND ("debris/wood1.wav");			// Удар по дереву
+	PRECACHE_SOUND ("debris/wood2.wav");
+	PRECACHE_SOUND ("debris/wood3.wav");
+
+	PRECACHE_SOUND ("debris/wood5.wav");			// Деревянные обломки
 	PRECACHE_SOUND ("debris/wood6.wav");
 	PRECACHE_SOUND ("debris/wood7.wav");
 
-	PRECACHE_SOUND ("debris/tile1.wav");			// Удар по кафелю
+	PRECACHE_SOUND ("debris/tile1.wav");			// Удар по плитке
 	PRECACHE_SOUND ("debris/tile2.wav");
 	PRECACHE_SOUND ("debris/tile3.wav");
 	PRECACHE_SOUND ("debris/tile4.wav");
 
-	PRECACHE_SOUND ("plats/train_use1.wav");		// use a train
+	PRECACHE_SOUND ("plats/train_use1.wav");		// Запуск поезда
 
-	PRECACHE_SOUND ("buttons/spark5.wav");		// hit computer texture
+	PRECACHE_SOUND ("buttons/spark5.wav");			// Удар по электронике
 	PRECACHE_SOUND ("buttons/spark6.wav");
 	PRECACHE_SOUND ("debris/glass1.wav");
 	PRECACHE_SOUND ("debris/glass2.wav");
@@ -780,34 +793,28 @@ void ClientPrecache (void)
 	PRECACHE_SOUND (SOUND_FLASHLIGHT_ON);
 	PRECACHE_SOUND (SOUND_FLASHLIGHT_OFF);
 
-	// player gib sounds
-	PRECACHE_SOUND ("common/bodysplat.wav");
+	PRECACHE_SOUND ("common/bodysplat.wav");		// Расчленёнка
 	PRECACHE_SOUND ("common/bodysplat2.wav");
 	PRECACHE_SOUND ("common/bodysplat3.wav");
 
-	// player pain sounds
-	PRECACHE_SOUND ("player/pl_pain4.wav");
+	PRECACHE_SOUND ("player/pl_pain4.wav");			// Боль
 	PRECACHE_SOUND ("player/pl_pain5.wav");
 	PRECACHE_SOUND ("player/pl_pain6.wav");
 	PRECACHE_SOUND ("player/pl_pain7.wav");
 
 	PRECACHE_MODEL ("models/player.mdl");
 
-	// hud sounds
-
-	PRECACHE_SOUND ("common/wpn_hudoff.wav");
+	PRECACHE_SOUND ("common/wpn_hudoff.wav");		// Управление костюмом
 	PRECACHE_SOUND ("common/wpn_hudon.wav");
 	PRECACHE_SOUND ("common/wpn_moveselect.wav");
 	PRECACHE_SOUND ("common/wpn_select.wav");
 	PRECACHE_SOUND ("common/wpn_denyselect.wav");
-	PRECACHE_SOUND ("items/gunpickup1.wav");
+
+	PRECACHE_SOUND ("items/gunpickup1.wav");		// Переключение оружия
 	PRECACHE_SOUND ("items/gunpickup3.wav");
 	PRECACHE_SOUND ("items/gunpickup4.wav");
 
-
-	// geiger sounds
-
-	PRECACHE_SOUND ("player/geiger6.wav");
+	PRECACHE_SOUND ("player/geiger6.wav");			// Гейгер
 	PRECACHE_SOUND ("player/geiger5.wav");
 	PRECACHE_SOUND ("player/geiger4.wav");
 	PRECACHE_SOUND ("player/geiger3.wav");
@@ -842,7 +849,7 @@ Engine is going to shut down, allows setting a breakpoint in game .dll to catch 
 */
 void Sys_Error (const char* error_string)
 	{
-	// Default case, do nothing.  MOD AUTHORS:  Add code  (e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
+	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
 	}
 
 /*
@@ -1007,8 +1014,7 @@ player is 1 if the ent/e is a player and 0 otherwise
 pSet is either the PAS or PVS that we previous set up.  We can use it to ask the engine to filter the entity against the PAS or PVS.
 we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to.  Caching the value is valid in that case, but still only for the current frame
 */
-int AddToFullPack (struct entity_state_s* state, int e, edict_t* ent, edict_t* host, int hostflags, int player, 
-	unsigned char* pSet)
+int AddToFullPack (struct entity_state_s* state, int e, edict_t* ent, edict_t* host, int hostflags, int player, unsigned char* pSet)
 	{
 	int					i;
 
@@ -1045,7 +1051,6 @@ int AddToFullPack (struct entity_state_s* state, int e, edict_t* ent, edict_t* h
 	// Don't send entity to local client if the client says it's predicting the entity itself.
 	if (ent->v.flags & FL_SKIPLOCALHOST)
 		{
-		if (hostflags & 4) return 0; // it's a portal pass
 		if ((hostflags & 1) && (ent->v.owner == host))
 			return 0;
 		}
@@ -1173,7 +1178,7 @@ int AddToFullPack (struct entity_state_s* state, int e, edict_t* ent, edict_t* h
 		}
 
 	// HACK:  Somewhat...
-	// Class is overridden for non-players to signify a breakable glass object  (sort of a class? )
+	// Class is overridden for non-players to signify a breakable glass object ( sort of a class? )
 	if (!player)
 		{
 		state->playerclass = ent->v.playerclass;
@@ -1293,7 +1298,7 @@ void Entity_FieldInit (struct delta_s* pFields)
 ==================
 Entity_Encode
 
-Callback for sending entity_state_t info over network. 
+Callback for sending entity_state_t info over network.
 FIXME:  Move to script
 ==================
 */
@@ -1365,7 +1370,7 @@ void Player_FieldInit (struct delta_s* pFields)
 ==================
 Player_Encode
 
-Callback for sending entity_state_t for players info over network. 
+Callback for sending entity_state_t for players info over network.
 ==================
 */
 void Player_Encode (struct delta_s* pFields, const unsigned char* from, const unsigned char* to)
@@ -1447,7 +1452,7 @@ void Custom_Entity_FieldInit (struct delta_s* pFields)
 ==================
 Custom_Encode
 
-Callback for sending entity_state_t info  (for custom entities ) over network. 
+Callback for sending entity_state_t info ( for custom entities ) over network.
 FIXME:  Move to script
 ==================
 */
@@ -1512,7 +1517,7 @@ void RegisterEncoders (void)
 
 int GetWeaponData (struct edict_s* player, struct weapon_data_s* info)
 	{
-#if defined (CLIENT_WEAPONS )
+#if defined( CLIENT_WEAPONS )
 	int i;
 	weapon_data_t* item;
 	entvars_t* pev = &player->v;
@@ -1563,7 +1568,7 @@ int GetWeaponData (struct edict_s* player, struct weapon_data_s* info)
 						item->iuser3 = gun->m_fireState;
 
 
-						//	item->m_flPumpTime	= max (gun->m_flPumpTime, -0.001 );
+						// item->m_flPumpTime = max( gun->m_flPumpTime, -0.001 );
 						}
 					}
 				pPlayerItem = pPlayerItem->m_pNext;
@@ -1592,9 +1597,10 @@ void UpdateClientData (const struct edict_s* ent, int sendweapons, struct client
 	cd->viewmodel = MODEL_INDEX (STRING (ent->v.viewmodel));
 
 	cd->waterlevel = ent->v.waterlevel;
-	cd->collectedItems = ent->v.collectedItems;			// Собираемые объекты
 	cd->watertype = ent->v.watertype;
 	cd->weapons = ent->v.weapons;
+	// ESHQ: поддержка собираемых объектов
+	cd->collectedItems = ent->v.collectedItems;
 
 	// Vectors
 	cd->origin = ent->v.origin;
@@ -1616,7 +1622,7 @@ void UpdateClientData (const struct edict_s* ent, int sendweapons, struct client
 
 	cd->pushmsec = ent->v.pushmsec;
 
-#if defined (CLIENT_WEAPONS )
+#if defined( CLIENT_WEAPONS )
 	if (sendweapons)
 		{
 		entvars_t* pev = (entvars_t*)&ent->v;
@@ -1770,7 +1776,7 @@ int GetHullBounds (int hullnumber, float* mins, float* maxs)
 CreateInstancedBaselines
 
 Create pseudo-baselines for items that aren't placed in the map at spawn time, but which are likely
-to be created during play  (e.g., grenades, ammo packs, projectiles, corpses, etc. )
+to be created during play ( e.g., grenades, ammo packs, projectiles, corpses, etc. )
 ================================
 */
 void CreateInstancedBaselines (void)
@@ -1781,10 +1787,10 @@ void CreateInstancedBaselines (void)
 	memset (&state, 0, sizeof (state));
 
 	// Create any additional baselines here for things like grendates, etc.
-	// iret = ENGINE_INSTANCE_BASELINE (pc->pev->classname, &state );
+	// iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );
 
 	// Destroy objects.
-	//UTIL_Remove (pc );
+	//UTIL_Remove( pc );
 	}
 
 /*
@@ -1792,7 +1798,7 @@ void CreateInstancedBaselines (void)
 InconsistentFile
 
 One of the ENGINE_FORCE_UNMODIFIED files failed the consistency check for the specified player
- Return 0 to allow the client to continue, 1 to force immediate disconnection  (with an optional disconnect message of up to 256 characters )
+ Return 0 to allow the client to continue, 1 to force immediate disconnection ( with an optional disconnect message of up to 256 characters )
 ================================
 */
 int	InconsistentFile (const edict_t* player, const char* filename, char* disconnect_message)
@@ -1812,10 +1818,10 @@ int	InconsistentFile (const edict_t* player, const char* filename, char* disconn
 ================================
 AllowLagCompensation
 
- The game .dll should return 1 if lag compensation should be allowed  (could also just set
+ The game .dll should return 1 if lag compensation should be allowed ( could also just set
   the sv_unlag cvar.
  Most games right now should return 0, until client-side weapon prediction code is written
-  and tested for them  (note you can predict weapons, but not do lag compensation, too, 
+  and tested for them ( note you can predict weapons, but not do lag compensation, too,
   if you want.
 ================================
 */

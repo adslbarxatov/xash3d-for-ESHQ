@@ -103,11 +103,11 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 	{
 		// no more grenades!
 		m_pPlayer->pev->weapons &= ~(1<<WEAPON_HANDGRENADE);
-		SetThink (&CBasePlayerItem::DestroyItem);
+		SetThink( DestroyItem );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 
-	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_MEDIUM);
+	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "common/null.wav", 1.0, ATTN_NORM);
 }
 
 void CHandGrenade::PrimaryAttack()
@@ -150,7 +150,7 @@ void CHandGrenade::WeaponIdle( void )
 
 		Vector vecThrow = gpGlobals->v_forward * flVel + m_pPlayer->pev->velocity;
 
-		// always explode 3 seconds after the pin was pulled
+		// alway explode 3 seconds after the pin was pulled
 		float time = m_flStartThrow - gpGlobals->time + 3.0;
 		if (time < 0)
 			time = 0;
@@ -221,9 +221,13 @@ void CHandGrenade::WeaponIdle( void )
 		else 
 		{
 			iAnim = HANDGRENADE_FIDGET;
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.5;
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 75.0 / 30.0;
 		}
 
 		SendWeaponAnim( iAnim );
 	}
 }
+
+
+
+

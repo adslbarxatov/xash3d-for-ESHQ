@@ -684,7 +684,7 @@ void UTIL_ScreenShake( const Vector &center, float amplitude, float frequency, f
 	{
 		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
 
-		if ( !pPlayer || !(pPlayer->pev->flags /*& FL_ONGROUND*/) )	// Don't shake if not onground
+		if ( !pPlayer || !(pPlayer->pev->flags & FL_ONGROUND) )	// Don't shake if not onground
 			continue;
 
 		localAmplitude = 0;
@@ -1211,8 +1211,6 @@ void UTIL_BloodDecalTrace( TraceResult *pTrace, int bloodColor )
 	{
 		if ( bloodColor == BLOOD_COLOR_RED )
 			UTIL_DecalTrace( pTrace, DECAL_BLOOD1 + RANDOM_LONG(0,5) );
-		else if ( bloodColor == BLOOD_COLOR_GREEN )
-			UTIL_DecalTrace( pTrace, DECAL_GBLOOD1 + RANDOM_LONG(0,5) );
 		else
 			UTIL_DecalTrace( pTrace, DECAL_YBLOOD1 + RANDOM_LONG(0,5) );
 	}

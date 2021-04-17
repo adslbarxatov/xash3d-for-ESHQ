@@ -31,26 +31,26 @@ public:
 	
 	inline float Length(void)						const	{ return sqrt(x*x + y*y );		}
 
-	inline Vector2D Normalize  (void ) const
+	inline Vector2D Normalize ( void ) const
 	{
 		Vector2D vec2;
 
 		float flLen = Length();
-		if  (flLen == 0 )
+		if ( flLen == 0 )
 		{
-			return Vector2D (0, 0 );
+			return Vector2D( 0, 0 );
 		}
 		else
 		{
 			flLen = 1 / flLen;
-			return Vector2D (x * flLen, y * flLen );
+			return Vector2D( x * flLen, y * flLen );
 		}
 	}
 
 	vec_t	x, y;
 };
 
-inline float DotProduct(const Vector2D& a, const Vector2D& b) { return (a.x*b.x + a.y*b.y ); }
+inline float DotProduct(const Vector2D& a, const Vector2D& b) { return( a.x*b.x + a.y*b.y ); }
 inline Vector2D operator*(float fl, const Vector2D& v)	{ return v * fl; }
 
 //=========================================================
@@ -89,7 +89,7 @@ public:
 		return Vector(x * flLen, y * flLen, z * flLen);
 	}
 
-	inline Vector2D Make2D  (void ) const
+	inline Vector2D Make2D ( void ) const
 	{
 		Vector2D	Vec2;
 
@@ -105,7 +105,7 @@ public:
 };
 inline Vector operator*(float fl, const Vector& v)	{ return v * fl; }
 inline float DotProduct(const Vector& a, const Vector& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
-inline Vector CrossProduct(const Vector& a, const Vector& b) { return Vector (a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
+inline Vector CrossProduct(const Vector& a, const Vector& b) { return Vector( a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
 
 
 

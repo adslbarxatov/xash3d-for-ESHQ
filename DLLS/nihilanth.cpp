@@ -300,7 +300,7 @@ void CNihilanth :: Spawn( void )
 
 	InitBoneControllers();
 
-	SetThink (&CNihilanth::StartupThink);
+	SetThink( StartupThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	m_vecDesired = Vector( 1, 0, 0 );
@@ -378,9 +378,9 @@ void CNihilanth::NullThink( void )
 
 void CNihilanth::StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	SetThink (&CNihilanth::HuntThink);
+	SetThink( HuntThink );
 	pev->nextthink = gpGlobals->time + 0.1;
-	SetUse (&CNihilanth::CommandUse);
+	SetUse( CommandUse );
 }
 
 
@@ -410,8 +410,8 @@ void CNihilanth::StartupThink( void )
 	}
 	m_hRecharger = NULL;
 
-	SetThink (&CNihilanth::HuntThink);
-	SetUse (&CNihilanth::CommandUse);
+	SetThink( HuntThink);
+	SetUse( CommandUse );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -544,7 +544,7 @@ void CNihilanth::CrashTouch( CBaseEntity *pOther )
 	// only crash if we hit something solid
 	if ( pOther->pev->solid == SOLID_BSP) 
 	{
-		SetTouch (NULL);
+		SetTouch( NULL );
 		pev->nextthink = gpGlobals->time;
 	}
 }
@@ -553,7 +553,7 @@ void CNihilanth::CrashTouch( CBaseEntity *pOther )
 
 void CNihilanth :: GibMonster( void )
 {
-	// EMIT_SOUND_DYN(edict(), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_MEDIUM, 0, 200);		
+	// EMIT_SOUND_DYN(edict(), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_NORM, 0, 200);		
 }
 
 
@@ -665,7 +665,7 @@ void CNihilanth :: MakeFriend( Vector vecStart )
 			}
 			if (m_hFriend[i] != NULL)
 			{
-				EMIT_SOUND( m_hFriend[i]->edict(), CHAN_WEAPON, "debris/beamstart7.wav", 1.0, ATTN_MEDIUM );
+				EMIT_SOUND( m_hFriend[i]->edict(), CHAN_WEAPON, "debris/beamstart7.wav", 1.0, ATTN_NORM );
 			}
 
 			return;
@@ -846,7 +846,7 @@ void CNihilanth :: HuntThink( void )
 	// if dead, force cancelation of current animation
 	if (pev->health <= 0)
 	{
-		SetThink (&CNihilanth::DyingThink);
+		SetThink( DyingThink );
 		m_fSequenceFinished = TRUE;
 		return;
 	}
@@ -1018,10 +1018,8 @@ BOOL CNihilanth :: EmitSphere( void )
 
 void CNihilanth :: 	TargetSphere( USE_TYPE useType, float value )
 {
-	int i;
-
 	CBaseMonster *pSphere;
-	for (i = 0; i < N_SPHERES; i++)
+	for (int i = 0; i < N_SPHERES; i++)
 	{
 		if (m_hSphere[i] != NULL)
 		{
@@ -1332,8 +1330,8 @@ void CNihilanthHVR :: CircleInit( CBaseEntity *pTarget )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetThink (&CNihilanthHVR::HoverThink);
-	SetTouch (&CNihilanthHVR::BounceTouch);
+	SetThink( HoverThink );
+	SetTouch( BounceTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 	
 	m_hTargetEnt = pTarget;
@@ -1435,11 +1433,11 @@ void CNihilanthHVR :: ZapInit( CBaseEntity *pEnemy )
 	pev->velocity = (pEnemy->pev->origin - pev->origin).Normalize() * 200;
 
 	m_hEnemy = pEnemy;
-	SetThink (&CNihilanthHVR::ZapThink);
-	SetTouch (&CNihilanthHVR::ZapTouch);
+	SetThink( ZapThink );
+	SetTouch( ZapTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_MEDIUM, 0, 100 );
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 );
 }
 
 void CNihilanthHVR :: ZapThink( void  )
@@ -1449,7 +1447,7 @@ void CNihilanthHVR :: ZapThink( void  )
 	// check world boundaries
 	if (m_hEnemy == NULL ||  pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096)
 	{
-		SetTouch (NULL);
+		SetTouch( NULL );
 		UTIL_Remove( this );
 		return;
 	}
@@ -1495,9 +1493,9 @@ void CNihilanthHVR :: ZapThink( void  )
 			WRITE_BYTE( 10 );		// speed
 		MESSAGE_END();
 
-		UTIL_EmitAmbientSound( edict(), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_MEDIUM, 0, RANDOM_LONG( 140, 160 ) );
+		UTIL_EmitAmbientSound( edict(), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 
-		SetTouch (NULL);
+		SetTouch( NULL );
 		UTIL_Remove( this );
 		pev->nextthink = gpGlobals->time + 0.2;
 		return;
@@ -1525,7 +1523,7 @@ void CNihilanthHVR :: ZapThink( void  )
 
 void CNihilanthHVR::ZapTouch( CBaseEntity *pOther )
 {
-	UTIL_EmitAmbientSound( edict(), pev->origin, "weapons/electro4.wav", 1.0, ATTN_MEDIUM, 0, RANDOM_LONG( 90, 95 ) );
+	UTIL_EmitAmbientSound( edict(), pev->origin, "weapons/electro4.wav", 1.0, ATTN_NORM, 0, RANDOM_LONG( 90, 95 ) );
 
 	RadiusDamage( pev, pev, 50, CLASS_NONE, DMG_SHOCK );
 	pev->velocity = pev->velocity * 0;
@@ -1537,7 +1535,7 @@ void CNihilanthHVR::ZapTouch( CBaseEntity *pOther )
 	}
 	*/
 
-	SetTouch (NULL);
+	SetTouch( NULL );
 	UTIL_Remove( this );
 	pev->nextthink = gpGlobals->time + 0.2;
 }
@@ -1561,8 +1559,8 @@ void CNihilanthHVR :: TeleportInit( CNihilanth *pOwner, CBaseEntity *pEnemy, CBa
 	m_hTargetEnt = pTarget;
 	m_hTouch = pTouch;
 
-	SetThink (&CNihilanthHVR::TeleportThink);
-	SetTouch (&CNihilanthHVR::TeleportTouch);
+	SetThink( TeleportThink );
+	SetTouch( TeleportTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "x/x_teleattack1.wav", 1, 0.2, 0, 100 );
@@ -1581,7 +1579,7 @@ void CNihilanthHVR :: GreenBallInit( )
 
 	SET_MODEL(edict(), "sprites/exit1.spr");
 
-	SetTouch (&CNihilanthHVR::RemoveTouch);
+	SetTouch( RemoveTouch );
 }
 
 
@@ -1633,7 +1631,7 @@ void CNihilanthHVR :: TeleportThink( void  )
 
 void CNihilanthHVR :: AbsorbInit( void  )
 {
-	SetThink (&CNihilanthHVR::DissipateThink);
+	SetThink( DissipateThink );
 	pev->renderamt = 255;
 
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
@@ -1671,7 +1669,7 @@ void CNihilanthHVR::TeleportTouch( CBaseEntity *pOther )
 		m_pNihilanth->MakeFriend( pev->origin );
 	}
 
-	SetTouch (NULL);
+	SetTouch( NULL );
 	STOP_SOUND(edict(), CHAN_WEAPON, "x/x_teleattack1.wav" );
 	UTIL_Remove( this );
 }

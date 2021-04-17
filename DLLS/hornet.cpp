@@ -93,8 +93,8 @@ void CHornet :: Spawn( void )
 	SET_MODEL(ENT( pev ), "models/hornet.mdl");
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 
-	SetTouch (&CHornet::DieTouch);
-	SetThink (&CHornet::StartTrack);
+	SetTouch( DieTouch );
+	SetThink( StartTrack );
 
 	edict_t *pSoundEnt = pev->owner;
 	if ( !pSoundEnt )
@@ -169,8 +169,8 @@ void CHornet :: StartTrack ( void )
 {
 	IgniteTrail();
 
-	SetTouch (&CHornet::TrackTouch);
-	SetThink (&CHornet::TrackTarget);
+	SetTouch( TrackTouch );
+	SetThink( TrackTarget );
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -182,9 +182,9 @@ void CHornet :: StartDart ( void )
 {
 	IgniteTrail();
 
-	SetTouch (&CHornet::DartTouch);
+	SetTouch( DartTouch );
 
-	SetThink (&CBaseEntity::SUB_Remove);
+	SetThink( SUB_Remove );
 	pev->nextthink = gpGlobals->time + 4;
 }
 
@@ -256,8 +256,8 @@ void CHornet :: TrackTarget ( void )
 
 	if (gpGlobals->time > m_flStopAttack)
 	{
-		SetTouch (NULL);
-		SetThink (&CBaseEntity::SUB_Remove);
+		SetTouch( NULL );
+		SetThink( SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 	}
@@ -292,9 +292,9 @@ void CHornet :: TrackTarget ( void )
 	{// hafta turn wide again. play sound
 		switch (RANDOM_LONG(0,2))
 		{
-		case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-		case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-		case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
+		case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
+		case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
+		case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
 		}
 	}
 
@@ -349,9 +349,9 @@ void CHornet :: TrackTarget ( void )
 
 			switch (RANDOM_LONG(0,2))
 			{
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
+			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
+			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
+			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
 			}
 			pev->velocity = pev->velocity * 2;
 			pev->nextthink = gpGlobals->time + 1.0;
@@ -402,9 +402,9 @@ void CHornet::DieTouch ( CBaseEntity *pOther )
 
 		switch (RANDOM_LONG(0,2))
 		{// buzz when you plug someone
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_MEDIUM);	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_MEDIUM);	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_MEDIUM);	break;
+			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_NORM);	break;
+			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_NORM);	break;
+			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_NORM);	break;
 		}
 			
 		pOther->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
@@ -413,7 +413,7 @@ void CHornet::DieTouch ( CBaseEntity *pOther )
 	pev->modelindex = 0;// so will disappear for the 0.1 secs we wait until NEXTTHINK gets rid
 	pev->solid = SOLID_NOT;
 
-	SetThink (&CBaseEntity::SUB_Remove);
+	SetThink ( SUB_Remove );
 	pev->nextthink = gpGlobals->time + 1;// stick around long enough for the sound to finish!
 }
 

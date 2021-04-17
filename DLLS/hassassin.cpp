@@ -159,8 +159,7 @@ int CHAssassin :: ISoundMask ( void)
 //=========================================================
 int	CHAssassin :: Classify ( void )
 {
-	//return	CLASS_HUMAN_MILITARY;
-	return	CLASS_HUMAN_ASSASSIN;
+	return	CLASS_HUMAN_MILITARY;
 }
 
 //=========================================================
@@ -220,10 +219,10 @@ void CHAssassin :: Shoot ( void )
 	switch(RANDOM_LONG(0,1))
 	{
 	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/pl_gun1.wav", RANDOM_FLOAT(0.6, 0.8), ATTN_MEDIUM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/pl_gun1.wav", RANDOM_FLOAT(0.6, 0.8), ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/pl_gun2.wav", RANDOM_FLOAT(0.6, 0.8), ATTN_MEDIUM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/pl_gun2.wav", RANDOM_FLOAT(0.6, 0.8), ATTN_NORM);
 		break;
 	}
 
@@ -341,7 +340,7 @@ Schedule_t	slAssassinFail[] =
 {
 	{
 		tlAssassinFail,
-		HLARRAYSIZE ( tlAssassinFail ),
+		ARRAYSIZE ( tlAssassinFail ),
 		bits_COND_LIGHT_DAMAGE		|
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_PROVOKED			|
@@ -372,7 +371,7 @@ Schedule_t slAssassinExposed[] =
 {
 	{
 		tlAssassinExposed,
-		HLARRAYSIZE ( tlAssassinExposed ),
+		ARRAYSIZE ( tlAssassinExposed ),
 		bits_COND_CAN_MELEE_ATTACK1,
 		0,
 		"AssassinExposed",
@@ -400,7 +399,7 @@ Schedule_t	slAssassinTakeCoverFromEnemy[] =
 {
 	{ 
 		tlAssassinTakeCoverFromEnemy,
-		HLARRAYSIZE ( tlAssassinTakeCoverFromEnemy ), 
+		ARRAYSIZE ( tlAssassinTakeCoverFromEnemy ), 
 		bits_COND_NEW_ENEMY |
 		bits_COND_CAN_MELEE_ATTACK1		|
 		bits_COND_HEAR_SOUND,
@@ -433,7 +432,7 @@ Schedule_t	slAssassinTakeCoverFromEnemy2[] =
 {
 	{ 
 		tlAssassinTakeCoverFromEnemy2,
-		HLARRAYSIZE ( tlAssassinTakeCoverFromEnemy2 ), 
+		ARRAYSIZE ( tlAssassinTakeCoverFromEnemy2 ), 
 		bits_COND_NEW_ENEMY |
 		bits_COND_CAN_MELEE_ATTACK2		|
 		bits_COND_HEAR_SOUND,
@@ -462,7 +461,7 @@ Schedule_t	slAssassinTakeCoverFromBestSound[] =
 {
 	{ 
 		tlAssassinTakeCoverFromBestSound,
-		HLARRAYSIZE ( tlAssassinTakeCoverFromBestSound ), 
+		ARRAYSIZE ( tlAssassinTakeCoverFromBestSound ), 
 		bits_COND_NEW_ENEMY,
 		0,
 		"AssassinTakeCoverFromBestSound"
@@ -488,7 +487,7 @@ Schedule_t	slAssassinHide[] =
 {
 	{ 
 		tlAssassinHide,
-		HLARRAYSIZE ( tlAssassinHide ), 
+		ARRAYSIZE ( tlAssassinHide ), 
 		bits_COND_NEW_ENEMY				|
 		bits_COND_SEE_ENEMY				|
 		bits_COND_SEE_FEAR				|
@@ -518,7 +517,7 @@ Schedule_t slAssassinHunt[] =
 {
 	{ 
 		tlAssassinHunt,
-		HLARRAYSIZE ( tlAssassinHunt ),
+		ARRAYSIZE ( tlAssassinHunt ),
 		bits_COND_NEW_ENEMY			|
 		// bits_COND_SEE_ENEMY			|
 		bits_COND_CAN_RANGE_ATTACK1	|
@@ -544,7 +543,7 @@ Schedule_t	slAssassinJump[] =
 {
 	{ 
 		tlAssassinJump,
-		HLARRAYSIZE ( tlAssassinJump ), 
+		ARRAYSIZE ( tlAssassinJump ), 
 		0, 
 		0, 
 		"AssassinJump"
@@ -567,7 +566,7 @@ Schedule_t	slAssassinJumpAttack[] =
 {
 	{ 
 		tlAssassinJumpAttack,
-		HLARRAYSIZE ( tlAssassinJumpAttack ), 
+		ARRAYSIZE ( tlAssassinJumpAttack ), 
 		0, 
 		0,
 		"AssassinJumpAttack"
@@ -597,7 +596,7 @@ Schedule_t	slAssassinJumpLand[] =
 {
 	{ 
 		tlAssassinJumpLand,
-		HLARRAYSIZE ( tlAssassinJumpLand ), 
+		ARRAYSIZE ( tlAssassinJumpLand ), 
 		0, 
 		0,
 		"AssassinJumpLand"
@@ -726,7 +725,7 @@ void CHAssassin :: RunAI( void )
 	{
 		if (pev->renderamt == 255)
 		{
-			EMIT_SOUND (ENT(pev), CHAN_BODY, "debris/beamstart1.wav", 0.2, ATTN_MEDIUM );
+			EMIT_SOUND (ENT(pev), CHAN_BODY, "debris/beamstart1.wav", 0.2, ATTN_NORM );
 		}
 
 		pev->renderamt = max( pev->renderamt - 50, m_iTargetRanderamt );
@@ -747,10 +746,10 @@ void CHAssassin :: RunAI( void )
 		{
 			switch( RANDOM_LONG( 0, 3 ) )
 			{
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_MEDIUM);	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_MEDIUM);	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_MEDIUM);	break;
-			case 3:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_MEDIUM);	break;
+			case 0:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_NORM);	break;
+			case 1:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_NORM);	break;
+			case 2:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_NORM);	break;
+			case 3:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_NORM);	break;
 			}
 		}
 	}

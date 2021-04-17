@@ -73,7 +73,7 @@ void CFrictionModifier :: Spawn( void )
 	pev->solid = SOLID_TRIGGER;
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_NONE;
-	SetTouch (&CFrictionModifier::ChangeFriction);
+	SetTouch( ChangeFriction );
 }
 
 
@@ -241,6 +241,8 @@ void CTriggerRelay::Spawn( void )
 }
 
 
+
+
 void CTriggerRelay::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	SUB_UseTargets( this, triggerType, 0 );
@@ -342,8 +344,8 @@ void CMultiManager :: KeyValue( KeyValueData *pkvd )
 void CMultiManager :: Spawn( void )
 {
 	pev->solid = SOLID_NOT;
-	SetUse (&CMultiManager::ManagerUse);
-	SetThink (&CMultiManager::ManagerThink);
+	SetUse ( ManagerUse );
+	SetThink ( ManagerThink);
 
 	// Sort targets
 	// Quick and dirty bubble sort
@@ -395,13 +397,13 @@ void CMultiManager :: ManagerThink ( void )
 
 	if ( m_index >= m_cTargets )// have we fired all targets?
 	{
-		SetThink (NULL);
+		SetThink( NULL );
 		if ( IsClone() )
 		{
 			UTIL_Remove( this );
 			return;
 		}
-		SetUse (&CMultiManager::ManagerUse);// allow manager re-use 
+		SetUse ( ManagerUse );// allow manager re-use 
 	}
 	else
 		pev->nextthink = m_startTime + m_flTargetDelay[ m_index ];
@@ -440,9 +442,9 @@ void CMultiManager :: ManagerUse ( CBaseEntity *pActivator, CBaseEntity *pCaller
 	m_index = 0;
 	m_startTime = gpGlobals->time;
 
-	SetUse (NULL);// disable use until all targets have fired
+	SetUse( NULL );// disable use until all targets have fired
 
-	SetThink (&CMultiManager::ManagerThink);
+	SetThink ( ManagerThink );
 	pev->nextthink = gpGlobals->time;
 }
 
@@ -524,7 +526,7 @@ public:
 	void EXPORT MultiTouch( CBaseEntity *pOther );
 	void EXPORT HurtTouch ( CBaseEntity *pOther );
 	void EXPORT CDAudioTouch ( CBaseEntity *pOther );
-	void ActivateMultiTrigger( CBaseEntity *pActivator, int RoomType );
+	void ActivateMultiTrigger( CBaseEntity *pActivator );
 	void EXPORT MultiWaitOver( void );
 	void EXPORT CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT ToggleUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
@@ -616,7 +618,7 @@ void CTriggerMonsterJump :: Spawn ( void )
 	{// if targetted, spawn turned off
 		pev->solid = SOLID_NOT;
 		UTIL_SetOrigin( pev, pev->origin ); // Unlink from trigger list
-		SetUse (&CBaseTrigger::ToggleUse);
+		SetUse( ToggleUse );
 	}
 }
 
@@ -625,7 +627,7 @@ void CTriggerMonsterJump :: Think( void )
 {
 	pev->solid = SOLID_NOT;// kill the trigger for now !!!UNDONE
 	UTIL_SetOrigin( pev, pev->origin ); // Unlink from trigger list
-	SetThink (NULL);
+	SetThink( NULL );
 }
 
 void CTriggerMonsterJump :: Touch( CBaseEntity *pOther )
@@ -806,20 +808,20 @@ void CTargetCDAudio::Play( void )
 void CTriggerHurt :: Spawn( void )
 {
 	InitTrigger();
-	SetTouch (&CBaseTrigger::HurtTouch);
+	SetTouch ( HurtTouch );
 
 	if ( !FStringNull ( pev->targetname ) )
 	{
-		SetUse (&CBaseTrigger::ToggleUse);
+		SetUse ( ToggleUse );
 	}
 	else
 	{
-		SetUse (NULL);
+		SetUse ( NULL );
 	}
 
 	if (m_bitsDamageInflict & DMG_RADIATION)
 	{
-		SetThink (&CTriggerHurt::RadiationThink);
+		SetThink ( RadiationThink );
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.0, 0.5); 
 	}
 
@@ -1078,57 +1080,10 @@ void CTriggerMultiple :: Spawn( void )
 //		}
 //	else
 		{
-			SetTouch (&CBaseTrigger::MultiTouch);
+			SetTouch( MultiTouch );
 		}
 	}
 
-
-/// Специальная brush entity для замещения функционала env_sound
-class CTriggerSound : public CBaseTrigger
-{
-public:
-	void Spawn( void );
-	void KeyValue( KeyValueData *pkvd );
-	/// trigger_sound
-	void EXPORT MultiTouch_Sound( CBaseEntity *pOther );
-	///
-
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-
-	/// trigger_sound
-	static	TYPEDESCRIPTION m_SaveData[];
-	float m_flRoomtype;
-	///
-};
-
-LINK_ENTITY_TO_CLASS( trigger_sound, CTriggerSound );
-TYPEDESCRIPTION	CTriggerSound::m_SaveData[] = 
-{
-	DEFINE_FIELD( CTriggerSound, m_flRoomtype, FIELD_FLOAT ),
-};
-IMPLEMENT_SAVERESTORE( CTriggerSound, CBaseTrigger );
-
-
-void CTriggerSound :: Spawn( void )
-{
-	m_flWait = 1.0;
-
-	InitTrigger();
-
-	SetTouch (&CTriggerSound::MultiTouch_Sound);
-	}
-
-void CTriggerSound :: KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "roomtype"))
-	{
-		m_flRoomtype = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else
-		CBaseTrigger::KeyValue( pkvd );
-}
 
 /*QUAKED trigger_once (.5 .5 .5) ? notouch
 Variable sized trigger. Triggers once, then removes itself.  You must set the key "target" to the name of another object in the level that has a matching
@@ -1180,29 +1135,17 @@ void CBaseTrigger :: MultiTouch( CBaseEntity *pOther )
 		}
 #endif
 		
-		ActivateMultiTrigger( pOther, -1 );
+		ActivateMultiTrigger( pOther );
 	}
 }
 
-void CTriggerSound :: MultiTouch_Sound( CBaseEntity *pOther )
-{
-	entvars_t	*pevToucher;
-
-	pevToucher = pOther->pev;
-
-	// Only touch clients
-	if (pevToucher->flags & FL_CLIENT )
-	{
-	ActivateMultiTrigger( pOther, m_flRoomtype );
-	}
-}
 
 //
 // the trigger was just touched/killed/used
 // self.enemy should be set to the activator so it can be held through a delay
 // so wait for the delay time before firing
-// RoomType используется для установки звукового эффекта вместо вызова цели (-1 - игнорировать)
-void CBaseTrigger :: ActivateMultiTrigger( CBaseEntity *pActivator, int RoomType )
+//
+void CBaseTrigger :: ActivateMultiTrigger( CBaseEntity *pActivator )
 {
 	if (pev->nextthink > gpGlobals->time)
 		return;         // still waiting for reset time
@@ -1218,52 +1161,32 @@ void CBaseTrigger :: ActivateMultiTrigger( CBaseEntity *pActivator, int RoomType
 	}
 
 	if (!FStringNull(pev->noise))
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), 1, ATTN_MEDIUM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), 1, ATTN_NORM);
 
 // don't trigger again until reset
 // pev->takedamage = DAMAGE_NO;
 
 	m_hActivator = pActivator;
-	/// trigger_sound
-	if (RoomType >= 0)
-		{
-		edict_t *pentPlayer = ENT( pActivator->pev );
-		CBasePlayer *pPlayer = NULL;
-	
-		if (!FNullEnt(pentPlayer))
-			{
-			pPlayer = GetClassPtr( (CBasePlayer *)VARS(pentPlayer));
-			pPlayer->m_flSndRoomtype = RoomType;
-
-			MESSAGE_BEGIN( MSG_ONE, SVC_ROOMTYPE, NULL, pentPlayer );
-				WRITE_SHORT( (short)RoomType );
-			MESSAGE_END();
-			}
-		}
-	///
-	else
-		{
-		SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
-		}
+	SUB_UseTargets( m_hActivator, USE_TOGGLE, 0 );
 
 	if ( pev->message && pActivator->IsPlayer() )
 	{
 		UTIL_ShowMessage( STRING(pev->message), pActivator );
-		CLIENT_PRINTF( ENT( pActivator->pev ), print_center, STRING(pev->message) );
+//		CLIENT_PRINTF( ENT( pActivator->pev ), print_center, STRING(pev->message) );
 	}
 
 	if (m_flWait > 0)
 	{
-		SetThink (&CBaseTrigger::MultiWaitOver);
+		SetThink( MultiWaitOver );
 		pev->nextthink = gpGlobals->time + m_flWait;
 	}
 	else
 	{
 		// we can't just remove (self) here, because this is a touch function
 		// called while C code is looping through area links...
-		SetTouch (NULL);
+		SetTouch( NULL );
 		pev->nextthink = gpGlobals->time + 0.1;
-		SetThink (&CBaseEntity::SUB_Remove);
+		SetThink(  SUB_Remove );
 	}
 }
 
@@ -1318,7 +1241,7 @@ void CBaseTrigger::CounterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, US
 	if (fTellActivator)
 		ALERT(at_console, "Sequence completed!");
 	
-	ActivateMultiTrigger( m_hActivator , -1);
+	ActivateMultiTrigger( m_hActivator );
 }
 
 
@@ -1343,7 +1266,7 @@ void CTriggerCounter :: Spawn( void )
 
 	if (m_cTriggersLeft == 0)
 		m_cTriggersLeft = 2;
-	SetUse (&CBaseTrigger::CounterUse);
+	SetUse( CounterUse );
 }
 
 // ====================== TRIGGER_CHANGELEVEL ================================
@@ -1488,11 +1411,11 @@ void CChangeLevel :: Spawn( void )
 
 	if (!FStringNull ( pev->targetname ) )
 	{
-		SetUse (&CChangeLevel::UseChangeLevel);
+		SetUse ( UseChangeLevel );
 	}
 	InitTrigger();
 	if ( !(pev->spawnflags & SF_CHANGELEVEL_USEONLY) )
-		SetTouch (&CChangeLevel::TouchChangeLevel);
+		SetTouch( TouchChangeLevel );
 //	ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
 }
 
@@ -1809,7 +1732,7 @@ void NextLevel( void )
 	
 	if (pChange->pev->nextthink < gpGlobals->time)
 	{
-		pChange->SetThink (&CChangeLevel::ExecuteChangeLevel);
+		pChange->SetThink( CChangeLevel::ExecuteChangeLevel );
 		pChange->pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
@@ -1891,13 +1814,13 @@ void CTriggerPush :: Spawn( )
 		pev->speed = 100;
 
 	// this flag was changed and flying barrels on c2a5 stay broken
-	if ( FStrEq( STRING( gpGlobals->mapname ), "c2a5" ) && (pev->spawnflags & 4))
+	if ( FStrEq( STRING( gpGlobals->mapname ), "c2a5" ) && pev->spawnflags & 4)
 		pev->spawnflags |= SF_TRIG_PUSH_ONCE;
 
 	if ( FBitSet (pev->spawnflags, SF_TRIGGER_PUSH_START_OFF) )// if flagged to Start Turned Off, make trigger nonsolid.
 		pev->solid = SOLID_NOT;
 
-	SetUse (&CBaseTrigger::ToggleUse);
+	SetUse( ToggleUse );
 
 	UTIL_SetOrigin( pev, pev->origin );		// Link into the list
 }
@@ -1917,7 +1840,7 @@ void CTriggerPush :: Touch( CBaseEntity *pOther )
 		return;
 	}
 
-	if ( (pevToucher->solid != SOLID_NOT) && (pevToucher->solid != SOLID_BSP ))
+	if ( pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP )
 	{
 		// Instant trigger, just transfer velocity and remove
 		if (FBitSet(pev->spawnflags, SF_TRIG_PUSH_ONCE))
@@ -1992,24 +1915,15 @@ void CBaseTrigger :: TeleportTouch( CBaseEntity *pOther )
 	
 	UTIL_SetOrigin( pevToucher, tmp );
 
-	// Иногда нужно сохранять угол поворота камеры и скорость передвижения
-	if (!FBitSet (pev->spawnflags, SF_TELEPORT_PRESERVE_VIEW))
-		{
-		pevToucher->angles = pentTarget->v.angles;
+	pevToucher->angles = pentTarget->v.angles;
 
-		if ( pOther->IsPlayer() )
-			{
-			pevToucher->v_angle = pentTarget->v.angles;
-			}
+	if ( pOther->IsPlayer() )
+	{
+		pevToucher->v_angle = pentTarget->v.angles;
+	}
 
-		pevToucher->fixangle = TRUE;
-		
-		pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
-		}
-	else
-		{
-		pevToucher->fixangle = FALSE;
-		}
+	pevToucher->fixangle = TRUE;
+	pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
 }
 
 
@@ -2024,7 +1938,7 @@ void CTriggerTeleport :: Spawn( void )
 {
 	InitTrigger();
 
-	SetTouch (&CBaseTrigger::TeleportTouch);
+	SetTouch( TeleportTouch );
 }
 
 
@@ -2049,7 +1963,7 @@ void CTriggerSave::Spawn( void )
 	}
 
 	InitTrigger();
-	SetTouch (&CTriggerSave::SaveTouch);
+	SetTouch( SaveTouch );
 }
 
 void CTriggerSave::SaveTouch( CBaseEntity *pOther )
@@ -2061,7 +1975,7 @@ void CTriggerSave::SaveTouch( CBaseEntity *pOther )
 	if ( !pOther->IsPlayer() )
 		return;
     
-	SetTouch (NULL);
+	SetTouch( NULL );
 	UTIL_Remove( this );
 	SERVER_COMMAND( "autosave\n" );
 }
@@ -2085,7 +1999,7 @@ void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pC
 	if ( pActivator && !pActivator->IsNetClient() )
 		return;
     
-	SetUse (NULL);
+	SetUse( NULL );
 
 	if ( pev->message )
 	{
@@ -2104,10 +2018,10 @@ void CTriggerEndSection::Spawn( void )
 
 	InitTrigger();
 
-	SetUse (&CTriggerEndSection::EndSectionUse);
+	SetUse ( EndSectionUse );
 	// If it is a "use only" trigger, then don't set the touch function.
 	if ( ! (pev->spawnflags & SF_ENDSECTION_USEONLY) )
-		SetTouch (&CTriggerEndSection::EndSectionTouch);
+		SetTouch( EndSectionTouch );
 }
 
 void CTriggerEndSection::EndSectionTouch( CBaseEntity *pOther )
@@ -2116,7 +2030,7 @@ void CTriggerEndSection::EndSectionTouch( CBaseEntity *pOther )
 	if ( !pOther->IsNetClient() )
 		return;
     
-	SetTouch (NULL);
+	SetTouch( NULL );
 
 	if (pev->message)
 	{
@@ -2150,7 +2064,7 @@ LINK_ENTITY_TO_CLASS( trigger_gravity, CTriggerGravity );
 void CTriggerGravity::Spawn( void )
 {
 	InitTrigger();
-	SetTouch (&CTriggerGravity::GravityTouch);
+	SetTouch( GravityTouch );
 }
 
 void CTriggerGravity::GravityTouch( CBaseEntity *pOther )
@@ -2291,10 +2205,10 @@ void CTriggerCamera::Spawn( void )
 	pev->rendermode = kRenderTransTexture;
 
 	m_initialSpeed = pev->speed;
-	/*if ( m_acceleration == 0 )
+	if ( m_acceleration == 0 )
 		m_acceleration = 500;
 	if ( m_deceleration == 0 )
-		m_deceleration = 500;*/		// Будем использовать нулевые значения для отмены ускорения
+		m_deceleration = 500;
 }
 
 
@@ -2407,7 +2321,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	SET_MODEL(ENT(pev), STRING(pActivator->pev->model) );
 
 	// follow the player down
-	SetThink (&CTriggerCamera::FollowTarget);
+	SetThink( FollowTarget );
 	pev->nextthink = gpGlobals->time;
 
 	m_moveDistance = 0;
@@ -2510,174 +2424,11 @@ void CTriggerCamera::Move()
 		}
 	}
 
-	if ((int)m_deceleration * (int)m_acceleration != 0)
-		{
-		if (m_flStopTime > gpGlobals->time)
-			pev->speed = UTIL_Approach (0, pev->speed, m_deceleration * gpGlobals->frametime);
-		else
-			pev->speed = UTIL_Approach (m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime);
-		}
+	if ( m_flStopTime > gpGlobals->time )
+		pev->speed = UTIL_Approach( 0, pev->speed, m_deceleration * gpGlobals->frametime );
+	else
+		pev->speed = UTIL_Approach( m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime );
 
 	float fraction = 2 * gpGlobals->frametime;
 	pev->velocity = ((pev->movedir * pev->speed) * fraction) + (pev->velocity * (1-fraction));
 }
-
-//**********************************************************
-// Trigger random - when fired, will randomly fire one of up to 16 targets
-// FLAG:		THREAD (create clones when triggered)
-// FLAG:		CLONE (this is a clone for a threaded execution)
-
-#define MAX_RANDOM_RATE	10
-
-// Generic implementation
-class CTriggerRandom : public CBaseToggle
-	{
-public:
-	void KeyValue (KeyValueData *pkvd);
-	void Spawn (void);
-	void EXPORT ManagerThink (void);
-	void EXPORT ManagerUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-
-	BOOL HasTarget (string_t targetname);
-	
-	int ObjectCaps (void) 
-		{
-		return CBaseToggle::ObjectCaps() & ~FCAP_ACROSS_TRANSITION;
-		}
-
-	virtual int Save (CSave &save);
-	virtual int Restore (CRestore &restore);
-
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	int		m_cTargets;		// Targets in list
-	float	m_startTime;	// (probably, not needed)
-
-	// List of targets; for more or less probable events
-	// same targets will be added one or more times (up to MAX_RANDOM_RATE)
-	int		m_iTargetName [MAX_MULTI_TARGETS * MAX_RANDOM_RATE];
-
-private:
-	inline BOOL IsClone ( void )
-		{ 
-		return (pev->spawnflags & SF_MULTIMAN_CLONE) ? TRUE : FALSE; 
-		}
-	inline BOOL ShouldClone ( void ) 
-		{ 
-		if (IsClone())
-			return FALSE;
-
-		return (pev->spawnflags & SF_MULTIMAN_THREAD) ? TRUE : FALSE; 
-		}
-
-	CTriggerRandom *Clone (void);
-	};
-
-LINK_ENTITY_TO_CLASS (trigger_random, CTriggerRandom);
-
-TYPEDESCRIPTION	CTriggerRandom::m_SaveData[] = 
-	{
-	DEFINE_FIELD (CTriggerRandom, m_cTargets, FIELD_INTEGER),
-	DEFINE_FIELD (CTriggerRandom, m_startTime, FIELD_TIME),
-	DEFINE_ARRAY (CTriggerRandom, m_iTargetName, FIELD_STRING, MAX_MULTI_TARGETS * MAX_RANDOM_RATE),
-	};
-
-IMPLEMENT_SAVERESTORE (CTriggerRandom, CBaseToggle);
-
-// Creating a list of targets taking into account the probabilities
-void CTriggerRandom :: KeyValue (KeyValueData *pkvd)
-	{
-	if (m_cTargets < MAX_MULTI_TARGETS * MAX_RANDOM_RATE)
-		{
-		char tmp[128];
-
-		// Rendering a proportion value
-		int rate = atoi (pkvd->szValue);
-		if ((rate < 1) || (rate > MAX_RANDOM_RATE))
-			rate = 1;
-		
-		// Adding a target
-		UTIL_StripToken (pkvd->szKeyName, tmp);
-		for (int i = 0; i < rate; i++)
-			{
-			m_iTargetName[m_cTargets] = ALLOC_STRING (tmp);
-			m_cTargets++;
-			}
-		pkvd->fHandled = TRUE;
-		}
-	}
-
-// Initializing an entity
-void CTriggerRandom :: Spawn( void )
-	{
-	pev->solid = SOLID_NOT;
-	SetUse (&CTriggerRandom::ManagerUse);
-	SetThink (&CTriggerRandom::ManagerThink);
-	}
-
-BOOL CTriggerRandom :: HasTarget (string_t targetname)
-	{
-	for (int i = 0; i < m_cTargets; i++)
-		if (FStrEq (STRING(targetname), STRING(m_iTargetName[i])))
-			return TRUE;
-	
-	return FALSE;
-	}
-
-// Shooting target
-void CTriggerRandom :: ManagerThink (void)
-	{
-	float time;
-	time = gpGlobals->time - m_startTime;	// probably, not needed
-
-	// Shooting
-	// Due to different counts of same targets you will have different probabilities for them.
-	// Highest count - highest probability
-	FireTargets (STRING(m_iTargetName[RANDOM_LONG (0, m_cTargets - 1)]), m_hActivator, this, USE_TOGGLE, 0);
-
-	// Stand-by
-	SetThink (NULL);
-	if (IsClone ())
-		{
-		UTIL_Remove (this);
-		return;
-		}
-	SetUse (&CTriggerRandom::ManagerUse);	// Allow to re-use trigger
-	}
-
-// Cloning for multiplayer mode
-CTriggerRandom *CTriggerRandom::Clone (void)
-	{
-	CTriggerRandom *pMulti = GetClassPtr ((CTriggerRandom *)NULL);
-
-	edict_t *pEdict = pMulti->pev->pContainingEntity;
-	memcpy (pMulti->pev, pev, sizeof (*pev));
-	pMulti->pev->pContainingEntity = pEdict;
-
-	pMulti->pev->spawnflags |= SF_MULTIMAN_CLONE;
-	pMulti->m_cTargets = m_cTargets;
-	memcpy (pMulti->m_iTargetName, m_iTargetName, sizeof (m_iTargetName));
-
-	return pMulti;
-	}
-
-// Activating a trigger
-void CTriggerRandom :: ManagerUse (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
-	{
-	// In multiplayer games, clone the MM and execute in the clone (like a thread)
-	// to allow multiple players to trigger the same multimanager
-	if (ShouldClone ())
-		{
-		CTriggerRandom *pClone = Clone ();
-		pClone->ManagerUse (pActivator, pCaller, useType, value);
-		return;
-		}
-
-	m_hActivator = pActivator;
-	m_startTime = gpGlobals->time;
-
-	SetUse (NULL);	// Disable use until target have fired
-
-	SetThink (&CTriggerRandom::ManagerThink);
-	pev->nextthink = gpGlobals->time;
-	}

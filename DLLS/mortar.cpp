@@ -105,7 +105,7 @@ void CFuncMortarField :: Spawn( void )
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_NONE;
 	SetBits( pev->effects, EF_NODRAW );
-	SetUse (&CFuncMortarField::FieldUse);
+	SetUse( FieldUse );
 	Precache();
 }
 
@@ -164,7 +164,7 @@ void CFuncMortarField :: FieldUse( CBaseEntity *pActivator, CBaseEntity *pCaller
 
 	int pitch = RANDOM_LONG(95,124);
 
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/mortar.wav", 1.0, ATTN_EVERYWHERE, 0, pitch);	
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "weapons/mortar.wav", 1.0, ATTN_NONE, 0, pitch);	
 
 	float t = 2.5;
 	for (int i = 0; i < m_iCount; i++)
@@ -209,7 +209,7 @@ void CMortar::Spawn( )
 
 	pev->dmg		= 200;
 
-	SetThink (&CMortar::MortarExplode);
+	SetThink( MortarExplode );
 	pev->nextthink = 0;
 
 	Precache( );

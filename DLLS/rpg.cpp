@@ -47,12 +47,20 @@ LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
 
 //=========================================================
 //=========================================================
-CLaserSpot *CLaserSpot::CreateSpot( void )
+CLaserSpot *CLaserSpot::CreateSpot( edict_t *pOwner )
 {
 	CLaserSpot *pSpot = GetClassPtr( (CLaserSpot *)NULL );
 	pSpot->Spawn();
 
 	pSpot->pev->classname = MAKE_STRING("laser_spot");
+
+	if( pOwner ) 
+	{
+		// predictable laserspot
+		pSpot->pev->flags |= FL_SKIPLOCALHOST;
+		pOwner->v.flags |= FL_LASERDOT;
+		pSpot->pev->owner = pOwner;
+	}
 
 	return pSpot;
 }
@@ -79,8 +87,11 @@ void CLaserSpot::Spawn( void )
 void CLaserSpot::Suspend( float flSuspendTime )
 {
 	pev->effects |= EF_NODRAW;
+
+	if( !FNullEnt( pev->owner ))
+		pev->owner->v.flags &= ~FL_LASERDOT;
 	
-	SetThink (&CLaserSpot::Revive);
+	SetThink( Revive );
 	pev->nextthink = gpGlobals->time + flSuspendTime;
 }
 
@@ -91,7 +102,18 @@ void CLaserSpot::Revive( void )
 {
 	pev->effects &= ~EF_NODRAW;
 
-	SetThink (NULL);
+	if( !FNullEnt( pev->owner ))
+		pev->owner->v.flags |= FL_LASERDOT;
+
+	SetThink( NULL );
+}
+
+void CLaserSpot :: Killed( entvars_t *pevAttacker, int iGib )
+{
+	// tell the owner about laserspot
+	if( !FNullEnt( pev->owner ))
+		pev->owner->v.flags &= ~FL_LASERDOT;
+	CBaseEntity :: Killed( pevAttacker, iGib );
 }
 
 void CLaserSpot::Precache( void )
@@ -110,7 +132,7 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	UTIL_SetOrigin( pRocket->pev, vecOrigin );
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn();
-	pRocket->SetTouch (&CRpgRocket::RocketTouch);
+	pRocket->SetTouch( CRpgRocket::RocketTouch );
 	pRocket->m_pLauncher = pLauncher;// remember what RPG fired me. 
 	pRocket->m_pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
 	pRocket->pev->owner = pOwner->edict();
@@ -133,8 +155,8 @@ void CRpgRocket :: Spawn( void )
 
 	pev->classname = MAKE_STRING("rpg_rocket");
 
-	SetThink (&CRpgRocket::IgniteThink);
-	SetTouch (&CGrenade::ExplodeTouch);
+	SetThink( IgniteThink );
+	SetTouch( ExplodeTouch );
 
 	pev->angles.x -= 30;
 	UTIL_MakeVectors( pev->angles );
@@ -200,7 +222,7 @@ void CRpgRocket :: IgniteThink( void  )
 	m_flIgniteTime = gpGlobals->time;
 
 	// set to follow laser spot
-	SetThink (&CRpgRocket::FollowThink);
+	SetThink( FollowThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
@@ -557,7 +579,7 @@ void CRpg::UpdateSpot( void )
 	{
 		if (!m_pSpot)
 		{
-			m_pSpot = CLaserSpot::CreateSpot();
+			m_pSpot = CLaserSpot::CreateSpot( m_pPlayer->edict());
 		}
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
@@ -607,7 +629,7 @@ class CRpgAmmo : public CBasePlayerAmmo
 
 		if (pOther->GiveAmmo( iGive, "rockets", ROCKET_MAX_CARRY ) != -1)
 		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_MEDIUM);
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;
 		}
 		return FALSE;
