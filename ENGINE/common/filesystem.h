@@ -58,69 +58,71 @@ file_n:	byte[dwadinfo_t[num]->disksize]
 infotable	dlumpinfo_t[dwadinfo_t->numlumps]
 ========================================================================
 */
-#define IDWAD2HEADER	(('2'<<24)+('D'<<16)+('A'<<8)+'W')	// little-endian "WAD2" quake1 gfx.wad
-#define IDWAD3HEADER	(('3'<<24)+('D'<<16)+('A'<<8)+'W')	// little-endian "WAD3" half-life wads
-
 #define WAD3_NAMELEN	16
-#define MAX_FILES_IN_WAD	8192
-
-// hidden virtual lump types
-#define TYP_ANY		-1	// any type can be accepted
-#define TYP_NONE		0	// unknown lump type
+#define HINT_NAMELEN	5	// e.g. _mask, _norm
+#define MAX_FILES_IN_WAD	65535	// real limit as above <2Gb size not a lumpcount
 
 #include "const.h"
 
 typedef struct
 {
-	int		ident;		// should be IWAD, WAD2 or WAD3
+	int		ident;		// should be WAD3
 	int		numlumps;		// num files
-	int		infotableofs;
+	int		infotableofs;	// LUT offset
 } dwadinfo_t;
 
 typedef struct
 {
-	int		filepos;
-	int		disksize;
+	int		filepos;		// file offset in WAD
+	int		disksize;		// compressed or uncompressed
 	int		size;		// uncompressed
-	char		type;
-	char		compression;	// probably not used
+	char		type;		// TYP_*
+	char		attribs;		// file attribs
+	char		pad0;
 	char		pad1;
-	char		pad2;
-	char		name[16];		// must be null terminated
+	char		name[WAD3_NAMELEN];	// must be null terminated
 } dlumpinfo_t;
 
 #include "custom.h"
 
-#define IDCUSTOMHEADER	(('K'<<24)+('A'<<16)+('P'<<8)+'H') // little-endian "HPAK"
-#define IDCUSTOM_VERSION	1
+/*
+========================================================================
+.HPK archive format	(Hash PAK - HPK)
 
-typedef struct hpak_s
-{
-	char		*name;
-	resource_t	HpakResource;
-	size_t		size;
-	void		*data;
-	struct hpak_s	*next;
-} hpak_t;
+List of compressed files, that can be identify only by TYPE_*
+
+<format>
+header:	dwadinfo_t[dwadinfo_t]
+file_1:	byte[dwadinfo_t[num]->disksize]
+file_2:	byte[dwadinfo_t[num]->disksize]
+file_3:	byte[dwadinfo_t[num]->disksize]
+...
+file_n:	byte[dwadinfo_t[num]->disksize]
+infotable	dlumpinfo_t[dwadinfo_t->numlumps]
+========================================================================
+*/
+
+#define IDHPAKHEADER	(('K'<<24)+('A'<<16)+('P'<<8)+'H') // little-endian "HPAK"
+#define IDHPAK_VERSION	1
 
 typedef struct
 {
 	int		ident;		// should be equal HPAK
 	int		version;
-	int		seek;		// infotableofs ?
+	int		infotableofs;
 } hpak_header_t;
 
 typedef struct
 {
-	resource_t	DirectoryResource;
-	int		seek;		// filepos ?
-	int		size;
-} hpak_dir_t;
+	resource_t	resource;
+	int		filepos;
+	int		disksize;
+} hpak_lump_t;
 
 typedef struct
 {
 	int		count;
-	hpak_dir_t	*dirs;		// variable sized.
-} hpak_container_t;
+	hpak_lump_t	*entries;		// variable sized.
+} hpak_info_t;
 
 #endif//FILESYSTEM_H

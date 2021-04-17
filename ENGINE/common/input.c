@@ -18,17 +18,20 @@ GNU General Public License for more details.
 #include "client.h"
 #include "vgui_draw.h"
 
+#define PRINTSCREEN_ID	1
 #define WND_HEADSIZE	wnd_caption		// some offset
 #define WND_BORDER		3			// sentinel border in pixels
 
 HICON	in_mousecursor;
-qboolean	in_mouseactive;		// false when not focus app
+qboolean	in_mouseactive;				// false when not focus app
 qboolean	in_restore_spi;
 qboolean	in_mouseinitialized;
 int	in_mouse_oldbuttonstate;
 qboolean	in_mouse_suspended;
+qboolean	in_mouse_savedpos;
 int	in_mouse_buttons;
 RECT	window_rect, real_rect;
+POINT	in_lastvalidpos;
 uint	in_mouse_wheel;
 int	wnd_caption;
 
@@ -40,7 +43,7 @@ static byte scan_to_key[128] =
 	K_SHIFT,'\\','z','x','c','v','b','n','m',',','.','/',K_SHIFT,
 	'*',K_ALT,' ',K_CAPSLOCK,
 	K_F1,K_F2,K_F3,K_F4,K_F5,K_F6,K_F7,K_F8,K_F9,K_F10,
-	K_PAUSE,0,K_HOME,K_UPARROW,K_PGUP,K_KP_MINUS,K_LEFTARROW,K_KP_5,
+	K_PAUSE,K_SCROLLOCK,K_HOME,K_UPARROW,K_PGUP,K_KP_MINUS,K_LEFTARROW,K_KP_5,
 	K_RIGHTARROW,K_KP_PLUS,K_END,K_DOWNARROW,K_PGDN,K_INS,K_DEL,
 	0,0,0,K_F11,K_F12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -104,8 +107,8 @@ static int Host_MapKey( int key )
 		case 0x0D: return K_KP_ENTER;
 		case 0x2F: return K_KP_SLASH;
 		case 0xAF: return K_KP_PLUS;
+		default: return result;
 		}
-		return result;
 	}
 }
 
@@ -162,6 +165,38 @@ void IN_SetCursor( HICON hCursor )
 
 /*
 ===========
+IN_MouseSavePos
+
+Save mouse pos before state change e.g. changelevel
+===========
+*/
+void IN_MouseSavePos( void )
+{
+	if( !in_mouseactive )
+		return;
+
+	GetCursorPos( &in_lastvalidpos );
+	in_mouse_savedpos = true;
+}
+
+/*
+===========
+IN_MouseRestorePos
+
+Restore right position for background
+===========
+*/
+void IN_MouseRestorePos( void )
+{
+	if( !in_mouse_savedpos )
+		return;
+
+	SetCursorPos( in_lastvalidpos.x, in_lastvalidpos.y );
+	in_mouse_savedpos = false;
+}
+
+/*
+===========
 IN_ToggleClientMouse
 
 Called when key_dest is changed
@@ -177,16 +212,45 @@ void IN_ToggleClientMouse( int newstate, int oldstate )
 	}
 	else if( newstate == key_game )
 	{
+		// reset mouse pos, so cancel effect in game
+		SetCursorPos( host.window_center_x, host.window_center_y );	
 		clgame.dllFuncs.IN_ActivateMouse();
 	}
 
-	if( newstate == key_menu && !cl.background )
+	if( newstate == key_menu && ( !CL_IsBackgroundMap() || CL_IsBackgroundDemo( )))
 	{
 		in_mouseactive = false;
 		ClipCursor( NULL );
 		ReleaseCapture();
 		while( ShowCursor( true ) < 0 );
 	}
+}
+
+/*
+===========
+IN_RecalcCenter
+
+Recalc the center of screen
+===========
+*/
+void IN_RecalcCenter( qboolean setpos )
+{
+	int	width, height;
+
+	if( host.status != HOST_FRAME )
+		return;
+
+	width = GetSystemMetrics( SM_CXSCREEN );
+	height = GetSystemMetrics( SM_CYSCREEN );
+	GetWindowRect( host.hWnd, &window_rect );
+	if( window_rect.left < 0 ) window_rect.left = 0;
+	if( window_rect.top < 0 ) window_rect.top = 0;
+	if( window_rect.right >= width ) window_rect.right = width - 1;
+	if( window_rect.bottom >= height - 1 ) window_rect.bottom = height - 1;
+
+	host.window_center_x = (window_rect.right + window_rect.left) / 2;
+	host.window_center_y = (window_rect.top + window_rect.bottom) / 2;
+	if( setpos ) SetCursorPos( host.window_center_x, host.window_center_y );
 }
 
 /*
@@ -198,7 +262,6 @@ Called when the window gains focus or changes in some way
 */
 void IN_ActivateMouse( qboolean force )
 {
-	int		width, height;
 	static int	oldstate;
 			
 	if( !in_mouseinitialized )
@@ -244,18 +307,7 @@ void IN_ActivateMouse( qboolean force )
 		clgame.dllFuncs.IN_ActivateMouse();
 	}
 
-	width = GetSystemMetrics( SM_CXSCREEN );
-	height = GetSystemMetrics( SM_CYSCREEN );
-
-	GetWindowRect( host.hWnd, &window_rect );
-	if( window_rect.left < 0 ) window_rect.left = 0;
-	if( window_rect.top < 0 ) window_rect.top = 0;
-	if( window_rect.right >= width ) window_rect.right = width - 1;
-	if( window_rect.bottom >= height - 1 ) window_rect.bottom = height - 1;
-
-	host.window_center_x = (window_rect.right + window_rect.left) / 2;
-	host.window_center_y = (window_rect.top + window_rect.bottom) / 2;
-	SetCursorPos( host.window_center_x, host.window_center_y );
+	IN_RecalcCenter( true );
 
 	SetCapture( host.hWnd );
 	ClipCursor( &window_rect );
@@ -287,7 +339,7 @@ void IN_DeactivateMouse( void )
 
 /*
 ================
-IN_Mouse
+IN_MouseMove
 ================
 */
 void IN_MouseMove( void )
@@ -328,11 +380,12 @@ void IN_MouseEvent( int mstate )
 	// perform button actions
 	for( i = 0; i < in_mouse_buttons; i++ )
 	{
-		if(( mstate & ( 1<<i )) && !( in_mouse_oldbuttonstate & ( 1<<i )))
+		if( FBitSet( mstate, BIT( i )) && !FBitSet( in_mouse_oldbuttonstate, BIT( i )))
 		{
 			Key_Event( K_MOUSE1 + i, true );
 		}
-		if(!( mstate & ( 1<<i )) && ( in_mouse_oldbuttonstate & ( 1<<i )))
+
+		if( !FBitSet( mstate, BIT( i )) && FBitSet( in_mouse_oldbuttonstate, BIT( i )))
 		{
 			Key_Event( K_MOUSE1 + i, false );
 		}
@@ -373,46 +426,20 @@ void Host_InputFrame( void )
 {
 	qboolean	shutdownMouse = false;
 
-	rand (); // keep the random time dependent
-
 	Sys_SendKeyEvents ();
-
-	Cbuf_Execute ();
-
-	if( host.state == HOST_RESTART )
-		host.state = HOST_FRAME; // restart is finished
-
-	if( host.type == HOST_DEDICATED )
-	{
-		// let the dedicated server some sleep
-		Sys_Sleep( 1 );
-	}
-	else
-	{
-		if( host.state == HOST_NOFOCUS )
-		{
-			if( Host_ServerState() && CL_IsInGame( ))
-				Sys_Sleep( 1 ); // listenserver
-			else Sys_Sleep( 20 ); // sleep 20 ms otherwise
-		}
-		else if( host.state == HOST_SLEEP )
-		{
-			// completely sleep in minimized state
-			Sys_Sleep( 20 );
-		}
-	}
 
 	if( !in_mouseinitialized )
 		return;
 
-	if( host.state != HOST_FRAME )
+	if( host.status != HOST_FRAME )
 	{
 		IN_DeactivateMouse();
 		return;
 	}
 
-	if( cl.refdef.paused && cls.key_dest == key_game )
-		shutdownMouse = true; // release mouse during pause or console typeing
+	// release mouse during pause or console typeing
+	if( cl.paused && cls.key_dest == key_game )
+		shutdownMouse = true;
 	
 	if( shutdownMouse && !Cvar_VariableInteger( "fullscreen" ))
 	{
@@ -431,7 +458,7 @@ IN_WndProc
 main window procedure
 ====================
 */
-long IN_WndProc( void *hWnd, uint uMsg, uint wParam, long lParam )
+LONG IN_WndProc( HWND hWnd, UINT uMsg, UINT wParam, LONG lParam )
 {
 	int	i, temp = 0;
 	qboolean	fActivate;
@@ -451,7 +478,8 @@ long IN_WndProc( void *hWnd, uint uMsg, uint wParam, long lParam )
 		IN_ActivateCursor();
 		break;
 	case WM_MOUSEWHEEL:
-		if( !in_mouseactive ) break;
+		if( !in_mouseactive )
+			break;
 		if(( short )HIWORD( wParam ) > 0 )
 		{
 			Key_Event( K_MWHEELUP, true );
@@ -466,36 +494,33 @@ long IN_WndProc( void *hWnd, uint uMsg, uint wParam, long lParam )
 	case WM_CREATE:
 		host.hWnd = hWnd;
 		GetWindowRect( host.hWnd, &real_rect );
+		RegisterHotKey( host.hWnd, PRINTSCREEN_ID, 0, VK_SNAPSHOT );
 		break;
 	case WM_CLOSE:
 		Sys_Quit();
 		break;
 	case WM_ACTIVATE:
-		if( host.state == HOST_SHUTDOWN )
+		if( host.status == HOST_SHUTDOWN )
 			break; // no need to activate
-		if( host.state != HOST_RESTART )
-		{
-			if( HIWORD( wParam ))
-				host.state = HOST_SLEEP;
-			else if( LOWORD( wParam ) == WA_INACTIVE )
-				host.state = HOST_NOFOCUS;
-			else host.state = HOST_FRAME;
-			fActivate = (host.state == HOST_FRAME) ? true : false;
-		}
-		else fActivate = true; // video sucessfully restarted
-
+		if( HIWORD( wParam ))
+			host.status = HOST_SLEEP;
+		else if( LOWORD( wParam ) == WA_INACTIVE )
+			host.status = HOST_NOFOCUS;
+		else host.status = HOST_FRAME;
+		fActivate = (host.status == HOST_FRAME) ? true : false;
 		wnd_caption = GetSystemMetrics( SM_CYCAPTION ) + WND_BORDER;
 
 		S_Activate( fActivate, host.hWnd );
 		IN_ActivateMouse( fActivate );
 		Key_ClearStates();
+		IN_RecalcCenter( false );
 
-		if( host.state == HOST_FRAME )
+		if( host.status == HOST_FRAME )
 		{
 			SetForegroundWindow( hWnd );
 			ShowWindow( hWnd, SW_RESTORE );
 		}
-		else if( Cvar_VariableInteger( "fullscreen" ) && host.state != HOST_RESTART )
+		else if( Cvar_VariableInteger( "fullscreen" ))
 		{
 			ShowWindow( hWnd, SW_MINIMIZE );
 		}
@@ -514,8 +539,8 @@ long IN_WndProc( void *hWnd, uint uMsg, uint wParam, long lParam )
 			style = GetWindowLong( hWnd, GWL_STYLE );
 			AdjustWindowRect( &rect, style, FALSE );
 
-			Cvar_SetFloat( "r_xpos", xPos + rect.left );
-			Cvar_SetFloat( "r_ypos", yPos + rect.top );
+			Cvar_SetValue( "_window_xpos", xPos + rect.left );
+			Cvar_SetValue( "_window_ypos", yPos + rect.top );
 			GetWindowRect( host.hWnd, &real_rect );
 		}
 		break;
@@ -536,20 +561,22 @@ long IN_WndProc( void *hWnd, uint uMsg, uint wParam, long lParam )
 		IN_MouseEvent( temp );
 		break;
 	case WM_SYSCOMMAND:
-		// never turn screensaver while Xash is active
-		if( wParam == SC_SCREENSAVE && host.state != HOST_SLEEP )
+		// never turn screensaver or display off while Xash is active
+		if(( wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER ) && host.status != HOST_SLEEP )
 			return 0;
 		break;
 	case WM_SYSKEYDOWN:
 		if( wParam == VK_RETURN )
 		{
 			// alt+enter fullscreen switch
-			Cvar_SetFloat( "fullscreen", !Cvar_VariableValue( "fullscreen" ));
+			Cvar_SetValue( "fullscreen", !Cvar_VariableValue( "fullscreen" ));
 			return 0;
 		}
 		// intentional fallthrough
 	case WM_KEYDOWN:
 		Key_Event( Host_MapKey( lParam ), true );
+		if( Host_MapKey( lParam ) == K_ALT )
+			return 0;	// prevent WC_SYSMENU call
 		break;
 	case WM_SYSKEYUP:
 	case WM_KEYUP:
@@ -558,6 +585,19 @@ long IN_WndProc( void *hWnd, uint uMsg, uint wParam, long lParam )
 	case WM_CHAR:
 		CL_CharEvent( wParam );
 		break;
+	case WM_HOTKEY:
+		switch( LOWORD( wParam ))
+		{
+		case PRINTSCREEN_ID:
+			// anti FiEctro system: prevent to write snapshot without Xash version
+			Q_strncpy( cls.shotname, "clipboard.bmp", sizeof( cls.shotname ));
+			cls.scrshot_action = scrshot_snapshot; // build new frame for screenshot
+			host.write_to_clipboard = true;
+			cls.envshot_vieworg = NULL;
+			break;
+		}
+		break;
 	}
+
 	return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }

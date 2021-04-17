@@ -42,7 +42,6 @@ static int IsComment( const char *pText )
 	return 1;
 }
 
-
 // the string "pText" is assumed to have all whitespace from both ends cut out
 static int IsStartOfText( const char *pText )
 {
@@ -53,7 +52,6 @@ static int IsStartOfText( const char *pText )
 	}
 	return 0;
 }
-
 
 // the string "pText" is assumed to have all whitespace from both ends cut out
 static int IsEndOfText( const char *pText )
@@ -85,7 +83,6 @@ static const char *SkipSpace( const char *pText )
 	return NULL;
 }
 
-
 static const char *SkipText( const char *pText )
 {
 	if( pText )
@@ -97,7 +94,6 @@ static const char *SkipText( const char *pText )
 	}
 	return NULL;
 }
-
 
 static int ParseFloats( const char *pText, float *pFloat, int count )
 {
@@ -124,33 +120,6 @@ static int ParseFloats( const char *pText, float *pFloat, int count )
 		return 1;
 	return 0;
 }
-
-// trims all whitespace from the front and end of a string
-void TrimSpace( const char *source, char *dest )
-{
-	int start, end, length;
-
-	start = 0;
-	end = Q_strlen( source );
-
-	while( source[start] && IsWhiteSpace( source[start] ))
-		start++;
-
-	end--;
-	while( end > 0 && IsWhiteSpace( source[end] ))
-		end--;
-
-	end++;
-
-	length = end - start;
-	if( length > 0 )
-		Q_memcpy( dest, source + start, length );
-	else length = 0;
-
-	// terminate the dest string
-	dest[length] = 0;
-}
-
 
 static int IsToken( const char *pText, const char *pTokenName )
 {
@@ -232,7 +201,7 @@ static int ParseDirective( const char *pText )
 		}
 		else
 		{
-			MsgDev( D_ERROR, "unknown token: %s\n", pText );
+			Con_DPrintf( S_ERROR "unknown token: %s\n", pText );
 		}
 		return 1;
 	}
@@ -258,7 +227,7 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 
 	while( COM_MemFgets( pMemFile, fileSize, &filePos, buf, 512 ) != NULL )
 	{
-		TrimSpace( buf, trim );
+		COM_TrimSpace( buf, trim );
 
 		switch( mode )
 		{
@@ -280,7 +249,7 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 
 			if( IsEndOfText( trim ))
 			{
-				MsgDev( D_ERROR, "TextMessage: unexpected '}' found, line %d\n", lineNumber );
+				Con_Reportf( "TextMessage: unexpected '}' found, line %d\n", lineNumber );
 				return;
 			}
 			Q_strcpy( currentName, trim );
@@ -291,9 +260,9 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 				int length = Q_strlen( currentName );
 
 				// save name on name heap
-				if( lastNamePos + length > 16384 )
+				if( lastNamePos + length > 32768 )
 				{
-					MsgDev( D_ERROR, "TextMessage: error while parsing!\n" );
+					Con_Reportf( "TextMessage: error while parsing!\n" );
 					return;
 				}
 
@@ -316,7 +285,7 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 			}
 			if( IsStartOfText( trim ))
 			{
-				MsgDev( D_ERROR, "TextMessage: unexpected '{' found, line %d\n", lineNumber );
+				Con_Reportf( "TextMessage: unexpected '{' found, line %d\n", lineNumber );
 				return;
 			}
 			break;
@@ -327,12 +296,12 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 
 		if( messageCount >= MAX_MESSAGES )
 		{
-			MsgDev( D_WARN, "Too many messages in titles.txt, max is %d\n", MAX_MESSAGES );
+			Con_Printf( S_WARN "Too many messages in titles.txt, max is %d\n", MAX_MESSAGES );
 			break;
 		}
 	}
 
-	MsgDev( D_NOTE, "TextMessage: parsed %d text messages\n", messageCount );
+	Con_Reportf( "TextMessage: parsed %d text messages\n", messageCount );
 	nameHeapSize = lastNamePos;
 	textHeapSize = 0;
 
@@ -348,14 +317,14 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 	}
 
 	// must malloc because we need to be able to clear it after initialization
-	clgame.titles = (client_textmessage_t *)Mem_Alloc( cls.mempool, textHeapSize + nameHeapSize + messageSize );
+	clgame.titles = (client_textmessage_t *)Mem_Calloc( cls.mempool, textHeapSize + nameHeapSize + messageSize );
 	
 	// copy table over
-	Q_memcpy( clgame.titles, textMessages, messageSize );
+	memcpy( clgame.titles, textMessages, messageSize );
 	
 	// copy Name heap
 	pNameHeap = ((char *)clgame.titles) + messageSize;
-	Q_memcpy( pNameHeap, nameHeap, nameHeapSize );
+	memcpy( pNameHeap, nameHeap, nameHeapSize );
 	nameOffset = pNameHeap - clgame.titles[0].pName;
 
 	// copy text & fixup pointers
@@ -369,9 +338,8 @@ void CL_TextMessageParse( byte *pMemFile, int fileSize )
 		pCurrentText += Q_strlen( pCurrentText ) + 1;
 	}
 
-#if _DEBUG
 	if(( pCurrentText - (char *)clgame.titles ) != ( textHeapSize + nameHeapSize + messageSize ))
-		MsgDev( D_ERROR, "TextMessage: overflow text message buffer!\n" );
-#endif
+		Con_DPrintf( S_ERROR "TextMessage: overflow text message buffer!\n" );
+
 	clgame.numTitles = messageCount;
 }

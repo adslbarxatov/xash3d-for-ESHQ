@@ -41,7 +41,6 @@ typedef struct
 	HWND		hwndButtonSubmit;
 	HBRUSH		hbrEditBackground;
 	HFONT		hfBufferFont;
-	HFONT		hfButtonFont;
 	HWND		hwndInputLine;
 	string		consoleText;
 	string		returnedText;
@@ -89,6 +88,14 @@ void Con_SetInputText( const char *inputText )
 	SendMessage( s_wcd.hwndInputLine, EM_SETSEL, Q_strlen( inputText ), -1 );
 }
 
+static void Con_Clear_f( void )
+{
+	if( host.type != HOST_DEDICATED ) return;
+	SendMessage( s_wcd.hwndBuffer, EM_SETSEL, 0, -1 );
+	SendMessage( s_wcd.hwndBuffer, EM_REPLACESEL, FALSE, (LPARAM)"" );
+	UpdateWindow( s_wcd.hwndBuffer );
+}
+
 static int Con_KeyEvent( int key, qboolean down )
 {
 	char	inputBuffer[1024];
@@ -127,7 +134,7 @@ static long _stdcall Con_WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 			SetFocus( s_wcd.hwndInputLine );
 		break;
 	case WM_CLOSE:
-		if( host.state == HOST_ERR_FATAL )
+		if( host.status == HOST_ERR_FATAL )
 		{
 			// send windows message
 			PostQuitMessage( 0 );
@@ -190,13 +197,13 @@ long _stdcall Con_InputLineProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	case WM_CHAR:
 		if( Con_KeyEvent( wParam, true ))
 			return 0;
-		if( wParam == 13 && host.state != HOST_ERR_FATAL )
+		if( wParam == 13 && host.status != HOST_ERR_FATAL )
 		{
 			GetWindowText( s_wcd.hwndInputLine, inputBuffer, sizeof( inputBuffer ));
 			Q_strncat( s_wcd.consoleText, inputBuffer, sizeof( s_wcd.consoleText ) - Q_strlen( s_wcd.consoleText ) - 5 );
 			Q_strcat( s_wcd.consoleText, "\n" );
 			SetWindowText( s_wcd.hwndInputLine, "" );
-			Msg( ">%s\n", inputBuffer );
+			Con_Printf( ">%s\n", inputBuffer );
 
 			// copy line to history buffer
 			Q_strncpy( s_wcd.historyLines[s_wcd.nextHistoryLine % COMMAND_HISTORY], inputBuffer, MAX_STRING );
@@ -273,29 +280,17 @@ void Con_CreateConsole( void )
 	wc.lpszClassName = SYSCONSOLE;
 	wc.lpszMenuName  = 0;
 
-	if( Sys_CheckParm( "-log" ) && host.developer != 0 )
+	if( Sys_CheckParm( "-log" ))
 		s_wcd.log_active = true;
 
-	if( host.type == HOST_CREDITS )
-	{
-		CONSTYLE &= ~WS_VSCROLL;
-		rect.left = 0;
-		rect.right = 536;
-		rect.top = 0;
-		rect.bottom = 280;
-		Q_strncpy( FontName, "Arial", sizeof( FontName ));
-		Q_strncpy( s_wcd.title, "About", sizeof( s_wcd.title ));
-		s_wcd.log_active = false;
-		fontsize = 16;
-	}
-	else if( host.type != HOST_DEDICATED )
+	if( host.type == HOST_NORMAL )
 	{
 		rect.left = 0;
 		rect.right = 536;
 		rect.top = 0;
 		rect.bottom = 364;
 		Q_strncpy( FontName, "Fixedsys", sizeof( FontName ));
-		Q_strncpy( s_wcd.title, va( "Xash3D %g", XASH_VERSION ), sizeof( s_wcd.title ));
+		Q_strncpy( s_wcd.title, va( "Xash3D %s", XASH_VERSION ), sizeof( s_wcd.title ));
 		Q_strncpy( s_wcd.log_path, "engine.log", sizeof( s_wcd.log_path ));
 		fontsize = 8;
 	}
@@ -308,6 +303,7 @@ void Con_CreateConsole( void )
 		Q_strncpy( FontName, "System", sizeof( FontName ));
 		Q_strncpy( s_wcd.title, "Xash Dedicated Server", sizeof( s_wcd.title ));
 		Q_strncpy( s_wcd.log_path, "dedicated.log", sizeof( s_wcd.log_path ));
+		s_wcd.log_active = true; // always make log
 		fontsize = 14;
 	}
 
@@ -316,7 +312,7 @@ void Con_CreateConsole( void )
 	if( !RegisterClass( &wc ))
 	{
 		// print into log
-		MsgDev( D_ERROR, "Can't register window class '%s'\n", SYSCONSOLE );
+		Con_DPrintf( S_ERROR "Can't register window class '%s'\n", SYSCONSOLE );
 		return;
 	} 
 
@@ -333,7 +329,7 @@ void Con_CreateConsole( void )
 	s_wcd.hWnd = CreateWindowEx( WS_EX_DLGMODALFRAME, SYSCONSOLE, s_wcd.title, DEDSTYLE, ( swidth - 600 ) / 2, ( sheight - 450 ) / 2 , rect.right - rect.left + 1, rect.bottom - rect.top + 1, NULL, NULL, host.hInst, NULL );
 	if( s_wcd.hWnd == NULL )
 	{
-		MsgDev( D_ERROR, "Can't create window '%s'\n", s_wcd.title );
+		Con_DPrintf( S_ERROR "Can't create window '%s'\n", s_wcd.title );
 		return;
 	}
 
@@ -382,6 +378,19 @@ void Con_CreateConsole( void )
 
 /*
 ================
+Con_InitConsoleCommands
+
+register console commands (dedicated only)
+================
+*/
+void Con_InitConsoleCommands( void )
+{
+	if( host.type != HOST_DEDICATED ) return;
+	Cmd_AddCommand( "clear", Con_Clear_f, "clear console history" );
+}
+
+/*
+================
 Con_DestroyConsole
 
 destroy win32 console
@@ -390,7 +399,7 @@ destroy win32 console
 void Con_DestroyConsole( void )
 {
 	// last text message into console or log 
-	MsgDev( D_NOTE, "Sys_FreeLibrary: Unloading xash.dll\n" );
+	Con_Reportf( "Sys_FreeLibrary: Unloading xash.dll\n" );
 
 	Sys_CloseLog();
 
@@ -398,7 +407,22 @@ void Con_DestroyConsole( void )
 	{
 		DeleteObject( s_wcd.hbrEditBackground );
                     DeleteObject( s_wcd.hfBufferFont );
-		
+
+		if( host.type == HOST_DEDICATED )
+		{
+			ShowWindow( s_wcd.hwndButtonSubmit, SW_HIDE );
+			DestroyWindow( s_wcd.hwndButtonSubmit );
+			s_wcd.hwndButtonSubmit = 0;
+
+			ShowWindow( s_wcd.hwndInputLine, SW_HIDE );
+			DestroyWindow( s_wcd.hwndInputLine );
+			s_wcd.hwndInputLine = 0;
+		}
+
+		ShowWindow( s_wcd.hwndBuffer, SW_HIDE );
+		DestroyWindow( s_wcd.hwndBuffer );
+		s_wcd.hwndBuffer = 0;
+
 		ShowWindow( s_wcd.hWnd, SW_HIDE );
 		DestroyWindow( s_wcd.hWnd );
 		s_wcd.hWnd = 0;
@@ -454,7 +478,7 @@ void Sys_InitLog( void )
 {
 	const char	*mode;
 
-	if( host.change_game )
+	if( host.change_game && host.type != HOST_DEDICATED )
 		mode = "a";
 	else mode = "w";
 
@@ -462,11 +486,16 @@ void Sys_InitLog( void )
 	if( s_wcd.log_active )
 	{
 		s_wcd.logfile = fopen( s_wcd.log_path, mode );
-		if( !s_wcd.logfile ) MsgDev( D_ERROR, "Sys_InitLog: can't create log file %s\n", s_wcd.log_path );
 
-		fprintf( s_wcd.logfile, "=======================================================================\n" );
-		fprintf( s_wcd.logfile, "\t%s started at %s\n", s_wcd.title, Q_timestamp( TIME_FULL ));
-		fprintf( s_wcd.logfile, "=======================================================================\n");
+		if( !s_wcd.logfile )
+		{
+			MSGBOX( va( "can't create log file %s\n", s_wcd.log_path ));
+			return;
+		}
+
+		fprintf( s_wcd.logfile, "=================================================================================\n" );
+		fprintf( s_wcd.logfile, "\t%s (build %i) started at %s\n", s_wcd.title, Q_buildnum(), Q_timestamp( TIME_FULL ));
+		fprintf( s_wcd.logfile, "=================================================================================\n" );
 	}
 }
 
@@ -475,7 +504,7 @@ void Sys_CloseLog( void )
 	char	event_name[64];
 
 	// continue logged
-	switch( host.state )
+	switch( host.status )
 	{
 	case HOST_CRASHED:
 		Q_strncpy( event_name, "crashed", sizeof( event_name ));
@@ -492,9 +521,10 @@ void Sys_CloseLog( void )
 	if( s_wcd.logfile )
 	{
 		fprintf( s_wcd.logfile, "\n");
-		fprintf( s_wcd.logfile, "=======================================================================");
-		fprintf( s_wcd.logfile, "\n\t%s %s at %s\n", s_wcd.title, event_name, Q_timestamp( TIME_FULL ));
-		fprintf( s_wcd.logfile, "=======================================================================\n");
+		fprintf( s_wcd.logfile, "=================================================================================");
+		if( host.change_game ) fprintf( s_wcd.logfile, "\n\t%s (build %i) %s\n", s_wcd.title, Q_buildnum(), event_name );
+		else fprintf( s_wcd.logfile, "\n\t%s (build %i) %s at %s\n", s_wcd.title, Q_buildnum(), event_name, Q_timestamp( TIME_FULL ));
+		fprintf( s_wcd.logfile, "=================================================================================");
 		if( host.change_game ) fprintf( s_wcd.logfile, "\n" ); // just for tabulate
 
 		fclose( s_wcd.logfile );

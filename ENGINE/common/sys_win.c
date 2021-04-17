@@ -48,8 +48,15 @@ create buffer, that contain clipboard
 */
 char *Sys_GetClipboardData( void )
 {
-	char	*data = NULL;
-	char	*cliptext;
+	static char	*data = NULL;
+	char		*cliptext;
+
+	if( data )
+	{
+		// release previous cbd
+		Z_Free( data );
+		data = NULL;
+	}
 
 	if( OpenClipboard( NULL ) != 0 )
 	{
@@ -66,7 +73,36 @@ char *Sys_GetClipboardData( void )
 		}
 		CloseClipboard();
 	}
+
 	return data;
+}
+
+/*
+================
+Sys_SetClipboardData
+
+write screenshot into clipboard
+================
+*/
+void Sys_SetClipboardData( const byte *buffer, size_t size )
+{
+	EmptyClipboard();
+
+	if( OpenClipboard( NULL ) != 0 )
+	{
+		HGLOBAL hResult = GlobalAlloc( GMEM_MOVEABLE, size ); 
+		byte *bufferCopy = (byte *)GlobalLock( hResult ); 
+
+		memcpy( bufferCopy, buffer, size ); 
+		GlobalUnlock( hResult ); 
+
+		if( SetClipboardData( CF_DIB, hResult ) == NULL )
+		{
+			Con_Printf( S_ERROR "unable to write screenshot\n" );
+			GlobalFree( hResult );
+		}
+		CloseClipboard();
+	}
 }
 
 /*
@@ -78,7 +114,7 @@ freeze application for some time
 */
 void Sys_Sleep( int msec )
 {
-	msec = bound( 1, msec, 1000 );
+	msec = bound( 0, msec, 1000 );
 	Sleep( msec );
 }
 
@@ -91,13 +127,47 @@ returns username for current profile
 */
 char *Sys_GetCurrentUser( void )
 {
-	static string	s_userName;
-	dword		size = sizeof( s_userName );
+	static string	sys_user_name;
+	dword		size = sizeof( sys_user_name );
 
-	if( !GetUserName( s_userName, &size ) || !s_userName[0] )
-		Q_strcpy( s_userName, "player" );
+	if( !sys_user_name[0] )
+	{
+		HINSTANCE	advapi32_dll = LoadLibrary( "advapi32.dll" );
+		BOOL (_stdcall *pGetUserNameA)( LPSTR lpBuffer, LPDWORD nSize ) = NULL;
+		if( advapi32_dll ) pGetUserNameA = (void *)GetProcAddress( advapi32_dll, "GetUserNameA" );
+		if( pGetUserNameA) pGetUserNameA( sys_user_name, &size );
+		if( advapi32_dll ) FreeLibrary( advapi32_dll ); // no need anymore...
+		if( !sys_user_name[0] ) Q_strcpy( sys_user_name, "player" );
+	}
 
-	return s_userName;
+	return sys_user_name;
+}
+
+/*
+=================
+Sys_GetMachineKey
+=================
+*/
+const char *Sys_GetMachineKey( int *nLength )
+{
+	HINSTANCE		rpcrt4_dll = LoadLibrary( "rpcrt4.dll" );
+	RPC_STATUS	(_stdcall *pUuidCreateSequential)( UUID __RPC_FAR *Uuid ) = NULL;
+	static byte	key[32];
+	byte		mac[8];
+	UUID		uuid;
+	int		i;
+
+	if( rpcrt4_dll ) pUuidCreateSequential = (void *)GetProcAddress( rpcrt4_dll, "UuidCreateSequential" );
+	if( pUuidCreateSequential ) pUuidCreateSequential( &uuid );	// ask OS to create UUID
+	if( rpcrt4_dll ) FreeLibrary( rpcrt4_dll ); // no need anymore...
+
+	for( i = 2; i < 8; i++ ) // bytes 2 through 7 inclusive are MAC address
+		mac[i-2] = uuid.Data4[i];
+
+	Q_snprintf( key, sizeof( key ), "%02X-%02X-%02X-%02X-%02X-%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
+
+	if( nLength ) *nLength = Q_strlen( key );
+	return key;
 }
 
 /*
@@ -107,7 +177,11 @@ Sys_ShellExecute
 */
 void Sys_ShellExecute( const char *path, const char *parms, qboolean exit )
 {
-	ShellExecute( NULL, "open", path, parms, NULL, SW_SHOW );
+	HINSTANCE	shell32_dll = LoadLibrary( "shell32.dll" );
+	HINSTANCE (_stdcall *pShellExecuteA)( HWND hwnd, LPCSTR lpOp, LPCSTR lpFile, LPCSTR lpParam, LPCSTR lpDir, INT nShowCmd ) = NULL;
+	if( shell32_dll ) pShellExecuteA = (void *)GetProcAddress( shell32_dll, "ShellExecuteA" );
+	if( pShellExecuteA ) pShellExecuteA( NULL, "open", path, parms, NULL, SW_SHOW );
+	if( shell32_dll ) FreeLibrary( shell32_dll ); // no need anymore...
 
 	if( exit ) Sys_Quit();
 }
@@ -118,7 +192,7 @@ Sys_ParseCommandLine
 
 ==================
 */
-void Sys_ParseCommandLine( LPSTR lpCmdLine )
+void Sys_ParseCommandLine( LPSTR lpCmdLine, qboolean uncensored )
 {
 	const char	*blank = "censored";
 	static char	commandline[MAX_SYSPATH];
@@ -161,7 +235,8 @@ void Sys_ParseCommandLine( LPSTR lpCmdLine )
 		}
 	}
 
-	if( !host.change_game ) return;
+	if( uncensored || !host.change_game )
+		return;
 
 	for( i = 0; i < host.argc; i++ )
 	{
@@ -186,16 +261,42 @@ Sys_MergeCommandLine
 */
 void Sys_MergeCommandLine( LPSTR lpCmdLine )
 {
-	const char	*blank = "censored";
-	int		i;
+	static char	commandline[MAX_SYSPATH];
 
 	if( !host.change_game ) return;
 
-	for( i = 0; i < host.argc; i++ )
+	Q_strncpy( commandline, lpCmdLine, Q_strlen( lpCmdLine ) + 1 );
+	lpCmdLine = commandline; // to prevent modify original commandline
+
+	while( *lpCmdLine && ( host.argc < MAX_NUM_ARGVS ))
 	{
-		// second call
-		if( host.type == HOST_DEDICATED && !Q_strnicmp( "+menu_", host.argv[i], 6 ))
-			host.argv[i] = (char *)blank;
+		while( *lpCmdLine && *lpCmdLine <= ' ' )
+			lpCmdLine++;
+		if( !*lpCmdLine ) break;
+
+		if( *lpCmdLine == '\"' )
+		{
+			// quoted string
+			lpCmdLine++;
+			host.argv[host.argc] = lpCmdLine;
+			host.argc++;
+			while( *lpCmdLine && ( *lpCmdLine != '\"' ))
+				lpCmdLine++;
+		}
+		else
+		{
+			// unquoted word
+			host.argv[host.argc] = lpCmdLine;
+			host.argc++;
+			while( *lpCmdLine && *lpCmdLine > ' ')
+				lpCmdLine++;
+		}
+
+		if( *lpCmdLine )
+		{
+			*lpCmdLine = 0;
+			lpCmdLine++;
+		}
 	}
 }
 
@@ -213,7 +314,9 @@ int Sys_CheckParm( const char *parm )
 
 	for( i = 1; i < host.argc; i++ )
 	{
-		if( !host.argv[i] ) continue;
+		if( !host.argv[i] )
+			continue;
+
 		if( !Q_stricmp( parm, host.argv[i] ))
 			return i;
 	}
@@ -231,9 +334,9 @@ qboolean _Sys_GetParmFromCmdLine( char *parm, char *out, size_t size )
 {
 	int	argc = Sys_CheckParm( parm );
 
-	if( !argc ) return false;
-	if( !out ) return false;	
-	if( !host.argv[argc + 1] ) return false;
+	if( !argc || !out || !host.argv[argc + 1] )
+		return false;
+
 	Q_strncpy( out, host.argv[argc+1], size );
 
 	return true;
@@ -268,7 +371,7 @@ qboolean Sys_LoadLibrary( dll_info_t *dll )
 	if( !dll->name || !*dll->name )
 		return false; // nothing to load
 
-	MsgDev( D_NOTE, "Sys_LoadLibrary: Loading %s", dll->name );
+	Con_Reportf( "Sys_LoadLibrary: Loading %s", dll->name );
 
 	if( dll->fcts ) 
 	{
@@ -295,14 +398,14 @@ qboolean Sys_LoadLibrary( dll_info_t *dll )
 			goto error;
 		}
 	}
-          MsgDev( D_NOTE, " - ok\n" );
+          Con_Reportf( " - ok\n" );
 
 	return true;
 error:
-	MsgDev( D_NOTE, " - failed\n" );
+	Con_Reportf( " - failed\n" );
 	Sys_FreeLibrary( dll ); // trying to free 
 	if( dll->crash ) Sys_Error( errorstring );
-	else MsgDev( D_ERROR, errorstring );			
+	else Con_DPrintf( "%s%s", S_ERROR, errorstring );			
 
 	return false;
 }
@@ -321,13 +424,14 @@ qboolean Sys_FreeLibrary( dll_info_t *dll )
 	if( !dll || !dll->link )
 		return false;
 
-	if( host.state == HOST_CRASHED )
+	if( host.status == HOST_CRASHED )
 	{
 		// we need to hold down all modules, while MSVC can find error
-		MsgDev( D_NOTE, "Sys_FreeLibrary: hold %s for debugging\n", dll->name );
+		Con_Reportf( "Sys_FreeLibrary: hold %s for debugging\n", dll->name );
 		return false;
 	}
-	else MsgDev( D_NOTE, "Sys_FreeLibrary: Unloading %s\n", dll->name );
+	else Con_Reportf( "Sys_FreeLibrary: Unloading %s\n", dll->name );
+
 	FreeLibrary( dll->link );
 	dll->link = NULL;
 
@@ -364,25 +468,28 @@ void Sys_WaitForQuit( void )
 long _stdcall Sys_Crash( PEXCEPTION_POINTERS pInfo )
 {
 	// save config
-	if( host.state != HOST_CRASHED )
+	if( host.status != HOST_CRASHED )
 	{
 		// check to avoid recursive call
 		error_on_exit = true;
+		host.crashed = true;
 
-		if( host.type == HOST_NORMAL ) CL_Crashed(); // tell client about crash
-		Msg( "Sys_Crash: call %p at address %p\n", pInfo->ExceptionRecord->ExceptionAddress, pInfo->ExceptionRecord->ExceptionCode );
-		host.state = HOST_CRASHED;
+		if( host.type == HOST_NORMAL )
+			CL_Crashed(); // tell client about crash
+		else host.status = HOST_CRASHED;
 
-		if( host.developer <= 0 )
+		Con_Printf( "unhandled exception: %p at address %p\n", pInfo->ExceptionRecord->ExceptionAddress, pInfo->ExceptionRecord->ExceptionCode );
+
+		if( !host_developer.value )
 		{
-			// no reason to call debugger in release build - just exit
+			// for non-development mode
 			Sys_Quit();
 			return EXCEPTION_CONTINUE_EXECUTION;
 		}
 
 		// all other states keep unchanged to let debugger find bug
 		Con_DestroyConsole();
-          }
+	}
 
 	if( host.oldFilter )
 		return host.oldFilter( pInfo );
@@ -402,14 +509,14 @@ void Sys_Error( const char *error, ... )
 	va_list	argptr;
 	char	text[MAX_SYSPATH];
          
-	if( host.state == HOST_ERR_FATAL )
+	if( host.status == HOST_ERR_FATAL )
 		return; // don't multiple executes
 
 	// make sure what console received last message
 	if( host.change_game ) Sys_Sleep( 200 );
 
 	error_on_exit = true;
-	host.state = HOST_ERR_FATAL;	
+	host.status = HOST_ERR_FATAL;	
 	va_start( argptr, error );
 	Q_vsprintf( text, error, argptr );
 	va_end( argptr );
@@ -419,10 +526,9 @@ void Sys_Error( const char *error, ... )
 	if( host.type == HOST_NORMAL )
 	{
 		if( host.hWnd ) ShowWindow( host.hWnd, SW_HIDE );
-		VID_RestoreGamma();
 	}
 
-	if( host.developer > 0 )
+	if( host_developer.value )
 	{
 		Con_ShowConsole( true );
 		Con_DisableInput();	// disable input line for dedicated server
@@ -434,48 +540,7 @@ void Sys_Error( const char *error, ... )
 		Con_ShowConsole( false );
 		MSGBOX( text );
 	}
-	Sys_Quit();
-}
 
-/*
-================
-Sys_Break
-
-same as Error
-================
-*/
-void Sys_Break( const char *error, ... )
-{
-	va_list		argptr;
-	char		text[MAX_SYSPATH];
-
-	if( host.state == HOST_ERR_FATAL )
-		return; // don't multiple executes
-
-	error_on_exit = true;	
-	host.state = HOST_ERR_FATAL;         
-	va_start( argptr, error );
-	Q_vsprintf( text, error, argptr );
-	va_end( argptr );
-
-	if( host.type == HOST_NORMAL )
-	{
-		if( host.hWnd ) ShowWindow( host.hWnd, SW_HIDE );
-		VID_RestoreGamma();
-	}
-
-	if( host.type != HOST_NORMAL || host.developer > 0 )
-	{
-		Con_ShowConsole( true );
-		Con_DisableInput();	// disable input line for dedicated server
-		Sys_Print( text );
-		Sys_WaitForQuit();
-	}
-	else
-	{
-		Con_ShowConsole( false );
-		MSGBOX( text );
-	}
 	Sys_Quit();
 }
 
@@ -500,8 +565,8 @@ print into window console
 void Sys_Print( const char *pMsg )
 {
 	const char	*msg;
-	char		buffer[32768];
-	char		logbuf[32768];
+	static char	buffer[MAX_PRINT_MSG];
+	static char	logbuf[MAX_PRINT_MSG];
 	char		*b = buffer;
 	char		*c = logbuf;	
 	int		i = 0;
@@ -546,67 +611,16 @@ void Sys_Print( const char *pMsg )
 		}
 		else
 		{
+			if( msg[i] == '\1' || msg[i] == '\2' )
+				i++;
 			*b = *c = msg[i];
 			b++, c++;
 		}
 		i++;
 	}
 
-	*b = *c = 0; // cutoff garbage
+	*b = *c = 0; // terminator
 
 	Sys_PrintLog( logbuf );
 	Con_WinPrint( buffer );
-}
-
-/*
-================
-Msg
-
-formatted message
-================
-*/
-void Msg( const char *pMsg, ... )
-{
-	va_list	argptr;
-	char	text[8192];
-	
-	va_start( argptr, pMsg );
-	Q_vsnprintf( text, sizeof( text ), pMsg, argptr );
-	va_end( argptr );
-
-	Sys_Print( text );
-}
-
-/*
-================
-MsgDev
-
-formatted developer message
-================
-*/
-void MsgDev( int level, const char *pMsg, ... )
-{
-	va_list	argptr;
-	char	text[8192];
-
-	if( host.developer < level ) return;
-
-	va_start( argptr, pMsg );
-	Q_vsnprintf( text, sizeof( text ), pMsg, argptr );
-	va_end( argptr );
-
-	switch( level )
-	{
-	case D_WARN:
-		Sys_Print( va( "^3Warning:^7 %s", text ));
-		break;
-	case D_ERROR:
-		Sys_Print( va( "^1Error:^7 %s", text ));
-		break;
-	case D_INFO:
-	case D_NOTE:
-	case D_AICONSOLE:
-		Sys_Print( text );
-		break;
-	}
 }

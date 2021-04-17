@@ -21,10 +21,10 @@ GNU General Public License for more details.
 #define DT_FLOAT		BIT( 2 )	// A floating point field
 #define DT_INTEGER		BIT( 3 )	// 4 byte integer
 #define DT_ANGLE		BIT( 4 )	// A floating point angle ( will get masked correctly )
-#define DT_TIMEWINDOW	BIT( 5 )	// A floating point timestamp, relative to sv.time
-				// and re-encoded on the client relative to the client's clock
-#define DT_STRING		BIT( 6 )	// A null terminated string, sent as 8 byte chars
-#define DT_SIGNED		BIT( 7 )	// sign modificator
+#define DT_TIMEWINDOW_8	BIT( 5 )	// A floating point timestamp, relative to sv.time
+#define DT_TIMEWINDOW_BIG	BIT( 6 )	// and re-encoded on the client relative to the client's clock
+#define DT_STRING		BIT( 7 )	// A null terminated string, sent as 8 byte chars
+#define DT_SIGNED		BIT( 8 )	// sign modificator
 
 #define offsetof( s, m )	(size_t)&(((s *)0)->m)
 #define NUM_FIELDS( x )	((sizeof( x ) / sizeof( x[0] )) - 1)
@@ -40,8 +40,16 @@ GNU General Public License for more details.
 enum
 {
 	CUSTOM_NONE = 0,
-	CUSTOM_SERVER_ENCODE,	// keyword "gamedll"
-	CUSTOM_CLIENT_ENCODE,	// keyword "client"
+	CUSTOM_SERVER_ENCODE,	// known as "gamedll"
+	CUSTOM_CLIENT_ENCODE,	// known as "client"
+};
+
+// don't change order!
+enum
+{
+	DELTA_ENTITY = 0,
+	DELTA_PLAYER,
+	DELTA_STATIC,
 };
 
 // struct info (filled by engine)
@@ -52,6 +60,7 @@ typedef struct
 	const int		size;
 } delta_field_t;
 
+// one field
 typedef struct delta_s
 {
 	const char	*name;
@@ -113,7 +122,8 @@ void MSG_WriteClientData( sizebuf_t *msg, struct clientdata_s *from, struct clie
 void MSG_ReadClientData( sizebuf_t *msg, struct clientdata_s *from, struct clientdata_s *to, float timebase );
 void MSG_WriteWeaponData( sizebuf_t *msg, struct weapon_data_s *from, struct weapon_data_s *to, float timebase, int index );
 void MSG_ReadWeaponData( sizebuf_t *msg, struct weapon_data_s *from, struct weapon_data_s *to, float timebase );
-void MSG_WriteDeltaEntity( struct entity_state_s *from, struct entity_state_s *to, sizebuf_t *msg, qboolean force, qboolean player, float timebase );
-qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, struct entity_state_s *from, struct entity_state_s *to, int num, qboolean player, float timebase );
+void MSG_WriteDeltaEntity( struct entity_state_s *from, struct entity_state_s *to, sizebuf_t *msg, qboolean force, int type, float tbase, int ofs );
+qboolean MSG_ReadDeltaEntity( sizebuf_t *msg, struct entity_state_s *from, struct entity_state_s *to, int num, int type, float timebase );
+int Delta_TestBaseline( struct entity_state_s *from, struct entity_state_s *to, qboolean player, float timebase );
 
 #endif//NET_ENCODE_H

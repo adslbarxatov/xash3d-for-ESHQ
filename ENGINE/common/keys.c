@@ -20,6 +20,7 @@ GNU General Public License for more details.
 typedef struct key_s
 {
 	qboolean		down;
+	qboolean		gamedown;
 	int		repeats;	// if > 1, it is autorepeating
 	const char	*binding;
 } key_t;
@@ -37,8 +38,8 @@ keyname_t keynames[] =
 {
 {"TAB",		K_TAB,		""		},
 {"ENTER",		K_ENTER,		""		},
-{"ESCAPE",	K_ESCAPE, 	"cancelselect"	}, // hardcoded
-{"SPACE",		K_SPACE,		"+moveup"		},
+{"ESCAPE",	K_ESCAPE, 	"escape"		}, // hardcoded
+{"SPACE",		K_SPACE,		"+jump"		},
 {"BACKSPACE",	K_BACKSPACE,	""		},
 {"UPARROW",	K_UPARROW,	"+forward"	},
 {"DOWNARROW",	K_DOWNARROW,	"+back"		},
@@ -46,20 +47,21 @@ keyname_t keynames[] =
 {"RIGHTARROW",	K_RIGHTARROW,	"+right"		},
 {"ALT",		K_ALT,		"+strafe"		},
 {"CTRL",		K_CTRL,		"+attack"		},
-{"SHIFT",		K_SHIFT,		"+speed"		}, // replace with +attack2 ?
+{"SHIFT",		K_SHIFT,		"+speed"		},
 {"CAPSLOCK",	K_CAPSLOCK,	""		},
+{"SCROLLOCK",	K_SCROLLOCK,	""		},
 {"F1",		K_F1,		"cmd help"	},
 {"F2",		K_F2,		"menu_savegame"	},
 {"F3",		K_F3,		"menu_loadgame"	},
-{"F4",		K_F4,		"menu_keys"	},
-{"F5",		K_F5,		"menu_startserver"	},
+{"F4",		K_F4,		"menu_controls"	},
+{"F5",		K_F5,		"menu_creategame"	},
 {"F6",		K_F6,		"savequick"	},
 {"F7",		K_F7,		"loadquick"	},
 {"F8",		K_F8,		"stop"		},
 {"F9",		K_F9,		""		},
-{"F10",		K_F10,		"menu_quit"	},
+{"F10",		K_F10,		"menu_main"	},
 {"F11",		K_F11,		""		},
-{"F12",		K_F12,		"screenshot"	},
+{"F12",		K_F12,		"snapshot"	},
 {"INS",		K_INS,		""		},
 {"DEL",		K_DEL,		"+lookdown"	},
 {"PGDN",		K_PGDN,		"+lookup"		},
@@ -106,7 +108,7 @@ Key_IsDown
 */
 qboolean Key_IsDown( int keynum )
 {
-	if ( keynum == -1 )
+	if( keynum == -1 )
 		return false;
 	return keys[keynum].down;
 }
@@ -179,6 +181,7 @@ int Key_StringToKeynum( const char *str )
 		if( !Q_stricmp( str, kn->name ))
 			return kn->keynum;
 	}
+
 	return -1;
 }
 
@@ -200,7 +203,7 @@ const char *Key_KeynumToString( int keynum )
 	if ( keynum < 0 || keynum > 255 ) return "<OUT OF RANGE>";
 
 	// check for printable ascii (don't use quote)
-	if( keynum > 32 && keynum < 127 && keynum != '"' && keynum != ';' )
+	if( keynum > 32 && keynum < 127 && keynum != '"' && keynum != ';' && keynum != K_SCROLLOCK )
 	{
 		tinystr[0] = keynum;
 		tinystr[1] = 0;
@@ -264,17 +267,29 @@ const char *Key_GetBinding( int keynum )
 Key_GetKey
 ===================
 */
-int Key_GetKey( const char *binding )
+int Key_GetKey( const char *pBinding )
 {
 	int	i;
 
-	if( !binding ) return -1;
+	if( !pBinding ) return -1;
 
 	for( i = 0; i < 256; i++ )
 	{
-		if( keys[i].binding && !Q_stricmp( binding, keys[i].binding ))
-			return i;
+		if( !keys[i].binding )
+			continue;
+
+		if( *keys[i].binding == '+' )
+                    {
+			if( !Q_strnicmp( keys[i].binding + 1, pBinding, Q_strlen( pBinding )))
+				return i;
+		}
+		else
+		{
+			if( !Q_strnicmp( keys[i].binding, pBinding, Q_strlen( pBinding )))
+				return i;
+		}
 	}
+
 	return -1;
 }
 
@@ -289,16 +304,18 @@ void Key_Unbind_f( void )
 
 	if( Cmd_Argc() != 2 )
 	{
-		Msg( "Usage: unbind <key> : remove commands from a key\n" );
+		Con_Printf( S_USAGE "unbind <key> : remove commands from a key\n" );
 		return;
 	}
 	
 	b = Key_StringToKeynum( Cmd_Argv( 1 ));
+
 	if( b == -1 )
 	{
-		Msg( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ));
+		Con_Printf( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ));
 		return;
 	}
+
 	Key_SetBinding( b, "" );
 }
 
@@ -325,8 +342,8 @@ Key_Reset_f
 */
 void Key_Reset_f( void )
 {
-	int	i;
 	keyname_t	*kn;
+	int	i;
 
 	// clear all keys first	
 	for( i = 0; i < 256; i++ )
@@ -347,39 +364,42 @@ Key_Bind_f
 */
 void Key_Bind_f( void )
 {
-	int	i, c, b;
 	char	cmd[1024];
+	int	i, c, b;
 	
 	c = Cmd_Argc();
 
 	if( c < 2 )
 	{
-		Msg( "Usage: bind <key> [command] : attach a command to a key\n" );
+		Con_Printf( S_USAGE "bind <key> [command] : attach a command to a key\n" );
 		return;
 	}
 
 	b = Key_StringToKeynum( Cmd_Argv( 1 ));
+
 	if( b == -1 )
 	{
-		Msg( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ));
+		Con_Printf( "\"%s\" isn't a valid key\n", Cmd_Argv( 1 ));
 		return;
 	}
 
 	if( c == 2 )
 	{
 		if( keys[b].binding )
-			Msg( "\"%s\" = \"%s\"\n", Cmd_Argv( 1 ), keys[b].binding );
-		else Msg( "\"%s\" is not bound\n", Cmd_Argv( 1 ));
+			Con_Printf( "\"%s\" = \"%s\"\n", Cmd_Argv( 1 ), keys[b].binding );
+		else Con_Printf( "\"%s\" is not bound\n", Cmd_Argv( 1 ));
 		return;
 	}
 	
 	// copy the rest of the command line
 	cmd[0] = 0; // start out with a null string
+
 	for( i = 2; i < c; i++ )
 	{
 		Q_strcat( cmd, Cmd_Argv( i ));
 		if( i != ( c - 1 )) Q_strcat( cmd, " " );
 	}
+
 	Key_SetBinding( b, cmd );
 }
 
@@ -395,15 +415,17 @@ void Key_WriteBindings( file_t *f )
 	int	i;
 
 	if( !f ) return;
+
 	FS_Printf( f, "unbindall\n" );
 
 	for( i = 0; i < 256; i++ )
 	{
-		if( keys[i].binding && keys[i].binding[0] )
-			FS_Printf( f, "bind %s \"%s\"\n", Key_KeynumToString(i), keys[i].binding );
+		if( !COM_CheckString( keys[i].binding ))
+			continue;
+
+		FS_Printf( f, "bind %s \"%s\"\n", Key_KeynumToString( i ), keys[i].binding );
 	}
 }
-
 
 /*
 ============
@@ -417,8 +439,10 @@ void Key_Bindlist_f( void )
 
 	for( i = 0; i < 256; i++ )
 	{
-		if( keys[i].binding && keys[i].binding[0] )
-			Msg( "%s \"%s\"\n", Key_KeynumToString( i ), keys[i].binding );
+		if( !COM_CheckString( keys[i].binding ))
+			continue;
+
+		Con_Printf( "%s \"%s\"\n", Key_KeynumToString( i ), keys[i].binding );
 	}
 }
 
@@ -446,24 +470,23 @@ void Key_Init( void )
 	Cmd_AddCommand( "bindlist", Key_Bindlist_f, "display current key bindings" );
 	Cmd_AddCommand( "makehelp", Key_EnumCmds_f, "write help.txt that contains all console cvars and cmds" ); 
 
-	// setup hardcode binding. "unbindall" from config.cfg will be reset it
+	// setup default binding. "unbindall" from config.cfg will be reset it
 	for( kn = keynames; kn->name; kn++ ) Key_SetBinding( kn->keynum, kn->binding ); 
 }
 
 /*
 ===================
-Key_AddKeyUpCommands
+Key_AddKeyCommands
 ===================
 */
-void Key_AddKeyUpCommands( int key, const char *kb )
+void Key_AddKeyCommands( int key, const char *kb, qboolean down )
 {
-	int	i;
-	char	button[1024], *buttonPtr;
+	char	button[1024];
+	char	*buttonPtr;
 	char	cmd[1024];
-	qboolean	keyevent;
+	int	i;
 
 	if( !kb ) return;
-	keyevent = false;
 	buttonPtr = button;
 
 	for( i = 0; ; i++ )
@@ -474,18 +497,15 @@ void Key_AddKeyUpCommands( int key, const char *kb )
 			if( button[0] == '+' )
 			{
 				// button commands add keynum as a parm
-				Q_sprintf( cmd, "-%s %i\n", button+1, key );
+				if( down ) Q_sprintf( cmd, "%s %i\n", button, key );
+				else Q_sprintf( cmd, "-%s %i\n", button + 1, key );
 				Cbuf_AddText( cmd );
-				keyevent = true;
 			}
-			else
+			else if( down )
 			{
-				if( keyevent )
-				{
-					// down-only command
-					Cbuf_AddText( button );
-					Cbuf_AddText( "\n" );
-				}
+				// down-only command
+				Cbuf_AddText( button );
+				Cbuf_AddText( "\n" );
 			}
 
 			buttonPtr = button;
@@ -500,6 +520,29 @@ void Key_AddKeyUpCommands( int key, const char *kb )
 
 /*
 ===================
+Key_IsAllowedAutoRepeat
+
+List of keys that allows auto-repeat
+===================
+*/
+qboolean Key_IsAllowedAutoRepeat( int key )
+{
+	switch( key )
+	{
+	case K_BACKSPACE:
+	case K_PAUSE:
+	case K_PGUP:
+	case K_KP_PGUP:
+	case K_PGDN:
+	case K_KP_PGDN:
+		return true;
+	default:
+		return false;
+	} 
+}
+
+/*
+===================
 Key_Event
 
 Called by the system for both key up and key down events
@@ -508,32 +551,71 @@ Called by the system for both key up and key down events
 void Key_Event( int key, qboolean down )
 {
 	const char	*kb;
-	char		cmd[1024];
 
-	// update auto-repeat status and BUTTON_ANY status
+	// key was pressed before engine was run
+	if( !keys[key].down && !down )
+		return;
+
+	kb = keys[key].binding;
 	keys[key].down = down;
 
+#ifdef HACKS_RELATED_HLMODS
+	if(( cls.key_dest == key_game ) && ( cls.state == ca_cinematic ) && ( key != K_ESCAPE || !down ))
+	{
+		// only escape passed when cinematic is playing
+		// HLFX 0.6 bug: crash in vgui3.dll while press +attack during movie playback
+		return;
+	}
+#endif
+	// distribute the key down event to the apropriate handler
+	if( cls.key_dest == key_game && ( down || keys[key].gamedown ))
+	{
+		if( !clgame.dllFuncs.pfnKey_Event( down, key, keys[key].binding ))
+		{
+			if( keys[key].repeats == 0 && down )
+			{
+				keys[key].gamedown = true;
+			}
+
+			if( !down )
+			{
+				keys[key].gamedown = false;
+				keys[key].repeats = 0;
+			}
+			return; // handled in client.dll
+		}
+	}
+
+	// update auto-repeat status
 	if( down )
 	{
 		keys[key].repeats++;
 
-		if( key != K_BACKSPACE && key != K_PAUSE && keys[key].repeats > 1 )
+		if( !Key_IsAllowedAutoRepeat( key ) && keys[key].repeats > 1 )
 		{
-			if( cls.key_dest == key_game )
-			{
-				// ignore most autorepeats
-				return;
-			}
+			// ignore most autorepeats
+			return;
 		}
+
+		if( key >= 200 && !kb )
+			Con_Printf( "%s is unbound.\n", Key_KeynumToString( key ));
 	}
 	else
 	{
+		keys[key].gamedown = false;
 		keys[key].repeats = 0;
 	}
 
 	// console key is hardcoded, so the user can never unbind it
 	if( key == '`' || key == '~' )
 	{
+		// we are in typing mode. So don't switch to console
+		if( (word)GetKeyboardLayout( 0 ) == (word)0x419 )
+		{
+			if( cls.key_dest != key_game )
+				return;
+                    }
+
 		if( !down ) return;
     		Con_ToggleConsole_f();
 		return;
@@ -545,8 +627,17 @@ void Key_Event( int key, qboolean down )
 		switch( cls.key_dest )
 		{
 		case key_game:
-			if( host.mouse_visible && cls.state != ca_cinematic )
+			if( CVAR_TO_BOOL( gl_showtextures ))
+			{
+				// close texture atlas
+				Cvar_SetValue( "r_showtextures", 0.0f );
+				return;
+			}
+			else if( host.mouse_visible && cls.state != ca_cinematic )
+			{
+				clgame.dllFuncs.pfnKey_Event( down, key, keys[key].binding );
 				return; // handled in client.dll
+			}
 			break;
 		case key_message:
 			Key_Message( key );
@@ -559,9 +650,7 @@ void Key_Event( int key, qboolean down )
 		case key_menu:
 			UI_KeyEvent( key, true );
 			return;
-		default:
-			MsgDev( D_ERROR, "Key_Event: bad cls.key_dest\n" );
-			return;
+		default:	return;
 		}
 	}
 
@@ -578,69 +667,14 @@ void Key_Event( int key, qboolean down )
 	// an action started before a mode switch.
 	if( !down )
 	{
-		kb = keys[key].binding;
-
-		Key_AddKeyUpCommands( key, kb );
+		Key_AddKeyCommands( key, kb, down );
 		return;
 	}
 
 	// distribute the key down event to the apropriate handler
 	if( cls.key_dest == key_game )
 	{
-		if( cls.state == ca_cinematic && ( key != K_ESCAPE || !down ))
-		{
-			// only escape passed when cinematic is playing
-			// HLFX 0.6 bug: crash in vgui3.dll while press +attack during movie playback
-			return;
-		}
-
-		// send the bound action
-		kb = keys[key].binding;
-		if( !kb )
-		{
-			if( key >= 200 )
-				Msg( "%s is unbound, use controls menu to set.\n", Key_KeynumToString( key ));
-		}
-		else if( !clgame.dllFuncs.pfnKey_Event( down, key, keys[key].binding ))
-		{
-			// handled in client.dll
-		}
-		else if( kb[0] == '+' )
-		{	
-			int	i;
-			char	button[1024], *buttonPtr;
-
-			for( i = 0, buttonPtr = button; ; i++ )
-			{
-				if( kb[i] == ';' || !kb[i] )
-				{
-					*buttonPtr = '\0';
-					if( button[0] == '+' )
-					{
-						Q_sprintf( cmd, "%s %i\n", button, key );
-						Cbuf_AddText( cmd );
-					}
-					else
-					{
-						// down-only command
-						Cbuf_AddText( button );
-						Cbuf_AddText( "\n" );
-					}
-
-					buttonPtr = button;
-					while (( kb[i] <= ' ' || kb[i] == ';' ) && kb[i] != 0 )
-						i++;
-				}
-				*buttonPtr++ = kb[i];
-				if( !kb[i] ) break;
-			}
-		}
-		else
-		{
-			// down-only command
-			Cbuf_AddText( kb );
-			Cbuf_AddText( "\n" );
-		}
+		Key_AddKeyCommands( key, kb, down );
 	}
 	else if( cls.key_dest == key_console )
 	{
@@ -690,6 +724,9 @@ void Key_ClearStates( void )
 {
 	int	i;
 
+	// don't clear keys during changelevel
+	if( cls.changelevel ) return;
+
 	for( i = 0; i < 256; i++ )
 	{
 		if( keys[i].down )
@@ -697,12 +734,11 @@ void Key_ClearStates( void )
 
 		keys[i].down = 0;
 		keys[i].repeats = 0;
+		keys[i].gamedown = 0;
 	}
 
 	if( clgame.hInstance )
-	{
 		clgame.dllFuncs.IN_ClearStates();
-	}
 }
 
 /*
@@ -716,6 +752,12 @@ void CL_CharEvent( int key )
 {
 	// the console key should never be used as a char
 	if( key == '`' || key == '~' ) return;
+
+	if( cls.key_dest == key_console && !Con_Visible( ))
+	{
+		if((char)key == '¸' || (char)key == '¨' )
+			return; // don't pass '¸' when we open the console 
+	}
 
 	// distribute the key down event to the apropriate handler
 	if( cls.key_dest == key_console || cls.key_dest == key_message )

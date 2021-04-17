@@ -18,17 +18,41 @@ GNU General Public License for more details.
 #include "mod_local.h"
 #include "pm_local.h"
 #include "pm_movevars.h"
+#include "features.h"
 #include "studio.h"
 #include "world.h"
 
+#define PM_AllowHitBoxTrace( model, hull ) ( model && model->type == mod_studio && ( FBitSet( model->flags, STUDIO_TRACE_HITBOX ) || hull == 2 ))
+
 static mplane_t	pm_boxplanes[6];
-static dclipnode_t	pm_boxclipnodes[6];
+static mclipnode_t	pm_boxclipnodes[6];
 static hull_t	pm_boxhull;
+
+// default hullmins
+static const vec3_t pm_hullmins[MAX_MAP_HULLS] =
+{
+{ -16, -16, -36 },
+{ -16, -16, -18 },
+{   0,   0,   0 },
+{ -32, -32, -32 },
+};
+
+// defualt hullmaxs
+static const vec3_t pm_hullmaxs[MAX_MAP_HULLS] =
+{
+{  16,  16,  36 },
+{  16,  16,  18 },
+{   0,   0,   0 },
+{  32,  32,  32 },
+};
 
 void Pmove_Init( void )
 {
 	PM_InitBoxHull ();
-	PM_InitStudioHull ();
+
+	// init default hull sizes
+	memcpy( host.player_mins, pm_hullmins, sizeof( pm_hullmins ));
+	memcpy( host.player_maxs, pm_hullmaxs, sizeof( pm_hullmaxs ));
 }
 
 /*
@@ -85,6 +109,13 @@ hull_t *PM_HullForBox( const vec3_t mins, const vec3_t maxs )
 	return &pm_boxhull;
 }
 
+void PM_ConvertTrace( trace_t *out, pmtrace_t *in, edict_t *ent )
+{
+	memcpy( out, in, 48 ); // matched
+	out->hitgroup = in->hitgroup;
+	out->ent = ent;
+}
+
 /*
 ==================
 PM_HullPointContents
@@ -107,60 +138,6 @@ int PM_HullPointContents( hull_t *hull, int num, const vec3_t p )
 }
 
 /*
-================
-PM_HullForEntity
-
-Returns a hull that can be used for testing or clipping an object of mins/maxs size.
-Offset is filled in to contain the adjustment that must be added to the
-testing object's origin to get a point to use with the returned hull.
-================
-*/
-hull_t *PM_HullForEntity( physent_t *pe, vec3_t mins, vec3_t maxs, vec3_t offset )
-{
-	hull_t	*hull;
-	vec3_t	hullmins, hullmaxs;
-
-	// decide which clipping hull to use, based on the size
-	if( pe->model && ( pe->solid == SOLID_BSP || pe->skin == CONTENTS_LADDER ) && pe->model->type == mod_brush )
-	{
-		vec3_t	size;
-
-		VectorSubtract( maxs, mins, size );
-
-		if( size[0] <= 8.0f )
-		{
-			hull = &pe->model->hulls[0];
-			VectorCopy( hull->clip_mins, offset ); 
-		}
-		else
-		{
-			if( size[0] <= 36.0f )
-			{
-				if( size[2] <= 36.0f )
-					hull = &pe->model->hulls[3];
-				else hull = &pe->model->hulls[1];
-			}
-			else hull = &pe->model->hulls[2];
-
-			VectorSubtract( hull->clip_mins, mins, offset );
-		}
-
-		// calculate an offset value to center the origin
-		VectorAdd( offset, pe->origin, offset );
-	}
-	else
-	{
-		// studiomodel or pushable
-		// create a temp hull from bounding box sizes
-		VectorSubtract( pe->mins, maxs, hullmins );
-		VectorSubtract( pe->maxs, mins, hullmaxs );
-		hull = PM_HullForBox( hullmins, hullmaxs );
-		VectorCopy( pe->origin, offset );
-	}
-	return hull;
-}
-
-/*
 ==================
 PM_HullForBsp
 
@@ -171,7 +148,8 @@ hull_t *PM_HullForBsp( physent_t *pe, playermove_t *pmove, float *offset )
 {
 	hull_t	*hull;
 
-	ASSERT( pe && pe->model != NULL );
+	Assert( pe != NULL );
+	Assert( pe->model != NULL );
 
 	switch( pmove->usehull )
 	{
@@ -189,7 +167,7 @@ hull_t *PM_HullForBsp( physent_t *pe, playermove_t *pmove, float *offset )
 		break;
 	}
 
-	ASSERT( hull != NULL );
+	Assert( hull != NULL );
 
 	// calculate an offset value to center the origin
 	VectorSubtract( hull->clip_mins, pmove->player_mins[pmove->usehull], offset );
@@ -200,18 +178,35 @@ hull_t *PM_HullForBsp( physent_t *pe, playermove_t *pmove, float *offset )
 
 /*
 ==================
+PM_HullForStudio
+
+generate multiple hulls as hitboxes
+==================
+*/
+hull_t *PM_HullForStudio( physent_t *pe, playermove_t *pmove, int *numhitboxes )
+{
+	vec3_t	size;
+
+	VectorSubtract( pmove->player_maxs[pmove->usehull], pmove->player_mins[pmove->usehull], size );
+	VectorScale( size, 0.5f, size );
+
+	return Mod_HullForStudio( pe->studiomodel, pe->frame, pe->sequence, pe->angles, pe->origin, size, pe->controller, pe->blending, numhitboxes, NULL );
+}
+
+/*
+==================
 PM_RecursiveHullCheck
 ==================
 */
 qboolean PM_RecursiveHullCheck( hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, pmtrace_t *trace )
 {
-	dclipnode_t	*node;
+	mclipnode_t	*node;
 	mplane_t		*plane;
 	float		t1, t2;
 	float		frac, midf;
 	int		side;
 	vec3_t		mid;
-
+loc0:
 	// check for empty
 	if( num < 0 )
 	{
@@ -226,37 +221,44 @@ qboolean PM_RecursiveHullCheck( hull_t *hull, int num, float p1f, float p2f, vec
 		return true; // empty
 	}
 
+	if( hull->firstclipnode >= hull->lastclipnode )
+	{
+		// empty hull?
+		trace->allsolid = false;
+		trace->inopen = true;
+		return true;
+	}
+
 	if( num < hull->firstclipnode || num > hull->lastclipnode )
-		Sys_Error( "PM_RecursiveHullCheck: bad node number\n" );
+		Host_Error( "PM_RecursiveHullCheck: bad node number %i\n", num );
 		
 	// find the point distances
 	node = hull->clipnodes + num;
 	plane = hull->planes + node->planenum;
 
-	if( plane->type < 3 )
+	t1 = PlaneDiff( p1, plane );
+	t2 = PlaneDiff( p2, plane );
+
+	if( t1 >= 0.0f && t2 >= 0.0f )
 	{
-		t1 = p1[plane->type] - plane->dist;
-		t2 = p2[plane->type] - plane->dist;
-	}
-	else
-	{
-		t1 = DotProduct( plane->normal, p1 ) - plane->dist;
-		t2 = DotProduct( plane->normal, p2 ) - plane->dist;
+		num = node->children[0];
+		goto loc0;
 	}
 
-	if( t1 >= 0 && t2 >= 0 )
-		return PM_RecursiveHullCheck( hull, node->children[0], p1f, p2f, p1, p2, trace );
-	if( t1 < 0 && t2 < 0 )
-		return PM_RecursiveHullCheck( hull, node->children[1], p1f, p2f, p1, p2, trace );
+	if( t1 < 0.0f && t2 < 0.0f )
+	{
+		num = node->children[1];
+		goto loc0;
+	}
 
 	// put the crosspoint DIST_EPSILON pixels on the near side
-	side = (t1 < 0);
+	side = (t1 < 0.0f);
 
 	if( side ) frac = ( t1 + DIST_EPSILON ) / ( t1 - t2 );
 	else frac = ( t1 - DIST_EPSILON ) / ( t1 - t2 );
 
-	if( frac < 0 ) frac = 0;
-	if( frac > 1 ) frac = 1;
+	if( frac < 0.0f ) frac = 0.0f;
+	if( frac > 1.0f ) frac = 1.0f;
 		
 	midf = p1f + ( p2f - p1f ) * frac;
 	VectorLerp( p1, frac, p2, mid );
@@ -293,11 +295,11 @@ qboolean PM_RecursiveHullCheck( hull_t *hull, int num, float p1f, float p2f, vec
 		// shouldn't really happen, but does occasionally
 		frac -= 0.1f;
 
-		if( frac < 0 )
+		if( frac < 0.0f )
 		{
 			trace->fraction = midf;
 			VectorCopy( mid, trace->endpos );
-			MsgDev( D_WARN, "trace backed up past 0.0\n" );
+			Con_Reportf( S_WARN "trace backed up past 0.0\n" );
 			return false;
 		}
 
@@ -311,231 +313,340 @@ qboolean PM_RecursiveHullCheck( hull_t *hull, int num, float p1f, float p2f, vec
 	return false;
 }
 
-/*
-==================
-PM_TraceModel
-
-Handles selection or creation of a clipping hull, and offseting
-(and eventually rotation) of the end points
-==================
-*/
-static qboolean PM_BmodelTrace( physent_t *pe, const vec3_t start, vec3_t mins, vec3_t maxs, const vec3_t end, pmtrace_t *ptr ) 
+pmtrace_t PM_PlayerTraceExt( playermove_t *pmove, vec3_t start, vec3_t end, int flags, int numents, physent_t *ents, int ignore_pe, pfnIgnore pmFilter )
 {
-	vec3_t	offset, temp;
-	vec3_t	start_l, end_l;
+	physent_t	*pe;
 	matrix4x4	matrix;
-	hull_t	*hull;
+	pmtrace_t	trace_bbox;
+	pmtrace_t	trace_hitbox;
+	pmtrace_t	trace_total;
+	vec3_t	offset, start_l, end_l;
+	vec3_t	temp, mins, maxs;
+	int	i, j, hullcount;
+	qboolean	rotated, transform_bbox;
+	hull_t	*hull = NULL;
 
-	// assume we didn't hit anything
-	Q_memset( ptr, 0, sizeof( pmtrace_t ));
-	VectorCopy( end, ptr->endpos );
-	ptr->allsolid = true;
-	ptr->fraction = 1.0f;
-	ptr->hitgroup = -1;
-	ptr->ent = -1;
+	memset( &trace_total, 0, sizeof( trace_total ));
+	VectorCopy( end, trace_total.endpos );
+	trace_total.fraction = 1.0f;
+	trace_total.ent = -1;
 
-	// get the clipping hull
-	hull = PM_HullForEntity( pe, mins, maxs, offset );
-
-	ASSERT( hull != NULL );
-
-	VectorSubtract( start, offset, start_l );
-	VectorSubtract( end, offset, end_l );
-
-	// rotate start and end into the models frame of reference
-	if( pe->solid == SOLID_BSP && !VectorIsNull( pe->angles ))
+	for( i = 0; i < numents; i++ )
 	{
-		Matrix4x4_CreateFromEntity( matrix, pe->angles, offset, 1.0f );
-		Matrix4x4_VectorITransform( matrix, start, start_l );
-		Matrix4x4_VectorITransform( matrix, end, end_l );
-	}
+		pe = &ents[i];
 
-	// do trace
-	PM_RecursiveHullCheck( hull, hull->firstclipnode, 0, 1, start_l, end_l, ptr );
+		if( i != 0 && ( flags & PM_WORLD_ONLY ))
+			break;
 
-	// rotate endpos back to world frame of reference
-	if( pe->solid == SOLID_BSP && !VectorIsNull( pe->angles ))
-	{
-		if( ptr->fraction != 1.0f )
+		// run custom user filter
+		if( pmFilter != NULL )
 		{
-			// compute endpos
-			VectorCopy( ptr->plane.normal, temp );
-			VectorLerp( start, ptr->fraction, end, ptr->endpos );
-			Matrix4x4_TransformPositivePlane( matrix, temp, ptr->plane.dist, ptr->plane.normal, &ptr->plane.dist );
+			if( pmFilter( pe ))
+				continue;
 		}
-	}
-	else
-	{
-		// special case for non-rotated bmodels
-		if( ptr->fraction != 1.0f )
+		else if( ignore_pe != -1 )
 		{
-			// fix trace up by the offset when we hit bmodel
-			VectorAdd( ptr->endpos, offset, ptr->endpos );
+			if( i == ignore_pe )
+				continue;
 		}
-		ptr->plane.dist = DotProduct( ptr->endpos, ptr->plane.normal );
-	}
 
-	// did we clip the move?
-	if( ptr->fraction < 1.0f || ptr->startsolid )
-		return true;
-	return false;
-}
+		if( pe->model != NULL && pe->solid == SOLID_NOT && pe->skin != CONTENTS_NONE )
+			continue;
 
-qboolean PM_TraceModel( playermove_t *pmove, physent_t *pe, const vec3_t start, vec3_t mins, vec3_t maxs, const vec3_t end, pmtrace_t *ptr, int flags )
-{
-	qboolean	hitEnt = false;
-	qboolean	bSimpleBox = false;
+		if(( flags & PM_GLASS_IGNORE ) && pe->rendermode != kRenderNormal )
+			continue;
 
-	// assume we didn't hit anything
-	Q_memset( ptr, 0, sizeof( pmtrace_t ));
-	VectorCopy( end, ptr->endpos );
-	ptr->fraction = 1.0f;
-	ptr->hitgroup = -1;
-	ptr->ent = -1;
+		if(( flags & PM_CUSTOM_IGNORE ) && pe->solid == SOLID_CUSTOM )
+			continue;
 
-	// completely ignore studiomodels (same as MOVE_NOMONSTERS)
-	if( pe->studiomodel && ( flags & PM_STUDIO_IGNORE ))
-		return hitEnt;
+		hullcount = 1;
 
-	if( pe->movetype == MOVETYPE_PUSH || pe->solid == SOLID_BSP )
-	{
-		if( flags & PM_GLASS_IGNORE )
+		if( pe->solid == SOLID_CUSTOM )
 		{
-			// we ignore brushes with rendermode != kRenderNormal
-			switch( pe->rendermode )
+			VectorCopy( pmove->player_mins[pmove->usehull], mins );
+			VectorCopy( pmove->player_maxs[pmove->usehull], maxs );
+			VectorClear( offset );
+		}
+		else if( pe->model )
+		{
+			hull = PM_HullForBsp( pe, pmove, offset );
+		}
+		else
+		{
+			if( pe->studiomodel )
 			{
-			case kRenderTransAdd:
-			case kRenderTransAlpha:
-			case kRenderTransTexture:
-				// passed through glass
-				return hitEnt;
-			default: break;
+				if( FBitSet( flags, PM_STUDIO_IGNORE ))
+					continue;
+
+				if( PM_AllowHitBoxTrace( pe->studiomodel, pmove->usehull ) && !FBitSet( flags, PM_STUDIO_BOX ))
+				{
+					hull = PM_HullForStudio( pe, pmove, &hullcount );
+					VectorClear( offset );
+				}
+				else
+				{
+					VectorSubtract( pe->mins, pmove->player_maxs[pmove->usehull], mins );
+					VectorSubtract( pe->maxs, pmove->player_mins[pmove->usehull], maxs );
+
+					hull = PM_HullForBox( mins, maxs );
+					VectorCopy( pe->origin, offset );
+				}
+			}			
+			else
+			{
+				VectorSubtract( pe->mins, pmove->player_maxs[pmove->usehull], mins );
+				VectorSubtract( pe->maxs, pmove->player_mins[pmove->usehull], maxs );
+
+				hull = PM_HullForBox( mins, maxs );
+				VectorCopy( pe->origin, offset );
+			}
+
+		}
+
+		if( pe->solid == SOLID_BSP && !VectorIsNull( pe->angles ))
+			rotated = true;
+		else rotated = false;
+
+		if( FBitSet( host.features, ENGINE_PHYSICS_PUSHER_EXT ))
+		{
+			if(( check_angles( pe->angles[0] ) || check_angles( pe->angles[2] )) && pmove->usehull != 2 )
+				transform_bbox = true;
+			else transform_bbox = false;
+		}
+		else transform_bbox = false;
+
+		if( rotated )
+		{
+			if( transform_bbox )
+				Matrix4x4_CreateFromEntity( matrix, pe->angles, pe->origin, 1.0f );
+			else Matrix4x4_CreateFromEntity( matrix, pe->angles, offset, 1.0f );
+
+			Matrix4x4_VectorITransform( matrix, start, start_l );
+			Matrix4x4_VectorITransform( matrix, end, end_l );
+                              
+			if( transform_bbox )
+			{
+				World_TransformAABB( matrix, pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], mins, maxs );
+				VectorSubtract( hull->clip_mins, mins, offset );	// calc new local offset
+
+				for( j = 0; j < 3; j++ )
+				{
+					if( start_l[j] >= 0.0f )
+						start_l[j] -= offset[j];
+					else start_l[j] += offset[j];
+					if( end_l[j] >= 0.0f )
+						end_l[j] -= offset[j];
+					else end_l[j] += offset[j];
+				}
+			}
+		}
+		else
+		{
+			VectorSubtract( start, offset, start_l );
+			VectorSubtract( end, offset, end_l );
+		}
+
+		memset( &trace_bbox, 0, sizeof( trace_bbox ));
+		VectorCopy( end, trace_bbox.endpos );
+		trace_bbox.allsolid = true;
+		trace_bbox.fraction = 1.0f;
+
+		if( hullcount < 1 )
+		{
+			// g-cont. probably this never happens
+			trace_bbox.allsolid = false;
+		}
+		else if( pe->solid == SOLID_CUSTOM )
+		{
+			// run custom sweep callback
+			if( pmove->server || Host_IsLocalClient( ))
+				SV_ClipPMoveToEntity( pe, start, mins, maxs, end, &trace_bbox );
+			else CL_ClipPMoveToEntity( pe, start, mins, maxs, end, &trace_bbox );
+		}
+		else if( hullcount == 1 )
+		{
+			PM_RecursiveHullCheck( hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace_bbox );
+		}
+		else
+		{
+			int	last_hitgroup;
+
+			for( last_hitgroup = 0, j = 0; j < hullcount; j++ )
+			{
+				memset( &trace_hitbox, 0, sizeof( trace_hitbox ));
+				VectorCopy( end, trace_hitbox.endpos );
+				trace_hitbox.allsolid = true;
+				trace_hitbox.fraction = 1.0f;
+
+				PM_RecursiveHullCheck( &hull[j], hull[j].firstclipnode, 0, 1, start_l, end_l, &trace_hitbox );
+
+				if( j == 0 || trace_hitbox.allsolid || trace_hitbox.startsolid || trace_hitbox.fraction < trace_bbox.fraction )
+				{
+					if( trace_bbox.startsolid )
+					{
+						trace_bbox = trace_hitbox;
+						trace_bbox.startsolid = true;
+					}
+					else trace_bbox = trace_hitbox;
+
+					last_hitgroup = j;
+				}
+			}
+
+			trace_bbox.hitgroup = Mod_HitgroupForStudioHull( last_hitgroup );
+		}
+
+		if( trace_bbox.allsolid )
+			trace_bbox.startsolid = true;
+
+		if( trace_bbox.startsolid )
+			trace_bbox.fraction = 0.0f;
+
+		if( !trace_bbox.startsolid )
+		{
+			VectorLerp( start, trace_bbox.fraction, end, trace_bbox.endpos );
+
+			if( rotated )
+			{
+				VectorCopy( trace_bbox.plane.normal, temp );
+				Matrix4x4_TransformPositivePlane( matrix, temp, trace_bbox.plane.dist, trace_bbox.plane.normal, &trace_bbox.plane.dist );
+			}
+			else
+			{
+				trace_bbox.plane.dist = DotProduct( trace_bbox.endpos, trace_bbox.plane.normal );
 			}
 		}
 
-		if( !pe->model )
-			return hitEnt;
-		hitEnt = PM_BmodelTrace( pe, start, mins, maxs, end, ptr );
+		if( trace_bbox.fraction < trace_total.fraction )
+		{
+			trace_total = trace_bbox;
+			trace_total.ent = i;
+		}
 	}
-	else
-	{
-		bSimpleBox = ( flags & PM_STUDIO_BOX ) ? true : false;
-		bSimpleBox = World_UseSimpleBox( bSimpleBox, pe->solid, VectorCompare( mins, maxs ), pe->studiomodel );
 
-		if( bSimpleBox ) hitEnt = PM_BmodelTrace( pe, start, mins, maxs, end, ptr );
-		else hitEnt = PM_StudioTrace( pmove, pe, start, mins, maxs, end, ptr );
-	}
-	return hitEnt;
+	return trace_total;
 }
 
-/*
-================
-PM_PlayerTrace
-================
-*/
-pmtrace_t PM_PlayerTrace( playermove_t *pmove, vec3_t start, vec3_t end, int flags, int usehull, int ignore_pe, pfnIgnore pmFilter )
+int PM_TestPlayerPosition( playermove_t *pmove, vec3_t pos, pmtrace_t *ptrace, pfnIgnore pmFilter )
 {
-	physent_t	*pe;
-	pmtrace_t	trace, total;
-	float	*mins = pmove->player_mins[usehull];
-	float	*maxs = pmove->player_maxs[usehull];
-	int	i;
+	int	i, j, hullcount;
+	vec3_t	pos_l, offset;
+	hull_t	*hull = NULL;
+	vec3_t	mins, maxs;
+	pmtrace_t trace;
+	physent_t *pe;
 
-	// assume we didn't hit anything
-	Q_memset( &total, 0, sizeof( pmtrace_t ));
-	VectorCopy( end, total.endpos );
-	total.fraction = 1.0f;
-	total.hitgroup = -1;
-	total.ent = -1;
+	trace = PM_PlayerTraceExt( pmove, pmove->origin, pmove->origin, 0, pmove->numphysent, pmove->physents, -1, pmFilter );
+	if( ptrace ) *ptrace = trace;
 
 	for( i = 0; i < pmove->numphysent; i++ )
 	{
-		// run simple trace filter
-		if( i == ignore_pe ) continue;
-
 		pe = &pmove->physents[i];
 
 		// run custom user filter
-		if( pmFilter && pmFilter( pe ))
-			continue;
-
-		if(( i > 0 ) && usehull != 2 && VectorIsNull( pe->mins ) && VectorIsNull( pe->maxs ))
-			continue;	// points never interact
-
-		// might intersect, so do an exact clip
-		if( total.allsolid ) return total;
-
-		if( PM_TraceModel( pmove, pe, start, mins, maxs, end, &trace, flags ))
+		if( pmFilter != NULL )
 		{
-			// set entity
-			trace.ent = i;
+			if( pmFilter( pe ))
+				continue;
 		}
 
-		if( trace.allsolid || trace.fraction < total.fraction )
+		if( pe->model != NULL && pe->solid == SOLID_NOT && pe->skin != CONTENTS_NONE )
+			continue;
+
+		hullcount = 1;
+
+		if( pe->solid == SOLID_CUSTOM )
 		{
-			trace.ent = i;
-
-			if( total.startsolid )
-			{
-				total = trace;
-				total.startsolid = true;
-			}
-			else total = trace;
+			VectorCopy( pmove->player_mins[pmove->usehull], mins );
+			VectorCopy( pmove->player_maxs[pmove->usehull], maxs );
+			VectorClear( offset );
 		}
-		else if( trace.startsolid )
+		else if( pe->model )
 		{
-			total.startsolid = true;
-			total.ent = i;
+			hull = PM_HullForBsp( pe, pmove, offset );
 		}
+		else if( PM_AllowHitBoxTrace( pe->studiomodel, pmove->usehull ))
+		{
+			hull = PM_HullForStudio( pe, pmove, &hullcount );
+			VectorClear( offset );
+		}
+		else
+		{
+			VectorSubtract( pe->mins, pmove->player_maxs[pmove->usehull], mins );
+			VectorSubtract( pe->maxs, pmove->player_mins[pmove->usehull], maxs );
 
-		if( total.startsolid )
-			total.fraction = 0.0f;
-
-		if( i == 0 && ( flags & PM_WORLD_ONLY ))
-			break; // done
-
-	}
-	return total;
-}
-
-int PM_TestPlayerPosition( playermove_t *pmove, vec3_t pos, pfnIgnore pmFilter )
-{
-	physent_t	*pe;
-	hull_t	*hull;
-	float	*mins = pmove->player_mins[pmove->usehull];
-	float	*maxs = pmove->player_maxs[pmove->usehull];
-	vec3_t	offset, pos_l;
-	int	i;
-
-	for( i = 0; i < pmove->numphysent; i++ )
-	{
-		pe = &pmove->physents[i];
-
-		if( pmFilter != NULL && pmFilter( pe ))
-			continue;
-
-		if( pe->model && pe->solid == SOLID_NOT && pe->skin != 0 )
-			continue;
-
-		// ignore hitboxes because they hasn't contents
-		if( pe->studiomodel && pe->studiomodel->flags & STUDIO_TRACE_HITBOX )
-			continue;
-
-		hull = PM_HullForEntity( pe, mins, maxs, offset );
-
-		// offset the test point appropriately for this hull.
-		VectorSubtract( pos, offset, pos_l );
+			hull = PM_HullForBox( mins, maxs );
+			VectorCopy( pe->origin, offset );
+		}
 
 		// CM_TransformedPointContents :-)
 		if( pe->solid == SOLID_BSP && !VectorIsNull( pe->angles ))
 		{
+			qboolean	transform_bbox = false;
 			matrix4x4	matrix;
-			Matrix4x4_CreateFromEntity( matrix, pe->angles, offset, 1.0f );
+
+			if( FBitSet( host.features, ENGINE_PHYSICS_PUSHER_EXT ))
+			{
+				if(( check_angles( pe->angles[0] ) || check_angles( pe->angles[2] )) && pmove->usehull != 2 )
+					transform_bbox = true;
+                              }
+
+			if( transform_bbox )
+				Matrix4x4_CreateFromEntity( matrix, pe->angles, pe->origin, 1.0f );
+			else Matrix4x4_CreateFromEntity( matrix, pe->angles, offset, 1.0f );
+
 			Matrix4x4_VectorITransform( matrix, pos, pos_l );
+                              
+			if( transform_bbox )
+			{
+				World_TransformAABB( matrix, pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], mins, maxs );
+				VectorSubtract( hull->clip_mins, mins, offset );	// calc new local offset
+
+				for( j = 0; j < 3; j++ )
+				{
+					if( pos_l[j] >= 0.0f )
+						pos_l[j] -= offset[j];
+					else pos_l[j] += offset[j];
+				}
+			}
+		}
+		else
+		{
+			// offset the test point appropriately for this hull.
+			VectorSubtract( pos, offset, pos_l );
 		}
 
-		if( PM_HullPointContents( hull, hull->firstclipnode, pos_l ) == CONTENTS_SOLID )
-			return i;
+		if( pe->solid == SOLID_CUSTOM )
+		{
+			pmtrace_t	trace;
+
+			memset( &trace, 0, sizeof( trace ));
+			VectorCopy( pos, trace.endpos );
+			trace.allsolid = true;
+			trace.fraction = 1.0f;
+
+			// run custom sweep callback
+			if( pmove->server || Host_IsLocalClient( ))
+				SV_ClipPMoveToEntity( pe, pos, mins, maxs, pos, &trace );
+			else CL_ClipPMoveToEntity( pe, pos, mins, maxs, pos, &trace );
+
+			// if we inside the custom hull
+			if( trace.allsolid )
+				return i;
+		}
+		else if( hullcount == 1 )
+		{
+			if( PM_HullPointContents( hull, hull->firstclipnode, pos_l ) == CONTENTS_SOLID )
+				return i;
+		}
+		else
+		{
+			for( j = 0; j < hullcount; j++ )
+			{
+				if( PM_HullPointContents( &hull[j], hull[j].firstclipnode, pos_l ) == CONTENTS_SOLID )
+					return i;
+			}
+		}
 	}
 
 	return -1; // didn't hit anything

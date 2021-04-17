@@ -208,7 +208,8 @@ typedef struct gameinfo_s
 	char		falldir[MAX_QPATH];	// used as second basedir 
 	char		startmap[MAX_QPATH];// map to start singleplayer game
 	char		trainmap[MAX_QPATH];// map to start hazard course (if specified)
-	char		creditsmap[MAX_QPATH];	// map to show credits (if specified)
+	// ESHQ: добавлено для поддержки титров
+	char		creditsmap[MAX_QPATH];
 	char		title[64];	// Game Main Title
 	float		version;		// game version (optional)
 
@@ -496,6 +497,7 @@ qboolean FS_Eof( file_t *file );
 int FS_Close( file_t *file );
 int FS_Getc( file_t *file );
 long FS_FileLength( file_t *f );
+// ESHQ: добавлено для поддержки достижений
 qboolean FS_WriteAchievementsScript (void);
 
 /*

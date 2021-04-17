@@ -19,10 +19,6 @@ GNU General Public License for more details.
 #define MOVE_NORMAL		0	// normal trace
 #define MOVE_NOMONSTERS	1	// ignore monsters (edicts with flags (FL_MONSTER|FL_FAKECLIENT|FL_CLIENT) set)
 #define MOVE_MISSILE	2	// extra size for monsters
-#define MOVE_WORLDONLY	3	// clip only world
-
-#define FMOVE_IGNORE_GLASS	0x100
-#define FMOVE_SIMPLEBOX	0x200
 
 #define CONTENTS_NONE	0	// no custom contents specified
 
@@ -47,8 +43,8 @@ void RemoveLink( link_t *l );
 void ClearLink( link_t *l );
 
 // trace common
-qboolean World_UseSimpleBox( qboolean simpleBox, int solid, qboolean isPointTrace, model_t *mod );
 void World_MoveBounds( const vec3_t start, vec3_t mins, vec3_t maxs, const vec3_t end, vec3_t boxmins, vec3_t boxmaxs );
+void World_TransformAABB( matrix4x4 transform, const vec3_t mins, const vec3_t maxs, vec3_t outmins, vec3_t outmaxs );
 trace_t World_CombineTraces( trace_t *cliptrace, trace_t *trace, edict_t *touch );
 int BoxOnPlaneSide( const vec3_t emins, const vec3_t emaxs, const mplane_t *p );
 int RankForContents( int contents );
@@ -70,7 +66,8 @@ int RankForContents( int contents );
 		BoxOnPlaneSide(( emins ), ( emaxs ), ( p )))
 
 
-#include "bspfile.h"
+#define check_angles( x )	( (int)x == 90 || (int)x == 180 || (int)x == 270 || (int)x == -90 || (int)x == -180 || (int)x == -270 )
+
 #include "pm_shared.h"
 
 /*
