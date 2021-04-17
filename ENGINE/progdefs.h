@@ -151,7 +151,8 @@ typedef struct entvars_s
 	float		armortype;
 	float		armorvalue;
 	int		waterlevel;
-	int		collectedItems;	
+	// ESHQ: поддержка собираемых объектов
+	int		collectedItems;
 	int		watertype;
 
 	string_t		target;
