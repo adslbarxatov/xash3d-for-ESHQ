@@ -465,7 +465,7 @@ void CL_TempEntPlaySound( TEMPENTITY *pTemp, float damp )
 	// only play one out of every n
 	if( isshellcasing )
 	{	
-		// play first bounce, then 1 out of 3		
+		// play first bounce, then 1 out of 3
 		if( zvel < 200 && COM_RandomLong( 0, 3 ))
 			return;
 	}

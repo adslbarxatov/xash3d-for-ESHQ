@@ -1944,6 +1944,7 @@ void CL_ParseUserMessage( sizebuf_t *msg, int svc_num )
 
 #ifdef HACKS_RELATED_HLMODS
 		// run final credits for Half-Life because hl1 doesn't have call END_SECTION
+		// ESHQ: удалено, т.к. не требуется
 		/*if( !Q_stricmp( clgame.msg[i].name, "HudText" ) && !Q_stricmp( GI->gamefolder, "valve" ))
 		{
 			// it's a end, so we should run credits

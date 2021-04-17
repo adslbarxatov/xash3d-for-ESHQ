@@ -210,6 +210,7 @@ typedef struct
 	vec3_t		up;
 
 	int		entnum;
+	// ESHQ: добавлено для поддержки собираемых объектов
 	int		collectedItems;
 	int		waterlevel;
 	float		frametime;	// used for sound fade

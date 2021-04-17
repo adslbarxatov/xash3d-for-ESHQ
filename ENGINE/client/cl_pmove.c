@@ -1076,6 +1076,7 @@ void CL_SetupPMove( playermove_t *pmove, local_state_t *from, usercmd_t *ucmd, q
 	pmove->movetype = ps->movetype;
 	pmove->onground = ps->onground;
 	pmove->waterlevel = cd->waterlevel;
+	// ESHQ: добавлено для поддержки собираемых объектов
 	pmove->collectedItems = cd->collectedItems;
 	pmove->watertype = cd->watertype;
 	pmove->maxspeed = clgame.movevars.maxspeed;
