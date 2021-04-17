@@ -41,6 +41,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_SAVERESTORE	6	
 #define ID_MULTIPLAYER	7
 #define ID_CUSTOMGAME	8
+// ESHQ: изменено для поддержки титров
 #define ID_CREDITS		9
 #define ID_QUIT		10
 #define ID_QUIT_BUTTON	11
@@ -237,6 +238,7 @@ static void UI_Main_HazardCourse (void)
 /*
 =================
 UI_Main_Credits
+ESHQ: изменено для поддержки титров
 =================
 */
 static void UI_Main_Credits (void)
@@ -312,6 +314,7 @@ static void UI_Main_Callback (void* self, int event)
 		case ID_CUSTOMGAME:
 			UI_CustomGame_Menu ();
 			break;
+// ESHQ: изменено для поддержки титров
 		case ID_CREDITS:
 			if (CL_IsActive ())
 				UI_PromptDialog ();
@@ -496,6 +499,7 @@ static void UI_Main_Init (void)
 
 	UI_UtilSetupPicButton (&uiMain.customGame, PC_CUSTOM_GAME);
 
+	// ESHQ: изменено для поддержки титров
 	uiMain.previews.generic.id = ID_CREDITS;
 	uiMain.previews.generic.type = QMTYPE_BM_BUTTON;
 	uiMain.previews.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_NOTIFY;
