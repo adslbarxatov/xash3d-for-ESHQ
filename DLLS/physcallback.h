@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -22,12 +22,12 @@
 extern server_physics_api_t g_physfuncs;
 
 // The actual physic callbacks
-#define LINK_ENTITY		(*g_physfuncs.pfnLinkEdict)
-#define PHYSICS_TIME	(*g_physfuncs.pfnGetServerTime)
-#define HOST_FRAMETIME	(*g_physfuncs.pfnGetFrameTime)
-#define MODEL_HANDLE	(*g_physfuncs.pfnGetModel)
-#define GET_AREANODE	(*g_physfuncs.pfnGetHeadnode)
+#define LINK_ENTITY			(*g_physfuncs.pfnLinkEdict)
+#define PHYSICS_TIME		(*g_physfuncs.pfnGetServerTime)
+#define HOST_FRAMETIME		(*g_physfuncs.pfnGetFrameTime)
+#define MODEL_HANDLE		(*g_physfuncs.pfnGetModel)
+#define GET_AREANODE		(*g_physfuncs.pfnGetHeadnode)
 #define GET_SERVER_STATE	(*g_physfuncs.pfnServerState)
-#define HOST_ERROR		(*g_physfuncs.pfnHost_Error)
+#define HOST_ERROR			(*g_physfuncs.pfnHost_Error)
 
 #endif		//PHYSCALLBACK_H
