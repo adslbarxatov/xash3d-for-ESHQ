@@ -23,8 +23,8 @@ public:
 	void InitHUDData( void );
 
 private:
-	HLHSPRITE m_hsprPlayer;
-	HLHSPRITE m_hsprViewcone;
+	HSPRITE m_hsprPlayer;
+	HSPRITE m_hsprViewcone;
 };
 
 

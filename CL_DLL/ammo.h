@@ -38,21 +38,21 @@ struct WEAPON
 
 	int		iCount;		// # of itesm in plist
 
-	HLSPRITE hActive;
+	HSPRITE hActive;
 	wrect_t rcActive;
-	HLSPRITE hInactive;
+	HSPRITE hInactive;
 	wrect_t rcInactive;
-	HLSPRITE	hAmmo;
+	HSPRITE	hAmmo;
 	wrect_t rcAmmo;
-	HLSPRITE hAmmo2;
+	HSPRITE hAmmo2;
 	wrect_t rcAmmo2;
-	HLSPRITE hCrosshair;
+	HSPRITE hCrosshair;
 	wrect_t rcCrosshair;
-	HLSPRITE hAutoaim;
+	HSPRITE hAutoaim;
 	wrect_t rcAutoaim;
-	HLSPRITE hZoomedCrosshair;
+	HSPRITE hZoomedCrosshair;
 	wrect_t rcZoomedCrosshair;
-	HLSPRITE hZoomedAutoaim;
+	HSPRITE hZoomedAutoaim;
 	wrect_t rcZoomedAutoaim;
 };
 

@@ -158,8 +158,6 @@ int CHudDeathNotice :: Draw( float flTime )
 // This message handler may be better off elsewhere
 int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbuf )
 {
-	int i;	
-
 	m_iFlags |= HUD_ACTIVE;
 
 	BEGIN_READ( pbuf, iSize );
@@ -176,7 +174,7 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 
 	gHUD.m_Spectator.DeathMessage(victim);
 
-	for ( i = 0; i < MAX_DEATHNOTICES; i++ )
+	for ( int i = 0; i < MAX_DEATHNOTICES; i++ )
 	{
 		if ( rgDeathNoticeList[i].iId == 0 )
 			break;

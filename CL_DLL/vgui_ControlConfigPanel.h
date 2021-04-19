@@ -28,7 +28,6 @@ private:
 	vgui::ScrollPanel* _scrollPanel;
 	vgui::Dar<char*>   _cvarDar;
 	vgui::Dar<char*>   _descDar;
-	//vgui::Label*       _tipLabel;
 	vgui::Label*       _actionLabel;
 	vgui::Label*       _keyButtonLabel;
 	vgui::Label*       _alternateLabel;

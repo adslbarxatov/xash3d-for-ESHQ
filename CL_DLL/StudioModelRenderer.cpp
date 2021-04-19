@@ -782,7 +782,7 @@ StudioSetupBones
 */
 void CStudioModelRenderer::StudioSetupBones ( void )
 {
-	int					i, j;
+	int					i;
 	double				f;
 
 	mstudiobone_t		*pbones;
@@ -911,7 +911,7 @@ void CStudioModelRenderer::StudioSetupBones ( void )
 
 		for (i = 0; i < m_pStudioHeader->numbones; i++)
 		{
-			for( j = 0; j < LEGS_BONES_COUNT; j++ )
+			for( int j = 0; j < LEGS_BONES_COUNT; j++ )
 			{
 				if( !strcmp( pbones[i].name, legs_bones[j] ))
 					break;

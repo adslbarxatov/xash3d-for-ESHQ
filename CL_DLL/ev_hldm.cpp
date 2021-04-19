@@ -154,12 +154,10 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		rgsz[1] = "player/pl_step2.wav";
 		cnt = 2;
 		break;
-	case CHAR_TEX_METAL: fvol = 0.9; fvolbar = 0.2;
-		rgsz[0] = "player/pl_metal5.wav";
-		rgsz[1] = "player/pl_metal6.wav";
-		rgsz[2] = "player/pl_metal7.wav";
-		rgsz[3] = "player/pl_metal8.wav";
-		cnt = 4;
+	case CHAR_TEX_METAL: fvol = 0.9; fvolbar = 0.3;
+		rgsz[0] = "player/pl_metal1.wav";
+		rgsz[1] = "player/pl_metal2.wav";
+		cnt = 2;
 		break;
 	case CHAR_TEX_DIRT:	fvol = 0.9; fvolbar = 0.1;
 		rgsz[0] = "player/pl_dirt1.wav";
@@ -177,19 +175,11 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		rgsz[1] = "player/pl_grate4.wav";
 		cnt = 2;
 		break;
-	// Разведение резины и плитки
-	case CHAR_TEX_RUBBER:	fvol = 0.8; fvolbar = 0.2;
+	case CHAR_TEX_TILE:	fvol = 0.8; fvolbar = 0.2;
 		rgsz[0] = "player/pl_tile1.wav";
 		rgsz[1] = "player/pl_tile3.wav";
 		rgsz[2] = "player/pl_tile2.wav";
 		rgsz[3] = "player/pl_tile4.wav";
-		cnt = 4;
-		break;
-	case CHAR_TEX_TILES:	fvol = 0.9;	fvolbar = 0.4;
-		rgsz[0] = "debris/tile1.wav";
-		rgsz[1] = "debris/tile2.wav";
-		rgsz[2] = "debris/tile3.wav";
-		rgsz[3] = "debris/tile4.wav";
 		cnt = 4;
 		break;
 	case CHAR_TEX_SLOSH: fvol = 0.9; fvolbar = 0.0;
@@ -199,11 +189,10 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		rgsz[3] = "player/pl_slosh4.wav";
 		cnt = 4;
 		break;
-	case CHAR_TEX_WOOD:
-		fvol = 0.9; fvolbar = 0.2;
-		rgsz[0] = "debris/wood5.wav";
-		rgsz[1] = "debris/wood6.wav";
-		rgsz[2] = "debris/wood7.wav";
+	case CHAR_TEX_WOOD: fvol = 0.9; fvolbar = 0.2;
+		rgsz[0] = "debris/wood1.wav";
+		rgsz[1] = "debris/wood2.wav";
+		rgsz[2] = "debris/wood3.wav";
 		cnt = 3;
 		break;
 	case CHAR_TEX_GLASS:

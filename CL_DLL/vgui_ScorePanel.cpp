@@ -302,10 +302,8 @@ void ScorePanel::Update()
 //-----------------------------------------------------------------------------
 void ScorePanel::SortTeams()
 {
-	int i, j;
-
 	// clear out team scores
-	for ( i = 1; i <= m_iNumTeams; i++ )
+	for ( int i = 1; i <= m_iNumTeams; i++ )
 	{
 		if ( !g_TeamInfo[i].scores_overriden )
 			g_TeamInfo[i].frags = g_TeamInfo[i].deaths = 0;
@@ -322,7 +320,7 @@ void ScorePanel::SortTeams()
 			continue; // skip over players who are not in a team
 
 		// find what team this player is in
-		for ( j = 1; j <= m_iNumTeams; j++ )
+		for ( int j = 1; j <= m_iNumTeams; j++ )
 		{
 			if ( !stricmp( g_PlayerExtraInfo[i].teamname, g_TeamInfo[j].name ) )
 				break;
@@ -406,7 +404,6 @@ void ScorePanel::SortTeams()
 void ScorePanel::SortPlayers( int iTeam, char *team )
 {
 	bool bCreatedTeam = false;
-	int i;
 
 	// draw the players, in order,  and restricted to team if set
 	while ( 1 )
@@ -416,7 +413,7 @@ void ScorePanel::SortPlayers( int iTeam, char *team )
 		int best_player;
 		best_player = 0;
 
-		for ( i = 1; i < MAX_PLAYERS; i++ )
+		for ( int i = 1; i < MAX_PLAYERS; i++ )
 		{
 			if ( m_bHasBeenSorted[i] == false && g_PlayerInfoList[i].name && g_PlayerExtraInfo[i].frags >= highest_frags )
 			{
@@ -464,10 +461,8 @@ void ScorePanel::SortPlayers( int iTeam, char *team )
 //-----------------------------------------------------------------------------
 void ScorePanel::RebuildTeams()
 {
-	int i, j;
-
 	// clear out player counts from teams
-	for ( i = 1; i <= m_iNumTeams; i++ )
+	for ( int i = 1; i <= m_iNumTeams; i++ )
 	{
 		g_TeamInfo[i].players = 0;
 	}
@@ -484,7 +479,7 @@ void ScorePanel::RebuildTeams()
 			continue; // skip over players who are not in a team
 
 		// is this player in an existing team?
-		for ( j = 1; j <= m_iNumTeams; j++ )
+		for ( int j = 1; j <= m_iNumTeams; j++ )
 		{
 			if ( g_TeamInfo[j].name[0] == '\0' )
 				break;
@@ -496,7 +491,7 @@ void ScorePanel::RebuildTeams()
 		if ( j > m_iNumTeams )
 		{ // they aren't in a listed team, so make a new one
 			// search through for an empty team slot
-			for ( j = 1; j <= m_iNumTeams; j++ )
+			for ( int j = 1; j <= m_iNumTeams; j++ )
 			{
 				if ( g_TeamInfo[j].name[0] == '\0' )
 					break;
@@ -524,8 +519,6 @@ void ScorePanel::RebuildTeams()
 
 void ScorePanel::FillGrid()
 {
-	int row, col;
-
 	CSchemeManager *pSchemes = gViewPort->GetSchemeManager();
 	SchemeHandle_t hScheme = pSchemes->getSchemeHandle("Scoreboard Text");
 	SchemeHandle_t hTitleScheme = pSchemes->getSchemeHandle("Scoreboard Title Text");
@@ -548,7 +541,7 @@ void ScorePanel::FillGrid()
 
 	bool bNextRowIsGap = false;
 
-	for(row=0; row < NUM_ROWS; row++)
+	for(int row=0; row < NUM_ROWS; row++)
 	{
 		CGrid *pGridRow = &m_PlayerGrids[row];
 		pGridRow->SetRowUnderline(0, false, 0, 0, 0, 0, 0);
@@ -568,7 +561,7 @@ void ScorePanel::FillGrid()
 			bRowIsGap = true;
 		}
 
-		for(col=0; col < NUM_COLUMNS; col++)
+		for(int col=0; col < NUM_COLUMNS; col++)
 		{
 			CLabelHeader *pLabel = &m_PlayerEntries[col][row];
 

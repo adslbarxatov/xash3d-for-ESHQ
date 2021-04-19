@@ -115,10 +115,6 @@ ControlConfigPanel::ControlConfigPanel(int x,int y,int wide,int tall) : Panel(x,
 	setPaintBackgroundEnabled(false);
 	setPaintEnabled(false);
 
-	//_tipLabel=new Label("Press 'Enter' to set key, 'Del' to remove key, 'Backspace' to clear and set key");
-	//_tipLabel->setBgColor(Scheme::sc_primary2);
-	//_tipLabel->setFgColor(Scheme::sc_primary2);
-
 	_actionLabel=new Label("Action");
 	_actionLabel->setBgColor(Scheme::sc_primary3);
 	_actionLabel->setFgColor(Scheme::sc_primary3);
@@ -134,7 +130,6 @@ ControlConfigPanel::ControlConfigPanel(int x,int y,int wide,int tall) : Panel(x,
 	_headerPanel=new HeaderPanel(0,0,wide,20);
 	_headerPanel->setParent(this);
 
-	//_headerPanel->addSectionPanel(_tipLabel);
 	_headerPanel->addSectionPanel(_actionLabel);
 	_headerPanel->addSectionPanel(_keyButtonLabel);
 	_headerPanel->addSectionPanel(_alternateLabel);

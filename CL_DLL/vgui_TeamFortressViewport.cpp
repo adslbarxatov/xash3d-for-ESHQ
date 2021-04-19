@@ -2289,12 +2289,11 @@ int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, voi
 // if this message is never received, then scores will simply be the combined totals of the players.
 int TeamFortressViewport::MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf )
 {
-	int i;
 	BEGIN_READ( pbuf, iSize );
 	char *TeamName = READ_STRING();
 
 	// find the team matching the name
-	for ( i = 1; i <= m_pScoreBoard->m_iNumTeams; i++ )
+	for ( int i = 1; i <= m_pScoreBoard->m_iNumTeams; i++ )
 	{
 		if ( !stricmp( TeamName, g_TeamInfo[i].name ) )
 			break;
