@@ -9,23 +9,21 @@
 #define OVERVIEW_H
 #pragma once
 
-
 //-----------------------------------------------------------------------------
 // Purpose: Handles the drawing of the top-down map and all the things on it
 //-----------------------------------------------------------------------------
-class CHudOverview : public CHudBase
-{
-public:
-	int Init();
-	int VidInit();
+class CHudOverview: public CHudBase
+	{
+	public:
+		int Init ();
+		int VidInit ();
 
-	int Draw(float flTime);
-	void InitHUDData( void );
+		int Draw (float flTime);
+		void InitHUDData (void);
 
-private:
-	HSPRITE m_hsprPlayer;
-	HSPRITE m_hsprViewcone;
-};
-
+	private:
+		HLSPRITE m_hsprPlayer;
+		HLSPRITE m_hsprViewcone;
+	};
 
 #endif // OVERVIEW_H

@@ -17,10 +17,10 @@ CGameStudioModelRenderer
 
 ====================
 */
-class CGameStudioModelRenderer : public CStudioModelRenderer
-{
-public:
-	CGameStudioModelRenderer( void );
-};
+class CGameStudioModelRenderer: public CStudioModelRenderer
+	{
+	public:
+		CGameStudioModelRenderer (void);
+	};
 
 #endif // GAMESTUDIOMODELRENDERER_H

@@ -11,9 +11,9 @@
 
 // defaults for clientinfo messages
 #define	DEFAULT_VIEWHEIGHT	28
-#define VEC_DUCK_VIEW 12
+#define VEC_DUCK_VIEW		12
 
-#define FTENT_FADEOUT			0x00000080
+#define FTENT_FADEOUT		0x00000080
 
 #define DMG_GENERIC			0			// generic damage was done
 #define DMG_CRUSH			(1 << 0)	// crushed by falling or moving object
@@ -59,15 +59,15 @@
 #define DMG_HALLUC				(1<<31)
 
 // Some of these are HL/TFC specific?
-void EV_EjectBrass( float *origin, float *velocity, float rotation, int model, int soundtype );
-void EV_GetGunPosition( struct event_args_s *args, float *pos, float *origin );
-void EV_GetDefaultShellInfo( struct event_args_s *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale );
-qboolean EV_IsLocal( int idx );
-qboolean EV_IsPlayer( int idx );
-void EV_CreateTracer( float *start, float *end );
+void EV_EjectBrass (float* origin, float* velocity, float rotation, int model, int soundtype);
+void EV_GetGunPosition (struct event_args_s* args, float* pos, float* origin);
+void EV_GetDefaultShellInfo (struct event_args_s* args, float* origin, float* velocity, float* ShellVelocity, float* ShellOrigin, float* forward, float* right, float* up, float forwardScale, float upScale, float rightScale);
+qboolean EV_IsLocal (int idx);
+qboolean EV_IsPlayer (int idx);
+void EV_CreateTracer (float* start, float* end);
 
-struct cl_entity_s *GetEntity( int idx );
-struct cl_entity_s *GetViewEntity( void );
-void EV_MuzzleFlash( void );
+struct cl_entity_s* GetEntity (int idx);
+struct cl_entity_s* GetViewEntity (void);
+void EV_MuzzleFlash (void);
 
 #endif // EVENTSCRIPTSH

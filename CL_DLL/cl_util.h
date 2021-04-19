@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -38,9 +38,9 @@
 								gHUD.##y.UserCmd_##x( ); \
 							}
 
-inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat( (char*)x ); }
-inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( (char*)x ); }
-inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( (char*)cv, (char*)val, flags ); }
+inline float CVAR_GET_FLOAT (const char* x) { return gEngfuncs.pfnGetCvarFloat ((char*)x); }
+inline char* CVAR_GET_STRING (const char* x) { return gEngfuncs.pfnGetCvarString ((char*)x); }
+inline struct cvar_s* CVAR_CREATE (const char* cv, const char* val, const int flags) { return gEngfuncs.pfnRegisterVariable ((char*)cv, (char*)val, flags); }
 
 #define SPR_Load (*gEngfuncs.pfnSPR_Load)
 #define SPR_Set (*gEngfuncs.pfnSPR_Set)
@@ -83,65 +83,65 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 
 
 // Gets the height & width of a sprite,  at the specified frame
-inline int SPR_Height( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Height(x, f); }
-inline int SPR_Width( HSPRITE x, int f )	{ return gEngfuncs.pfnSPR_Width(x, f); }
+inline int SPR_Height (HLSPRITE x, int f) { return gEngfuncs.pfnSPR_Height (x, f); }
+inline int SPR_Width (HLSPRITE x, int f) { return gEngfuncs.pfnSPR_Width (x, f); }
 
-inline 	client_textmessage_t	*TextMessageGet( const char *pName ) { return gEngfuncs.pfnTextMessageGet( pName ); }
-inline 	int						TextMessageDrawChar( int x, int y, int number, int r, int g, int b ) 
-{ 
-	return gEngfuncs.pfnDrawCharacter( x, y, number, r, g, b ); 
-}
+inline 	client_textmessage_t* TextMessageGet (const char* pName) { return gEngfuncs.pfnTextMessageGet (pName); }
+inline 	int						TextMessageDrawChar (int x, int y, int number, int r, int g, int b)
+	{
+	return gEngfuncs.pfnDrawCharacter (x, y, number, r, g, b);
+	}
 
-inline int DrawConsoleString( int x, int y, const char *string )
-{
-	return gEngfuncs.pfnDrawConsoleString( x, y, (char*) string );
-}
+inline int DrawConsoleString (int x, int y, const char* string)
+	{
+	return gEngfuncs.pfnDrawConsoleString (x, y, (char*)string);
+	}
 
-inline void GetConsoleStringSize( const char *string, int *width, int *height )
-{
-	gEngfuncs.pfnDrawConsoleStringLen( string, width, height );
-}
+inline void GetConsoleStringSize (const char* string, int* width, int* height)
+	{
+	gEngfuncs.pfnDrawConsoleStringLen (string, width, height);
+	}
 
-inline int ConsoleStringLen( const char *string )
-{
+inline int ConsoleStringLen (const char* string)
+	{
 	int _width, _height;
-	GetConsoleStringSize( string, &_width, &_height );
+	GetConsoleStringSize (string, &_width, &_height);
 	return _width;
-}
+	}
 
-inline void ConsolePrint( const char *string )
-{
-	gEngfuncs.pfnConsolePrint( string );
-}
+inline void ConsolePrint (const char* string)
+	{
+	gEngfuncs.pfnConsolePrint (string);
+	}
 
-inline void CenterPrint( const char *string )
-{
-	gEngfuncs.pfnCenterPrint( string );
-}
+inline void CenterPrint (const char* string)
+	{
+	gEngfuncs.pfnCenterPrint (string);
+	}
 
 // returns the players name of entity no.
 #define GetPlayerInfo (*gEngfuncs.pfnGetPlayerInfo)
 
 // sound functions
-inline void PlaySound( char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }
-inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( iSound, vol ); }
+inline void PlaySound (char* szSound, float vol) { gEngfuncs.pfnPlaySoundByName (szSound, vol); }
+inline void PlaySound (int iSound, float vol) { gEngfuncs.pfnPlaySoundByIndex (iSound, vol); }
 
 #define max(a, b)  (((a) > (b)) ? (a) : (b))
 #define min(a, b)  (((a) < (b)) ? (a) : (b))
 #define fabs(x)	   ((x) > 0 ? (x) : 0 - (x))
 
-void ScaleColors( int &r, int &g, int &b, int a );
+void ScaleColors (int& r, int& g, int& b, int a);
 
 #define DotProduct(x,y) ((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
 #define VectorSubtract(a,b,c) {(c)[0]=(a)[0]-(b)[0];(c)[1]=(a)[1]-(b)[1];(c)[2]=(a)[2]-(b)[2];}
 #define VectorAdd(a,b,c) {(c)[0]=(a)[0]+(b)[0];(c)[1]=(a)[1]+(b)[1];(c)[2]=(a)[2]+(b)[2];}
 #define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
-inline void VectorClear(float *a) { a[0]=0.0;a[1]=0.0;a[2]=0.0;}
-float Length(const float *v);
-void VectorMA (const float *veca, float scale, const float *vecb, float *vecc);
-void VectorScale (const float *in, float scale, float *out);
-float VectorNormalize (float *v);
-void VectorInverse ( float *v );
+inline void VectorClear (float* a) { a[0] = 0.0; a[1] = 0.0; a[2] = 0.0; }
+float Length (const float* v);
+void VectorMA (const float* veca, float scale, const float* vecb, float* vecc);
+void VectorScale (const float* in, float scale, float* out);
+float VectorNormalize (float* v);
+void VectorInverse (float* v);
 
 extern vec3_t vec3_origin;
 
@@ -150,11 +150,11 @@ extern vec3_t vec3_origin;
 // disable 'truncation from 'const double' to 'float' warning message
 #pragma warning( disable: 4305 )
 
-inline void UnpackRGB(int &r, int &g, int &b, unsigned long ulRGB)\
-{\
-	r = (ulRGB & 0xFF0000) >>16;\
-	g = (ulRGB & 0xFF00) >> 8;\
-	b = ulRGB & 0xFF;\
-}
+inline void UnpackRGB (int& r, int& g, int& b, unsigned long ulRGB)\
+	{\
+	r = (ulRGB & 0xFF0000) >> 16; \
+	g = (ulRGB & 0xFF00) >> 8; \
+	b = ulRGB & 0xFF; \
+	}
 
-HSPRITE LoadSprite(const char *pszName);
+HLSPRITE LoadSprite (const char* pszName);

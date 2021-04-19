@@ -43,9 +43,9 @@ CGameStudioModelRenderer
 
 ====================
 */
-CGameStudioModelRenderer::CGameStudioModelRenderer( void )
-{
-}
+CGameStudioModelRenderer::CGameStudioModelRenderer (void)
+	{
+	}
 
 ////////////////////////////////////
 // Hooks to class implementation
@@ -57,10 +57,10 @@ R_StudioDrawPlayer
 
 ====================
 */
-int R_StudioDrawPlayer( int flags, entity_state_t *pplayer )
-{
-	return g_StudioRenderer.StudioDrawPlayer( flags, pplayer );
-}
+int R_StudioDrawPlayer (int flags, entity_state_t* pplayer)
+	{
+	return g_StudioRenderer.StudioDrawPlayer (flags, pplayer);
+	}
 
 /*
 ====================
@@ -68,10 +68,10 @@ R_StudioDrawModel
 
 ====================
 */
-int R_StudioDrawModel( int flags )
-{
-	return g_StudioRenderer.StudioDrawModel( flags );
-}
+int R_StudioDrawModel (int flags)
+	{
+	return g_StudioRenderer.StudioDrawModel (flags);
+	}
 
 /*
 ====================
@@ -79,18 +79,18 @@ R_StudioInit
 
 ====================
 */
-void R_StudioInit( void )
-{
-	g_StudioRenderer.Init();
-}
+void R_StudioInit (void)
+	{
+	g_StudioRenderer.Init ();
+	}
 
 // The simple drawing interface we'll pass back to the engine
 r_studio_interface_t studio =
-{
-	STUDIO_INTERFACE_VERSION,
-	R_StudioDrawModel,
-	R_StudioDrawPlayer,
-};
+	{
+		STUDIO_INTERFACE_VERSION,
+		R_StudioDrawModel,
+		R_StudioDrawPlayer,
+	};
 
 /*
 ====================
@@ -100,20 +100,20 @@ Export this function for the engine to use the studio renderer class to render o
 ====================
 */
 #define DLLEXPORT __declspec( dllexport )
-extern "C" int DLLEXPORT HUD_GetStudioModelInterface( int version, struct r_studio_interface_s **ppinterface, struct engine_studio_api_s *pstudio )
-{
-	if ( version != STUDIO_INTERFACE_VERSION )
+extern "C" int DLLEXPORT HUD_GetStudioModelInterface (int version, struct r_studio_interface_s** ppinterface, struct engine_studio_api_s* pstudio)
+	{
+	if (version != STUDIO_INTERFACE_VERSION)
 		return 0;
 
 	// Point the engine to our callbacks
 	*ppinterface = &studio;
 
 	// Copy in engine helper functions
-	memcpy( &IEngineStudio, pstudio, sizeof( IEngineStudio ) );
+	memcpy (&IEngineStudio, pstudio, sizeof (IEngineStudio));
 
 	// Initialize local variables, etc.
-	R_StudioInit();
+	R_StudioInit ();
 
 	// Success
 	return 1;
-}
+	}

@@ -29,74 +29,68 @@ using namespace vgui;
 
 #define TEAM_NUMBER 2
 
-class SpectatorPanel : public Panel //, public vgui::CDefaultInputSignal
-{
-
-public:
-	SpectatorPanel(int x,int y,int wide,int tall);
-	virtual ~SpectatorPanel();
-
-	void			ActionSignal(int cmd);
-
-	// InputSignal overrides.
-public:
-	void Initialize();
-	void Update();
-	
-
-
-public:
-
-	void EnableInsetView(bool isEnabled);
-	void ShowMenu(bool isVisible);
-
-	
-	ColorButton		  *	m_OptionButton;
-//	CommandButton     *	m_HideButton;
-	ColorButton	  *	m_PrevPlayerButton;
-	ColorButton	  *	m_NextPlayerButton;
-	ColorButton     *	m_CamButton;	
-
-	CTransparentPanel *			m_TopBorder;
-	CTransparentPanel *			m_BottomBorder;
-
-	ColorButton		*m_InsetViewButton;
-	
-	Label			*m_BottomMainLabel;
-	CImageLabel		*m_TimerImage;
-	Label			*m_CurrentTime;
-	Label			*m_ExtraInfo;
-	Panel			*m_Separator;
-
-	Label			*m_TeamScores[TEAM_NUMBER];
-	
-	CImageLabel		*m_TopBanner;
-
-	bool			m_menuVisible;
-	bool			m_insetVisible;
-};
-
-
-
-class CSpectatorHandler_Command : public ActionSignal
-{
-
-private:
-	SpectatorPanel * m_pFather;
-	int				 m_cmd;
-
-public:
-	CSpectatorHandler_Command( SpectatorPanel * panel, int cmd )
+class SpectatorPanel: public Panel //, public vgui::CDefaultInputSignal
 	{
-		m_pFather = panel;
-		m_cmd = cmd;
-	}
 
-	virtual void actionPerformed( Panel * panel )
+	public:
+		SpectatorPanel (int x, int y, int wide, int tall);
+		virtual ~SpectatorPanel ();
+
+		void			ActionSignal (int cmd);
+
+	// InputSignal overrides
+	public:
+		void Initialize ();
+		void Update ();
+
+	public:
+		void EnableInsetView (bool isEnabled);
+		void ShowMenu (bool isVisible);
+
+
+		ColorButton* m_OptionButton;
+		//	CommandButton     *	m_HideButton;
+		ColorButton* m_PrevPlayerButton;
+		ColorButton* m_NextPlayerButton;
+		ColorButton* m_CamButton;
+
+		CTransparentPanel* m_TopBorder;
+		CTransparentPanel* m_BottomBorder;
+
+		ColorButton* m_InsetViewButton;
+
+		Label* m_BottomMainLabel;
+		CImageLabel* m_TimerImage;
+		Label* m_CurrentTime;
+		Label* m_ExtraInfo;
+		Panel* m_Separator;
+
+		Label* m_TeamScores[TEAM_NUMBER];
+
+		CImageLabel* m_TopBanner;
+
+		bool			m_menuVisible;
+		bool			m_insetVisible;
+	};
+
+class CSpectatorHandler_Command: public ActionSignal
 	{
-		m_pFather->ActionSignal(m_cmd);
-	}
-};
 
+	private:
+		SpectatorPanel* m_pFather;
+		int				 m_cmd;
+
+	public:
+		CSpectatorHandler_Command (SpectatorPanel* panel, int cmd)
+			{
+			m_pFather = panel;
+			m_cmd = cmd;
+			}
+
+		virtual void actionPerformed (Panel* panel)
+			{
+			m_pFather->ActionSignal (m_cmd);
+			}
+	};
 
 #endif // !defined SPECTATORPANEL_H
