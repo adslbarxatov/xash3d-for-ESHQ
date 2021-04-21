@@ -153,7 +153,6 @@ int DispatchSpawn (edict_t* pent)
 				return -1;
 			}
 
-
 		// Handle global stuff here
 		if (pEntity && pEntity->pev->globalname)
 			{
@@ -174,7 +173,6 @@ int DispatchSpawn (edict_t* pent)
 				//				ALERT( at_console, "Added global entity %s (%s)\n", STRING(pEntity->pev->classname), STRING(pEntity->pev->globalname) );
 				}
 			}
-
 		}
 
 	return 0;
@@ -601,7 +599,6 @@ int CBaseEntity::Restore (CRestore& restore)
 		mins = pev->mins;	// Set model is about to destroy these
 		maxs = pev->maxs;
 
-
 		PRECACHE_MODEL ((char*)STRING (pev->model));
 		SET_MODEL (ENT (pev), STRING (pev->model));
 		UTIL_SetSize (pev, mins, maxs);	// Reset them
@@ -613,8 +610,7 @@ int CBaseEntity::Restore (CRestore& restore)
 // Initialize absmin & absmax to the appropriate box
 void SetObjectCollisionBox (entvars_t* pev)
 	{
-	if ((pev->solid == SOLID_BSP) &&
-		(pev->angles.x || pev->angles.y || pev->angles.z))
+	if ((pev->solid == SOLID_BSP) && (pev->angles.x || pev->angles.y || pev->angles.z))
 		{	// expand for rotation
 		float		max, v;
 		int			i;

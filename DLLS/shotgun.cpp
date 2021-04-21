@@ -142,7 +142,6 @@ void CShotgun::PrimaryAttack ()
 	flags = 0;
 #endif
 
-
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
 	Vector vecSrc = m_pPlayer->GetGunPosition ();
@@ -184,7 +183,6 @@ void CShotgun::PrimaryAttack ()
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + 0.75;
 	m_fInSpecialReload = 0;
 	}
-
 
 void CShotgun::SecondaryAttack (void)
 	{
@@ -261,9 +259,7 @@ void CShotgun::SecondaryAttack (void)
 		m_flTimeWeaponIdle = 1.5;
 
 	m_fInSpecialReload = 0;
-
 	}
-
 
 void CShotgun::Reload (void)
 	{
@@ -373,8 +369,6 @@ void CShotgun::WeaponIdle (void)
 			}
 		}
 	}
-
-
 
 class CShotgunAmmo: public CBasePlayerAmmo
 	{

@@ -1208,17 +1208,16 @@ void CTestHull::Spawn (entvars_t* pevMasterNode)
 
 	if (WorldGraph.m_fGraphPresent)
 		{// graph loaded from disk, so we don't need the test hull
-		SetThink (SUB_Remove);
+		SetThink (&CBaseEntity::SUB_Remove);
 		pev->nextthink = gpGlobals->time;
 		}
 	else
 		{
-		SetThink (DropDelay);
+		SetThink (&CTestHull::DropDelay);
 		pev->nextthink = gpGlobals->time + 1;
 		}
 
 	// Make this invisible
-	// UNDONE: Shouldn't we just use EF_NODRAW?  This doesn't need to go to the client.
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 0;
 	}
@@ -1230,10 +1229,9 @@ void CTestHull::Spawn (entvars_t* pevMasterNode)
 void CTestHull::DropDelay (void)
 	{
 	UTIL_CenterPrintAll ("Node Graph out of Date. Rebuilding...");
-
 	UTIL_SetOrigin (VARS (pev), WorldGraph.m_pNodes[0].m_vecOrigin);
 
-	SetThink (CallBuildNodeGraph);
+	SetThink (&CTestHull::CallBuildNodeGraph);
 
 	pev->nextthink = gpGlobals->time + 1;
 	}
@@ -1256,7 +1254,9 @@ void CNodeEnt::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseEntity::KeyValue (pkvd);
+		}
 	}
 
 //=========================================================
@@ -1381,7 +1381,7 @@ void CTestHull::BuildNodeGraph (void)
 	float	flDist;
 	int		step;
 
-	SetThink (SUB_Remove);// no matter what happens, the hull gets rid of itself.
+	SetThink (&CBaseEntity::SUB_Remove);// no matter what happens, the hull gets rid of itself.
 	pev->nextthink = gpGlobals->time;
 
 	// 	malloc a swollen temporary connection pool that we trim down after we know exactly how many connections there are.
@@ -1493,19 +1493,15 @@ void CTestHull::BuildNodeGraph (void)
 		{
 		ALERT (at_aiconsole, "**ConnectVisibleNodes FAILED!\n");
 
-		SetThink (ShowBadNode);// send the hull off to show the offending node.
-		//pev->solid = SOLID_NOT;
+		// send the hull off to show the offending node
+		SetThink (&CTestHull::ShowBadNode);
 		pev->origin = WorldGraph.m_pNodes[iBadNode].m_vecOrigin;
 
 		if (pTempPool)
-			{
 			free (pTempPool);
-			}
 
 		if (file)
-			{// close the file
 			fclose (file);
-			}
 
 		return;
 		}
@@ -3273,10 +3269,9 @@ void CNodeViewer::Spawn ()
 	ALERT (at_aiconsole, "%d nodes\n", m_nVisited);
 
 	m_iDraw = 0;
-	SetThink (DrawThink);
+	SetThink (&CNodeViewer::DrawThink);
 	pev->nextthink = gpGlobals->time;
 	}
-
 
 void CNodeViewer::FindNodeConnections (int iNode)
 	{

@@ -132,15 +132,15 @@ void CDecal::Spawn (void)
 
 	if (FStringNull (pev->targetname))
 		{
-		SetThink (StaticDecal);
+		SetThink (&CDecal::StaticDecal);
 		// if there's no targetname, the decal will spray itself on as soon as the world is done spawning.
 		pev->nextthink = gpGlobals->time;
 		}
 	else
 		{
 		// if there IS a targetname, the decal sprays itself on when it is triggered.
-		SetThink (SUB_DoNothing);
-		SetUse (TriggerDecal);
+		SetThink (&CBaseEntity::SUB_DoNothing);
+		SetUse (&CDecal::TriggerDecal);
 		}
 	}
 
@@ -165,10 +165,9 @@ void CDecal::TriggerDecal (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TY
 		WRITE_SHORT ((int)VARS (trace.pHit)->modelindex);
 	MESSAGE_END ();
 
-	SetThink (SUB_Remove);
+	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
-
 
 void CDecal::StaticDecal (void)
 	{
@@ -388,13 +387,12 @@ int CGlobalState::Restore (CRestore& restore)
 	int i, listCount;
 	globalentity_t tmpEntity;
 
-
 	ClearStates ();
 	if (!restore.ReadFields ("GLOBAL", this, m_SaveData, HLARRAYSIZE (m_SaveData)))
 		return 0;
 
 	listCount = m_listCount;	// Get new list count
-	m_listCount = 0;				// Clear loaded data
+	m_listCount = 0;			// Clear loaded data
 
 	for (i = 0; i < listCount; i++)
 		{
@@ -413,7 +411,6 @@ void CGlobalState::EntityUpdate (string_t globalname, string_t mapname)
 		strcpy (pEnt->levelName, STRING (mapname));
 	}
 
-
 void CGlobalState::ClearStates (void)
 	{
 	globalentity_t* pFree = m_pList;
@@ -426,20 +423,17 @@ void CGlobalState::ClearStates (void)
 	Reset ();
 	}
 
-
 void SaveGlobalState (SAVERESTOREDATA* pSaveData)
 	{
 	CSave saveHelper (pSaveData);
 	gGlobalState.Save (saveHelper);
 	}
 
-
 void RestoreGlobalState (SAVERESTOREDATA* pSaveData)
 	{
 	CRestore restoreHelper (pSaveData);
 	gGlobalState.Restore (restoreHelper);
 	}
-
 
 void ResetGlobalState (void)
 	{
@@ -476,7 +470,7 @@ void CWorld::Precache (void)
 	CVAR_SET_STRING ("sv_gravity", "800"); // 67ft/sec
 	CVAR_SET_STRING ("sv_stepsize", "18");
 
-	CVAR_SET_STRING ("room_type", "0");// clear DSP
+	CVAR_SET_STRING ("room_type", "0");		// clear DSP
 
 	// Set up game rules
 	if (g_pGameRules)
@@ -502,13 +496,10 @@ void CWorld::Precache (void)
 
 	// init sentence group playback stuff from sentences.txt.
 	// ok to call this multiple times, calls after first are ignored.
-
 	SENTENCEG_Init ();
 
 	// init texture type array from materials.txt
-
 	TEXTURETYPE_Init ();
-
 
 	// the area based ambient sounds MUST be the first precache_sounds
 
@@ -549,7 +540,7 @@ void CWorld::Precache (void)
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
 	//
 
-		// 0 normal
+	// 0 normal
 	LIGHT_STYLE (0, "m");
 
 	// 1 FLICKER (first variety)
@@ -633,10 +624,15 @@ void CWorld::Precache (void)
 		CBaseEntity* pEntity = CBaseEntity::Create ("env_message", g_vecZero, g_vecZero, NULL);
 		if (pEntity)
 			{
-			pEntity->SetThink (SUB_CallUseToggle);
+			pEntity->SetThink (&CBaseEntity::SUB_CallUseToggle);
 			pEntity->pev->message = pev->netname;
 			pev->netname = 0;
 			pEntity->pev->nextthink = gpGlobals->time + 0.3;
+
+			// ESHQ: исправление для случая названия главы на старте игры
+			if (pev->spawnflags & SF_WORLD_TITLE)
+				pEntity->pev->nextthink = pEntity->pev->nextthink + 2.0;
+			
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
 			}
 		}
@@ -667,7 +663,6 @@ void CWorld::Precache (void)
 	// g-cont. moved here so cheats will working on restore level
 	g_flWeaponCheat = CVAR_GET_FLOAT ("sv_cheats");  // Is the impulse 101 command allowed?
 	}
-
 
 //
 // Just to ignore the "wad" field.
@@ -781,7 +776,8 @@ static physics_interface_t gPhysicsInterface =
 		DispatchPhysicsEntity,
 	};
 
-int Server_GetPhysicsInterface (int iVersion, server_physics_api_t* pfuncsFromEngine, physics_interface_t* pFunctionTable)
+int Server_GetPhysicsInterface (int iVersion, server_physics_api_t* pfuncsFromEngine, 
+	physics_interface_t* pFunctionTable)
 	{
 	if (!pFunctionTable || !pfuncsFromEngine || iVersion != SV_PHYSICS_INTERFACE_VERSION)
 		{

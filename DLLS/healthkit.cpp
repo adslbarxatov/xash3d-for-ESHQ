@@ -183,10 +183,9 @@ void CWallHealth::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 		}
 
 	pev->nextthink = pev->ltime + 0.25;
-	SetThink (Off);
+	SetThink (&CWallHealth::Off);
 
 	// Time to recharge yet?
-
 	if (m_flNextCharge >= gpGlobals->time)
 		return;
 
@@ -219,7 +218,7 @@ void CWallHealth::Recharge (void)
 	EMIT_SOUND (ENT (pev), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_MEDIUM);
 	m_iJuice = gSkillData.healthchargerCapacity;
 	pev->frame = 0;
-	SetThink (SUB_DoNothing);
+	SetThink (&CBaseEntity::SUB_DoNothing);
 	}
 
 void CWallHealth::Off (void)
@@ -233,8 +232,10 @@ void CWallHealth::Off (void)
 	if ((!m_iJuice) && ((m_iReactivate = g_pGameRules->FlHealthChargerRechargeTime ()) > 0))
 		{
 		pev->nextthink = pev->ltime + m_iReactivate;
-		SetThink (Recharge);
+		SetThink (&CWallHealth::Recharge);
 		}
 	else
-		SetThink (SUB_DoNothing);
+		{
+		SetThink (&CBaseEntity::SUB_DoNothing);
+		}
 	}

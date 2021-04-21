@@ -115,7 +115,7 @@ void CBaseAnimating::ResetSequenceInfo ()
 // ESHQ
 void CBaseAnimating::ResetSequenceInfo (BOOL Loop)
 	{
-	void* pmodel = GET_MODEL_PTR (ENT (pev));	void* pmodel = GET_MODEL_PTR (ENT (pev));
+	void* pmodel = GET_MODEL_PTR (ENT (pev));
 
 	GetSequenceInfo (pmodel, pev, &m_flFrameRate, &m_flGroundSpeed);
 	m_fSequenceLoops = ((GetSequenceFlags () & STUDIO_LOOPING) != 0) || Loop;

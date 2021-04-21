@@ -256,9 +256,9 @@ void CTentacle::Spawn ()
 
 	m_bloodColor = BLOOD_COLOR_GREEN;
 
-	SetThink (Start);
-	SetTouch (HitTouch);
-	SetUse (CommandUse);
+	SetThink (&CTentacle::Start);
+	SetTouch (&CTentacle::HitTouch);
+	SetUse (&CTentacle::CommandUse);
 
 	pev->nextthink = gpGlobals->time + 0.2;
 
@@ -279,7 +279,6 @@ void CTentacle::Spawn ()
 
 	m_MonsterState = MONSTERSTATE_IDLE;
 
-	// SetThink( Test );
 	UTIL_SetOrigin (pev, pev->origin);
 	}
 
@@ -695,9 +694,10 @@ void CTentacle::CommandUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 		{
 		case USE_OFF:
 			pev->takedamage = DAMAGE_NO;
-			SetThink (DieThink);
+			SetThink (&CTentacle::DieThink);
 			m_iGoalAnim = TENTACLE_ANIM_Engine_Death1;
 			break;
+
 		case USE_ON:
 			if (pActivator)
 				{
@@ -705,11 +705,13 @@ void CTentacle::CommandUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 				CSoundEnt::InsertSound (bits_SOUND_WORLD, pActivator->pev->origin, 1024, 1.0);
 				}
 			break;
+
 		case USE_SET:
 			break;
+
 		case USE_TOGGLE:
 			pev->takedamage = DAMAGE_NO;
-			SetThink (DieThink);
+			SetThink (&CTentacle::DieThink);
 			m_iGoalAnim = TENTACLE_ANIM_Engine_Idle;
 			break;
 		}
@@ -901,13 +903,12 @@ void CTentacle::HandleAnimEvent (MonsterEvent_t* pEvent)
 // void CTentacle :: Start( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 void CTentacle::Start (void)
 	{
-	SetThink (Cycle);
+	SetThink (&CTentacle::Cycle);
 
 	if (!g_fFlySound)
 		{
 		EMIT_SOUND (ENT (pev), CHAN_BODY, "ambience/flies.wav", 1, ATTN_MEDIUM);
 		g_fFlySound = TRUE;
-		//		pev->nextthink = gpGlobals-> time + 0.1;
 		}
 	else if (!g_fSquirmSound)
 		{
@@ -950,7 +951,6 @@ void CTentacle::HitTouch (CBaseEntity* pOther)
 	m_flHitTime = gpGlobals->time + 0.5;
 
 	// ALERT( at_console, "%s : ", STRING( tr.pHit->v.classname ) );
-
 	// ALERT( at_console, "%.0f : %s : %d\n", pev->angles.y, STRING( pOther->pev->classname ), tr.iHitgroup );
 	}
 

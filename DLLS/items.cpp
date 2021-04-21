@@ -13,11 +13,8 @@
 *
 ****/
 /*
-
 ===== items.cpp ========================================================
-
   functions governing the selection/use of weapons for players
-
 */
 
 #include "extdll.h"
@@ -66,7 +63,9 @@ void CWorldItem::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseEntity::KeyValue (pkvd);
+		}
 	}
 
 void CWorldItem::Spawn (void)
@@ -111,7 +110,8 @@ void CWorldItem::Spawn (void)
 
 void CItem::Spawn (void)
 	{
-	pev->movetype = MOVETYPE_TOSS;
+	// ESHQ: движок некорректно обрабатывает поведение MOVETYPE_TOSS; временная замена
+	pev->movetype = MOVETYPE_STEP;
 	pev->solid = SOLID_TRIGGER;
 
 	// ESHQ: поддержка свойств новых объектов
@@ -130,7 +130,8 @@ void CItem::Spawn (void)
 
 	if (DROP_TO_FLOOR (ENT (pev)) == 0)
 		{
-		ALERT (at_error, "Item %s fell out of level at %f,%f,%f\n", STRING (pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+		ALERT (at_error, "Item %s fell out of level at %f,%f,%f\n", STRING (pev->classname), 
+			pev->origin.x, pev->origin.y, pev->origin.z);
 		UTIL_Remove (this);
 		return;
 		}
@@ -189,7 +190,7 @@ CBaseEntity* CItem::Respawn (void)
 
 	UTIL_SetOrigin (pev, g_pGameRules->VecItemRespawnSpot (this));	// blip to whereever you should respawn.
 
-	SetThink (Materialize);
+	SetThink (&CItem::Materialize);
 	pev->nextthink = g_pGameRules->FlItemRespawnTime (this);
 	return this;
 	}
@@ -480,6 +481,8 @@ class CItemKey: public CItem
 		return 0;
 		}
 	};
+
+LINK_ENTITY_TO_CLASS (item_key, CItemKey);
 
 class CItemLongJump: public CItem
 	{

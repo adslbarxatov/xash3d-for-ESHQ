@@ -1110,8 +1110,8 @@ void CControllerHeadBall::Spawn (void)
 	UTIL_SetSize (pev, Vector (0, 0, 0), Vector (0, 0, 0));
 	UTIL_SetOrigin (pev, pev->origin);
 
-	SetThink (HuntThink);
-	SetTouch (BounceTouch);
+	SetThink (&CControllerHeadBall::HuntThink);
+	SetTouch (&CControllerHeadBall::BounceTouch);
 
 	m_vecIdeal = Vector (0, 0, 0);
 
@@ -1179,27 +1179,26 @@ void CControllerHeadBall::HuntThink (void)
 		WRITE_COORD (tr.vecEndPos.y);
 		WRITE_COORD (tr.vecEndPos.z);
 		WRITE_SHORT (g_sModelIndexLaser);
-		WRITE_BYTE (0); // frame start
-		WRITE_BYTE (10); // framerate
-		WRITE_BYTE (3); // life
-		WRITE_BYTE (20);  // width
-		WRITE_BYTE (0);   // noise
-		WRITE_BYTE (255);   // r, g, b
-		WRITE_BYTE (255);   // r, g, b
-		WRITE_BYTE (255);   // r, g, b
+		WRITE_BYTE (0);		// frame start
+		WRITE_BYTE (10);	// framerate
+		WRITE_BYTE (3);		// life
+		WRITE_BYTE (20);	// width
+		WRITE_BYTE (0);		// noise
+		WRITE_BYTE (255);	// r, g, b
+		WRITE_BYTE (255);	// r, g, b
+		WRITE_BYTE (255);	// r, g, b
 		WRITE_BYTE (255);	// brightness
-		WRITE_BYTE (10);		// speed
+		WRITE_BYTE (10);	// speed
 		MESSAGE_END ();
 
-		UTIL_EmitAmbientSound (ENT (pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG (140, 160));
+		UTIL_EmitAmbientSound (ENT (pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_MEDIUM, 
+			0, RANDOM_LONG (140, 160));
 
 		m_flNextAttack = gpGlobals->time + 3.0;
 
-		SetThink (DieThink);
+		SetThink (&CControllerHeadBall::DieThink);
 		pev->nextthink = gpGlobals->time + 0.3;
 		}
-
-	// Crawl( );
 	}
 
 void CControllerHeadBall::DieThink (void)
@@ -1238,29 +1237,26 @@ void CControllerHeadBall::Crawl (void)
 	WRITE_COORD (vecPnt.y);
 	WRITE_COORD (vecPnt.z);
 	WRITE_SHORT (g_sModelIndexLaser);
-	WRITE_BYTE (0); // frame start
-	WRITE_BYTE (10); // framerate
-	WRITE_BYTE (3); // life
-	WRITE_BYTE (20);  // width
-	WRITE_BYTE (0);   // noise
-	WRITE_BYTE (255);   // r, g, b
-	WRITE_BYTE (255);   // r, g, b
-	WRITE_BYTE (255);   // r, g, b
+	WRITE_BYTE (0);		// frame start
+	WRITE_BYTE (10);	// framerate
+	WRITE_BYTE (3);		// life
+	WRITE_BYTE (20);	// width
+	WRITE_BYTE (0);		// noise
+	WRITE_BYTE (255);	// r, g, b
+	WRITE_BYTE (255);	// r, g, b
+	WRITE_BYTE (255);	// r, g, b
 	WRITE_BYTE (255);	// brightness
-	WRITE_BYTE (10);		// speed
+	WRITE_BYTE (10);	// speed
 	MESSAGE_END ();
 	}
 
 void CControllerHeadBall::BounceTouch (CBaseEntity* pOther)
 	{
 	Vector vecDir = m_vecIdeal.Normalize ();
-
 	TraceResult tr = UTIL_GetGlobalTrace ();
-
 	float n = -DotProduct (tr.vecPlaneNormal, vecDir);
 
 	vecDir = 2.0 * tr.vecPlaneNormal * n + vecDir;
-
 	m_vecIdeal = vecDir * m_vecIdeal.Length ();
 	}
 
@@ -1293,8 +1289,8 @@ void CControllerZapBall::Spawn (void)
 	UTIL_SetSize (pev, Vector (0, 0, 0), Vector (0, 0, 0));
 	UTIL_SetOrigin (pev, pev->origin);
 
-	SetThink (AnimateThink);
-	SetTouch (ExplodeTouch);
+	SetThink (&CControllerZapBall::AnimateThink);
+	SetTouch (&CControllerZapBall::ExplodeTouch);
 
 	m_hOwner = Instance (pev->owner);
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
@@ -1341,8 +1337,8 @@ void CControllerZapBall::ExplodeTouch (CBaseEntity* pOther)
 		pOther->TraceAttack (pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize (), &tr, DMG_ENERGYBEAM);
 		ApplyMultiDamage (pevOwner, pevOwner);
 
-		UTIL_EmitAmbientSound (ENT (pev), tr.vecEndPos, "weapons/electro4.wav", 0.3, ATTN_NORM, 0, RANDOM_LONG (90, 99));
-
+		UTIL_EmitAmbientSound (ENT (pev), tr.vecEndPos, "weapons/electro4.wav", 0.3, 
+			ATTN_MEDIUM, 0, RANDOM_LONG (90, 99));
 		}
 
 	UTIL_Remove (this);

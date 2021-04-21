@@ -1199,13 +1199,13 @@ void CHGrunt::DeathSound (void)
 	switch (RANDOM_LONG (0, 2))
 		{
 		case 0:
-			EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_die1.wav", 1, ATTN_IDLE);
+			EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_die1.wav", 1, ATTN_SMALL);
 			break;
 		case 1:
-			EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_die2.wav", 1, ATTN_IDLE);
+			EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_die2.wav", 1, ATTN_SMALL);
 			break;
 		case 2:
-			EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_die3.wav", 1, ATTN_IDLE);
+			EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_die3.wav", 1, ATTN_SMALL);
 			break;
 		}
 	}
@@ -2385,7 +2385,7 @@ void CHGruntRepel::Spawn (void)
 	Precache ();
 	pev->solid = SOLID_NOT;
 
-	SetUse (RepelUse);
+	SetUse (&CHGruntRepel::RepelUse);
 	}
 
 void CHGruntRepel::Precache (void)
@@ -2415,13 +2415,11 @@ void CHGruntRepel::RepelUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 	pBeam->PointEntInit (pev->origin + Vector (0, 0, 112), pGrunt->entindex ());
 	pBeam->SetFlags (BEAM_FSOLID);
 	pBeam->SetColor (255, 255, 255);
-	pBeam->SetThink (SUB_Remove);
+	pBeam->SetThink (&CBaseEntity::SUB_Remove);
 	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
 
 	UTIL_Remove (this);
 	}
-
-
 
 //=========================================================
 // DEAD HGRUNT PROP

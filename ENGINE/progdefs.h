@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -17,7 +17,7 @@
 #define PROGDEFS_H
 
 typedef struct
-{	
+	{
 	float		time;
 	float		frametime;
 	float		force_retouch;
@@ -37,7 +37,7 @@ typedef struct
 	vec3_t		trace_endpos;
 	vec3_t		trace_plane_normal;
 	float		trace_plane_dist;
-	edict_t		*trace_ent;
+	edict_t* trace_ent;
 	float		trace_inopen;
 	float		trace_inwater;
 	int		trace_hitgroup;
@@ -46,17 +46,17 @@ typedef struct
 	int		cdAudioTrack;
 	int		maxClients;
 	int		maxEntities;
-	const char	*pStringBase;
+	const char* pStringBase;
 
-	void		*pSaveData;	// (SAVERESTOREDATA *) pointer
+	void* pSaveData;	// (SAVERESTOREDATA *) pointer
 	vec3_t		vecLandmarkOffset;
-} globalvars_t;
+	} globalvars_t;
 
 typedef struct entvars_s
-{
+	{
 	string_t		classname;
 	string_t		globalname;
-	
+
 	vec3_t		origin;
 	vec3_t		oldorigin;
 	vec3_t		velocity;
@@ -133,16 +133,16 @@ typedef struct entvars_s
 	int		button;
 	int		impulse;
 
-	edict_t		*chain;		// Entity pointer when linked into a linked list
-	edict_t		*dmg_inflictor;
-	edict_t		*enemy;
-	edict_t		*aiment;		// entity pointer when MOVETYPE_FOLLOW
-	edict_t		*owner;
-	edict_t		*groundentity;
+	edict_t* chain;		// Entity pointer when linked into a linked list
+	edict_t* dmg_inflictor;
+	edict_t* enemy;
+	edict_t* aiment;		// entity pointer when MOVETYPE_FOLLOW
+	edict_t* owner;
+	edict_t* groundentity;
 
 	int		spawnflags;
 	int		flags;
-	
+
 	int		colormap;		// lowbyte topcolor, highbyte bottomcolor
 	int		team;
 
@@ -175,7 +175,7 @@ typedef struct entvars_s
 	float		pain_finished;
 	float		radsuit_finished;
 
-	edict_t		*pContainingEntity;
+	edict_t* pContainingEntity;
 
 	int		playerclass;
 	float		maxspeed;
@@ -211,10 +211,10 @@ typedef struct entvars_s
 	vec3_t		vuser2;
 	vec3_t		vuser3;
 	vec3_t		vuser4;
-	edict_t		*euser1;
-	edict_t		*euser2;
-	edict_t		*euser3;
-	edict_t		*euser4;
-} entvars_t;
+	edict_t* euser1;
+	edict_t* euser2;
+	edict_t* euser3;
+	edict_t* euser4;
+	} entvars_t;
 
 #endif//PROGDEFS_H

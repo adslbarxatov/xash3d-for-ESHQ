@@ -812,7 +812,7 @@ static void FS_WriteGameInfo( const char *filepath, gameinfo_t *GameInfo )
 	if( Q_strlen( GameInfo->trainmap ))
 		FS_Printf( f, "trainmap\t\t\"%s\"\n", GameInfo->trainmap );
 
-	// ESHQ: ¤®¡ ¢«¥­® ¤«ï ¯®¤¤¥à¦ª¨ â¨âà®¢
+	// ESHQ: äîáàâëåíî äëÿ ïîääåğæêè òèòğîâ
 	if( Q_strlen( GameInfo->creditsmap ))
 		FS_Printf( f, "creditsmap\t\t\"%s\"\n", GameInfo->creditsmap );
 
@@ -978,7 +978,7 @@ static qboolean FS_ParseLiblistGam( const char *filename, const char *gamedir, g
 			pfile = COM_ParseFile( pfile, GameInfo->trainmap );
 			COM_StripExtension( GameInfo->trainmap ); // HQ2:Amen has extension .bsp
 		}
-		// ESHQ: ¤®¡ ¢«¥­® ¤«ï ¯®¤¤¥à¦ª¨ â¨âà®¢
+		// ESHQ: äîáàâëåíî äëÿ ïîääåğæêè òèòğîâ
 		else if( !Q_stricmp( token, "creditsmap" ))
 		{
 			pfile = COM_ParseFile( pfile, GameInfo->creditsmap );
@@ -1180,7 +1180,7 @@ static qboolean FS_ReadGameInfo( const char *filepath, const char *gamedir, game
 			pfile = COM_ParseFile( pfile, GameInfo->trainmap );
 			COM_StripExtension( GameInfo->trainmap ); // HQ2:Amen has extension .bsp
 		}
-		// ESHQ: ¤®¡ ¢«¥­® ¤«ï ¯®¤¤¥à¦ª¨ áã¡â¨âà®¢
+		// ESHQ: äîáàâëåíî äëÿ ïîääåğæêè òèòğîâ
 		else if( !Q_stricmp( token, "creditsmap" ))
 		{
 			pfile = COM_ParseFile( pfile, GameInfo->creditsmap );

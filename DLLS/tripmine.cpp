@@ -117,7 +117,7 @@ void CTripmineGrenade::Spawn (void)
 		m_flPowerUp = gpGlobals->time + 2.5;
 		}
 
-	SetThink (PowerupThink);
+	SetThink (&CTripmineGrenade::PowerupThink);
 	pev->nextthink = gpGlobals->time + 0.2;
 
 	pev->takedamage = DAMAGE_YES;
@@ -150,11 +150,8 @@ void CTripmineGrenade::Precache (void)
 
 void CTripmineGrenade::WarningThink (void)
 	{
-	// play warning sound
-	// EMIT_SOUND( ENT(pev), CHAN_VOICE, "buttons/Blip2.wav", 1.0, ATTN_MEDIUM );
-
 	// set to power up
-	SetThink (PowerupThink);
+	SetThink (&CTripmineGrenade::PowerupThink);
 	pev->nextthink = gpGlobals->time + 1.0;
 	}
 
@@ -186,7 +183,7 @@ void CTripmineGrenade::PowerupThink (void)
 			{
 			STOP_SOUND (ENT (pev), CHAN_VOICE, "weapons/mine_deploy.wav");
 			STOP_SOUND (ENT (pev), CHAN_BODY, "weapons/mine_charge.wav");
-			SetThink (SUB_Remove);
+			SetThink (&CBaseEntity::SUB_Remove);
 			pev->nextthink = gpGlobals->time + 0.1;
 			ALERT (at_console, "WARNING:Tripmine at %.0f, %.0f, %.0f removed\n", pev->origin.x, pev->origin.y, pev->origin.z);
 			KillBeam ();
@@ -201,7 +198,7 @@ void CTripmineGrenade::PowerupThink (void)
 		CBaseEntity* pMine = Create ("weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles);
 		pMine->pev->spawnflags |= SF_NORESPAWN;
 
-		SetThink (SUB_Remove);
+		SetThink (&CBaseEntity::SUB_Remove);
 		KillBeam ();
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
@@ -221,7 +218,6 @@ void CTripmineGrenade::PowerupThink (void)
 		}
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
-
 
 void CTripmineGrenade::KillBeam (void)
 	{
@@ -243,7 +239,7 @@ void CTripmineGrenade::MakeBeam (void)
 	m_flBeamLength = tr.flFraction;
 
 	// set to follow laser spot
-	SetThink (BeamBreakThink);
+	SetThink (&CTripmineGrenade::BeamBreakThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
@@ -255,7 +251,6 @@ void CTripmineGrenade::MakeBeam (void)
 	m_pBeam->SetScrollRate (255);
 	m_pBeam->SetBrightness (64);
 	}
-
 
 void CTripmineGrenade::BeamBreakThink (void)
 	{
@@ -269,7 +264,7 @@ void CTripmineGrenade::BeamBreakThink (void)
 
 	// ALERT( at_console, "%f : %f\n", tr.flFraction, m_flBeamLength );
 
-	// respawn detect. 
+	// respawn detect
 	if (!m_pBeam)
 		{
 		MakeBeam ();
@@ -293,9 +288,12 @@ void CTripmineGrenade::BeamBreakThink (void)
 
 	if (bBlowup)
 		{
-		// a bit of a hack, but all CGrenade code passes pev->owner along to make sure the proper player gets credit for the kill
-		// so we have to restore pev->owner from pRealOwner, because an entity's tracelines don't strike it's pev->owner which meant
-		// that a player couldn't trigger his own tripmine. Now that the mine is exploding, it's safe the restore the owner so the 
+		// a bit of a hack, but all CGrenade code passes pev->owner along to make sure the 
+		// proper player gets credit for the kill
+		// so we have to restore pev->owner from pRealOwner, because an entity's tracelines 
+		// don't strike it's pev->owner which meant
+		// that a player couldn't trigger his own tripmine. Now that the mine is exploding, 
+		// it's safe the restore the owner so the 
 		// CGrenade code knows who the explosive really belongs to.
 		pev->owner = m_pRealOwner;
 		pev->health = 0;
@@ -311,8 +309,7 @@ int CTripmineGrenade::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacke
 	if (gpGlobals->time < m_flPowerUp && flDamage < pev->health)
 		{
 		// disable
-		// Create( "weapon_tripmine", pev->origin + m_vecDir * 24, pev->angles );
-		SetThink (SUB_Remove);
+		SetThink (&CBaseEntity::SUB_Remove);
 		pev->nextthink = gpGlobals->time + 0.1;
 		KillBeam ();
 		return FALSE;
@@ -330,12 +327,11 @@ void CTripmineGrenade::Killed (entvars_t* pevAttacker, int iGib)
 		pev->owner = ENT (pevAttacker);
 		}
 
-	SetThink (DelayDeathThink);
+	SetThink (&CTripmineGrenade::DelayDeathThink);
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT (0.1, 0.3);
 
 	EMIT_SOUND (ENT (pev), CHAN_BODY, "common/null.wav", 0.5, ATTN_MEDIUM); // shut off chargeup
 	}
-
 
 void CTripmineGrenade::DelayDeathThink (void)
 	{
@@ -357,10 +353,9 @@ void CTripmine::Spawn ()
 	pev->frame = 0;
 	pev->body = 3;
 	pev->sequence = TRIPMINE_GROUND;
-	// ResetSequenceInfo( );
 	pev->framerate = 0;
 
-	FallInit ();// get ready to fall down
+	FallInit ();	// get ready to fall down
 
 	m_iDefaultAmmo = TRIPMINE_DEFAULT_GIVE;
 
@@ -406,8 +401,7 @@ BOOL CTripmine::Deploy ()
 	return DefaultDeploy ("models/v_tripmine.mdl", "models/p_tripmine.mdl", TRIPMINE_DRAW, "trip");
 	}
 
-
-void CTripmine::Holster (int skiplocal /* = 0 */)
+void CTripmine::Holster (int skiplocal)
 	{
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase () + 0.5;
 
@@ -415,7 +409,7 @@ void CTripmine::Holster (int skiplocal /* = 0 */)
 		{
 		// out of mines
 		m_pPlayer->pev->weapons &= ~(1 << WEAPON_TRIPMINE);
-		SetThink (DestroyItem);
+		SetThink (&CBasePlayerItem::DestroyItem);
 		pev->nextthink = gpGlobals->time + 0.1;
 		}
 

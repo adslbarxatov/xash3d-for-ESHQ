@@ -1653,6 +1653,7 @@ void UI_Shutdown( void )
 	Cmd_RemoveCommand( "menu_defaults" );
 	Cmd_RemoveCommand( "menu_cinematics" );
 	Cmd_RemoveCommand( "menu_customgame" );
+	Cmd_RemoveCommand( "menu_quit" );
 
 	memset( &uiStatic, 0, sizeof( uiStatic_t ));
 }

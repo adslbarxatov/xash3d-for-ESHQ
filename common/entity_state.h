@@ -129,6 +129,7 @@ typedef struct clientdata_s
 	vec3_t		punchangle;
 	int		flags;
 	int		waterlevel;
+	// Изменено для поддержки собираемых объектов
 	int		collectedItems;
 	int		watertype;
 	vec3_t		view_ofs;

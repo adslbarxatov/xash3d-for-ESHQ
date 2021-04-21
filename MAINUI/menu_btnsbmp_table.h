@@ -77,6 +77,7 @@ enum
 	PC_CONTENT_CONTROL,
 	PC_UPDATE2,
 	PC_VISIT_WON,
+	// Изменено для поддержки титров
 	PC_CREDITS, //PC_PREVIEWS,
 	PC_ADV_OPT,
 	PC_3DINFO_SITE,

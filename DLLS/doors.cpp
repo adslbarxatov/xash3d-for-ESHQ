@@ -13,9 +13,7 @@
 *
 ****/
 /*
-
 ===== doors.cpp ========================================================
-
 */
 
 #include "extdll.h"
@@ -377,6 +375,7 @@ void CBaseDoor::Precache (void)
 			sprintf (precacheBuf, "doors/doormove%i.wav", m_bMoveSnd);
 			PRECACHE_SOUND (precacheBuf);
 			pev->noiseMoving = ALLOC_STRING (precacheBuf);
+			break;
 
 		case	9:
 			sprintf (precacheBuf, "doors/doormove9%c.wav", 'a' + RANDOM_LONG (0, 2));
@@ -397,6 +396,7 @@ void CBaseDoor::Precache (void)
 		default:
 			pev->noiseArrived = ALLOC_STRING ("common/null.wav");
 			break;
+
 		case	1:
 		case	2:
 		case	3:
@@ -632,7 +632,7 @@ void CBaseDoor::DoorGoUp (void)
 	{
 	entvars_t* pevActivator;
 
-	// It could be going-down, if blocked.
+	// It could be going-down, if blocked
 	ASSERT (m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
 
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
@@ -642,7 +642,7 @@ void CBaseDoor::DoorGoUp (void)
 
 	m_toggle_state = TS_GOING_UP;
 
-	SetMoveDone (DoorHitTop);
+	SetMoveDone (&CBaseDoor::DoorHitTop);
 	if (FClassnameIs (pev, "func_door_rotating"))		// !!! BUGBUG Triggered doors don't work with this yet
 		{
 		float	sign = 1.0;
@@ -651,14 +651,14 @@ void CBaseDoor::DoorGoUp (void)
 			{
 			pevActivator = m_hActivator->pev;
 
-			if (!FBitSet (pev->spawnflags, SF_DOOR_ONEWAY) && pev->movedir.y) 		// Y axis rotation, move away from the player
+			// Y axis rotation, move away from the player
+			if (!FBitSet (pev->spawnflags, SF_DOOR_ONEWAY) && pev->movedir.y) 		
 				{
 				Vector vec = pevActivator->origin - pev->origin;
 				Vector angles = pevActivator->angles;
 				angles.x = 0;
 				angles.z = 0;
 				UTIL_MakeVectors (angles);
-				//			Vector vnext = (pevToucher->origin + (pevToucher->velocity * 10)) - pev->origin;
 				UTIL_MakeVectors (pevActivator->angles);
 				Vector vnext = (pevActivator->origin + (gpGlobals->v_forward * 10)) - pev->origin;
 				if ((vec.x * vnext.y - vec.y * vnext.x) < 0)
@@ -668,9 +668,10 @@ void CBaseDoor::DoorGoUp (void)
 		AngularMove (m_vecAngle2 * sign, pev->speed);
 		}
 	else
+		{
 		LinearMove (m_vecPosition2, pev->speed);
+		}
 	}
-
 
 //
 // The door has reached the "up" position.  Either go back down, or wait for another activation.
@@ -691,13 +692,13 @@ void CBaseDoor::DoorHitTop (void)
 		{
 		// Re-instate touch method, movement is complete
 		if (!FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY))
-			SetTouch (DoorTouch);
+			SetTouch (&CBaseDoor::DoorTouch);
 		}
 	else
 		{
 		// In flWait seconds, DoorGoDown will fire, unless wait is -1, then door stays open
 		pev->nextthink = pev->ltime + m_flWait;
-		SetThink (DoorGoDown);
+		SetThink (&CBaseDoor::DoorGoDown);
 
 		if (m_flWait == -1)
 			{
@@ -712,7 +713,6 @@ void CBaseDoor::DoorHitTop (void)
 	SUB_UseTargets (m_hActivator, USE_TOGGLE, 0); // this isn't finished
 	}
 
-
 //
 // Starts the door going to its "down" position (simply ToggleData->vecPosition1).
 //
@@ -726,7 +726,7 @@ void CBaseDoor::DoorGoDown (void)
 #endif // DOOR_ASSERT
 	m_toggle_state = TS_GOING_DOWN;
 
-	SetMoveDone (DoorHitBottom);
+	SetMoveDone (&CBaseDoor::DoorHitBottom);
 	if (FClassnameIs (pev, "func_door_rotating"))//rotating door
 		AngularMove (m_vecAngle1, pev->speed);
 	else
@@ -753,7 +753,7 @@ void CBaseDoor::DoorHitBottom (void)
 		SetTouch (NULL);
 		}
 	else // touchable door
-		SetTouch (DoorTouch);
+		SetTouch (&CBaseDoor::DoorTouch);
 
 	SUB_UseTargets (m_hActivator, USE_TOGGLE, 0); // this isn't finished
 
@@ -1029,6 +1029,7 @@ void CMomentaryDoor::Precache (void)
 		default:
 			pev->noiseMoving = ALLOC_STRING ("common/null.wav");
 			break;
+
 		case	1:
 		case	2:
 		case	3:
@@ -1064,6 +1065,7 @@ void CMomentaryDoor::Precache (void)
 		default:
 			pev->noiseArrived = ALLOC_STRING ("common/null.wav");
 			break;
+
 		case	1:
 		case	2:
 		case	3:

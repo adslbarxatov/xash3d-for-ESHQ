@@ -213,7 +213,7 @@ void CFlockingFlyerFlock::SpawnFlock (void)
 
 		pBoid->pev->frame = 0;
 		pBoid->pev->nextthink = gpGlobals->time + 0.2;
-		pBoid->SetThink (CFlockingFlyer::IdleThink);
+		pBoid->SetThink (&CFlockingFlyer::IdleThink);
 
 		if (pBoid != pLeader)
 			{
@@ -231,7 +231,7 @@ void CFlockingFlyer::Spawn ()
 
 	pev->frame = 0;
 	pev->nextthink = gpGlobals->time + 0.1;
-	SetThink (IdleThink);
+	SetThink (&CFlockingFlyer::IdleThink);
 	}
 
 //=========================================================
@@ -296,7 +296,7 @@ void CFlockingFlyer::Killed (entvars_t* pevAttacker, int iGib)
 	UTIL_SetSize (pev, Vector (0, 0, 0), Vector (0, 0, 0));
 	pev->movetype = MOVETYPE_TOSS;
 
-	SetThink (FallHack);
+	SetThink (&CFlockingFlyer::FallHack);
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
 
@@ -370,7 +370,7 @@ void CFlockingFlyer::IdleThink (void)
 	// see if there's a client in the same pvs as the monster
 	if (!FNullEnt (FIND_CLIENT_IN_PVS (edict ())))
 		{
-		SetThink (Start);
+		SetThink (&CFlockingFlyer::Start);
 		pev->nextthink = gpGlobals->time + 0.1;
 		}
 	}
@@ -384,27 +384,13 @@ void CFlockingFlyer::Start (void)
 
 	if (IsLeader ())
 		{
-		SetThink (FlockLeaderThink);
+		SetThink (&CFlockingFlyer::FlockLeaderThink);
 		}
 	else
 		{
-		SetThink (FlockFollowerThink);
+		SetThink (&CFlockingFlyer::FlockFollowerThink);
 		}
 
-	/*
-		Vector	vecTakeOff;
-		vecTakeOff = Vector ( 0 , 0 , 0 );
-
-		vecTakeOff.z = 50 + RANDOM_FLOAT ( 0, 100 );
-		vecTakeOff.x = 20 - RANDOM_FLOAT ( 0, 40);
-		vecTakeOff.y = 20 - RANDOM_FLOAT ( 0, 40);
-
-		pev->velocity = vecTakeOff;
-
-
-		pev->speed = pev->velocity.Length();
-		pev->sequence = 0;
-	*/
 	SetActivity (ACT_FLY);
 	ResetSequenceInfo ();
 	BoidAdvanceFrame ();
@@ -442,7 +428,8 @@ void CFlockingFlyer::FormFlock (void)
 			}
 		}
 
-	SetThink (IdleThink);// now that flock is formed, go to idle and wait for a player to come along.
+	// now that flock is formed, go to idle and wait for a player to come along
+	SetThink (&CFlockingFlyer::IdleThink);
 	pev->nextthink = gpGlobals->time;
 	}
 
@@ -676,8 +663,8 @@ void CFlockingFlyer::FlockFollowerThink (void)
 
 	if (IsLeader () || !InSquad ())
 		{
-		// the leader has been killed and this flyer suddenly finds himself the leader. 
-		SetThink (FlockLeaderThink);
+		// the leader has been killed and this flyer suddenly finds himself the leader
+		SetThink (&CFlockingFlyer::FlockLeaderThink);
 		return;
 		}
 

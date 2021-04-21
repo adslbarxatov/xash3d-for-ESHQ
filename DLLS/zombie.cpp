@@ -155,14 +155,16 @@ void CZombie::PainSound (void)
 	int pitch = 95 + RANDOM_LONG (0, 9);
 
 	if (RANDOM_LONG (0, 5) < 2)
-		EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pPainSounds[RANDOM_LONG (0, ARRAYSIZE (pPainSounds) - 1)], 1.0, ATTN_MEDIUM, 0, pitch);
+		EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pPainSounds[RANDOM_LONG (0, HLARRAYSIZE (pPainSounds) - 1)], 
+			1.0, ATTN_MEDIUM, 0, pitch);
 	}
 
 void CZombie::AlertSound (void)
 	{
 	int pitch = 95 + RANDOM_LONG (0, 9);
 
-	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pAlertSounds[RANDOM_LONG (0, ARRAYSIZE (pAlertSounds) - 1)], 1.0, ATTN_MEDIUM, 0, pitch);
+	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pAlertSounds[RANDOM_LONG (0, HLARRAYSIZE (pAlertSounds) - 1)], 
+		1.0, ATTN_MEDIUM, 0, pitch);
 	}
 
 void CZombie::IdleSound (void)
@@ -170,13 +172,15 @@ void CZombie::IdleSound (void)
 	int pitch = 95 + RANDOM_LONG (0, 9);
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pIdleSounds[RANDOM_LONG (0, ARRAYSIZE (pIdleSounds) - 1)], 1.0, ATTN_SMALL, 0, 100 + RANDOM_LONG (-5, 5));
+	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pIdleSounds[RANDOM_LONG (0, HLARRAYSIZE (pIdleSounds) - 1)], 1.0,
+		ATTN_SMALL, 0, 100 + RANDOM_LONG (-5, 5));
 	}
 
 void CZombie::AttackSound (void)
 	{
 	// Play a random attack sound
-	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pAttackSounds[RANDOM_LONG (0, ARRAYSIZE (pAttackSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, pAttackSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackSounds) - 1)], 1.0,
+		ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 	}
 
 
@@ -202,12 +206,12 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 					}
 				// Play a random attack hit sound
-				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0,
-					ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0,
+					HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 				}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0,
-					ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0,
+					HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 
 			if (RANDOM_LONG (0, 1))
 				AttackSound ();
@@ -227,12 +231,12 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * 100;
 					}
-				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0,
-					ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0,
+					HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 				}
 			else
-				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0,
-					ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0,
+					HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 
 			if (RANDOM_LONG (0, 1))
 				AttackSound ();
@@ -250,12 +254,12 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;
 					}
-				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0,
-					ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0,
+					HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 				}
 			else
-				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0, HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0,
-					ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0,
+					HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 
 			if (RANDOM_LONG (0, 1))
 				AttackSound ();
@@ -280,7 +284,7 @@ void CZombie::Spawn ()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	
+
 	// ESHQ
 	m_bloodColor = BLOOD_COLOR_RED;
 
@@ -293,7 +297,7 @@ void CZombie::Spawn ()
 	// ESHQ: поддержка скинов
 	if ((pev->skin < 0) || (pev->skin > 1))
 		pev->skin = 0;
-	
+
 	MonsterInit ();
 	}
 
@@ -344,127 +348,126 @@ int CZombie::IgnoreConditions (void)
 	return iIgnore;
 	}
 
-	// ESHQ: обработка скинов
-	void CZombie::KeyValue (KeyValueData* pkvd)
+// ESHQ: обработка скинов
+void CZombie::KeyValue (KeyValueData* pkvd)
+	{
+	if (FStrEq (pkvd->szKeyName, "skin"))
 		{
-		if (FStrEq (pkvd->szKeyName, "skin"))
-			{
-			pev->skin = atoi (pkvd->szValue);
-			pkvd->fHandled = TRUE;
-			}
-		else
-			CBaseMonster::KeyValue (pkvd);
+		pev->skin = atoi (pkvd->szValue);
+		pkvd->fHandled = TRUE;
+		}
+	else
+		CBaseMonster::KeyValue (pkvd);
+	}
+
+//=========================================================
+// ESHQ: мёртвый зомби
+//=========================================================
+class CDeadZombie: public CBaseMonster
+	{
+	public:
+		void Spawn (void);
+		int	Classify (void) { return	CLASS_HUMAN_ASSASSIN; }
+
+		void KeyValue (KeyValueData* pkvd);
+
+		int	m_iPose;
+		static char* m_szPoses[2];
+	};
+
+char* CDeadZombie::m_szPoses[] = {"dead_back", "dead_stomach"};
+
+void CDeadZombie::KeyValue (KeyValueData* pkvd)
+	{
+	if (FStrEq (pkvd->szKeyName, "pose"))
+		{
+		m_iPose = atoi (pkvd->szValue);
+		pkvd->fHandled = TRUE;
+		}
+	else if (FStrEq (pkvd->szKeyName, "skin"))
+		{
+		pev->skin = atoi (pkvd->szValue);
+		pkvd->fHandled = TRUE;
+		}
+	else
+		CBaseMonster::KeyValue (pkvd);
+	}
+
+LINK_ENTITY_TO_CLASS (monster_zombie_dead, CDeadZombie);
+
+void CDeadZombie::Spawn (void)
+	{
+	PRECACHE_MODEL ("models/zombie.mdl");
+	SET_MODEL (ENT (pev), "models/zombie.mdl");
+
+	pev->effects = 0;
+	pev->yaw_speed = 8;
+	pev->sequence = 0;
+	m_bloodColor = BLOOD_COLOR_RED;
+
+	pev->sequence = LookupSequence (m_szPoses[m_iPose]);
+	if (pev->sequence == -1)
+		{
+		ALERT (at_console, "Dead zombie with bad pose\n");
 		}
 
-	//=========================================================
-	// ESHQ: мёртвый зомби
-	//=========================================================
-	class CDeadZombie: public CBaseMonster
+	// Corpses have less health
+	pev->health = 20;
+
+	if ((pev->skin < 0) || (pev->skin > 1))
+		pev->skin = 0;
+
+	MonsterInitDead ();
+	}
+
+//=========================================================
+// ESHQ: горелый зомби
+//=========================================================
+class CBurnedZombie: public CBaseMonster
+	{
+	public:
+		void Spawn (void);
+		int	Classify (void) { return	CLASS_HUMAN_ASSASSIN; }
+
+		void KeyValue (KeyValueData* pkvd);
+
+		int	m_iPose;
+		static char* m_szPoses[2];
+	};
+
+char* CBurnedZombie::m_szPoses[] = {"dead_back", "dead_stomach"};
+
+void CBurnedZombie::KeyValue (KeyValueData* pkvd)
+	{
+	if (FStrEq (pkvd->szKeyName, "pose"))
 		{
-		public:
-			void Spawn (void);
-			int	Classify (void) { return	CLASS_HUMAN_ASSASSIN; }
+		m_iPose = atoi (pkvd->szValue);
+		pkvd->fHandled = TRUE;
+		}
+	else
+		CBaseMonster::KeyValue (pkvd);
+	}
 
-			void KeyValue (KeyValueData* pkvd);
+LINK_ENTITY_TO_CLASS (monster_zombie_burned, CBurnedZombie);
 
-			int	m_iPose;
-			static char* m_szPoses[2];
-		};
+void CBurnedZombie::Spawn (void)
+	{
+	PRECACHE_MODEL ("models/zombie.mdl");
+	SET_MODEL (ENT (pev), "models/zombie.mdl");
 
-	char* CDeadZombie::m_szPoses[] = {"dead_back", "dead_stomach"};
+	pev->effects = 0;
+	pev->yaw_speed = 8;
+	pev->sequence = 0;
+	m_bloodColor = BLOOD_COLOR_RED;
 
-	void CDeadZombie::KeyValue (KeyValueData* pkvd)
+	pev->sequence = LookupSequence (m_szPoses[m_iPose]);
+	if (pev->sequence == -1)
 		{
-		if (FStrEq (pkvd->szKeyName, "pose"))
-			{
-			m_iPose = atoi (pkvd->szValue);
-			pkvd->fHandled = TRUE;
-			}
-		else if (FStrEq (pkvd->szKeyName, "skin"))
-			{
-			pev->skin = atoi (pkvd->szValue);
-			pkvd->fHandled = TRUE;
-			}
-		else
-			CBaseMonster::KeyValue (pkvd);
+		ALERT (at_console, "Burned zombie with bad pose\n");
 		}
 
-	LINK_ENTITY_TO_CLASS (monster_zombie_dead, CDeadZombie);
+	pev->health = 20;
+	pev->skin = 1;
 
-	void CDeadZombie::Spawn (void)
-		{
-		PRECACHE_MODEL ("models/zombie.mdl");
-		SET_MODEL (ENT (pev), "models/zombie.mdl");
-
-		pev->effects = 0;
-		pev->yaw_speed = 8;
-		pev->sequence = 0;
-		m_bloodColor = BLOOD_COLOR_RED;
-
-		pev->sequence = LookupSequence (m_szPoses[m_iPose]);
-		if (pev->sequence == -1)
-			{
-			ALERT (at_console, "Dead zombie with bad pose\n");
-			}
-
-		// Corpses have less health
-		pev->health = 20;
-
-		if ((pev->skin < 0) || (pev->skin > 1))
-			pev->skin = 0;
-
-		MonsterInitDead ();
-		}
-
-	//=========================================================
-	// ESHQ: горелый зомби
-	//=========================================================
-	class CBurnedZombie: public CBaseMonster
-		{
-		public:
-			void Spawn (void);
-			int	Classify (void) { return	CLASS_HUMAN_ASSASSIN; }
-
-			void KeyValue (KeyValueData* pkvd);
-
-			int	m_iPose;
-			static char* m_szPoses[2];
-		};
-
-	char* CBurnedZombie::m_szPoses[] = {"dead_back", "dead_stomach"};
-
-	void CBurnedZombie::KeyValue (KeyValueData* pkvd)
-		{
-		if (FStrEq (pkvd->szKeyName, "pose"))
-			{
-			m_iPose = atoi (pkvd->szValue);
-			pkvd->fHandled = TRUE;
-			}
-		else
-			CBaseMonster::KeyValue (pkvd);
-		}
-
-	LINK_ENTITY_TO_CLASS (monster_zombie_burned, CBurnedZombie);
-
-	void CBurnedZombie::Spawn (void)
-		{
-		PRECACHE_MODEL ("models/zombie.mdl");
-		SET_MODEL (ENT (pev), "models/zombie.mdl");
-
-		pev->effects = 0;
-		pev->yaw_speed = 8;
-		pev->sequence = 0;
-		m_bloodColor = BLOOD_COLOR_RED;
-
-		pev->sequence = LookupSequence (m_szPoses[m_iPose]);
-		if (pev->sequence == -1)
-			{
-			ALERT (at_console, "Burned zombie with bad pose\n");
-			}
-
-		pev->health = 20;
-		pev->skin = 1;
-
-		MonsterInitDead ();
-		}
+	MonsterInitDead ();
 	}

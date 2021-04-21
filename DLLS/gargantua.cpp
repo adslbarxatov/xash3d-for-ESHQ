@@ -159,13 +159,14 @@ void CStomp::Think (void)
 				UTIL_TraceLine (pev->origin, pev->origin - Vector (0, 0, 500), ignore_monsters, edict (), &tr);
 				pSprite->pev->origin = tr.vecEndPos;
 				pSprite->pev->velocity = Vector (RANDOM_FLOAT (-200, 200), RANDOM_FLOAT (-200, 200), 175);
-				// pSprite->AnimateAndDie( RANDOM_FLOAT( 8.0, 12.0 ) );
+
 				pSprite->pev->nextthink = gpGlobals->time + 0.3;
-				pSprite->SetThink (SUB_Remove);
+				pSprite->SetThink (&CBaseEntity::SUB_Remove);
 				pSprite->SetTransparency (kRenderTransAdd, 255, 255, 255, 255, kRenderFxFadeFast);
 				}
 			}
 		pev->dmgtime += STOMP_INTERVAL;
+
 		// Scale has the "life" of this effect
 		pev->scale -= STOMP_INTERVAL * pev->speed;
 		if (pev->scale <= 0)
@@ -174,10 +175,8 @@ void CStomp::Think (void)
 			UTIL_Remove (this);
 			STOP_SOUND (edict (), CHAN_BODY, GARG_STOMP_BUZZ_SOUND);
 			}
-
 		}
 	}
-
 
 void StreakSplash (const Vector& origin, const Vector& direction, int color, int count, int speed, int velocityRange)
 	{
@@ -1123,7 +1122,8 @@ void CGargantua::RunTask (Task_t* pTask)
 				pev->rendercolor.z = 0;
 				StopAnimation ();
 				pev->nextthink = gpGlobals->time + 0.15;
-				SetThink (SUB_Remove);
+				SetThink (&CBaseEntity::SUB_Remove);
+
 				int i;
 				int parts = MODEL_FRAMES (gGargGibModel);
 				for (i = 0; i < 10; i++)
@@ -1142,7 +1142,7 @@ void CGargantua::RunTask (Task_t* pTask)
 					pGib->pev->origin = pev->origin;
 					pGib->pev->velocity = UTIL_RandomBloodVector () * RANDOM_FLOAT (300, 500);
 					pGib->pev->nextthink = gpGlobals->time + 1.25;
-					pGib->SetThink (SUB_FadeOut);
+					pGib->SetThink (&CBaseEntity::SUB_FadeOut);
 					}
 				MESSAGE_BEGIN (MSG_PVS, SVC_TEMPENTITY, pev->origin);
 				WRITE_BYTE (TE_BREAKMODEL);
@@ -1356,7 +1356,7 @@ void SpawnExplosion (Vector center, float randomRange, float time, int magnitude
 	pExplosion->pev->spawnflags |= SF_ENVEXPLOSION_NODAMAGE;
 
 	pExplosion->Spawn ();
-	pExplosion->SetThink (CBaseEntity::SUB_CallUseToggle);
+	pExplosion->SetThink (&CBaseEntity::SUB_CallUseToggle);
 	pExplosion->pev->nextthink = gpGlobals->time + time;
 	}
 

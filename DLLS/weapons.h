@@ -255,9 +255,6 @@ class CBasePlayerItem: public CBaseAnimating
 
 		virtual CBasePlayerItem* GetWeaponPtr (void) { return NULL; };
 
-		// ESHQ: поддержка совместимости с клиентской частью
-		float	GetNextAttackDelay (float delay);
-
 		static ItemInfo ItemInfoArray[MAX_WEAPONS];
 		static AmmoInfo AmmoInfoArray[MAX_AMMO_SLOTS];
 
@@ -333,19 +330,22 @@ class CBasePlayerWeapon: public CBasePlayerItem
 
 		void PrintState (void);
 
+		// ESHQ: поддержка совместимости с клиентской частью
+		float GetNextAttackDelay (float delay);
+
 		virtual CBasePlayerItem* GetWeaponPtr (void) { return (CBasePlayerItem*)this; };
 
 		float m_flPumpTime;
-		int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
-		float	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
-		float	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
-		float	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
-		int		m_iPrimaryAmmoType;									// "primary" ammo index into players m_rgAmmo[]
-		int		m_iSecondaryAmmoType;								// "secondary" ammo index into players m_rgAmmo[]
-		int		m_iClip;											// number of shots left in the primary weapon clip, -1 it not used
-		int		m_iClientClip;										// the last version of m_iClip sent to hud dll
-		int		m_iClientWeaponState;								// the last version of the weapon state sent to hud dll (is current weapon, is on target)
-		int		m_fInReload;										// Are we in the middle of a reload;
+		int		m_fInSpecialReload;				// Are we in the middle of a reload for the shotguns
+		float	m_flNextPrimaryAttack;			// soonest time ItemPostFrame will call PrimaryAttack
+		float	m_flNextSecondaryAttack;		// soonest time ItemPostFrame will call SecondaryAttack
+		float	m_flTimeWeaponIdle;				// soonest time ItemPostFrame will call WeaponIdle
+		int		m_iPrimaryAmmoType;				// "primary" ammo index into players m_rgAmmo[]
+		int		m_iSecondaryAmmoType;			// "secondary" ammo index into players m_rgAmmo[]
+		int		m_iClip;						// number of shots left in the primary weapon clip, -1 it not used
+		int		m_iClientClip;					// the last version of m_iClip sent to hud dll
+		int		m_iClientWeaponState;			// the last version of the weapon state sent to hud dll (is current weapon, is on target)
+		int		m_fInReload;					// Are we in the middle of a reload;
 
 		int		m_iDefaultAmmo;	// how much ammo you get when you pick up this weapon as placed by a level designer.
 

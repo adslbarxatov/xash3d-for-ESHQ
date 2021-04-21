@@ -307,7 +307,7 @@ TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
 		DEFINE_FIELD (CFuncRotating, m_flAttenuation, FIELD_FLOAT),
 		DEFINE_FIELD (CFuncRotating, m_flVolume, FIELD_FLOAT),
 		DEFINE_FIELD (CFuncRotating, m_pitch, FIELD_FLOAT),
-		DEFINE_FIELD (CFuncRotating, m_sounds, FIELD_INTEGER)
+		DEFINE_FIELD (CFuncRotating, m_sounds, FIELD_INTEGER),
 		// ESHQ
 		DEFINE_FIELD (CFuncRotating, isSpinningUpOrRunning, FIELD_INTEGER)
 	};
@@ -420,25 +420,22 @@ void CFuncRotating::Spawn ()
 	UTIL_SetOrigin (pev, pev->origin);
 	SET_MODEL (ENT (pev), STRING (pev->model));
 
-	SetUse (RotatingUse);
+	SetUse (&CFuncRotating::RotatingUse);
+
 	// did level designer forget to assign speed?
 	if (pev->speed <= 0)
 		pev->speed = 0;
 
-	// Removed this per level designers request.  -- JAY
-	//	if (pev->dmg == 0)
-	//		pev->dmg = 2;
-
 	// instant-use brush?
 	if (FBitSet (pev->spawnflags, SF_BRUSH_ROTATE_INSTANT))
 		{
-		SetThink (SUB_CallUseToggle);
+		SetThink (&CBaseEntity::SUB_CallUseToggle);
 		pev->nextthink = pev->ltime + 1.5;	// leave a magic delay for client to start up
 		}
 	// can this brush inflict pain?
 	if (FBitSet (pev->spawnflags, SF_BRUSH_HURT))
 		{
-		SetTouch (HurtTouch);
+		SetTouch (&CFuncRotating::HurtTouch);
 		}
 
 	Precache ();
@@ -449,7 +446,6 @@ void CFuncRotating::Precache (void)
 	char* szSoundFile = (char*)STRING (pev->message);
 
 	// set up fan sounds
-
 	if (!FStringNull (pev->message) && strlen (szSoundFile) > 0)
 		{
 		// if a path is set for a wave, use it
@@ -506,7 +502,7 @@ void CFuncRotating::Precache (void)
 		// if fan was spinning, and we went through transition or save/restore,
 		// make sure we restart the sound.  1.5 sec delay is magic number. KDB
 
-		SetThink (SpinUp);
+		SetThink (&CFuncRotating::SpinUp);
 		pev->nextthink = pev->ltime + 1.5;
 		}
 	}
@@ -814,15 +810,15 @@ void CPendulum::Spawn (void)
 
 	if (FBitSet (pev->spawnflags, SF_BRUSH_ROTATE_INSTANT))
 		{
-		SetThink (SUB_CallUseToggle);
+		SetThink (&CBaseEntity::SUB_CallUseToggle);
 		pev->nextthink = gpGlobals->time + 0.1;
 		}
 	pev->speed = 0;
-	SetUse (PendulumUse);
+	SetUse (&CPendulum::PendulumUse);
 
 	if (FBitSet (pev->spawnflags, SF_PENDULUM_SWING))
 		{
-		SetTouch (RopeTouch);
+		SetTouch (&CPendulum::RopeTouch);
 		}
 	}
 
@@ -838,7 +834,7 @@ void CPendulum::PendulumUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 
 			pev->avelocity = m_maxSpeed * pev->movedir;
 			pev->nextthink = pev->ltime + (delta / m_maxSpeed);
-			SetThink (Stop);
+			SetThink (&CPendulum::Stop);
 			}
 		else
 			{
@@ -851,7 +847,7 @@ void CPendulum::PendulumUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 		{
 		pev->nextthink = pev->ltime + 0.1;		// Start the pendulum moving
 		m_time = gpGlobals->time;		// Save time to calculate dt
-		SetThink (Swing);
+		SetThink (&CPendulum::Swing);
 		m_dampSpeed = m_maxSpeed;
 		}
 	}

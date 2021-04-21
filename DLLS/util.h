@@ -518,7 +518,7 @@ void EMIT_GROUPNAME_SUIT (edict_t* entity, const char* groupname);
 	{ for (int i = 0; i < HLARRAYSIZE( a ); i++ ) PRECACHE_SOUND((char *) a [i]); }
 
 #define EMIT_SOUND_ARRAY_DYN( chan, array ) \
-	EMIT_SOUND_DYN ( ENT(pev), chan , array [ RANDOM_LONG(0,HLARRAYSIZE( array )-1) ], 1.0, ATTN_NORM, 0, RANDOM_LONG(95,105) ); 
+	EMIT_SOUND_DYN ( ENT(pev), chan , array [ RANDOM_LONG(0,HLARRAYSIZE( array )-1) ], 1.0, ATTN_MEDIUM, 0, RANDOM_LONG(95,105) ); 
 
 #define RANDOM_SOUND_ARRAY( array ) (array) [ RANDOM_LONG(0,HLARRAYSIZE( (array) )-1) ]
 

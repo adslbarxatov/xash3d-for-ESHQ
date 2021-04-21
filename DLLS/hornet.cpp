@@ -93,8 +93,8 @@ void CHornet::Spawn (void)
 	SET_MODEL (ENT (pev), "models/hornet.mdl");
 	UTIL_SetSize (pev, Vector (-4, -4, -4), Vector (4, 4, 4));
 
-	SetTouch (DieTouch);
-	SetThink (StartTrack);
+	SetTouch (&CHornet::DieTouch);
+	SetThink (&CHornet::StartTrack);
 
 	edict_t* pSoundEnt = pev->owner;
 	if (!pSoundEnt)
@@ -169,8 +169,8 @@ void CHornet::StartTrack (void)
 	{
 	IgniteTrail ();
 
-	SetTouch (TrackTouch);
-	SetThink (TrackTarget);
+	SetTouch (&CHornet::TrackTouch);
+	SetThink (&CHornet::TrackTarget);
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
@@ -182,59 +182,33 @@ void CHornet::StartDart (void)
 	{
 	IgniteTrail ();
 
-	SetTouch (DartTouch);
+	SetTouch (&CHornet::DartTouch);
 
-	SetThink (SUB_Remove);
+	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 4;
 	}
 
 void CHornet::IgniteTrail (void)
 	{
-	/*
-
-	  ted's suggested trail colors:
-
-	r161
-	g25
-	b97
-
-	r173
-	g39
-	b14
-
-	old colors
-			case HORNET_TYPE_RED:
-				WRITE_BYTE( 255 );   // r, g, b
-				WRITE_BYTE( 128 );   // r, g, b
-				WRITE_BYTE( 0 );   // r, g, b
-				break;
-			case HORNET_TYPE_ORANGE:
-				WRITE_BYTE( 0   );   // r, g, b
-				WRITE_BYTE( 100 );   // r, g, b
-				WRITE_BYTE( 255 );   // r, g, b
-				break;
-
-	*/
-
 	// trail
 	MESSAGE_BEGIN (MSG_BROADCAST, SVC_TEMPENTITY);
 	WRITE_BYTE (TE_BEAMFOLLOW);
 	WRITE_SHORT (entindex ());	// entity
 	WRITE_SHORT (iHornetTrail);	// model
-	WRITE_BYTE (10); // life
-	WRITE_BYTE (2);  // width
+	WRITE_BYTE (10);	// life
+	WRITE_BYTE (2);		// width
 
 	switch (m_iHornetType)
 		{
 		case HORNET_TYPE_RED:
-			WRITE_BYTE (179);   // r, g, b
-			WRITE_BYTE (39);   // r, g, b
-			WRITE_BYTE (14);   // r, g, b
+			WRITE_BYTE (179);	// r, g, b
+			WRITE_BYTE (39);	// r, g, b
+			WRITE_BYTE (14);	// r, g, b
 			break;
 		case HORNET_TYPE_ORANGE:
-			WRITE_BYTE (255);   // r, g, b
-			WRITE_BYTE (128);   // r, g, b
-			WRITE_BYTE (0);   // r, g, b
+			WRITE_BYTE (255);	// r, g, b
+			WRITE_BYTE (128);	// r, g, b
+			WRITE_BYTE (0);		// r, g, b
 			break;
 		}
 
@@ -257,7 +231,7 @@ void CHornet::TrackTarget (void)
 	if (gpGlobals->time > m_flStopAttack)
 		{
 		SetTouch (NULL);
-		SetThink (SUB_Remove);
+		SetThink (&CBaseEntity::SUB_Remove);
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 		}
@@ -399,12 +373,17 @@ void CHornet::DieTouch (CBaseEntity* pOther)
 	{
 	if (pOther && pOther->pev->takedamage)
 		{// do the damage
-
 		switch (RANDOM_LONG (0, 2))
 			{// buzz when you plug someone
-			case 0:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_MEDIUM);	break;
-			case 1:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_MEDIUM);	break;
-			case 2:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_MEDIUM);	break;
+			case 0:	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_MEDIUM);	
+				break;
+			case 1:	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_MEDIUM);	
+				break;
+			case 2:	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_MEDIUM);	
+				break;
 			}
 
 		pOther->TakeDamage (pev, VARS (pev->owner), pev->dmg, DMG_BULLET);
@@ -413,7 +392,6 @@ void CHornet::DieTouch (CBaseEntity* pOther)
 	pev->modelindex = 0;// so will disappear for the 0.1 secs we wait until NEXTTHINK gets rid
 	pev->solid = SOLID_NOT;
 
-	SetThink (SUB_Remove);
+	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 1;// stick around long enough for the sound to finish!
 	}
-

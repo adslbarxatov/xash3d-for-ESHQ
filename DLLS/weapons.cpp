@@ -444,8 +444,8 @@ void CBasePlayerItem::FallInit (void)
 	UTIL_SetOrigin (pev, pev->origin);
 	UTIL_SetSize (pev, Vector (0, 0, 0), Vector (0, 0, 0));//pointsize until it lands on the ground.
 
-	SetTouch (DefaultTouch);
-	SetThink (FallThink);
+	SetTouch (&CBasePlayerItem::DefaultTouch);
+	SetThink (&CBasePlayerItem::FallThink);
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
@@ -495,9 +495,8 @@ void CBasePlayerItem::Materialize (void)
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin (pev, pev->origin);// link into world.
-	SetTouch (DefaultTouch);
+	SetTouch (&CBasePlayerItem::DefaultTouch);
 	SetThink (NULL);
-
 	}
 
 //=========================================================
@@ -540,20 +539,22 @@ void CBasePlayerItem::CheckRespawn (void)
 //=========================================================
 CBaseEntity* CBasePlayerItem::Respawn (void)
 	{
-	// make a copy of this weapon that is invisible and inaccessible to players (no touch function). The weapon spawn/respawn code
-	// will decide when to make the weapon visible and touchable.
+	// make a copy of this weapon that is invisible and inaccessible to players 
+	// (no touch function). The weapon spawn/respawn code
+	// will decide when to make the weapon visible and touchable
 	CBaseEntity* pNewWeapon = CBaseEntity::Create ((char*)STRING (pev->classname), g_pGameRules->VecWeaponRespawnSpot (this), pev->angles, pev->owner);
 
 	if (pNewWeapon)
 		{
-		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
-		pNewWeapon->SetTouch (NULL);// no touch
-		pNewWeapon->SetThink (AttemptToMaterialize);
+		pNewWeapon->pev->effects |= EF_NODRAW;	// invisible for now
+		pNewWeapon->SetTouch (NULL);			// no touch
+		pNewWeapon->SetThink (&CBasePlayerItem::AttemptToMaterialize);
 
 		DROP_TO_FLOOR (ENT (pev));
 
-		// not a typo! We want to know when the weapon the player just picked up should respawn! This new entity we created is the replacement,
-		// but when it should respawn is based on conditions belonging to the weapon that was taken.
+		// not a typo! We want to know when the weapon the player just picked up should respawn! 
+		// This new entity we created is the replacement,
+		// but when it should respawn is based on conditions belonging to the weapon that was taken
 		pNewWeapon->pev->nextthink = g_pGameRules->FlWeaponRespawnTime (this);
 		}
 	else
@@ -739,14 +740,14 @@ int CBasePlayerItem::AddToPlayer (CBasePlayer* pPlayer)
 void CBasePlayerItem::Drop (void)
 	{
 	SetTouch (NULL);
-	SetThink (SUB_Remove);
+	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 	}
 
 void CBasePlayerItem::Kill (void)
 	{
 	SetTouch (NULL);
-	SetThink (SUB_Remove);
+	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 	}
 
@@ -1068,7 +1069,7 @@ void CBasePlayerAmmo::Spawn (void)
 	UTIL_SetSize (pev, Vector (-16, -16, 0), Vector (16, 16, 16));
 	UTIL_SetOrigin (pev, pev->origin);
 
-	SetTouch (DefaultTouch);
+	SetTouch (&CBasePlayerAmmo::DefaultTouch);
 	}
 
 CBaseEntity* CBasePlayerAmmo::Respawn (void)
@@ -1078,7 +1079,7 @@ CBaseEntity* CBasePlayerAmmo::Respawn (void)
 
 	UTIL_SetOrigin (pev, g_pGameRules->VecAmmoRespawnSpot (this));// move to wherever I'm supposed to repawn.
 
-	SetThink (Materialize);
+	SetThink (&CBasePlayerAmmo::Materialize);
 	pev->nextthink = g_pGameRules->FlAmmoRespawnTime (this);
 
 	return this;
@@ -1094,7 +1095,7 @@ void CBasePlayerAmmo::Materialize (void)
 		pev->effects |= EF_MUZZLEFLASH;
 		}
 
-	SetTouch (DefaultTouch);
+	SetTouch (&CBasePlayerAmmo::DefaultTouch);
 	}
 
 void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
@@ -1113,7 +1114,7 @@ void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 		else
 			{
 			SetTouch (NULL);
-			SetThink (SUB_Remove);
+			SetThink (&CBaseEntity::SUB_Remove);
 			pev->nextthink = gpGlobals->time + .1;
 			}
 		}
@@ -1121,7 +1122,7 @@ void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 		{
 		// evil impulse 101 hack, kill always
 		SetTouch (NULL);
-		SetThink (SUB_Remove);
+		SetThink (&CBaseEntity::SUB_Remove);
 		pev->nextthink = gpGlobals->time + .1;
 		}
 	}
@@ -1136,7 +1137,7 @@ void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 //=========================================================
 int CBasePlayerWeapon::ExtractAmmo (CBasePlayerWeapon* pWeapon)
 	{
-	int			iReturn;
+	int iReturn;
 
 	if (pszAmmo1 () != NULL)
 		{
@@ -1159,16 +1160,12 @@ int CBasePlayerWeapon::ExtractAmmo (CBasePlayerWeapon* pWeapon)
 //=========================================================
 int CBasePlayerWeapon::ExtractClipAmmo (CBasePlayerWeapon* pWeapon)
 	{
-	int			iAmmo;
+	int iAmmo;
 
 	if (m_iClip == WEAPON_NOCLIP)
-		{
 		iAmmo = 0;// guns with no clips always come empty if they are second-hand
-		}
 	else
-		{
 		iAmmo = m_iClip;
-		}
 
 	return pWeapon->m_pPlayer->GiveAmmo (iAmmo, (char*)pszAmmo1 (), iMaxAmmo1 ()); // , &m_iPrimaryAmmoType
 	}
@@ -1258,7 +1255,7 @@ void CWeaponBox::Kill (void)
 
 		while (pWeapon)
 			{
-			pWeapon->SetThink (SUB_Remove);
+			pWeapon->SetThink (&CBaseEntity::SUB_Remove);
 			pWeapon->pev->nextthink = gpGlobals->time + 0.1;
 			pWeapon = pWeapon->m_pNext;
 			}

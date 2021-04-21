@@ -37,6 +37,7 @@ typedef struct ref_params_s
 	int		spectator;
 	int		onground;
 	int		waterlevel;
+	// Изменено для поддержки собираемых объектов
 	int		collectedItems;
 
 	vec3_t		simvel;

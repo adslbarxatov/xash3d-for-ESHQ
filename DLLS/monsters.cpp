@@ -2035,9 +2035,9 @@ void CBaseMonster::MonsterInit (void)
 	// set eye position
 	SetEyePosition ();
 
-	SetThink (MonsterInitThink);
+	SetThink (&CBaseMonster::MonsterInitThink);
 	pev->nextthink = gpGlobals->time + 0.1;
-	SetUse (MonsterUse);
+	SetUse (&CBaseMonster::MonsterUse);
 	}
 
 //=========================================================
@@ -2132,12 +2132,9 @@ void CBaseMonster::StartMonster (void)
 			}
 		}
 
-	//SetState ( m_IdealMonsterState );
-	//SetActivity ( m_IdealActivity );
-
 	// Delay drop to floor to make sure each door in the level has had its chance to spawn
 	// Spread think times so that they don't all happen at the same time (Carmack)
-	SetThink (CallMonsterThink);
+	SetThink (&CBaseMonster::CallMonsterThink);
 	pev->nextthink += RANDOM_FLOAT (0.1, 0.4); // spread think times.
 
 	if (!FStringNull (pev->targetname))// wait until triggered
@@ -3296,7 +3293,7 @@ void CBaseMonster::MonsterInitDead (void)
 
 	// Setup health counters, etc.
 	BecomeDead ();
-	SetThink (CorpseFallThink);
+	SetThink (&CBaseMonster::CorpseFallThink);
 	pev->nextthink = gpGlobals->time + 0.5;
 	}
 

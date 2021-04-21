@@ -79,7 +79,7 @@ class CSprite: public CPointEntity
 
 		inline void AnimateAndDie (float framerate)
 			{
-			SetThink (AnimateUntilDead);
+			SetThink (&CSprite::AnimateUntilDead);
 			pev->framerate = framerate;
 			pev->dmgtime = gpGlobals->time + (m_maxFrame / framerate);
 			pev->nextthink = gpGlobals->time;
@@ -93,11 +93,9 @@ class CSprite: public CPointEntity
 		static CSprite* SpriteCreate (const char* pSpriteName, const Vector& origin, BOOL animate);
 
 	private:
-
 		float		m_lastTime;
 		float		m_maxFrame;
 	};
-
 
 class CBeam: public CBaseEntity
 	{
@@ -147,14 +145,12 @@ class CBeam: public CBaseEntity
 		inline int  GetTexture (void) { return pev->modelindex; }
 		inline int  GetWidth (void) { return pev->scale; }
 		inline int  GetNoise (void) { return pev->body; }
-		// inline void GetColor( int r, int g, int b ) { pev->rendercolor.x = r; pev->rendercolor.y = g; pev->rendercolor.z = b; }
 		inline int  GetBrightness (void) { return pev->renderamt; }
 		inline int  GetFrame (void) { return pev->frame; }
 		inline int  GetScrollRate (void) { return pev->animtime; }
 
 		// Call after you change start/end positions
 		void		RelinkBeam (void);
-		//	void		SetObjectCollisionBox( void );
 
 		void		DoSparks (const Vector& start, const Vector& end);
 		CBaseEntity* RandomTargetname (const char* szName);
@@ -168,7 +164,7 @@ class CBeam: public CBaseEntity
 
 		static CBeam* BeamCreate (const char* pSpriteName, int width);
 
-		inline void LiveForTime (float time) { SetThink (SUB_Remove); pev->nextthink = gpGlobals->time + time; }
+		inline void LiveForTime (float time) { SetThink (&CBaseEntity::SUB_Remove); pev->nextthink = gpGlobals->time + time; }
 		inline void	BeamDamageInstant (TraceResult* ptr, float damage)
 			{
 			pev->dmg = damage;
@@ -177,10 +173,8 @@ class CBeam: public CBaseEntity
 			}
 	};
 
-
 #define SF_MESSAGE_ONCE			0x0001		// Fade in, not out
 #define SF_MESSAGE_ALL			0x0002		// Send to all clients
-
 
 class CLaser: public CBeam
 	{

@@ -74,19 +74,17 @@ void CSatchelCharge::Spawn (void)
 	UTIL_SetSize (pev, Vector (-4, -4, -4), Vector (4, 4, 4));	// Uses point-sized, and can be stepped over
 	UTIL_SetOrigin (pev, pev->origin);
 
-	SetTouch (SatchelSlide);
-	SetUse (DetonateUse);
-	SetThink (SatchelThink);
+	SetTouch (&CSatchelCharge::SatchelSlide);
+	SetUse (&CGrenade::DetonateUse);
+	SetThink (&CSatchelCharge::SatchelThink);
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	pev->gravity = 0.5;
 	pev->friction = 0.8;
 
 	pev->dmg = gSkillData.plrDmgSatchel;
-	// ResetSequenceInfo( );
 	pev->sequence = 1;
 	}
-
 
 void CSatchelCharge::SatchelSlide (CBaseEntity* pOther)
 	{
@@ -247,7 +245,7 @@ int CSatchel::GetItemInfo (ItemInfo* p)
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 4;
 	p->iPosition = 1;
-	p->iFlags = ITEM_FLAG_SELECTONEMPTY | ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
+	p->iFlags = ITEM_FLAG_SELECTIONEMPTY | ITEM_FLAG_LIMITINWORLD | ITEM_FLAG_EXHAUSTIBLE;
 	p->iId = m_iId = WEAPON_SATCHEL;
 	p->iWeight = SATCHEL_WEIGHT;
 
@@ -323,7 +321,7 @@ void CSatchel::Holster (int skiplocal /* = 0 */)
 	if (!m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] && !m_chargeReady)
 		{
 		m_pPlayer->pev->weapons &= ~(1 << WEAPON_SATCHEL);
-		SetThink (DestroyItem);
+		SetThink (&CBasePlayerItem::DestroyItem);
 		pev->nextthink = gpGlobals->time + 0.1;
 		}
 	}

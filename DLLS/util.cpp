@@ -771,7 +771,6 @@ void UTIL_ScreenFadeAll (const Vector& color, float fadeTime, float fadeHold, in
 		}
 	}
 
-
 void UTIL_ScreenFade (CBaseEntity* pEntity, const Vector& color, float fadeTime, float fadeHold, int alpha, int flags)
 	{
 	ScreenFade	fade;
@@ -779,7 +778,6 @@ void UTIL_ScreenFade (CBaseEntity* pEntity, const Vector& color, float fadeTime,
 	UTIL_ScreenFadeBuild (fade, color, fadeTime, fadeHold, alpha, flags);
 	UTIL_ScreenFadeWrite (fade, pEntity);
 	}
-
 
 void UTIL_HudMessage (CBaseEntity* pEntity, const hudtextparms_t& textparms, const char* pMessage)
 	{

@@ -48,18 +48,18 @@ BRUSH MODELS
 
 #define SURF_PLANEBACK		BIT( 1 )		// plane should be negated
 #define SURF_DRAWSKY		BIT( 2 )		// sky surface
-#define SURF_DRAWTURB_QUADS		BIT( 3 )		// all subidivided polygons are quads 
+#define SURF_DRAWTURB_QUADS	BIT( 3 )		// all subidivided polygons are quads 
 #define SURF_DRAWTURB		BIT( 4 )		// warp surface
 #define SURF_DRAWTILED		BIT( 5 )		// face without lighmap
 #define SURF_CONVEYOR		BIT( 6 )		// scrolled texture (was SURF_DRAWBACKGROUND)
 #define SURF_UNDERWATER		BIT( 7 )		// caustics
-#define SURF_TRANSPARENT		BIT( 8 )		// it's a transparent texture (was SURF_DONTWARP)
+#define SURF_TRANSPARENT	BIT( 8 )		// it's a transparent texture (was SURF_DONTWARP)
 
 // lightstyle management
 #define LM_STYLES			4		// MAXLIGHTMAPS
 #define LS_NORMAL			0x00
 #define LS_UNUSED			0xFE
-#define LS_NONE			0xFF
+#define LS_NONE				0xFF
 
 // these limis not using by modelloader but only for displaying 'mapstats' correctly
 #ifdef SUPPORT_BSP2_FORMAT
@@ -136,39 +136,39 @@ BRUSH MODELS
 
 // ambient sound types
 enum
-{
+	{
 	AMBIENT_WATER = 0,		// waterfall
 	AMBIENT_SKY,		// wind
 	AMBIENT_SLIME,		// never used in quake
 	AMBIENT_LAVA,		// never used in quake
 	NUM_AMBIENTS,		// automatic ambient sounds
-};
+	};
 
 //
 // BSP File Structures
 //
 
 typedef struct
-{
+	{
 	int	fileofs;
 	int	filelen;
-} dlump_t;
+	} dlump_t;
 
 typedef struct
-{
+	{
 	int	version;
 	dlump_t	lumps[HEADER_LUMPS];
-} dheader_t;
+	} dheader_t;
 
 typedef struct
-{
+	{
 	int	id;			// must be little endian XASH
 	int	version;
-	dlump_t	lumps[EXTRA_LUMPS];	
-} dextrahdr_t;
+	dlump_t	lumps[EXTRA_LUMPS];
+	} dextrahdr_t;
 
 typedef struct
-{
+	{
 	vec3_t	mins;
 	vec3_t	maxs;
 	vec3_t	origin;			// for sounds or lights
@@ -176,50 +176,50 @@ typedef struct
 	int	visleafs;			// not including the solid leaf 0
 	int	firstface;
 	int	numfaces;
-} dmodel_t;
+	} dmodel_t;
 
 typedef struct
-{
+	{
 	int	nummiptex;
 	int	dataofs[4];		// [nummiptex]
-} dmiptexlump_t;
+	} dmiptexlump_t;
 
 typedef struct
-{
+	{
 	vec3_t	point;
-} dvertex_t;
+	} dvertex_t;
 
 typedef struct
-{
+	{
 	vec3_t	normal;
 	float	dist;
 	int	type;			// PLANE_X - PLANE_ANYZ ?
-} dplane_t;
+	} dplane_t;
 
 typedef struct
-{
+	{
 	int	planenum;
 	short	children[2];		// negative numbers are -(leafs + 1), not nodes
 	short	mins[3];			// for sphere culling
 	short	maxs[3];
 	word	firstface;
 	word	numfaces;			// counting both sides
-} dnode_t;
+	} dnode_t;
 
 typedef struct
-{
+	{
 	int	planenum;
 	int	children[2];		// negative numbers are -(leafs+1), not nodes
 	float	mins[3];			// for sphere culling
 	float	maxs[3];
 	int	firstface;
 	int	numfaces;			// counting both sides
-} dnode32_t;
+	} dnode32_t;
 
 // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas
 // all other leafs need visibility info
 typedef struct
-{
+	{
 	int	contents;
 	int	visofs;			// -1 = no visibility info
 
@@ -230,10 +230,10 @@ typedef struct
 
 	// automatic ambient sounds
 	byte	ambient_level[NUM_AMBIENTS];	// ambient sound level (0 - 255)
-} dleaf_t;
+	} dleaf_t;
 
 typedef struct
-{
+	{
 	int	contents;
 	int	visofs;			// -1 = no visibility info
 
@@ -244,35 +244,35 @@ typedef struct
 	int	nummarksurfaces;
 
 	byte	ambient_level[NUM_AMBIENTS];
-} dleaf32_t;
+	} dleaf32_t;
 
 typedef struct
-{
+	{
 	int	planenum;
 	short	children[2];		// negative numbers are contents
-} dclipnode_t;
+	} dclipnode_t;
 
 typedef struct
-{
+	{
 	int	planenum;
 	int	children[2];		// negative numbers are contents
-} dclipnode32_t;
+	} dclipnode32_t;
 
 typedef struct
-{
+	{
 	float	vecs[2][4];		// texmatrix [s/t][xyz offset]
 	int	miptex;
 	short	flags;
 	short	faceinfo;			// -1 no face info otherwise dfaceinfo_t
-} dtexinfo_t;
+	} dtexinfo_t;
 
 typedef struct
-{
+	{
 	char		landname[16];	// name of decsription in mapname_land.txt
 	unsigned short	texture_step;	// default is 16, pixels\luxels ratio
 	unsigned short	max_extent;	// default is 16, subdivision step ((texture_step * max_extent) - texture_step)
 	short		groupid;		// to determine equal landscapes from various groups, -1 - no group
-} dfaceinfo_t;
+	} dfaceinfo_t;
 
 typedef word	dmarkface_t;		// leaf marksurfaces indexes
 typedef int	dmarkface32_t;		// leaf marksurfaces indexes
@@ -282,17 +282,17 @@ typedef int	dsurfedge_t;		// map surfedges
 // NOTE: that edge 0 is never used, because negative edge nums
 // are used for counterclockwise use of the edge in a face
 typedef struct
-{
+	{
 	word	v[2];			// vertex numbers
-} dedge_t;
+	} dedge_t;
 
 typedef struct
-{
+	{
 	int	v[2];			// vertex numbers
-} dedge32_t;
+	} dedge32_t;
 
 typedef struct
-{
+	{
 	word	planenum;
 	short	side;
 
@@ -303,10 +303,10 @@ typedef struct
 	// lighting info
 	byte	styles[LM_STYLES];
 	int	lightofs;			// start of [numstyles*surfsize] samples
-} dface_t;
+	} dface_t;
 
 typedef struct
-{
+	{
 	int	planenum;
 	int	side;
 
@@ -317,6 +317,6 @@ typedef struct
 	// lighting info
 	byte	styles[LM_STYLES];
 	int	lightofs;			// start of [numstyles*surfsize] samples
-} dface32_t;
+	} dface32_t;
 
 #endif//BSPFILE_H

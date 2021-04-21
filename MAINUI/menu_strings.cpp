@@ -420,9 +420,10 @@ char *MenuStrings[HINT_MAXSTRINGS] =
 "",
 "",
 "",
-"View mod's credits", //"Find more about Valve's product lineup",	// 400
+// Изменено для поддержки титров
+"View mod's credits", // 400
 "",
-"", //"http://store.steampowered.com/app/70/",
+"",
 "",
 "",
 "",
