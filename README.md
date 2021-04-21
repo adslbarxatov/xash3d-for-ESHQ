@@ -1,12 +1,10 @@
 # Xash3d for ESHQ and ES:FA mods v 10 and newer
-### Xash3d engine v43/0.91 (rev 3737); adaptation for ESHQ and ES:FA mods v 10 and newer
+### [Xash3d engine v0.99 (rev 4344)](https://github.com/FWGS/xash3d) adaptation for ESHQ and ES:FA mods v 10 and newer
 
 
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
 
-Modification based on old (from 2015) version of engine and may contain old bugs. But some new features
-may be useful for developers with the same mods' plots.
-
+Modification based on old (from 2019) version of engine and may contain some bugs
 
 #
 
