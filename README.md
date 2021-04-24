@@ -1,5 +1,5 @@
 # Xash3d for ESHQ and ES:FA mods v 10 and newer
-### [Xash3d engine v0.99 (rev 4344)](https://github.com/FWGS/xash3d) adaptation for ESHQ and ES:FA mods v 10 and newer
+### [Xash3d engine v0.99 (rev 4529)](https://github.com/FWGS/xash3d) adaptation for ESHQ and ES:FA mods v 10 and newer
 
 
 This engine modification created specially for [ESHQ mod](http://www.moddb.com/mods/eshq/) for Half-Life part 1.
@@ -96,11 +96,9 @@ Modification based on old (from 2019) version of engine and may contain some bug
 
 Unfortunately, we cannot fix some bugs yet:
 
-1. ~'momentary_rot_button' bug: infinite cycle for loopable door sounds~ (fixed).
+1. ```func_pushable``` bug: incorrect collision box.
 
-2. 'func_pushable' bug: totally incorrect collision box.
-
-3. 'func_door_rotating' bug: incorrect collision if door has 'Ox' and/or 'Oy' flags.
+2. ```func_door_rotating``` bug: incorrect collision if door has 'Ox' and/or 'Oy' flags.
 
 But we believe that it is not serious problem for now.
 
@@ -110,7 +108,7 @@ But we believe that it is not serious problem for now.
 
 ## Other notes
 
-This assembly completely adapted for building with Visual studio 10.0 and 19.0 and newer (some fixes for type declarations and headers syntax added).
+This assembly completely adapted for building with Visual studio 19.0 and newer (some fixes for type declarations and headers syntax added).
 
 This assembly is enough to launch Half-Life (WON) and some compatible mods.
 
