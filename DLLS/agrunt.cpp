@@ -467,8 +467,6 @@ void CAGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 			UTIL_MakeVectors (pHornet->pev->angles);
 			pHornet->pev->velocity = gpGlobals->v_forward * 300;
 
-
-
 			switch (RANDOM_LONG (0, 2))
 				{
 				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "agrunt/ag_fire1.wav", 1.0, ATTN_MEDIUM, 0, 100);	break;
@@ -933,7 +931,8 @@ BOOL CAGrunt::CheckRangeAttack1 (float flDot, float flDist)
 		return m_fCanHornetAttack;
 		}
 
-	if (HasConditions (bits_COND_SEE_ENEMY) && flDist >= AGRUNT_MELEE_DIST && flDist <= 1024 && flDot >= 0.5 && NoFriendlyFire ())
+	if (HasConditions (bits_COND_SEE_ENEMY) && (flDist >= AGRUNT_MELEE_DIST) && 
+		(flDist <= 1024) && (flDot >= 0.5) && NoFriendlyFire ())
 		{
 		TraceResult	tr;
 		Vector	vecArmPos, vecArmDir;

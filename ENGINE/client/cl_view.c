@@ -293,7 +293,9 @@ qboolean V_PreRender (void)
 		return false;
 		}
 
-	R_BeginFrame (!cl.paused);
+	// 4529
+	//R_BeginFrame (!cl.paused);
+	R_BeginFrame (!cl.paused && (cls.state == ca_active));
 
 	return true;
 	}
@@ -303,7 +305,6 @@ qboolean V_PreRender (void)
 /*
 ==================
 V_RenderView
-
 ==================
 */
 void V_RenderView (void)

@@ -78,8 +78,9 @@ qboolean SV_CopyEdictToPhysEnt (physent_t* pe, edict_t* ed)
 		}
 	else if (FBitSet (ed->v.flags, FL_CLIENT))
 		{
-		// client
-		SV_GetTrueOrigin (&svs.clients[pe->info - 1], pe->info, pe->origin);
+		// 4529: client
+		//SV_GetTrueOrigin (&svs.clients[pe->info - 1], pe->info, pe->origin);
+		SV_GetTrueOrigin (sv.current_client, pe->info, pe->origin);
 		Q_strncpy (pe->name, "player", sizeof (pe->name));
 		pe->player = pe->info;
 		}
@@ -304,7 +305,7 @@ void SV_AddLaddersToPmove (areanode_t* node, const vec3_t pmove_mins, const vec3
 	model_t* mod;
 	physent_t* pe;
 
-	// get water edicts
+	// get ladder edicts
 	for (l = node->solid_edicts.next; l != &node->solid_edicts; l = next)
 		{
 		next = l->next;
@@ -339,6 +340,12 @@ void SV_AddLaddersToPmove (areanode_t* node, const vec3_t pmove_mins, const vec3
 		SV_AddLaddersToPmove (node->children[1], pmove_mins, pmove_maxs);
 	}
 
+// 4529
+int SV_TestLine (const vec3_t start, const vec3_t end, int flags)
+	{
+	return PM_TestLineExt (svgame.pmove, svgame.pmove->physents, svgame.pmove->numphysent, start, end, flags);
+	}
+
 static int pfnTestPlayerPosition (float* pos, pmtrace_t* ptrace)
 	{
 	return PM_TestPlayerPosition (svgame.pmove, pos, ptrace, NULL);
@@ -367,17 +374,24 @@ static int pfnPointContents (float* p, int* truecontents)
 	{
 	int	cont, truecont;
 
-	truecont = cont = SV_TruePointContents (p);
-	if (truecontents) *truecontents = truecont;
+	// 4529
+	//truecont = cont = SV_TruePointContents (p);
+	truecont = cont = PM_PointContents (svgame.pmove, p);
 
-	if (cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN)
+	if (truecontents) 
+		*truecontents = truecont;
+
+	if ((cont <= CONTENTS_CURRENT_0) && (cont >= CONTENTS_CURRENT_DOWN))
 		cont = CONTENTS_WATER;
+
 	return cont;
 	}
 
 static int pfnTruePointContents (float* p)
 	{
-	return SV_TruePointContents (p);
+	// 4529
+	//return SV_TruePointContents (p);
+	return PM_TruePointContents (svgame.pmove, p);
 	}
 
 static int pfnHullPointContents (struct hull_s* hull, int num, float* p)
@@ -739,7 +753,7 @@ static void SV_FinishPMove (playermove_t* pmove, sv_client_t* cl)
 	clent->v.deadflag = pmove->deadflag;
 	clent->v.effects = pmove->effects;
 	clent->v.bInDuck = pmove->bInDuck;
-	// ESHQ: ¯®¤¤¥à¦ª  á®¡¨à ¥¬ëå ®¡ê¥ªâ®¢
+	// ESHQ: ïîääåðæêà ñîáèðàåìûõõ îáúåêòîâ
 	clent->v.collectedItems = pmove->collectedItems;
 	clent->v.flags = pmove->flags;
 
@@ -759,11 +773,14 @@ static void SV_FinishPMove (playermove_t* pmove, sv_client_t* cl)
 
 	if (pmove->onground == -1)
 		{
-		clent->v.flags &= ~FL_ONGROUND;
+		// 4529
+		//clent->v.flags &= ~FL_ONGROUND;
+		ClearBits (clent->v.flags, FL_ONGROUND);
 		}
-	else if (pmove->onground >= 0 && pmove->onground < pmove->numphysent)
+	else if ((pmove->onground >= 0) && (pmove->onground < pmove->numphysent))
 		{
-		clent->v.flags |= FL_ONGROUND;
+		//clent->v.flags |= FL_ONGROUND;
+		SetBits (clent->v.flags, FL_ONGROUND);
 		clent->v.groundentity = EDICT_NUM (pmove->physents[pmove->onground].info);
 		}
 
@@ -870,13 +887,13 @@ void SV_SetupMoveInterpolant (sv_client_t* cl)
 			{
 			state = &svs.packet_entities[(frame->first_entity + j) % svs.num_client_entities];
 
-			if (state->number < 1 || state->number > svs.maxclients)
+			if ((state->number < 1) || (state->number > svs.maxclients))
 				continue;
 
 			lerp = &svgame.interp[state->number - 1];
 			if (lerp->nointerp) continue;
 
-			if (state->health <= 0 || FBitSet (state->effects, EF_NOINTERP))
+			if ((state->health <= 0) || FBitSet (state->effects, EF_NOINTERP))
 				lerp->nointerp = true;
 
 			if (lerp->firstframe)
@@ -985,10 +1002,13 @@ void SV_RestoreMoveInterpolant (sv_client_t* cl)
 
 		oldlerp = &svgame.interp[i];
 
-		if (VectorCompare (oldlerp->oldpos, oldlerp->newpos) || !oldlerp->moving)
-			continue; // they didn't actually move.
+		// 4529: they didn't actually move
+		//if (VectorCompare (oldlerp->oldpos, oldlerp->newpos) || !oldlerp->moving)
+		if (VectorCompareEpsilon (oldlerp->oldpos, oldlerp->newpos, ON_EPSILON))
+			continue; 
 
-		if (!oldlerp->active)
+		//if (!oldlerp->active)
+		if (!oldlerp->moving || !oldlerp->active)
 			continue;
 
 		if (VectorCompare (oldlerp->curpos, check->edict->v.origin))
@@ -1038,9 +1058,7 @@ void SV_RunCmd (sv_client_t* cl, usercmd_t* ucmd, int random_seed)
 		}
 
 	if (!FBitSet (cl->flags, FCL_FAKECLIENT))
-		{
 		SV_SetupMoveInterpolant (cl);
-		}
 
 	svgame.dllFuncs.pfnCmdStart (cl->edict, ucmd, random_seed);
 

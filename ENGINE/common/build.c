@@ -23,6 +23,7 @@ static char mond[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 int Q_buildnum (void)
 	{
 	// do not touch this! Only author of Xash3D can increase buildnumbers!
+#if 0 
 	int m = 0, d = 0, y = 0;
 	static int b = 0;
 
@@ -46,4 +47,7 @@ int Q_buildnum (void)
 	b -= 38752; // Feb 13 2007
 
 	return b;
+#else
+	return 4529;
+#endif
 	}

@@ -506,8 +506,11 @@ StudioGetAttachment
 void Mod_StudioGetAttachment (const edict_t* e, int iAtt, float* origin, float* angles)
 	{
 	mstudioattachment_t* pAtt;
-	vec3_t			angles2;
-	model_t* mod;
+	vec3_t				angles2;
+	// 4529
+	matrix3x4			localPose;
+	matrix3x4			worldPose;
+	model_t*			mod;
 
 	mod = SV_ModelHandle (e->v.modelindex);
 	mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata (mod);
@@ -532,13 +535,17 @@ void Mod_StudioGetAttachment (const edict_t* e, int iAtt, float* origin, float* 
 	if (!FBitSet (host.features, ENGINE_COMPENSATE_QUAKE_BUG))
 		angles2[PITCH] = -angles2[PITCH];
 
-	pBlendAPI->SV_StudioSetupBones (mod, e->v.frame, e->v.sequence, angles2, e->v.origin, e->v.controller, e->v.blending, pAtt->bone, e);
+	pBlendAPI->SV_StudioSetupBones (mod, e->v.frame, e->v.sequence, angles2, e->v.origin, 
+		e->v.controller, e->v.blending, pAtt->bone, e);
 
-	// compute pos and angles
-	if (origin != NULL)
-		Matrix3x4_VectorTransform (studio_bones[pAtt->bone], pAtt->org, origin);
+	// 4529: compute pos and angles
+	/*if (origin != NULL)
+		Matrix3x4_VectorTransform (studio_bones[pAtt->bone], pAtt->org, origin);*/
+	Matrix3x4_LoadIdentity (localPose);
+	Matrix3x4_SetOrigin (localPose, pAtt->org[0], pAtt->org[1], pAtt->org[2]);
+	Matrix3x4_ConcatTransforms (worldPose, studio_bones[pAtt->bone], localPose);
 
-	if (FBitSet (host.features, ENGINE_COMPUTE_STUDIO_LERP) && origin != NULL && angles != NULL)
+	/*if (FBitSet (host.features, ENGINE_COMPUTE_STUDIO_LERP) && origin != NULL && angles != NULL)
 		{
 		vec3_t	forward, bonepos;
 
@@ -546,7 +553,14 @@ void Mod_StudioGetAttachment (const edict_t* e, int iAtt, float* origin, float* 
 		VectorSubtract (origin, bonepos, forward); // make forward
 		VectorNormalizeFast (forward);
 		VectorAngles (forward, angles);
-		}
+		}*/
+
+	// 4529: origin is used always
+	if (origin != NULL) 
+		Matrix3x4_OriginFromMatrix (worldPose, origin);
+
+	if (FBitSet (host.features, ENGINE_COMPUTE_STUDIO_LERP) && angles != NULL)
+		Matrix3x4_AnglesFromMatrix (worldPose, angles);
 	}
 
 /*
@@ -562,10 +576,16 @@ void Mod_GetBonePosition (const edict_t* e, int iBone, float* origin, float* ang
 	mod_studiohdr = (studiohdr_t*)Mod_StudioExtradata (mod);
 	if (!mod_studiohdr) return;
 
-	pBlendAPI->SV_StudioSetupBones (mod, e->v.frame, e->v.sequence, e->v.angles, e->v.origin, e->v.controller, e->v.blending, iBone, e);
+	pBlendAPI->SV_StudioSetupBones (mod, e->v.frame, e->v.sequence, e->v.angles, e->v.origin, 
+		e->v.controller, e->v.blending, iBone, e);
 
-	if (origin) Matrix3x4_OriginFromMatrix (studio_bones[iBone], origin);
-	if (angles) VectorAngles (studio_bones[iBone][0], angles); // bone forward to angles
+	if (origin) 
+		Matrix3x4_OriginFromMatrix (studio_bones[iBone], origin);
+
+	// 4529
+	//if (angles) VectorAngles (studio_bones[iBone][0], angles); // bone forward to angles
+	if (angles) 
+		Matrix3x4_AnglesFromMatrix (studio_bones[iBone], angles);
 	}
 
 /*

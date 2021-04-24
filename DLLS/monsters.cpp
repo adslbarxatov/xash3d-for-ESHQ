@@ -2074,7 +2074,7 @@ void CBaseMonster::StartMonster (void)
 		}
 
 	// Raise monster off the floor one unit, then drop to floor
-	if (pev->movetype != MOVETYPE_FLY && !FBitSet (pev->spawnflags, SF_MONSTER_FALL_TO_GROUND))
+	if ((pev->movetype != MOVETYPE_FLY) && !FBitSet (pev->spawnflags, SF_MONSTER_FALL_TO_GROUND))
 		{
 		pev->origin.z += 1;
 		DROP_TO_FLOOR (ENT (pev));
@@ -2082,7 +2082,8 @@ void CBaseMonster::StartMonster (void)
 		if (!WALK_MOVE (ENT (pev), 0, 0, WALKMOVE_NORMAL))
 			{
 			ALERT (at_error, "Monster %s stuck in wall--level design error\n", STRING (pev->classname));
-			pev->effects = EF_BRIGHTFIELD;
+			// ESHQ: не требуется – часть монстров действительно будет находиться в недопустимых состояниях
+			//pev->effects = EF_BRIGHTFIELD;
 			}
 		}
 	else

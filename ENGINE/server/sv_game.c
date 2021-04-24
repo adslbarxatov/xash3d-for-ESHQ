@@ -390,10 +390,10 @@ static int SV_Multicast (int dest, const vec3_t origin, const edict_t* ent, qboo
 	// send the data to all relevent clients (or once only)
 	for (j = 0, cl = current; j < numclients; j++, cl++)
 		{
-		if (cl->state == cs_free || cl->state == cs_zombie)
+		if ((cl->state == cs_free) || (cl->state == cs_zombie))
 			continue;
 
-		if (cl->state != cs_spawned && (!reliable || usermessage))
+		if ((cl->state != cs_spawned) && (!reliable || usermessage))
 			continue;
 
 		if (specproxy && !FBitSet (cl->flags, FCL_HLTV_PROXY))
@@ -404,7 +404,7 @@ static int SV_Multicast (int dest, const vec3_t origin, const edict_t* ent, qboo
 
 		// reject step sounds while predicting is enabled
 		// FIXME: make sure what this code doesn't cutoff something important!!!
-		if (filter && cl == sv.current_client && FBitSet (sv.current_client->flags, FCL_PREDICT_MOVEMENT))
+		if (filter && (cl == sv.current_client) && FBitSet (sv.current_client->flags, FCL_PREDICT_MOVEMENT))
 			continue;
 
 		if (SV_IsValidEdict (ent) && ent->v.groupinfo && cl->edict->v.groupinfo)
@@ -419,9 +419,12 @@ static int SV_Multicast (int dest, const vec3_t origin, const edict_t* ent, qboo
 		if (!SV_CheckClientVisiblity (cl, mask))
 			continue;
 
-		if (specproxy) MSG_WriteBits (&sv.spec_datagram, MSG_GetData (&sv.multicast), MSG_GetNumBitsWritten (&sv.multicast));
-		else if (reliable) MSG_WriteBits (&cl->netchan.message, MSG_GetData (&sv.multicast), MSG_GetNumBitsWritten (&sv.multicast));
-		else MSG_WriteBits (&cl->datagram, MSG_GetData (&sv.multicast), MSG_GetNumBitsWritten (&sv.multicast));
+		if (specproxy) 
+			MSG_WriteBits (&sv.spec_datagram, MSG_GetData (&sv.multicast), MSG_GetNumBitsWritten (&sv.multicast));
+		else if (reliable) 
+			MSG_WriteBits (&cl->netchan.message, MSG_GetData (&sv.multicast), MSG_GetNumBitsWritten (&sv.multicast));
+		else 
+			MSG_WriteBits (&cl->datagram, MSG_GetData (&sv.multicast), MSG_GetNumBitsWritten (&sv.multicast));
 		numsends++;
 		}
 
@@ -801,12 +804,17 @@ pfnMapIsValid use this
 static char* SV_ReadEntityScript (const char* filename, int* flags)
 	{
 	string		bspfilename, entfilename;
-	int		ver = -1, lumpofs = 0, lumplen = 0;
+	
+	// 4529
+	/*int		ver = -1, lumpofs = 0, lumplen = 0;
+	byte		buf[1024];*/
+	int			lumpofs = 0, lumplen = 0;
+	byte		buf[MAX_TOKEN];
+
 	char* ents = NULL;
-	byte		buf[1024];
-	dheader_t* header;
+	dheader_t*	header;
 	size_t		ft1, ft2;
-	file_t* f;
+	file_t*		f;
 
 	*flags = 0;
 
@@ -815,8 +823,10 @@ static char* SV_ReadEntityScript (const char* filename, int* flags)
 	if (!f) return NULL;
 
 	SetBits (*flags, MAP_IS_EXIST);
-	memset (buf, 0, MAX_SYSPATH);
-	FS_Read (f, buf, MAX_SYSPATH);
+	/*memset (buf, 0, MAX_SYSPATH);
+	FS_Read (f, buf, MAX_SYSPATH);*/
+	memset (buf, 0, MAX_TOKEN);
+	FS_Read (f, buf, MAX_TOKEN);
 	header = (dheader_t*)buf;
 
 	// check all the lumps and some other errors
@@ -834,7 +844,7 @@ static char* SV_ReadEntityScript (const char* filename, int* flags)
 	// check for entfile too
 	Q_strncpy (entfilename, va ("maps/%s.ent", filename), sizeof (entfilename));
 
-	// make sure what entity patch is never than bsp
+	// make sure what entity patch is newer than bsp
 	ft1 = FS_FileTime (bspfilename, false);
 	ft2 = FS_FileTime (entfilename, true);
 
@@ -866,16 +876,18 @@ Validate map
 */
 int SV_MapIsValid (const char* filename, const char* spawn_entity, const char* landmark_name)
 	{
-	int	flags = 0;
-	char* pfile;
-	char* ents;
+	int		flags = 0;
+	char*	pfile;
+	char*	ents;
 
 	ents = SV_ReadEntityScript (filename, &flags);
 
 	if (ents)
 		{
 		qboolean	need_landmark = Q_strlen (landmark_name) > 0 ? true : false;
-		char	token[2048];
+		// 4529
+		//char	token[2048];
+		char	token[MAX_TOKEN];
 		string	check_name;
 
 		// g-cont. in-dev mode we can entering on map even without "info_player_start"
@@ -1279,27 +1291,34 @@ pfnSetModel
 */
 void pfnSetModel (edict_t* e, const char* m)
 	{
-	char	name[MAX_QPATH];
-	model_t* mod;
-	int	i;
+	char		name[MAX_QPATH];
+	// 4529
+	qboolean	found = false; 
+	model_t*	mod;
+	int			i;
 
 	if (!SV_IsValidEdict (e))
 		return;
 
-	if (*m == '\\' || *m == '/') m++;
+	if ((*m == '\\') || (*m == '/'))
+		m++;
 	Q_strncpy (name, m, sizeof (name));
 	COM_FixSlashes (name);
 
 	if (COM_CheckString (name))
 		{
-		// check to see if model was properly precached
+		// 4529: check to see if model was properly precached
 		for (i = 1; i < MAX_MODELS && sv.model_precache[i][0]; i++)
 			{
 			if (!Q_stricmp (sv.model_precache[i], name))
+				{
+				found = true;
 				break;
+				}
 			}
 
-		if (i == MAX_MODELS)
+		//if (i == MAX_MODELS)
+		if (!found)
 			{
 			Con_Printf (S_ERROR "no precache: %s\n", name);
 			return;
@@ -1991,7 +2010,7 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 	int	sound_idx = -1;
 	qboolean	spawn;
 
-	if (vol < 0 || vol > 255)
+	if ((vol < 0) || (vol > 255))
 		{
 		Con_Reportf (S_ERROR "SV_StartSound: volume = %i\n", vol);
 		vol = bound (0, vol, 255);
@@ -2030,7 +2049,10 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 			SetBits (flags, SND_SENTENCE | SND_SEQUENCE);
 			sound_idx -= MAX_SOUNDS;
 			}
-		else SetBits (flags, SND_SENTENCE);
+		else
+			{
+			SetBits (flags, SND_SENTENCE);
+			}
 		}
 	else if ((sample[0] == '#') && Q_isdigit (sample + 1))
 		{
@@ -2061,26 +2083,35 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 		entityIndex = NUM_FOR_EDICT (ent->v.aiment);
 	else if (SV_IsValidEdict (ent))
 		entityIndex = NUM_FOR_EDICT (ent);
-	else entityIndex = 0; // assume world
+	else 
+		entityIndex = 0; // assume world
 
-	if (vol != 255) SetBits (flags, SND_VOLUME);
-	if (attn != ATTN_EVERYWHERE) SetBits (flags, SND_ATTENUATION);
-	if (pitch != PITCH_NORM) SetBits (flags, SND_PITCH);
+	if (vol != 255) 
+		SetBits (flags, SND_VOLUME);
+	if (attn != ATTN_EVERYWHERE) 
+		SetBits (flags, SND_ATTENUATION);
+	if (pitch != PITCH_NORM) 
+		SetBits (flags, SND_PITCH);
 
 	// not sending (because this is out of range)
 	ClearBits (flags, SND_RESTORE_POSITION);
 	ClearBits (flags, SND_FILTER_CLIENT);
 	ClearBits (flags, SND_SPAWNING);
 
-	if (spawn) MSG_BeginServerCmd (msg, svc_sound);
-	else MSG_BeginServerCmd (msg, svc_restoresound);
+	if (spawn) 
+		MSG_BeginServerCmd (msg, svc_sound);
+	else 
+		MSG_BeginServerCmd (msg, svc_restoresound);
 	MSG_WriteUBitLong (msg, flags, MAX_SND_FLAGS_BITS);
 	MSG_WriteUBitLong (msg, sound_idx, MAX_SOUND_BITS);
 	MSG_WriteUBitLong (msg, chan, MAX_SND_CHAN_BITS);
 
-	if (FBitSet (flags, SND_VOLUME)) MSG_WriteByte (msg, vol);
-	if (FBitSet (flags, SND_ATTENUATION)) MSG_WriteByte (msg, attn * 64);
-	if (FBitSet (flags, SND_PITCH)) MSG_WriteByte (msg, pitch);
+	if (FBitSet (flags, SND_VOLUME)) 
+		MSG_WriteByte (msg, vol);
+	if (FBitSet (flags, SND_ATTENUATION)) 
+		MSG_WriteByte (msg, attn * 64);
+	if (FBitSet (flags, SND_PITCH)) 
+		MSG_WriteByte (msg, pitch);
 
 	MSG_WriteUBitLong (msg, entityIndex, MAX_ENTITY_BITS);
 	MSG_WriteVec3Coord (msg, pos);
@@ -2786,8 +2817,8 @@ void pfnWriteString (const char* src)
 	{
 	static char	string[MAX_USERMSG_LENGTH];
 	int		len = Q_strlen (src) + 1;
-	int		rem = rem = sizeof (string) - 1;
-	char* dst;
+	int		rem = sizeof (string) - 1;
+	char*	dst;
 
 	if (len == 1)
 		{
@@ -4493,10 +4524,10 @@ qboolean SV_ParseEdict (char** pfile, edict_t* ent)
 	{
 	KeyValueData	pkvd[256]; // per one entity
 	qboolean		adjust_origin = false;
-	int		i, numpairs = 0;
-	char* classname = NULL;
-	char		token[2048];
-	vec3_t		origin;
+	int				i, numpairs = 0;
+	char*			classname = NULL;
+	char			token[2048];
+	vec3_t			origin;
 
 	// go through all the dictionary pairs
 	while (1)
@@ -4524,9 +4555,10 @@ qboolean SV_ParseEdict (char** pfile, edict_t* ent)
 		if (!Q_strcmp (keyname, "wad"))
 			continue;
 
-		// keynames with a leading underscore are used for
+		// 4529: keynames with a leading underscore are used for
 		// utility comments and are immediately discarded by engine
-		if (keyname[0] == '_' && Q_strcmp (keyname, "_light"))
+		//if (keyname[0] == '_' && Q_strcmp (keyname, "_light"))
+		if (FBitSet (world.flags, FWORLD_SKYSPHERE) && (keyname[0] == '_'))
 			continue;
 
 		// ignore attempts to set value ""
@@ -4596,7 +4628,8 @@ qboolean SV_ParseEdict (char** pfile, edict_t* ent)
 				pkvd[i].szValue = copystring ("-90 0 0");
 			else if (flYawAngle == -2.0f)
 				pkvd[i].szValue = copystring ("90 0 0");
-			else pkvd[i].szValue = copystring ("0 0 0"); // technically an error
+			else 
+				pkvd[i].szValue = copystring ("0 0 0"); // technically an error
 			}
 
 #ifdef HACKS_RELATED_HLMODS
@@ -4629,7 +4662,9 @@ qboolean SV_ParseEdict (char** pfile, edict_t* ent)
 			Mem_Free (pkvd[i].szValue);
 		}
 
-	if (classname)
+	// 4529
+	//if (classname)
+	if (classname && Mem_IsAllocatedExt (host.mempool, classname))
 		Mem_Free (classname);
 
 	return true;

@@ -1553,8 +1553,9 @@ StudioCalcAttachments
 static void R_StudioCalcAttachments (void)
 	{
 	mstudioattachment_t* pAtt;
-	vec3_t		forward, bonepos;
-	vec3_t		localOrg, localAng;
+	// 4529
+	/*vec3_t		forward, bonepos;
+	vec3_t		localOrg, localAng;*/
 	int		i;
 
 	// calculate attachment points
@@ -1563,11 +1564,12 @@ static void R_StudioCalcAttachments (void)
 	for (i = 0; i < Q_min (MAXSTUDIOATTACHMENTS, m_pStudioHeader->numattachments); i++)
 		{
 		Matrix3x4_VectorTransform (g_studio.lighttransform[pAtt[i].bone], pAtt[i].org, RI.currententity->attachment[i]);
-		VectorSubtract (RI.currententity->attachment[i], RI.currententity->origin, localOrg);
+		// 4529
+		/*VectorSubtract (RI.currententity->attachment[i], RI.currententity->origin, localOrg);
 		Matrix3x4_OriginFromMatrix (g_studio.lighttransform[pAtt[i].bone], bonepos);
 		VectorSubtract (localOrg, bonepos, forward);	// make forward
 		VectorNormalizeFast (forward);
-		VectorAngles (forward, localAng);
+		VectorAngles (forward, localAng);*/
 		}
 	}
 
@@ -2731,7 +2733,8 @@ int R_GetEntityRenderMode (cl_entity_t* ent)
 
 	if (ent->player) // check it for real playermodel
 		model = R_StudioSetupPlayerModel (ent->curstate.number - 1);
-	else model = ent->model;
+	else 
+		model = ent->model;
 
 	RI.currententity = oldent;
 
@@ -3803,7 +3806,9 @@ static void R_StudioLoadTexture (model_t* mod, studiohdr_t* phdr, mstudiotexture
 	ptexture->index = (int)((byte*)phdr) + ptexture->index;
 	size = sizeof (mstudiotexture_t) + ptexture->width * ptexture->height + 768;
 
-	if (FBitSet (host.features, ENGINE_LOAD_DELUXEDATA) && FBitSet (ptexture->flags, STUDIO_NF_MASKED))
+	// 4529
+	//if (FBitSet (host.features, ENGINE_LOAD_DELUXEDATA) && FBitSet (ptexture->flags, STUDIO_NF_MASKED))
+	if (FBitSet (host.features, ENGINE_IMPROVED_LINETRACE) && FBitSet (ptexture->flags, STUDIO_NF_MASKED))
 		flags |= TF_KEEP_SOURCE; // Paranoia2 texture alpha-tracing
 
 	// build the texname

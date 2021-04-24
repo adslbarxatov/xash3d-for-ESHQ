@@ -171,7 +171,6 @@ static void UI_PromptDialog (void)
 	uiMain.dlgMessage1.generic.flags ^= QMF_HIDDEN;
 	uiMain.no.generic.flags ^= QMF_HIDDEN;
 	uiMain.yes.generic.flags ^= QMF_HIDDEN;
-
 	}
 
 /*
@@ -314,15 +313,15 @@ static void UI_Main_Callback (void* self, int event)
 		case ID_CUSTOMGAME:
 			UI_CustomGame_Menu ();
 			break;
-// ESHQ: изменено для поддержки титров
+		// ESHQ: изменено для поддержки титров
 		case ID_CREDITS:
 			if (CL_IsActive ())
 				UI_PromptDialog ();
 			else
 				UI_Main_Credits ();
 			/*case ID_PREVIEWS:
-				SHELL_EXECUTE( MenuStrings[HINT_PREVIEWS_CMD], NULL, false );
-				break;*/
+				SHELL_EXECUTE( MenuStrings[HINT_PREVIEWS_CMD], NULL, false );*/
+				break;
 		case ID_QUIT:
 		case ID_QUIT_BUTTON:
 			UI_QuitDialog ();

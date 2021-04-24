@@ -80,10 +80,8 @@ void CAirtank::Killed (entvars_t* pevAttacker, int iGib)
 	pev->owner = ENT (pevAttacker);
 
 	// UNDONE: this should make a big bubble cloud, not an explosion
-
 	Explode (pev->origin, Vector (0, 0, -1));
 	}
-
 
 void CAirtank::TankThink (void)
 	{
@@ -91,7 +89,6 @@ void CAirtank::TankThink (void)
 	m_state = 1;
 	SUB_UseTargets (this, USE_TOGGLE, 0);
 	}
-
 
 void CAirtank::TankTouch (CBaseEntity* pOther)
 	{

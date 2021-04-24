@@ -204,10 +204,10 @@ void CGameEnd::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		return;
 
 	// ESHQ: корректное завершение игры в однопользовательском режиме
-	if (pActivator->IsPlayer () && !g_pGameRules->IsMultiplayer ())	
+	//if (pActivator->IsPlayer () && !g_pGameRules->IsMultiplayer ())	
 		CLIENT_COMMAND (pActivator->edict (), "disconnect\n");
-	else
-		g_pGameRules->EndMultiplayerGame ();
+	/*else
+		g_pGameRules->EndMultiplayerGame ();*/
 	}
 
 

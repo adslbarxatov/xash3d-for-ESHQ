@@ -77,7 +77,10 @@ static void R_DecalUnlink (decal_t* pdecal)
 		else
 			{
 			tmp = pdecal->psurface->pdecals;
-			if (!tmp) Host_Error ("D_DecalUnlink: bad decal list\n");
+
+			// 4529
+			//if (!tmp) Host_Error ("D_DecalUnlink: bad decal list\n");
+			if (!tmp) Host_Error ("R_DecalUnlink: bad decal list\n");
 
 			while (tmp->pnext)
 				{
@@ -924,7 +927,7 @@ void DrawSurfaceDecals (msurface_t* fa, qboolean single, qboolean reverse)
 		if (e->curstate.rendermode == kRenderTransColor)
 			pglEnable (GL_TEXTURE_2D);
 
-		if (e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd)
+		if ((e->curstate.rendermode == kRenderTransTexture) || (e->curstate.rendermode == kRenderTransAdd))
 			GL_Cull (GL_NONE);
 
 		if (gl_polyoffset->value)
@@ -1030,7 +1033,7 @@ void DrawSurfaceDecals (msurface_t* fa, qboolean single, qboolean reverse)
 			pglDisable (GL_TEXTURE_2D);
 
 		// restore blendfunc here
-		if (e->curstate.rendermode == kRenderTransAdd || e->curstate.rendermode == kRenderGlow)
+		if ((e->curstate.rendermode == kRenderTransAdd) || (e->curstate.rendermode == kRenderGlow))
 			pglBlendFunc (GL_SRC_ALPHA, GL_ONE);
 
 		pglTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -1055,7 +1058,7 @@ void DrawDecalsBatch (void)
 		pglDepthMask (GL_FALSE);
 		}
 
-	if (e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd)
+	if ((e->curstate.rendermode == kRenderTransTexture) || (e->curstate.rendermode == kRenderTransAdd))
 		GL_Cull (GL_NONE);
 
 	if (gl_polyoffset->value)
@@ -1079,7 +1082,7 @@ void DrawDecalsBatch (void)
 	if (gl_polyoffset->value)
 		pglDisable (GL_POLYGON_OFFSET_FILL);
 
-	if (e->curstate.rendermode == kRenderTransTexture || e->curstate.rendermode == kRenderTransAdd)
+	if ((e->curstate.rendermode == kRenderTransTexture) || (e->curstate.rendermode == kRenderTransAdd))
 		GL_Cull (GL_FRONT);
 
 	tr.num_draw_decals = 0;

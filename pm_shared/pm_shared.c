@@ -310,7 +310,7 @@ void PM_PlayStepSound (int step, float fvol)
 	VectorCopy (pmove->velocity, hvel);
 	hvel[2] = 0.0;
 
-	if (pmove->multiplayer && (!g_onladder && Length (hvel) <= 220))
+	if (pmove->multiplayer && !g_onladder && (Length (hvel) <= 220))
 		return;
 
 	// irand - 0,1 for right foot, 2,3 for left foot
@@ -591,7 +591,7 @@ void PM_UpdateStepSound (void)
 	//  play step sound. Also, if pmove->flTimeStepSound is zero, get the new
 	//  sound right away - we just started moving in new level.
 	if ((fLadder || (pmove->onground != -1)) && (Length (pmove->velocity) > 0.0) &&
-		(speed >= velwalk || !pmove->flTimeStepSound))
+		((speed >= velwalk) || !pmove->flTimeStepSound))
 		{
 		fWalking = speed < velrun;
 
@@ -1171,17 +1171,17 @@ void PM_WalkMove ()
 		return;
 		}
 
-	if (oldonground == -1 &&   // Don't walk up stairs if not on ground.
-		pmove->waterlevel == 0)
+	if ((oldonground == -1) &&   // Don't walk up stairs if not on ground.
+		(pmove->waterlevel == 0))
 		return;
 
 	if (pmove->waterjumptime)         // If we are jumping out of water, don't do anything more.
 		return;
 
 	// Try sliding forward both on ground and up 16 pixels
-	//  take the move that goes farthest
+	// take the move that goes farthest
 	VectorCopy (pmove->origin, original);       // Save out original pos &
-	VectorCopy (pmove->velocity, originalvel);  //  velocity.
+	VectorCopy (pmove->velocity, originalvel);  // velocity
 
 	// Slide move
 	clip = PM_FlyMove ();
@@ -1533,22 +1533,23 @@ qboolean PM_CheckWater ()
 	vec3_t	point;
 	int		cont;
 	int		truecont;
-	float     height;
-	float		heightover2;
+	float	height;
+	float	heightover2;
 
-	// Pick a spot just above the players feet.
+	// Pick a spot just above the players feet
 	point[0] = pmove->origin[0] + (pmove->player_mins[pmove->usehull][0] + pmove->player_maxs[pmove->usehull][0]) * 0.5;
 	point[1] = pmove->origin[1] + (pmove->player_mins[pmove->usehull][1] + pmove->player_maxs[pmove->usehull][1]) * 0.5;
 	point[2] = pmove->origin[2] + pmove->player_mins[pmove->usehull][2] + 1;
 
-	// Assume that we are not in water at all.
+	// Assume that we are not in water at all
 	pmove->waterlevel = 0;
 	pmove->watertype = CONTENTS_EMPTY;
 
-	// Grab point contents.
+	// Grab point contents
 	cont = pmove->PM_PointContents (point, &truecont);
+
 	// Are we under water? (not solid and not empty?)
-	if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+	if ((cont <= CONTENTS_WATER) && (cont > CONTENTS_TRANSLUCENT))
 		{
 		// Set water type
 		pmove->watertype = cont;
@@ -1562,33 +1563,33 @@ qboolean PM_CheckWater ()
 		// Now check a point that is at the player hull midpoint.
 		point[2] = pmove->origin[2] + heightover2;
 		cont = pmove->PM_PointContents (point, NULL);
+
 		// If that point is also under water...
-		if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+		if ((cont <= CONTENTS_WATER) && (cont > CONTENTS_TRANSLUCENT))
 			{
-			// Set a higher water level.
+			// Set a higher water level
 			pmove->waterlevel = 2;
 
 			// Now check the eye position.  (view_ofs is relative to the origin)
 			point[2] = pmove->origin[2] + pmove->view_ofs[2];
 
 			cont = pmove->PM_PointContents (point, NULL);
-			if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+			if ((cont <= CONTENTS_WATER) && (cont > CONTENTS_TRANSLUCENT))
 				pmove->waterlevel = 3;  // In over our eyes
 			}
 
 		// Adjust velocity based on water current, if any.
-		if ((truecont <= CONTENTS_CURRENT_0) &&
-			(truecont >= CONTENTS_CURRENT_DOWN))
+		if ((truecont <= CONTENTS_CURRENT_0) && (truecont >= CONTENTS_CURRENT_DOWN))
 			{
-			// The deeper we are, the stronger the current.
+			// The deeper we are, the stronger the current
 			static vec3_t current_table[] =
 				{
 					{1, 0, 0}, {0, 1, 0}, {-1, 0, 0},
 					{0, -1, 0}, {0, 0, 1}, {0, 0, -1}
 				};
 
-			VectorMA (pmove->basevelocity, 50.0 * pmove->waterlevel, current_table[CONTENTS_CURRENT_0 - truecont], 
-				pmove->basevelocity);
+			VectorMA (pmove->basevelocity, 50.0 * pmove->waterlevel, 
+				current_table[CONTENTS_CURRENT_0 - truecont], pmove->basevelocity);
 			}
 		}
 
@@ -2979,7 +2980,7 @@ void PM_PlayerMove (qboolean server)
 	// PM_ShowClipBox();
 
 	// Special handling for spectator and observers. (iuser1 is set if the player's in observer mode)
-	if (pmove->spectator || pmove->iuser1 > 0)
+	if (pmove->spectator || (pmove->iuser1 > 0))
 		{
 		PM_SpectatorMove ();
 		PM_CatagorizePosition ();
@@ -2987,7 +2988,7 @@ void PM_PlayerMove (qboolean server)
 		}
 
 	// Always try and unstick us unless we are in NOCLIP mode
-	if (pmove->movetype != MOVETYPE_NOCLIP && pmove->movetype != MOVETYPE_NONE)
+	if ((pmove->movetype != MOVETYPE_NOCLIP) && (pmove->movetype != MOVETYPE_NONE))
 		{
 		if (PM_CheckStuck ())
 			{
@@ -3008,6 +3009,7 @@ void PM_PlayerMove (qboolean server)
 		}
 
 	g_onladder = 0;
+
 	// Don't run ladder code if dead or on a train
 	if (!pmove->dead && !(pmove->flags & FL_ONTRAIN))
 		{
@@ -3115,7 +3117,7 @@ void PM_PlayerMove (qboolean server)
 					}
 
 				// If we are falling again, then we must not trying to jump out of water any more.
-				if (pmove->velocity[2] < 0 && pmove->waterjumptime)
+				if ((pmove->velocity[2] < 0) && pmove->waterjumptime)
 					{
 					pmove->waterjumptime = 0;
 					}
@@ -3199,8 +3201,7 @@ void PM_PlayerMove (qboolean server)
 					pmove->velocity[2] = 0;
 					}
 
-				// See if we landed on the ground with enough force to play
-				//  a landing sound.
+				// See if we landed on the ground with enough force to play a landing sound
 				PM_CheckFalling ();
 				}
 
@@ -3317,8 +3318,6 @@ void PM_CreateStuckTable (void)
 			}
 		}
 	}
-
-
 
 /*
 This modume implements the shared player physics code between any particular game and

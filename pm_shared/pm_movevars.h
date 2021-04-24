@@ -13,7 +13,7 @@
 typedef struct movevars_s movevars_t;
 
 struct movevars_s
-{
+	{
 	float	gravity;           // Gravity for map
 	float	stopspeed;         // Deceleration when not moving
 	float	maxspeed;          // Max allowed speed
@@ -21,7 +21,7 @@ struct movevars_s
 	float	accelerate;        // Acceleration factor
 	float	airaccelerate;     // Same for when in open air
 	float	wateraccelerate;   // Same for when in water
-	float	friction;          
+	float	friction;
 	float	edgefriction;	   // Extra friction near dropofs 
 	float	waterfriction;     // Less in water
 	float	entgravity;        // 1.0
@@ -40,10 +40,10 @@ struct movevars_s
 	float	skyvec_x;			// Sky vector
 	float	skyvec_y;			// 
 	float	skyvec_z;			// 
-	int	features;		// engine features that shared across network
-	int	fog_settings;	// Global fog settings (packed color+density) 
+	int		features;		// engine features that shared across network
+	int		fog_settings;	// Global fog settings (packed color+density) 
 	float	wateralpha;	// World water alpha 1.0 - solid 0.0 - transparent
-};
+	};
 
 extern movevars_t movevars;
 

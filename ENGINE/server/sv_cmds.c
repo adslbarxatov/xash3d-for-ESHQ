@@ -16,6 +16,9 @@ GNU General Public License for more details.
 #include "common.h"
 #include "server.h"
 
+// 4529
+extern convar_t* con_gamemaps;
+
 /*
 =================
 SV_ClientPrintf
@@ -282,7 +285,12 @@ void SV_NextMap_f (void)
 	int	i, next;
 	search_t* t;
 
-	t = FS_Search ("maps/*.bsp", true, true); // only in gamedir
+	// 4529
+	//t = FS_Search ("maps/*.bsp", true, true); // only in gamedir
+	t = FS_Search ("maps\\*.bsp", true, CVAR_TO_BOOL (con_gamemaps)); // only in gamedir
+	if (!t) 
+		t = FS_Search ("maps/*.bsp", true, CVAR_TO_BOOL (con_gamemaps)); // only in gamedir
+
 	if (!t)
 		{
 		Con_Printf ("next map can't be found\n");
@@ -928,8 +936,6 @@ void SV_InitOperatorCommands (void)
 	Cmd_AddCommand ("clientinfo", SV_ClientInfo_f, "print user infostring (player num required)");
 	Cmd_AddCommand ("playersonly", SV_PlayersOnly_f, "freezes time, except for players");
 	Cmd_AddCommand ("restart", SV_Restart_f, "restarting current level");
-	// ESHQ: добавлено для поддержки титров
-	Cmd_AddCommand ("credits", SV_Credits_f, "starting a credits");
 	Cmd_AddCommand ("entpatch", SV_EntPatch_f, "write entity patch to allow external editing");
 	Cmd_AddCommand ("edict_usage", SV_EdictUsage_f, "show info about edicts usage");
 	Cmd_AddCommand ("entity_info", SV_EntityInfo_f, "show more info about edicts");

@@ -685,8 +685,9 @@ void R_DrawDisk (vec3_t source, vec3_t delta, float width, float scale, float fr
 	vLast = fmod (freq * speed, 1);
 	scale = scale * length;
 
-	// clamp the beam width
-	w = fmod (freq, width) * delta[2];
+	// 4529: clamp the beam width
+	//w = fmod (freq, width) * delta[2];
+	w = fmod (freq, width * 0.1f) * delta[2];
 
 	// NOTE: we must force the degenerate triangles to be on the edge
 	for (i = 0; i < segments; i++)

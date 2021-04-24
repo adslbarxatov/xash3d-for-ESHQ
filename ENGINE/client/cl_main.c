@@ -1390,7 +1390,7 @@ void CL_Reconnect (qboolean setup_netchan)
 =====================
 CL_Disconnect
 
-Goes from a connected state to full screen console state
+ESHQ: goes from a connected state to the main menu
 Sends a disconnect message to the server
 This is also called on Host_Error, so it shouldn't cause any errors
 =====================
@@ -1412,7 +1412,7 @@ void CL_Disconnect (void)
 	S_StopBackgroundTrack ();
 	SCR_EndLoadingPlaque (); // get rid of loading plaque
 
-	// clear the network channel, too.
+	// clear the network channel, too
 	Netchan_Clear (&cls.netchan);
 
 	cls.state = ca_disconnected;
@@ -1421,8 +1421,8 @@ void CL_Disconnect (void)
 	cls.signon = 0;
 
 	// back to menu in non-developer mode
-	if (host_developer.value || CL_IsInMenu ())
-		return;
+	/*if (host_developer.value || CL_IsInMenu ())
+		return;*/
 
 	UI_SetActiveMenu (true);
 	}
@@ -1431,7 +1431,8 @@ void CL_Disconnect_f (void)
 	{
 	if (Host_IsLocalClient ())
 		Host_EndGame (true, "disconnected from server\n");
-	else CL_Disconnect ();
+	else 
+		CL_Disconnect ();
 	}
 
 void CL_Crashed (void)
@@ -2090,7 +2091,7 @@ void CL_ReadPackets (void)
 		Cvar_SetCheatState ();
 #endif
 	// hot precache and downloading resources
-	if (cls.signon == SIGNONS && cl.lastresourcecheck < host.realtime)
+	if ((cls.signon == SIGNONS) && (cl.lastresourcecheck < host.realtime))
 		{
 		double checktime = Host_IsLocalGame () ? 0.1 : 1.0;
 
@@ -2099,6 +2100,10 @@ void CL_ReadPackets (void)
 			// check resource for downloading and precache
 			CL_EstimateNeededResources ();
 			CL_BatchResourceRequest (false);
+			
+			// 4529
+			cls.dl.doneregistering = false;
+			
 			cls.dl.custom = true;
 			}
 

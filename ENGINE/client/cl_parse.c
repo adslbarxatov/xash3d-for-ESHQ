@@ -1467,7 +1467,7 @@ void CL_RegisterResources (sizebuf_t* msg)
 	model_t* mod;
 	int	i;
 
-	if (cls.dl.custom || cls.signon == SIGNONS && cls.state == ca_active)
+	if (cls.dl.custom || (cls.signon == SIGNONS) && (cls.state == ca_active))
 		{
 		cls.dl.custom = false;
 		return;
@@ -1479,12 +1479,14 @@ void CL_RegisterResources (sizebuf_t* msg)
 	// All done precaching.
 	cl.worldmodel = CL_ModelHandle (1); // get world pointer
 
-	if (cl.worldmodel && cl.maxclients > 0)
+	if (cl.worldmodel && (cl.maxclients > 0))
 		{
 		ASSERT (clgame.entities != NULL);
 		clgame.entities->model = cl.worldmodel;
 
-		if (cls.state != ca_disconnected)
+		// 4529
+		//if (cls.state != ca_disconnected)
+		if (!cl.video_prepped && !cl.audio_prepped)
 			{
 			Con_Printf ("Setting up renderer...\n");
 

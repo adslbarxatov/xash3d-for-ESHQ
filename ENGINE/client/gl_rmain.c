@@ -43,18 +43,20 @@ static int R_RankForRenderMode (int rendermode)
 
 void R_AllowFog (int allowed)
 	{
-	static int	isFogEnabled;
+	// 4529
+	//static int	isFogEnabled;
 
 	if (allowed)
 		{
-		if (isFogEnabled)
+		//if (isFogEnabled)
+		if (glState.isFogEnabled)
 			pglEnable (GL_FOG);
 		}
 	else
 		{
-		isFogEnabled = pglIsEnabled (GL_FOG);
-
-		if (isFogEnabled)
+		//isFogEnabled = pglIsEnabled (GL_FOG);
+		//if (isFogEnabled)
+		if (glState.isFogEnabled)
 			pglDisable (GL_FOG);
 		}
 	}
@@ -487,6 +489,9 @@ static void R_SetupFrame (void)
 	// setup viewplane dist
 	RI.viewplanedist = DotProduct (RI.vieworg, RI.vforward);
 
+	// 4529: NOTE: this request is the fps-killer on some NVidia drivers
+	glState.isFogEnabled = pglIsEnabled (GL_FOG);
+
 	if (!gl_nosort->value)
 		{
 		// sort translucents entities by rendermode and distance
@@ -690,7 +695,14 @@ static void R_CheckFog (void)
 			// in some cases waterlevel jumps from 3 to 1. Catch it
 			RI.cached_waterlevel = cl.local.waterlevel;
 			RI.cached_contents = CONTENTS_EMPTY;
-			if (!RI.fogCustom) pglDisable (GL_FOG);
+
+			// 4529
+			//if (!RI.fogCustom) pglDisable (GL_FOG);
+			if (!RI.fogCustom)
+				{
+				glState.isFogEnabled = false;
+				pglDisable (GL_FOG);
+				}
 			}
 		return;
 		}
@@ -983,12 +995,12 @@ some type of screenshots
 */
 qboolean R_DoResetGamma (void)
 	{
-	// FIXME: this looks ugly. apply the backward gamma changes to the output image
-	return false;
+	// 4529: FIXME: this looks ugly. apply the backward gamma changes to the output image
+	//return false;
 
 	switch (cls.scrshot_action)
 		{
-		case scrshot_normal:
+		/*case scrshot_normal:
 			if (CL_IsDevOverviewMode ())
 				return true;
 			return false;
@@ -997,10 +1009,10 @@ qboolean R_DoResetGamma (void)
 				return true;
 			return false;
 		case scrshot_plaque:
-		case scrshot_savegame:
+		case scrshot_savegame:*/
 		case scrshot_envshot:
 		case scrshot_skyshot:
-		case scrshot_mapshot:
+		//case scrshot_mapshot:
 			return true;
 		default:
 			return false;
@@ -1009,7 +1021,47 @@ qboolean R_DoResetGamma (void)
 
 /*
 ===============
-R_BeginFrame
+4529: R_CheckGamma
+===============
+*/
+//void R_BeginFrame (qboolean clearScene)
+void R_CheckGamma (void)
+	{
+	/*glConfig.softwareGammaUpdate = false;	// in case of possible fails
+
+	if ((gl_clear->value || CL_IsDevOverviewMode ()) && clearScene && cls.state != ca_cinematic)
+		{
+		pglClear (GL_COLOR_BUFFER_BIT);
+		}*/
+
+	if (R_DoResetGamma ())
+		{
+		// paranoia cubemaps uses this
+		BuildGammaTable (1.8f, 0.0f);
+		/*glConfig.softwareGammaUpdate = true;
+		GL_RebuildLightmaps ();
+		glConfig.softwareGammaUpdate = false;
+
+		// next frame will be restored gamma
+		SetBits (vid_brightness->flags, FCVAR_CHANGED);
+		SetBits (vid_gamma->flags, FCVAR_CHANGED);*/
+		
+		// paranoia cubemap rendering
+		if (clgame.drawFuncs.GL_BuildLightmaps)
+			clgame.drawFuncs.GL_BuildLightmaps ();
+		}
+	else if (FBitSet (vid_gamma->flags, FCVAR_CHANGED) || FBitSet (vid_brightness->flags, FCVAR_CHANGED))
+		{
+		BuildGammaTable (vid_gamma->value, vid_brightness->value);
+		glConfig.softwareGammaUpdate = true;
+		GL_RebuildLightmaps ();
+		glConfig.softwareGammaUpdate = false;
+		}
+	}
+
+/*
+===============
+4529: R_BeginFrame
 ===============
 */
 void R_BeginFrame (qboolean clearScene)
@@ -1021,24 +1073,7 @@ void R_BeginFrame (qboolean clearScene)
 		pglClear (GL_COLOR_BUFFER_BIT);
 		}
 
-	if (R_DoResetGamma ())
-		{
-		BuildGammaTable (1.8f, 0.0f);
-		glConfig.softwareGammaUpdate = true;
-		GL_RebuildLightmaps ();
-		glConfig.softwareGammaUpdate = false;
-
-		// next frame will be restored gamma
-		SetBits (vid_brightness->flags, FCVAR_CHANGED);
-		SetBits (vid_gamma->flags, FCVAR_CHANGED);
-		}
-	else if (FBitSet (vid_gamma->flags, FCVAR_CHANGED) || FBitSet (vid_brightness->flags, FCVAR_CHANGED))
-		{
-		BuildGammaTable (vid_gamma->value, vid_brightness->value);
-		glConfig.softwareGammaUpdate = true;
-		GL_RebuildLightmaps ();
-		glConfig.softwareGammaUpdate = false;
-		}
+	R_CheckGamma ();
 
 	R_Set2DMode (true);
 
@@ -1046,7 +1081,8 @@ void R_BeginFrame (qboolean clearScene)
 	pglDrawBuffer (GL_BACK);
 
 	// update texture parameters
-	if (FBitSet (gl_texture_nearest->flags | gl_lightmap_nearest->flags | gl_texture_anisotropy->flags | gl_texture_lodbias->flags, FCVAR_CHANGED))
+	if (FBitSet (gl_texture_nearest->flags | gl_lightmap_nearest->flags | gl_texture_anisotropy->flags |
+		gl_texture_lodbias->flags, FCVAR_CHANGED))
 		R_SetTextureParameters ();
 
 	// swapinterval stuff
@@ -1070,8 +1106,16 @@ void R_SetupRefParams (const ref_viewpass_t* rvp)
 	RI.farClip = 0;
 
 	if (!FBitSet (rvp->flags, RF_DRAW_CUBEMAP))
+		{
 		RI.drawOrtho = FBitSet (rvp->flags, RF_DRAW_OVERVIEW);
-	else RI.drawOrtho = false;
+		}
+	else 
+	// 4529
+		{
+		SetBits (RI.params, RP_ENVVIEW);
+		RI.drawOrtho = false;
+		}
+	//RI.drawOrtho = false;
 
 	// setup viewport
 	RI.viewport[0] = rvp->viewport[0];
@@ -1272,6 +1316,13 @@ static int GL_RenderGetParm (int parm, int arg)
 			return glState.stencilEnabled;
 		case PARM_WATER_ALPHA:
 			return FBitSet (world.flags, FWORLD_WATERALPHA);
+		// 4529
+		case PARM_TEX_MEMORY:
+			return GL_TexMemory ();
+		case PARM_DELUXEDATA:
+			return *(int*)&world.deluxedata;
+		case PARM_SHADOWDATA:
+			return *(int*)&world.shadowdata;
 		}
 	return 0;
 	}
@@ -1510,7 +1561,9 @@ static render_api_t gRenderAPI =
 		R_StudioGetTexture,
 		GL_GetOverviewParms,
 		CL_GenericHandle,
-		NULL,
+		// 4529
+		//NULL,
+		COM_SaveFile,
 		NULL,
 		R_Mem_Alloc,
 		R_Mem_Free,
@@ -1536,12 +1589,16 @@ qboolean R_InitRenderAPI (void)
 	{
 	// make sure what render functions is cleared
 	memset (&clgame.drawFuncs, 0, sizeof (clgame.drawFuncs));
+	// 4529
+	glConfig.fCustomRenderer = false;
 
 	if (clgame.dllFuncs.pfnGetRenderInterface)
 		{
 		if (clgame.dllFuncs.pfnGetRenderInterface (CL_RENDER_INTERFACE_VERSION, &gRenderAPI, &clgame.drawFuncs))
 			{
 			Con_Reportf ("CL_LoadProgs: ^2initailized extended RenderAPI ^7ver. %i\n", CL_RENDER_INTERFACE_VERSION);
+			// 4529
+			glConfig.fCustomRenderer = true;
 			return true;
 			}
 

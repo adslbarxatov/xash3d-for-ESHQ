@@ -58,17 +58,19 @@ GNU General Public License for more details.
 // {
 //  byte (on/off)
 //  int (fragment id)
-//  short (startpos)
-//  short (length)
+//  int (startpos)
+//  int (length)
 // }
-#define HEADER_BYTES		( 8 + MAX_STREAMS * 9 )
+//#define HEADER_BYTES		( 8 + MAX_STREAMS * 9 )
+// 4529
+#define HEADER_BYTES		( 8 + MAX_STREAMS * 13 )
 
 // Pad this to next higher 16 byte boundary
 // This is the largest packet that can come in/out over the wire, before processing the header
 //  bytes will be stripped by the networking channel layer
 #define NET_MAX_MESSAGE		PAD_NUMBER(( NET_MAX_PAYLOAD + HEADER_BYTES ), 16 )
 
-#define MASTERSERVER_ADR		"ms.xash.su:27010"
+#define MASTERSERVER_ADR	"ms.xash.su:27010"
 #define MS_SCAN_REQUEST		"1\xFF" "0.0.0.0:0\0"
 #define PORT_MASTER			27010
 #define PORT_CLIENT			27005
@@ -100,25 +102,25 @@ NET
 
 // message data
 typedef struct
-{
+	{
 	int		size;		// size of message sent/received
 	double		time;		// time that message was sent/received
-} flowstats_t;
+	} flowstats_t;
 
 typedef struct
-{
+	{
 	flowstats_t	stats[MAX_LATENT];	// data for last MAX_LATENT messages
 	int		current;		// current message position
 	double		nextcompute; 	// time when we should recompute k/sec data
 	float		kbytespersec;	// average data
 	float		avgkbytespersec;
 	int		totalbytes;
-} flow_t;
+	} flow_t;
 
 // generic fragment structure
 typedef struct fragbuf_s
-{
-	struct fragbuf_s	*next;				// next buffer in chain
+	{
+	struct fragbuf_s* next;				// next buffer in chain
 	int		bufferid;				// id of this buffer
 	sizebuf_t		frag_message;			// message buffer where raw data is stored
 	byte		frag_message_buf[NET_MAX_FRAGMENT];	// the actual data sits here
@@ -128,19 +130,19 @@ typedef struct fragbuf_s
 	char		filename[MAX_OSPATH];		// name of the file to save out on remote host
 	int		foffset;				// offset in file from which to read data  
 	int		size;				// size of data to read at that offset
-} fragbuf_t;
+	} fragbuf_t;
 
 // Waiting list of fragbuf chains
 typedef struct fbufqueue_s
-{
-	struct fbufqueue_s	*next;		// next chain in waiting list
+	{
+	struct fbufqueue_s* next;		// next chain in waiting list
 	int		fragbufcount;	// number of buffers in this chain
-	fragbuf_t		*fragbufs;	// the actual buffers
-} fragbufwaiting_t;
+	fragbuf_t* fragbufs;	// the actual buffers
+	} fragbufwaiting_t;
 
 // Network Connection Channel
 typedef struct netchan_s
-{
+	{
 	netsrc_t		sock;		// NS_SERVER or NS_CLIENT, depending on channel.
 	netadr_t		remote_address;	// address this channel is talking to.  
 	int		qport;		// qport value to write when transmitting
@@ -160,8 +162,8 @@ typedef struct netchan_s
 	int		last_reliable_sequence;		// outgoing sequence number of last send that had reliable data
 
 	// callback to get actual framgment size
-	void		*client;
-	int (*pfnBlockSize)( void *cl );
+	void* client;
+	int (*pfnBlockSize)(void* cl);
 
 	// staging and holding areas
 	sizebuf_t		message;
@@ -174,62 +176,62 @@ typedef struct netchan_s
 
 	// Waiting list of buffered fragments to go onto queue.
 	// Multiple outgoing buffers can be queued in succession
-	fragbufwaiting_t	*waitlist[MAX_STREAMS]; 
+	fragbufwaiting_t* waitlist[MAX_STREAMS];
 
 	int		reliable_fragment[MAX_STREAMS];	// is reliable waiting buf a fragment?          
 	uint		reliable_fragid[MAX_STREAMS];		// buffer id for each waiting fragment
 
-	fragbuf_t		*fragbufs[MAX_STREAMS];	// the current fragment being set
+	fragbuf_t* fragbufs[MAX_STREAMS];	// the current fragment being set
 	int		fragbufcount[MAX_STREAMS];	// the total number of fragments in this stream
 
 	int		frag_startpos[MAX_STREAMS];	// position in outgoing buffer where frag data starts
 	int		frag_length[MAX_STREAMS];	// length of frag data in the buffer
 
-	fragbuf_t		*incomingbufs[MAX_STREAMS];	// incoming fragments are stored here
+	fragbuf_t* incomingbufs[MAX_STREAMS];	// incoming fragments are stored here
 	qboolean		incomingready[MAX_STREAMS];	// set to true when incoming data is ready
 
 	// Only referenced by the FRAG_FILE_STREAM component
 	char		incomingfilename[MAX_OSPATH];	// Name of file being downloaded
 
-	void		*tempbuffer;		// download file buffer
+	void* tempbuffer;		// download file buffer
 	int		tempbuffersize;		// current size
 
 	// incoming and outgoing flow metrics
-	flow_t		flow[MAX_FLOWS];  
+	flow_t		flow[MAX_FLOWS];
 
 	// added for net_speeds
 	size_t		total_sended;
 	size_t		total_received;
-} netchan_t;
+	} netchan_t;
 
 extern netadr_t		net_from;
 extern netadr_t		net_local;
 extern sizebuf_t		net_message;
 extern byte		net_message_buffer[NET_MAX_MESSAGE];
-extern convar_t		*net_speeds;
+extern convar_t* net_speeds;
 extern convar_t		sv_lan;
 extern convar_t		sv_lan_rate;
 extern int		net_drop;
 
-void Netchan_Init( void );
-void Netchan_Shutdown( void );
-void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport, void *client, int (*pfnBlockSize)(void * ) );
-void Netchan_CreateFileFragmentsFromBuffer( netchan_t *chan, char *filename, byte *pbuf, int size );
-qboolean Netchan_CopyNormalFragments( netchan_t *chan, sizebuf_t *msg, size_t *length );
-qboolean Netchan_CopyFileFragments( netchan_t *chan, sizebuf_t *msg );
-void Netchan_CreateFragments( netchan_t *chan, sizebuf_t *msg );
-int Netchan_CreateFileFragments( netchan_t *chan, const char *filename );
-void Netchan_Transmit( netchan_t *chan, int lengthInBytes, byte *data );
-void Netchan_TransmitBits( netchan_t *chan, int lengthInBits, byte *data );
-void Netchan_OutOfBand( int net_socket, netadr_t adr, int length, byte *data );
-void Netchan_OutOfBandPrint( int net_socket, netadr_t adr, char *format, ... );
-qboolean Netchan_Process( netchan_t *chan, sizebuf_t *msg );
-void Netchan_UpdateProgress( netchan_t *chan );
-qboolean Netchan_IncomingReady( netchan_t *chan );
-qboolean Netchan_CanPacket( netchan_t *chan, qboolean choke );
-qboolean Netchan_IsLocal( netchan_t *chan );
-void Netchan_ReportFlow( netchan_t *chan );
-void Netchan_FragSend( netchan_t *chan );
-void Netchan_Clear( netchan_t *chan );
+void Netchan_Init (void);
+void Netchan_Shutdown (void);
+void Netchan_Setup (netsrc_t sock, netchan_t* chan, netadr_t adr, int qport, void* client, int (*pfnBlockSize)(void*));
+void Netchan_CreateFileFragmentsFromBuffer (netchan_t* chan, char* filename, byte* pbuf, int size);
+qboolean Netchan_CopyNormalFragments (netchan_t* chan, sizebuf_t* msg, size_t* length);
+qboolean Netchan_CopyFileFragments (netchan_t* chan, sizebuf_t* msg);
+void Netchan_CreateFragments (netchan_t* chan, sizebuf_t* msg);
+int Netchan_CreateFileFragments (netchan_t* chan, const char* filename);
+void Netchan_Transmit (netchan_t* chan, int lengthInBytes, byte* data);
+void Netchan_TransmitBits (netchan_t* chan, int lengthInBits, byte* data);
+void Netchan_OutOfBand (int net_socket, netadr_t adr, int length, byte* data);
+void Netchan_OutOfBandPrint (int net_socket, netadr_t adr, char* format, ...);
+qboolean Netchan_Process (netchan_t* chan, sizebuf_t* msg);
+void Netchan_UpdateProgress (netchan_t* chan);
+qboolean Netchan_IncomingReady (netchan_t* chan);
+qboolean Netchan_CanPacket (netchan_t* chan, qboolean choke);
+qboolean Netchan_IsLocal (netchan_t* chan);
+void Netchan_ReportFlow (netchan_t* chan);
+void Netchan_FragSend (netchan_t* chan);
+void Netchan_Clear (netchan_t* chan);
 
 #endif//NET_MSG_H

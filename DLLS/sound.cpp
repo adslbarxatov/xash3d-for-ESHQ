@@ -79,7 +79,6 @@ typedef struct dynpitchvol
 #define CDPVPRESETMAX 27
 
 // presets for runtime pitch and vol modulation of ambient sounds
-
 dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 	{
 	// pitch	pstart	spinup	spindwn	volrun	volstrt	fadein	fadeout	lfotype	lforate	modptch modvol	cspnup		
@@ -437,12 +436,14 @@ void CAmbientGeneric::InitModulationParms (void)
 	{
 	int pitchinc;
 
+	// ESHQ: занижение громкости
 	m_dpv.volrun = pev->health * 10;	// 0 - 100
+
 	if (m_dpv.volrun > 100) m_dpv.volrun = 100;
 	if (m_dpv.volrun < 0) m_dpv.volrun = 0;
 
 	// get presets
-	if (m_dpv.preset != 0 && m_dpv.preset <= CDPVPRESETMAX)
+	if ((m_dpv.preset != 0) && (m_dpv.preset <= CDPVPRESETMAX))
 		{
 		// load preset values
 		m_dpv = rgdpvpreset[m_dpv.preset - 1];

@@ -570,8 +570,8 @@ qboolean VID_CubemapShot (const char* base, uint size, const float* vieworg, qbo
 	if (size > glState.width || size > glState.height)
 		return false;
 
-	// setup refdef
-	RI.params |= RP_ENVVIEW;	// do not render non-bmodel entities
+	// 4529: удалено
+	// RI.params |= RP_ENVVIEW;	// do not render non-bmodel entities
 
 	// alloc space
 	temp = Mem_Malloc (r_temppool, size * size * 3);
@@ -582,6 +582,9 @@ qboolean VID_CubemapShot (const char* base, uint size, const float* vieworg, qbo
 	// use client vieworg
 	if (!vieworg) vieworg = RI.vieworg;
 
+	// 4529
+	R_CheckGamma (); 
+	
 	for (i = 0; i < 6; i++)
 		{
 		// go into 3d mode
@@ -609,7 +612,8 @@ qboolean VID_CubemapShot (const char* base, uint size, const float* vieworg, qbo
 		memcpy (buffer + (size * size * 3 * i), r_side->buffer, size * size * 3);
 		}
 
-	RI.params &= ~RP_ENVVIEW;
+	// 4529: удалено
+	//RI.params &= ~RP_ENVVIEW;
 
 	r_shot->flags = IMAGE_HAS_COLOR;
 	r_shot->flags |= (skyshot) ? IMAGE_SKYBOX : IMAGE_CUBEMAP;

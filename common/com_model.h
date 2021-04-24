@@ -106,8 +106,18 @@ typedef struct
 
 	vec3_t		mins, maxs;	// terrain bounds (fill by user)
 
-	int		reserved[32];	// just for future expansions or mod-makers
+	int			reserved[32];	// just for future expansions or mod-makers
 	} mfaceinfo_t;
+
+// 4529
+typedef struct
+	{
+	mplane_t*	edges;
+	int			numedges;
+	vec3_t		origin;
+	vec_t		radius;		// for culling tests
+	int			contents;		// sky or solid
+	} mfacebevel_t;
 
 typedef struct
 	{
@@ -115,16 +125,16 @@ typedef struct
 					// [i][3] is the s/t offset relative to the origin.
 					// s or t = dot( 3Dpoint, vecs[i] ) + vecs[i][3]
 	mfaceinfo_t* faceinfo;	// pointer to landscape info and lightmap resolution (may be NULL)
-	texture_t* texture;
-	int		flags;		// sky or slime, no lightmap or 256 subdivision
+	texture_t*	texture;
+	int			flags;		// sky or slime, no lightmap or 256 subdivision
 	} mtexinfo_t;
 
 typedef struct glpoly_s
 	{
 	struct glpoly_s* next;
 	struct glpoly_s* chain;
-	int		numverts;
-	int		flags;          		// for SURF_UNDERWATER
+	int			numverts;
+	int			flags;          		// for SURF_UNDERWATER
 	float		verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 	} glpoly_t;
 
@@ -155,7 +165,7 @@ typedef struct decal_s	decal_t;
 // JAY: Compress this as much as possible
 struct decal_s
 	{
-	decal_t* pnext;		// linked list for each surface
+	decal_t*	pnext;		// linked list for each surface
 	msurface_t* psurface;	// Surface id for persistence / unlinking
 	float		dx;		// local texture coordinates
 	float		dy;		// 
@@ -165,8 +175,8 @@ struct decal_s
 	short		entityIndex;	// Entity this is attached to
 // Xash3D specific
 	vec3_t		position;		// location of the decal center in world space.
-	glpoly_t* polys;		// precomputed decal vertices
-	int		reserved[4];	// just for future expansions or mod-makers
+	glpoly_t*	polys;		// precomputed decal vertices
+	int			reserved[4];	// just for future expansions or mod-makers
 	};
 
 typedef struct mleaf_s
@@ -185,7 +195,7 @@ typedef struct mleaf_s
 	msurface_t** firstmarksurface;
 	int		nummarksurfaces;
 	int		cluster;		// helper to acess to uncompressed visdata
-	byte		ambient_sound_level[NUM_AMBIENTS];
+	byte	ambient_sound_level[NUM_AMBIENTS];
 
 	} mleaf_t;
 
@@ -197,72 +207,76 @@ typedef struct mextrasurf_s
 	struct msurface_s* surf;		// upcast to surface
 
 	// extended light info
-	int		dlight_s, dlight_t;	// gl lightmap coordinates for dynamic lightmaps
+	int			dlight_s, dlight_t;	// gl lightmap coordinates for dynamic lightmaps
 
 	short		lightmapmins[2];	// lightmatrix
 	short		lightextents[2];
 	float		lmvecs[2][4];
 
-	color24* deluxemap;	// note: this is the actual deluxemap data for this surface
-	byte* shadowmap;	// note: occlusion map for this surface
+	color24*	deluxemap;	// note: this is the actual deluxemap data for this surface
+	byte*		shadowmap;	// note: occlusion map for this surface
 // begin userdata
-	struct msurface_s* lightmapchain;	// lightmapped polys
-	struct mextrasurf_s* detailchain;	// for detail textures drawing
-	struct mextrasurf_s* mirrorchain;	// for gl_texsort drawing
-	struct mextrasurf_s* lumachain;	// draw fullbrights
-	struct cl_entity_s* parent;		// upcast to owner entity
+	struct msurface_s*		lightmapchain;	// lightmapped polys
+	struct mextrasurf_s*	detailchain;	// for detail textures drawing
+	
+	// 4529
+	//struct mextrasurf_s*	mirrorchain;	// for gl_texsort drawing
+	mfacebevel_t*			bevel;			// for exact face traceline
 
-	int		mirrortexturenum;	// gl texnum
+	struct mextrasurf_s*	lumachain;	// draw fullbrights
+	struct cl_entity_s*		parent;		// upcast to owner entity
+
+	int			mirrortexturenum;	// gl texnum
 	float		mirrormatrix[4][4];
 
 	struct grasshdr_s* grass;		// grass that linked by this surface
 	unsigned short	grasscount;	// number of bushes per polygon (used to determine total VBO size)
 	unsigned short	numverts;		// world->vertexes[]
-	int		firstvertex;	// fisrt look up in tr.tbn_vectors[], then acess to world->vertexes[]
+	int			firstvertex;	// fisrt look up in tr.tbn_vectors[], then acess to world->vertexes[]
 
-	int		reserved[32];	// just for future expansions or mod-makers
+	int			reserved[32];	// just for future expansions or mod-makers
 	} mextrasurf_t;
 
 typedef struct msurface_s
 	{
-	int		visframe;		// should be drawn when node is crossed
+	int			visframe;		// should be drawn when node is crossed
 
-	mplane_t* plane;		// pointer to shared plane
-	int		flags;		// see SURF_ #defines
+	mplane_t*	plane;		// pointer to shared plane
+	int			flags;		// see SURF_ #defines
 
-	int		firstedge;	// look up in model->surfedges[], negative numbers
-	int		numedges;		// are backwards edges
+	int			firstedge;	// look up in model->surfedges[], negative numbers
+	int			numedges;		// are backwards edges
 
 	short		texturemins[2];
 	short		extents[2];
 
-	int		light_s, light_t;	// gl lightmap coordinates
+	int			light_s, light_t;	// gl lightmap coordinates
 
-	glpoly_t* polys;		// multiple if warped
+	glpoly_t*	polys;		// multiple if warped
 	struct msurface_s* texturechain;
 
 	mtexinfo_t* texinfo;
 
 	// lighting info
-	int		dlightframe;	// last frame the surface was checked by an animated light
-	int		dlightbits;	// dynamically generated. Indicates if the surface illumination
+	int			dlightframe;	// last frame the surface was checked by an animated light
+	int			dlightbits;	// dynamically generated. Indicates if the surface illumination
 					// is modified by an animated light.
 
-	int		lightmaptexturenum;
+	int			lightmaptexturenum;
 	byte		styles[MAXLIGHTMAPS];
-	int		cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
+	int			cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
 	mextrasurf_t* info;		// pointer to surface extradata (was cached_dlight)
 
-	color24* samples;		// note: this is the actual lightmap data for this surface
-	decal_t* pdecals;
+	color24*	samples;		// note: this is the actual lightmap data for this surface
+	decal_t*	pdecals;
 	} msurface_t;
 
 typedef struct hull_s
 	{
 	mclipnode_t* clipnodes;
-	mplane_t* planes;
-	int		firstclipnode;
-	int		lastclipnode;
+	mplane_t*	planes;
+	int			firstclipnode;
+	int			lastclipnode;
 	vec3_t		clip_mins;
 	vec3_t		clip_maxs;
 	} hull_t;
@@ -278,13 +292,13 @@ typedef struct cache_user_s
 typedef struct model_s
 	{
 	char		name[64];		// model name
-	qboolean		needload;		// bmodels and sprites don't cache normally
+	qboolean	needload;		// bmodels and sprites don't cache normally
 
 	// shared modelinfo
-	modtype_t		type;		// model type
-	int		numframes;	// sprite's framecount
-	byte* mempool;		// private mempool (was synctype)
-	int		flags;		// hl compatibility
+	modtype_t	type;		// model type
+	int			numframes;	// sprite's framecount
+	byte*		mempool;		// private mempool (was synctype)
+	int			flags;		// hl compatibility
 
 //
 // volume occupied by the model
@@ -293,51 +307,51 @@ typedef struct model_s
 	float		radius;
 
 	// brush model
-	int		firstmodelsurface;
-	int		nummodelsurfaces;
+	int			firstmodelsurface;
+	int			nummodelsurfaces;
 
-	int		numsubmodels;
-	dmodel_t* submodels;	// or studio animations
+	int			numsubmodels;
+	dmodel_t*	submodels;	// or studio animations
 
-	int		numplanes;
-	mplane_t* planes;
+	int			numplanes;
+	mplane_t*	planes;
 
-	int		numleafs;		// number of visible leafs, not counting 0
-	mleaf_t* leafs;
+	int			numleafs;		// number of visible leafs, not counting 0
+	mleaf_t*	leafs;
 
-	int		numvertexes;
-	mvertex_t* vertexes;
+	int			numvertexes;
+	mvertex_t*	vertexes;
 
-	int		numedges;
-	medge_t* edges;
+	int			numedges;
+	medge_t*	edges;
 
-	int		numnodes;
-	mnode_t* nodes;
+	int			numnodes;
+	mnode_t*	nodes;
 
-	int		numtexinfo;
+	int			numtexinfo;
 	mtexinfo_t* texinfo;
 
-	int		numsurfaces;
+	int			numsurfaces;
 	msurface_t* surfaces;
 
-	int		numsurfedges;
-	int* surfedges;
+	int			numsurfedges;
+	int*		surfedges;
 
-	int		numclipnodes;
-	mclipnode_t* clipnodes;
+	int			numclipnodes;
+	mclipnode_t*	clipnodes;
 
-	int		nummarksurfaces;
+	int			nummarksurfaces;
 	msurface_t** marksurfaces;
 
 	hull_t		hulls[MAX_MAP_HULLS];
 
-	int		numtextures;
+	int			numtextures;
 	texture_t** textures;
 
-	byte* visdata;
+	byte*		visdata;
 
-	color24* lightdata;
-	char* entities;
+	color24*	lightdata;
+	char*		entities;
 	//
 	// additional model data
 	//
@@ -348,8 +362,8 @@ typedef struct alight_s
 	{
 	int		ambientlight;	// clip at 128
 	int		shadelight;	// clip at 192 - ambientlight
-	vec3_t		color;
-	float* plightvec;
+	vec3_t	color;
+	float*	plightvec;
 	} alight_t;
 
 typedef struct auxvert_s
@@ -365,15 +379,15 @@ typedef struct auxvert_s
 typedef struct player_info_s
 	{
 	int		userid;			// User id on server
-	char		userinfo[MAX_INFO_STRING];	// User info string
-	char		name[MAX_SCOREBOARDNAME];	// Name (extracted from userinfo)
+	char	userinfo[MAX_INFO_STRING];	// User info string
+	char	name[MAX_SCOREBOARDNAME];	// Name (extracted from userinfo)
 	int		spectator;		// Spectator or not, unused (frags for quake demo playback)
 
 	int		ping;
 	int		packet_loss;
 
 	// skin information
-	char		model[64];
+	char	model[64];
 	int		topcolor;
 	int		bottomcolor;
 
@@ -382,9 +396,9 @@ typedef struct player_info_s
 
 	// Gait frame estimation
 	int		gaitsequence;
-	float		gaitframe;
-	float		gaityaw;
-	vec3_t		prevgaitorigin;
+	float	gaitframe;
+	float	gaityaw;
+	vec3_t	prevgaitorigin;
 
 	customization_t	customdata;
 
@@ -401,27 +415,27 @@ typedef struct mspriteframe_s
 	{
 	int		width;
 	int		height;
-	float		up, down, left, right;
+	float	up, down, left, right;
 	int		gl_texturenum;
 	} mspriteframe_t;
 
 typedef struct
 	{
-	int		numframes;
-	float* intervals;
-	mspriteframe_t* frames[1];
+	int				numframes;
+	float*			intervals;
+	mspriteframe_t*	frames[1];
 	} mspritegroup_t;
 
 typedef struct
 	{
 	spriteframetype_t	type;
-	mspriteframe_t* frameptr;
+	mspriteframe_t*		frameptr;
 	} mspriteframedesc_t;
 
 typedef struct
 	{
-	short		type;
-	short		texFormat;
+	short	type;
+	short	texFormat;
 	int		maxwidth;
 	int		maxheight;
 	int		numframes;
@@ -454,8 +468,8 @@ typedef struct
 
 typedef struct
 	{
-	int		firstpose;
-	int		numposes;
+	int			firstpose;
+	int			numposes;
 	trivertex_t	bboxmin;
 	trivertex_t	bboxmax;
 	float		interval;
@@ -466,10 +480,10 @@ typedef struct
 	{
 	int		ident;
 	int		version;
-	vec3_t		scale;
-	vec3_t		scale_origin;
-	float		boundingradius;
-	vec3_t		eyeposition;
+	vec3_t	scale;
+	vec3_t	scale_origin;
+	float	boundingradius;
+	vec3_t	eyeposition;
 	int		numskins;
 	int		skinwidth;
 	int		skinheight;

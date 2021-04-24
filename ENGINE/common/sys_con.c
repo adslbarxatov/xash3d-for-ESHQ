@@ -536,6 +536,10 @@ void Sys_CloseLog (void)
 void Sys_PrintLog (const char* pMsg)
 	{
 	if (!s_wcd.logfile) return;
-	fprintf (s_wcd.logfile, pMsg);
+
+	// 4529
+	//fprintf (s_wcd.logfile, pMsg);
+	fprintf (s_wcd.logfile, "%s", pMsg);
+
 	fflush (s_wcd.logfile);
 	}

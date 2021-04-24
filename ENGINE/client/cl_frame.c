@@ -30,7 +30,6 @@ GNU General Public License for more details.
 /*
 ==================
 CL_IsPlayerIndex
-
 detect player entity
 ==================
 */
@@ -41,15 +40,12 @@ qboolean CL_IsPlayerIndex (int idx)
 
 /*
 =========================================================================
-
 FRAME INTERPOLATION
-
 =========================================================================
 */
 /*
 ==================
 CL_UpdatePositions
-
 Store another position into interpolation circular buffer
 ==================
 */
@@ -68,7 +64,6 @@ void CL_UpdatePositions (cl_entity_t* ent)
 /*
 ==================
 CL_ResetPositions
-
 Interpolation init or reset after teleporting
 ==================
 */
@@ -89,7 +84,6 @@ void CL_ResetPositions (cl_entity_t* ent)
 /*
 ==================
 CL_EntityTeleported
-
 check for instant movement in case
 we don't want interpolate this
 ==================
@@ -111,7 +105,6 @@ qboolean CL_EntityTeleported (cl_entity_t* ent)
 /*
 ==================
 CL_CompareTimestamps
-
 round-off floating errors
 ==================
 */
@@ -126,7 +119,6 @@ qboolean CL_CompareTimestamps (float t1, float t2)
 /*
 ==================
 CL_EntityIgnoreLerp
-
 some ents will be ignore lerping
 ==================
 */
@@ -141,7 +133,6 @@ qboolean CL_EntityIgnoreLerp (cl_entity_t* e)
 /*
 ==================
 CL_EntityCustomLerp
-
 ==================
 */
 qboolean CL_EntityCustomLerp (cl_entity_t* e)
@@ -162,7 +153,6 @@ qboolean CL_EntityCustomLerp (cl_entity_t* e)
 /*
 ==================
 CL_ParametricMove
-
 check for parametrical moved entities
 ==================
 */
@@ -200,7 +190,6 @@ qboolean CL_ParametricMove (cl_entity_t* ent)
 /*
 ====================
 CL_UpdateLatchedVars
-
 ====================
 */
 void CL_UpdateLatchedVars (cl_entity_t* ent)
@@ -224,12 +213,15 @@ void CL_UpdateLatchedVars (cl_entity_t* ent)
 
 	memcpy (ent->latched.prevcontroller, ent->prevstate.controller, sizeof (ent->latched.prevcontroller));
 	memcpy (ent->latched.prevblending, ent->prevstate.blending, sizeof (ent->latched.prevblending));
+
+	// 4529: update custom latched vars
+	if (clgame.drawFuncs.CL_UpdateLatchedVars != NULL)
+		clgame.drawFuncs.CL_UpdateLatchedVars (ent, false);
 	}
 
 /*
 ====================
 CL_ResetLatchedVars
-
 ====================
 */
 void CL_ResetLatchedVars (cl_entity_t* ent, qboolean full_reset)
@@ -243,6 +235,7 @@ void CL_ResetLatchedVars (cl_entity_t* ent, qboolean full_reset)
 		memcpy (ent->latched.prevblending, ent->curstate.blending, sizeof (ent->latched.prevblending));
 		ent->latched.sequencetime = ent->curstate.animtime;
 		memcpy (ent->latched.prevcontroller, ent->curstate.controller, sizeof (ent->latched.prevcontroller));
+		
 		if (ent->model->type == mod_studio)
 			ent->latched.prevframe = CL_GetStudioEstimatedFrame (ent);
 		else if (ent->model->type == mod_alias)
@@ -254,12 +247,15 @@ void CL_ResetLatchedVars (cl_entity_t* ent, qboolean full_reset)
 	VectorCopy (ent->curstate.origin, ent->latched.prevorigin);
 	VectorCopy (ent->curstate.angles, ent->latched.prevangles);
 	ent->latched.prevsequence = ent->curstate.sequence;
+
+	// 4529: update custom latched vars
+	if (clgame.drawFuncs.CL_UpdateLatchedVars != NULL)
+		clgame.drawFuncs.CL_UpdateLatchedVars (ent, true);
 	}
 
 /*
 ==================
 CL_ProcessEntityUpdate
-
 apply changes since new frame received
 ==================
 */
@@ -305,7 +301,6 @@ void CL_ProcessEntityUpdate (cl_entity_t* ent)
 /*
 ==================
 CL_FindInterpolationUpdates
-
 find two timestamps
 ==================
 */
@@ -343,7 +338,6 @@ qboolean CL_FindInterpolationUpdates (cl_entity_t* ent, float targettime, positi
 /*
 ==================
 CL_PureOrigin
-
 non-local players interpolation
 ==================
 */
@@ -393,7 +387,6 @@ void CL_PureOrigin (cl_entity_t* ent, float t, vec3_t outorigin, vec3_t outangle
 /*
 ==================
 CL_InterpolateModel
-
 non-players interpolation
 ==================
 */
@@ -1232,7 +1225,7 @@ think thirdperson
 */
 void CL_MoveThirdpersonCamera (void)
 	{
-	if (cls.state == ca_disconnected || cls.state == ca_cinematic)
+	if ((cls.state == ca_disconnected) || (cls.state == ca_cinematic))
 		return;
 
 	// think thirdperson camera

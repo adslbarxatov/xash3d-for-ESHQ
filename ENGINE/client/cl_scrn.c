@@ -309,8 +309,13 @@ SCR_BeginLoadingPlaque
 */
 void SCR_BeginLoadingPlaque (qboolean is_background)
 	{
+	// 4529
+	float	oldclear;
+
 	S_StopAllSounds (true);
 	cl.audio_prepped = false;			// don't play ambients
+	cl.video_prepped = false;
+	oldclear = gl_clear->value;
 
 	if (CL_IsInMenu () && !cls.changedemo && !is_background)
 		{
@@ -325,13 +330,17 @@ void SCR_BeginLoadingPlaque (qboolean is_background)
 	if (cls.key_dest == key_console)
 		return;
 
-	if (is_background) IN_MouseSavePos ();
+	// 4529
+	gl_clear->value = 0.0f; 
+	if (is_background) 
+		IN_MouseSavePos ();
+
 	cls.draw_changelevel = !is_background;
 	SCR_UpdateScreen ();
 	cls.disable_screen = host.realtime;
 	cls.disable_servercount = cl.servercount;
 	cl.background = is_background;		// set right state before svc_serverdata is came
-	//	SNDDMA_LockSound();
+	gl_clear->value = oldclear;
 	}
 
 /*

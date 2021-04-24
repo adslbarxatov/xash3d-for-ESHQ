@@ -472,7 +472,9 @@ void CL_AddLinksToPmove (frame_t* frame)
 		if (VectorIsNull (state->mins) && VectorIsNull (state->maxs))
 			continue;
 
-		if (state->solid == SOLID_NOT && state->skin < CONTENTS_EMPTY)
+		// 4529
+		//if (state->solid == SOLID_NOT && state->skin < CONTENTS_EMPTY)
+		if ((state->solid == SOLID_NOT) && (state->skin == CONTENTS_LADDER))
 			{
 			if (clgame.pmove->nummoveent >= MAX_MOVEENTS)
 				continue;
@@ -594,7 +596,8 @@ CL_TruePointContents
 
 =============
 */
-int CL_TruePointContents (const vec3_t p)
+// 4529: удалено
+/*int CL_TruePointContents (const vec3_t p)
 	{
 	int	i, contents;
 	int	oldhull;
@@ -647,7 +650,7 @@ int CL_TruePointContents (const vec3_t p)
 		}
 
 	return contents;
-	}
+	}*/
 
 /*
 =============
@@ -657,18 +660,22 @@ CL_WaterEntity
 */
 int CL_WaterEntity (const float* rgflPos)
 	{
-	physent_t* pe;
-	hull_t* hull;
+	physent_t*	pe;
+	hull_t*		hull;
 	vec3_t		test, offset;
-	int		i, oldhull;
+	int			i, oldhull;
 
 	if (!rgflPos) return -1;
 
 	oldhull = clgame.pmove->usehull;
 
-	for (i = 0; i < clgame.pmove->nummoveent; i++)
+	// 4529
+	//for (i = 0; i < clgame.pmove->nummoveent; i++)
+	for (i = 0; i < clgame.pmove->numphysent; i++)
 		{
-		pe = &clgame.pmove->moveents[i];
+		// 4529
+		//pe = &clgame.pmove->moveents[i];
+		pe = &clgame.pmove->physents[i];
 
 		if (pe->solid != SOLID_NOT) // disabled ?
 			continue;
@@ -793,7 +800,10 @@ static int pfnPointContents (float* p, int* truecontents)
 	{
 	int	cont, truecont;
 
-	truecont = cont = CL_TruePointContents (p);
+	// 4529
+	//truecont = cont = CL_TruePointContents (p);
+	truecont = cont = PM_PointContents (clgame.pmove, p);
+
 	if (truecontents) *truecontents = truecont;
 
 	if (cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN)
@@ -803,7 +813,9 @@ static int pfnPointContents (float* p, int* truecontents)
 
 static int pfnTruePointContents (float* p)
 	{
-	return CL_TruePointContents (p);
+	// 4529
+	//return CL_TruePointContents (p);
+	return PM_TruePointContents (clgame.pmove, p);
 	}
 
 static int pfnHullPointContents (struct hull_s* hull, int num, float* p)

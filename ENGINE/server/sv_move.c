@@ -117,7 +117,7 @@ void SV_WaterMove (edict_t* ent)
 		}
 
 	// no watermove for monsters but pushables
-	if ((ent->v.flags & FL_MONSTER) && ent->v.health <= 0.0f)
+	if ((ent->v.flags & FL_MONSTER) && (ent->v.health <= 0.0f))
 		return;
 
 	drownlevel = (ent->v.deadflag == DEAD_NO) ? 3.0 : 1.0;
@@ -127,9 +127,9 @@ void SV_WaterMove (edict_t* ent)
 
 	if (!(flags & (FL_IMMUNE_WATER | FL_GODMODE)))
 		{
-		if (((flags & FL_SWIM) && waterlevel > drownlevel) || waterlevel <= drownlevel)
+		if (((flags & FL_SWIM) && (waterlevel > drownlevel)) || (waterlevel <= drownlevel))
 			{
-			if (ent->v.air_finished > sv.time && ent->v.pain_finished > sv.time)
+			if ((ent->v.air_finished > sv.time) && (ent->v.pain_finished > sv.time))
 				{
 				ent->v.dmg += 2;
 
@@ -149,7 +149,7 @@ void SV_WaterMove (edict_t* ent)
 		{
 		if (flags & FL_INWATER)
 			{
-			// leave the water.
+			// leave the water
 			switch (COM_RandomLong (0, 3))
 				{
 				case 0:
@@ -175,16 +175,17 @@ void SV_WaterMove (edict_t* ent)
 
 	if (watertype == CONTENTS_LAVA)
 		{
-		if ((!(flags & (FL_IMMUNE_LAVA | FL_GODMODE))) && ent->v.dmgtime < sv.time)
+		if ((!(flags & (FL_IMMUNE_LAVA | FL_GODMODE))) && (ent->v.dmgtime < sv.time))
 			{
 			if (ent->v.radsuit_finished < sv.time)
 				ent->v.dmgtime = sv.time + 0.2f;
-			else ent->v.dmgtime = sv.time + 1.0f;
+			else 
+				ent->v.dmgtime = sv.time + 1.0f;
 			}
 		}
 	else if (watertype == CONTENTS_SLIME)
 		{
-		if ((!(flags & (FL_IMMUNE_SLIME | FL_GODMODE))) && ent->v.dmgtime < sv.time)
+		if ((!(flags & (FL_IMMUNE_SLIME | FL_GODMODE))) && (ent->v.dmgtime < sv.time))
 			{
 			if (ent->v.radsuit_finished < sv.time)
 				ent->v.dmgtime = sv.time + 1.0;

@@ -212,8 +212,6 @@ void LinkUserMessages (void)
 
 LINK_ENTITY_TO_CLASS (player, CBasePlayer);
 
-
-
 void CBasePlayer::Pain (void)
 	{
 	// ESHQ: исправление звуковой схемы
@@ -239,9 +237,6 @@ void CBasePlayer::Pain (void)
 		}
 	}
 
-/*
- *
- */
 Vector VecVelocityForDamage (float flDamage)
 	{
 	Vector vec (RANDOM_FLOAT (-100, 100), RANDOM_FLOAT (-100, 100), RANDOM_FLOAT (200, 300));
@@ -309,7 +304,6 @@ void CBasePlayer::DeathSound (void)
 int CBasePlayer::TakeHealth (float flHealth, int bitsDamageType)
 	{
 	return CBaseMonster::TakeHealth (flHealth, bitsDamageType);
-
 	}
 
 Vector CBasePlayer::GetGunPosition ()
@@ -1062,7 +1056,6 @@ void CBasePlayer::TabulateAmmo ()
 	ammo_hornets = AmmoInventory (GetAmmoIndex ("Hornets"));
 	}
 
-
 /*
 ===========
 WaterMove
@@ -1155,7 +1148,7 @@ void CBasePlayer::WaterMove ()
 	// make bubbles
 
 	air = (int)(pev->air_finished - gpGlobals->time);
-	if (!RANDOM_LONG (0, 0x1f) && RANDOM_LONG (0, AIRTIME - 1) >= air)
+	if (!RANDOM_LONG (0, 0x1f) && (RANDOM_LONG (0, AIRTIME - 1) >= air))
 		{
 		switch (RANDOM_LONG (0, 3))
 			{
@@ -1184,7 +1177,6 @@ void CBasePlayer::WaterMove ()
 		}
 	}
 
-
 // TRUE if the player is attached to a ladder
 BOOL CBasePlayer::IsOnLadder (void)
 	{
@@ -1212,7 +1204,6 @@ void CBasePlayer::PlayerDeathThink (void)
 		// we aren't calling into any of their code anymore through the player pointer.
 		PackDeadPlayerItems ();
 		}
-
 
 	if (pev->modelindex && (!m_fSequenceFinished) && (pev->deadflag == DEAD_DYING))
 		{
@@ -2382,7 +2373,6 @@ void CBasePlayer::UpdatePlayerSound (void)
 	//ALERT ( at_console, "%d/%d\n", iVolume, m_iTargetVolume );
 	}
 
-
 void CBasePlayer::PostThink ()
 	{
 	if (g_fGameOver)
@@ -2703,6 +2693,8 @@ void CBasePlayer::Spawn (void)
 	pev->dmg_save = 0;
 	pev->friction = 1.0;
 	pev->gravity = 1.0;
+	// ESHQ: делаем игрока невидимым
+	pev->rendermode = kRenderTransTexture;
 	m_bitsHUDDamage = -1;
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
@@ -2711,10 +2703,10 @@ void CBasePlayer::Spawn (void)
 	g_engfuncs.pfnSetPhysicsKeyValue (edict (), "slj", "0");
 	g_engfuncs.pfnSetPhysicsKeyValue (edict (), "hl", "1");
 
-	pev->fov = m_iFOV = 0;// init field of view.
-	m_iClientFOV = -1; // make sure fov reset is sent
+	pev->fov = m_iFOV = 0;	// init field of view
+	m_iClientFOV = -1;		// make sure fov reset is sent
 
-	m_flNextDecalTime = 0;// let this player decal as soon as he spawns.
+	m_flNextDecalTime = 0;	// let this player decal as soon as he spawns.
 
 	m_flgeigerDelay = gpGlobals->time + 2.0;	// wait a few seconds until user-defined message registrations
 												// are recieved by all clients
@@ -2730,7 +2722,7 @@ void CBasePlayer::Spawn (void)
 	m_iFlashBattery = 99;
 	m_flFlashLightTime = 1; // force first message
 
-// dont let uninitialized value here hurt the player
+	// dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
 
 	g_pGameRules->SetDefaultPlayerTeam (this);
@@ -2767,7 +2759,8 @@ void CBasePlayer::Spawn (void)
 	for (int i = 0; i < MAX_AMMO_SLOTS; i++)
 		{
 		m_rgAmmo[i] = 0;
-		m_rgAmmoLast[i] = 0;  // client ammo values also have to be reset  (the death hud clear messages does on the client side)
+		m_rgAmmoLast[i] = 0;  
+		// client ammo values also have to be reset  (the death hud clear messages does on the client side)
 		}
 
 	m_lastx = m_lasty = 0;
@@ -2776,7 +2769,6 @@ void CBasePlayer::Spawn (void)
 
 	g_pGameRules->PlayerSpawn (this);
 	}
-
 
 void CBasePlayer::Precache (void)
 	{
@@ -2847,7 +2839,7 @@ int CBasePlayer::Restore (CRestore& restore)
 	int status = restore.ReadFields ("PLAYER", this, m_playerSaveData, HLARRAYSIZE (m_playerSaveData));
 
 	SAVERESTOREDATA* pSaveData = (SAVERESTOREDATA*)gpGlobals->pSaveData;
-	// landmark isn't present.
+	// landmark isn't present
 	if (!pSaveData->fUseLandmark)
 		{
 		ALERT (at_console, "No Landmark:%s\n", pSaveData->szLandmarkName);
@@ -2862,7 +2854,7 @@ int CBasePlayer::Restore (CRestore& restore)
 
 	pev->fixangle = TRUE;           // turn this way immediately
 
-// Copied from spawn() for now
+	// Copied from spawn() for now
 	m_bloodColor = BLOOD_COLOR_RED;
 
 	g_ulModelIndexPlayer = pev->modelindex;
@@ -2901,8 +2893,6 @@ int CBasePlayer::Restore (CRestore& restore)
 
 	return status;
 	}
-
-
 
 void CBasePlayer::SelectNextItem (int iItem)
 	{

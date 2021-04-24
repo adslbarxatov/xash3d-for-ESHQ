@@ -214,11 +214,16 @@ void MSG_WriteSBitLong (sizebuf_t* sb, int data, int numbits)
 		}
 	}
 
-void MSG_WriteBitLong (sizebuf_t* sb, uint data, int numbits, qboolean bSigned)
+// 4529
+//void MSG_WriteBitLong (sizebuf_t* sb, uint data, int numbits, qboolean bSigned)
+void MSG_WriteBitLong (sizebuf_t* sb, int data, int numbits, qboolean bSigned)
 	{
 	if (bSigned)
-		MSG_WriteSBitLong (sb, (int)data, numbits);
-	else MSG_WriteUBitLong (sb, data, numbits);
+		/*MSG_WriteSBitLong (sb, (int)data, numbits);
+	else MSG_WriteUBitLong (sb, data, numbits);*/
+		MSG_WriteSBitLong (sb, data, numbits);
+	else 
+		MSG_WriteUBitLong (sb, (uint)data, numbits);
 	}
 
 qboolean MSG_WriteBits (sizebuf_t* sb, const void* pData, int nBits)
@@ -285,7 +290,8 @@ void MSG_WriteCoord (sizebuf_t* sb, float val)
 	// g-cont. we loose precision here but keep old size of coord variable!
 	if (FBitSet (host.features, ENGINE_WRITE_LARGE_COORD))
 		MSG_WriteShort (sb, Q_rint (val));
-	else MSG_WriteShort (sb, (int)(val * 8.0f));
+	else 
+		MSG_WriteShort (sb, (int)(val * 8.0f));
 	}
 
 void MSG_WriteVec3Coord (sizebuf_t* sb, const float* fa)
@@ -615,7 +621,6 @@ void MSG_ReadVec3Angles (sizebuf_t* sb, vec3_t fa)
 	fa[1] = MSG_ReadBitAngle (sb, 16);
 	fa[2] = MSG_ReadBitAngle (sb, 16);
 	}
-
 
 long MSG_ReadLong (sizebuf_t* sb)
 	{

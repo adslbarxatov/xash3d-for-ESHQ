@@ -2132,9 +2132,6 @@ void CTriggerChangeTarget::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		}
 	}
 
-
-
-
 #define SF_CAMERA_PLAYER_POSITION	1
 #define SF_CAMERA_PLAYER_TARGET		2
 #define SF_CAMERA_PLAYER_TAKECONTROL 4
@@ -2360,7 +2357,6 @@ void CTriggerCamera::FollowTarget ()
 
 	pev->avelocity.x = dx * 40 * gpGlobals->frametime;
 	pev->avelocity.y = dy * 40 * gpGlobals->frametime;
-
 
 	if (!(FBitSet (pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL)))
 		{

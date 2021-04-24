@@ -59,15 +59,13 @@ void LinkUserMessages (void);
 void set_suicide_frame (entvars_t* pev)
 	{
 	if (!FStrEq (STRING (pev->model), "models/player.mdl"))
-		return; // allready gibbed
+		return; // already gibbed
 
-//	pev->frame		= $deatha11;
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_TOSS;
 	pev->deadflag = DEAD_DEAD;
 	pev->nextthink = -1;
 	}
-
 
 /*
 ===========
@@ -83,9 +81,7 @@ BOOL ClientConnect (edict_t* pEntity, const char* pszName, const char* pszAddres
 	// a client connecting during an intermission can cause problems
 	//	if (intermission_running)
 	//		ExitIntermission ();
-
 	}
-
 
 /*
 ===========

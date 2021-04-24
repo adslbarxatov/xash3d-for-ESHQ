@@ -63,36 +63,36 @@ BRUSH MODELS
 
 // these limis not using by modelloader but only for displaying 'mapstats' correctly
 #ifdef SUPPORT_BSP2_FORMAT
-#define MAX_MAP_MODELS		2048		// embedded models
+#define MAX_MAP_MODELS			2048		// embedded models
 #define MAX_MAP_ENTSTRING		0x200000		// 2 Mb should be enough
-#define MAX_MAP_PLANES		131072		// can be increased without problems
-#define MAX_MAP_NODES		262144		// can be increased without problems
+#define MAX_MAP_PLANES			131072		// can be increased without problems
+#define MAX_MAP_NODES			262144		// can be increased without problems
 #define MAX_MAP_CLIPNODES		524288		// can be increased without problems
-#define MAX_MAP_LEAFS		131072		// CRITICAL STUFF to run ad_sepulcher!!!
-#define MAX_MAP_VERTS		524288		// can be increased without problems
-#define MAX_MAP_FACES		262144		// can be increased without problems
-#define MAX_MAP_MARKSURFACES		524288		// can be increased without problems
+#define MAX_MAP_LEAFS			131072		// CRITICAL STUFF to run ad_sepulcher!!!
+#define MAX_MAP_VERTS			524288		// can be increased without problems
+#define MAX_MAP_FACES			262144		// can be increased without problems
+#define MAX_MAP_MARKSURFACES	524288		// can be increased without problems
 #else
-#define MAX_MAP_MODELS		768		// embedded models
-#define MAX_MAP_ENTSTRING		0x100000		// 1 Mb should be enough
-#define MAX_MAP_PLANES		65536		// can be increased without problems
-#define MAX_MAP_NODES		32767		// because negative shorts are leafs
+#define MAX_MAP_MODELS			768			// embedded models
+#define MAX_MAP_ENTSTRING		0x100000	// 1 Mb should be enough
+#define MAX_MAP_PLANES			65536		// can be increased without problems
+#define MAX_MAP_NODES			32767		// because negative shorts are leafs
 #define MAX_MAP_CLIPNODES		32767		// because negative shorts are contents
-#define MAX_MAP_LEAFS		32767		// signed short limit
-#define MAX_MAP_VERTS		65535		// unsigned short limit
-#define MAX_MAP_FACES		65535		// unsigned short limit
-#define MAX_MAP_MARKSURFACES		65535		// unsigned short limit
+#define MAX_MAP_LEAFS			32767		// signed short limit
+#define MAX_MAP_VERTS			65535		// unsigned short limit
+#define MAX_MAP_FACES			65535		// unsigned short limit
+#define MAX_MAP_MARKSURFACES	65535		// unsigned short limit
 #endif
 
-#define MAX_MAP_ENTITIES		8192		// network limit
+#define MAX_MAP_ENTITIES	8192		// network limit
 #define MAX_MAP_TEXINFO		MAX_MAP_FACES	// in theory each face may have personal texinfo
 #define MAX_MAP_EDGES		0x100000		// can be increased but not needs
-#define MAX_MAP_SURFEDGES		0x200000		// can be increased but not needs
-#define MAX_MAP_TEXTURES		2048		// can be increased but not needs
+#define MAX_MAP_SURFEDGES	0x200000		// can be increased but not needs
+#define MAX_MAP_TEXTURES	2048		// can be increased but not needs
 #define MAX_MAP_MIPTEX		0x2000000		// 32 Mb internal textures data
-#define MAX_MAP_LIGHTING		0x2000000		// 32 Mb lightmap raw data (can contain deluxemaps)
-#define MAX_MAP_VISIBILITY		0x1000000		// 16 Mb visdata
-#define MAX_MAP_FACEINFO		8192		// can be increased but not needs
+#define MAX_MAP_LIGHTING	0x2000000		// 32 Mb lightmap raw data (can contain deluxemaps)
+#define MAX_MAP_VISIBILITY	0x1000000		// 16 Mb visdata
+#define MAX_MAP_FACEINFO	8192		// can be increased but not needs
 
 // quake lump ordering
 #define LUMP_ENTITIES		0
@@ -106,7 +106,7 @@ BRUSH MODELS
 #define LUMP_LIGHTING		8
 #define LUMP_CLIPNODES		9
 #define LUMP_LEAFS			10
-#define LUMP_MARKSURFACES		11
+#define LUMP_MARKSURFACES	11
 #define LUMP_EDGES			12
 #define LUMP_SURFEDGES		13
 #define LUMP_MODELS			14		// internal submodels
@@ -116,23 +116,26 @@ BRUSH MODELS
 #define LUMP_LIGHTVECS		0	// deluxemap data
 #define LUMP_FACEINFO		1	// landscape and lightmap resolution info
 #define LUMP_CUBEMAPS		2	// cubemap description
-#define LUMP_VERTNORMALS		3	// phong shaded vertex normals
-#define LUMP_LEAF_LIGHTING		4	// store vertex lighting for statics
-#define LUMP_WORLDLIGHTS		5	// list of all the virtual and real lights (used to relight models in-game)
+#define LUMP_VERTNORMALS	3	// phong shaded vertex normals
+#define LUMP_LEAF_LIGHTING	4	// store vertex lighting for statics
+#define LUMP_WORLDLIGHTS	5	// list of all the virtual and real lights (used to relight models in-game)
 #define LUMP_COLLISION		6	// physics engine collision hull dump (userdata)
-#define LUMP_AINODEGRAPH		7	// node graph that stored into the bsp (userdata)
+#define LUMP_AINODEGRAPH	7	// node graph that stored into the bsp (userdata)
 #define LUMP_SHADOWMAP		8	// contains shadow map for direct light
-#define LUMP_VERTEX_LIGHT		9	// store vertex lighting for statics
+#define LUMP_VERTEX_LIGHT	9	// store vertex lighting for statics
 #define LUMP_UNUSED0		10	// one lump reserved for me
 #define LUMP_UNUSED1		11	// one lump reserved for me
 #define EXTRA_LUMPS			12	// count of the extra lumps
 
 // texture flags
 #define TEX_SPECIAL			BIT( 0 )	// sky or slime, no lightmap or 256 subdivision
-#define TEX_WORLD_LUXELS		BIT( 1 )	// alternative lightmap matrix will be used (luxels per world units instead of luxels per texels)
-#define TEX_AXIAL_LUXELS		BIT( 2 )	// force world luxels to axial positive scales
-#define TEX_EXTRA_LIGHTMAP		BIT( 3 )	// bsp31 legacy - using 8 texels per luxel instead of 16 texels per luxel
+#define TEX_WORLD_LUXELS	BIT( 1 )	// alternative lightmap matrix will be used (luxels per world units instead of luxels per texels)
+#define TEX_AXIAL_LUXELS	BIT( 2 )	// force world luxels to axial positive scales
+#define TEX_EXTRA_LIGHTMAP	BIT( 3 )	// bsp31 legacy - using 8 texels per luxel instead of 16 texels per luxel
 #define TEX_SCROLL			BIT( 6 )	// Doom special FX
+
+// 4529
+#define IsLiquidContents( cnt )	( cnt == CONTENTS_WATER || cnt == CONTENTS_SLIME || cnt == CONTENTS_LAVA )
 
 // ambient sound types
 enum

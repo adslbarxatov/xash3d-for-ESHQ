@@ -1123,6 +1123,7 @@ or custom physics implementation
 */
 void SV_CustomClipMoveToEntity (edict_t* ent, const vec3_t start, vec3_t mins, vec3_t maxs, const vec3_t end, trace_t* trace)
 	{
+	// initialize custom trace
 	memset (trace, 0, sizeof (trace_t));
 	VectorCopy (end, trace->endpos);
 	trace->allsolid = true;

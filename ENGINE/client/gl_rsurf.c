@@ -204,7 +204,9 @@ void GL_SetupFogColorForSurfaces (void)
 	vec3_t	fogColor;
 	float	factor, div;
 
-	if (!pglIsEnabled (GL_FOG))
+	// 4529
+	//if (!pglIsEnabled (GL_FOG))
+	if (!glState.isFogEnabled)
 		return;
 
 	if (RI.currententity && RI.currententity->curstate.rendermode == kRenderTransTexture)
@@ -223,8 +225,9 @@ void GL_SetupFogColorForSurfaces (void)
 
 void GL_ResetFogColor (void)
 	{
-	// restore fog here
-	if (pglIsEnabled (GL_FOG))
+	// 4529: restore fog here
+	//if (pglIsEnabled (GL_FOG))
+	if (glState.isFogEnabled)
 		pglFogfv (GL_FOG_COLOR, RI.fogColor);
 	}
 
@@ -1081,7 +1084,9 @@ void R_RenderBrushPoly (msurface_t* fa, int cull_type)
 
 	if (CVAR_TO_BOOL (r_detailtextures))
 		{
-		if (pglIsEnabled (GL_FOG))
+		// 4529
+		//if (pglIsEnabled (GL_FOG))
+		if (glState.isFogEnabled)
 			{
 			// don't apply detail textures for windows in the fog
 			if (RI.currententity->curstate.rendermode != kRenderTransTexture)
@@ -1142,7 +1147,8 @@ dynamic:
 
 	if (is_dynamic)
 		{
-		if ((fa->styles[maps] >= 32 || fa->styles[maps] == 0 || fa->styles[maps] == 20) && (fa->dlightframe != tr.framecount))
+		if (((fa->styles[maps] >= 32) || (fa->styles[maps] == 0) || (fa->styles[maps] == 20)) && 
+			(fa->dlightframe != tr.framecount))
 			{
 			byte		temp[132 * 132 * 4];
 			mextrasurf_t* info = fa->info;
@@ -1394,7 +1400,8 @@ void R_SetRenderMode (cl_entity_t* e)
 			break;
 		case kRenderTransColor:
 			pglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			pglColor4ub (e->curstate.rendercolor.r, e->curstate.rendercolor.g, e->curstate.rendercolor.b, e->curstate.renderamt);
+			pglColor4ub (e->curstate.rendercolor.r, e->curstate.rendercolor.g, 
+				e->curstate.rendercolor.b, e->curstate.renderamt);
 			pglTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 			pglDisable (GL_TEXTURE_2D);
 			pglEnable (GL_BLEND);
@@ -1476,21 +1483,25 @@ void R_DrawBrushModel (cl_entity_t* e)
 	old_rendermode = e->curstate.rendermode;
 	gl_lms.dynamic_surfaces = NULL;
 
-	if (rotated) R_RotateForEntity (e);
-	else R_TranslateForEntity (e);
+	if (rotated) 
+		R_RotateForEntity (e);
+	else 
+		R_TranslateForEntity (e);
 
 	if (CL_IsQuakeCompatible () && FBitSet (clmodel->flags, MODEL_TRANSPARENT))
 		e->curstate.rendermode = kRenderTransAlpha;
 
 	e->visframe = tr.realframecount; // visible
 
-	if (rotated) Matrix4x4_VectorITransform (RI.objectMatrix, RI.cullorigin, tr.modelorg);
-	else VectorSubtract (RI.cullorigin, e->origin, tr.modelorg);
+	if (rotated) 
+		Matrix4x4_VectorITransform (RI.objectMatrix, RI.cullorigin, tr.modelorg);
+	else 
+		VectorSubtract (RI.cullorigin, e->origin, tr.modelorg);
 
 	// calculate dynamic lighting for bmodel
 	for (k = 0, l = cl_dlights; k < MAX_DLIGHTS; k++, l++)
 		{
-		if (l->die < cl.time || !l->radius)
+		if ((l->die < cl.time) || !l->radius)
 			continue;
 
 		VectorCopy (l->origin, oldorigin); // save lightorigin
@@ -1514,7 +1525,7 @@ void R_DrawBrushModel (cl_entity_t* e)
 		{
 		if (FBitSet (psurf->flags, SURF_DRAWTURB) && !CL_IsQuakeCompatible ())
 			{
-			if (psurf->plane->type != PLANE_Z && !FBitSet (e->curstate.effects, EF_WATERSIDES))
+			if ((psurf->plane->type != PLANE_Z) && !FBitSet (e->curstate.effects, EF_WATERSIDES))
 				continue;
 			if (mins[2] + 1.0 >= psurf->plane->dist)
 				continue;
@@ -1527,7 +1538,8 @@ void R_DrawBrushModel (cl_entity_t* e)
 
 		if (cull_type == CULL_BACKSIDE)
 			{
-			if (!FBitSet (psurf->flags, SURF_DRAWTURB) && !(psurf->pdecals && e->curstate.rendermode == kRenderTransTexture))
+			if (!FBitSet (psurf->flags, SURF_DRAWTURB) && !(psurf->pdecals && 
+				(e->curstate.rendermode == kRenderTransTexture)))
 				continue;
 			}
 
@@ -1540,7 +1552,8 @@ void R_DrawBrushModel (cl_entity_t* e)
 		}
 
 	// sort faces if needs
-	if (!FBitSet (clmodel->flags, MODEL_LIQUID) && e->curstate.rendermode == kRenderTransTexture && !CVAR_TO_BOOL (gl_nosort))
+	if (!FBitSet (clmodel->flags, MODEL_LIQUID) && (e->curstate.rendermode == kRenderTransTexture) && 
+		!CVAR_TO_BOOL (gl_nosort))
 		qsort (world.draw_surfaces, num_sorted, sizeof (sortedface_t), R_SurfaceCompare);
 
 	// draw sorted translucent surfaces
