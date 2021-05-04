@@ -1363,7 +1363,8 @@ void CBasePlayer::PlayerUse (void)
 				{	// Start controlling the train!
 				CBaseEntity* pTrain = CBaseEntity::Instance (pev->groundentity);
 
-				if (pTrain && !(pev->button & IN_JUMP) && FBitSet (pev->flags, FL_ONGROUND) && (pTrain->ObjectCaps () & FCAP_DIRECTIONAL_USE) && pTrain->OnControls (pev))
+				if (pTrain && !(pev->button & IN_JUMP) && FBitSet (pev->flags, FL_ONGROUND) && 
+					(pTrain->ObjectCaps () & FCAP_DIRECTIONAL_USE) && pTrain->OnControls (pev))
 					{
 					m_afPhysicsFlags |= PFLAG_ONTRAIN;
 					m_iTrain = TrainSpeed (pTrain->pev->speed, pTrain->pev->impulse);
@@ -1375,17 +1376,16 @@ void CBasePlayer::PlayerUse (void)
 			}
 		}
 
-	CBaseEntity* pObject = NULL;
-	CBaseEntity* pClosest = NULL;
-	Vector		vecLOS;
-	float flMaxDot = VIEW_FIELD_NARROW;
-	float flDot;
+	CBaseEntity*	pObject = NULL;
+	CBaseEntity*	pClosest = NULL;
+	Vector			vecLOS;
+	float			flMaxDot = VIEW_FIELD_NARROW;
+	float			flDot;
 
-	UTIL_MakeVectors (pev->v_angle);// so we know which way we are facing
+	UTIL_MakeVectors (pev->v_angle);	// so we know which way we are facing
 
 	while ((pObject = UTIL_FindEntityInSphere (pObject, pev->origin, PLAYER_SEARCH_RADIUS)) != NULL)
 		{
-
 		if (pObject->ObjectCaps () & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE))
 			{
 			// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
@@ -1489,8 +1489,6 @@ void CBasePlayer::Jump ()
 		pev->velocity = pev->velocity + pev->basevelocity;
 		}
 	}
-
-
 
 // This is a glorious hack to find free space when you've crouched into some solid space
 // Our crouching collisions do not work correctly for some reason and this is easier

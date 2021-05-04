@@ -43,16 +43,16 @@ INPUT
 //
 // input.c
 //
-void IN_Init( void );
-void Host_InputFrame( void );
-void IN_Shutdown( void );
-void IN_MouseEvent( int mstate );
-void IN_ActivateMouse( qboolean force );
-void IN_DeactivateMouse( void );
-void IN_MouseSavePos( void );
-void IN_MouseRestorePos( void );
-void IN_ToggleClientMouse( int newstate, int oldstate );
-LONG IN_WndProc( HWND hWnd, UINT uMsg, UINT wParam, LONG lParam );
-void IN_SetCursor( HICON hCursor );
+void IN_Init (void);
+void Host_InputFrame (void);
+void IN_Shutdown (void);
+void IN_MouseEvent (int mstate);
+void IN_ActivateMouse (qboolean force);
+void IN_DeactivateMouse (void);
+void IN_MouseSavePos (void);
+void IN_MouseRestorePos (void);
+void IN_ToggleClientMouse (int newstate, int oldstate);
+LONG IN_WndProc (HWND hWnd, UINT uMsg, UINT wParam, LONG lParam);
+void IN_SetCursor (HICON hCursor);
 
 #endif//INPUT_H

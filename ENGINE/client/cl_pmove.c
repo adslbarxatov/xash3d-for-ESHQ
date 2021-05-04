@@ -665,23 +665,25 @@ int CL_WaterEntity (const float* rgflPos)
 	vec3_t		test, offset;
 	int			i, oldhull;
 
-	if (!rgflPos) return -1;
+	if (!rgflPos) 
+		return -1;
 
 	oldhull = clgame.pmove->usehull;
 
-	// 4529
+	// ESHQ: отменено изменение из 4529, нарушающее корректный поиск текстуры
 	//for (i = 0; i < clgame.pmove->nummoveent; i++)
-	for (i = 0; i < clgame.pmove->numphysent; i++)
+	//for (i = 0; i < clgame.pmove->numphysent; i++)
+	for (i = 0; i < clgame.pmove->numvisent; i++)
 		{
-		// 4529
 		//pe = &clgame.pmove->moveents[i];
-		pe = &clgame.pmove->physents[i];
+		//pe = &clgame.pmove->physents[i];
+		pe = &clgame.pmove->visents[i];
 
 		if (pe->solid != SOLID_NOT) // disabled ?
 			continue;
 
 		// only brushes can have special contents
-		if (!pe->model || pe->model->type != mod_brush)
+		if (!pe->model || (pe->model->type != mod_brush))
 			continue;
 
 		// check water brushes accuracy
@@ -707,6 +709,7 @@ int CL_WaterEntity (const float* rgflPos)
 		// found water entity
 		return pe->info;
 		}
+
 	return -1;
 	}
 

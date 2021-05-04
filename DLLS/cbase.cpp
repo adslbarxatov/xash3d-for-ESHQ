@@ -362,13 +362,6 @@ int DispatchRestore (edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity
 		// Again, could be deleted, get the pointer again.
 		pEntity = (CBaseEntity*)GET_PRIVATE (pent);
 
-#if 0
-		if (pEntity && pEntity->pev->globalname && globalEntity)
-			{
-			ALERT (at_console, "Global %s is %s\n", STRING (pEntity->pev->globalname), STRING (pEntity->pev->model));
-			}
-#endif
-
 		// Is this an overriding global entity (coming over the transition), or one restoring in a level
 		if (globalEntity)
 			{
@@ -396,7 +389,8 @@ int DispatchRestore (edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity
 				}
 			else
 				{
-				ALERT (at_error, "Global Entity %s (%s) not in table!!!\n", STRING (pEntity->pev->globalname), STRING (pEntity->pev->classname));
+				ALERT (at_error, "Global Entity %s (%s) not in table!!!\n", STRING (pEntity->pev->globalname), 
+					STRING (pEntity->pev->classname));
 				// Spawned entities default to 'On'
 				gGlobalState.EntityAdd (pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON);
 				}
@@ -413,7 +407,9 @@ void DispatchObjectCollsionBox (edict_t* pent)
 		pEntity->SetObjectCollisionBox ();
 		}
 	else
+		{
 		SetObjectCollisionBox (&pent->v);
+		}
 	}
 
 void SaveWriteFields (SAVERESTOREDATA* pSaveData, const char* pname, void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount)

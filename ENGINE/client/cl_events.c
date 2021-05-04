@@ -25,13 +25,13 @@ CL_ResetEvent
 
 ===============
 */
-void CL_ResetEvent( event_info_t *ei )
-{
+void CL_ResetEvent (event_info_t* ei)
+	{
 	ei->index = 0;
-	memset( &ei->args, 0, sizeof( ei->args ));
+	memset (&ei->args, 0, sizeof (ei->args));
 	ei->fire_time = 0.0;
 	ei->flags = 0;
-}
+	}
 
 /*
 =============
@@ -40,37 +40,37 @@ CL_CalcPlayerVelocity
 compute velocity for a given client
 =============
 */
-void CL_CalcPlayerVelocity( int idx, vec3_t velocity )
-{
-	clientdata_t	*pcd;
+void CL_CalcPlayerVelocity (int idx, vec3_t velocity)
+	{
+	clientdata_t* pcd;
 	vec3_t		delta;
 	double		dt;
 
-	VectorClear( velocity );
+	VectorClear (velocity);
 
-	if( idx <= 0 || idx > cl.maxclients )
+	if (idx <= 0 || idx > cl.maxclients)
 		return;
 
-	if( idx == cl.playernum + 1 )
-	{
+	if (idx == cl.playernum + 1)
+		{
 		pcd = &cl.frames[cl.parsecountmod].clientdata;
-		VectorCopy( pcd->velocity, velocity );
-	}
+		VectorCopy (pcd->velocity, velocity);
+		}
 	else
-	{
+		{
 		dt = clgame.entities[idx].curstate.animtime - clgame.entities[idx].prevstate.animtime;
 
-		if( dt != 0.0 )
-		{
-			VectorSubtract( clgame.entities[idx].curstate.velocity, clgame.entities[idx].prevstate.velocity, delta );
-			VectorScale( delta, 1.0 / dt, velocity );
-		}
+		if (dt != 0.0)
+			{
+			VectorSubtract (clgame.entities[idx].curstate.velocity, clgame.entities[idx].prevstate.velocity, delta);
+			VectorScale (delta, 1.0 / dt, velocity);
+			}
 		else
-		{
-			VectorCopy( clgame.entities[idx].curstate.velocity, velocity );
+			{
+			VectorCopy (clgame.entities[idx].curstate.velocity, velocity);
+			}
 		}
 	}
-}
 
 /*
 =============
@@ -78,24 +78,24 @@ CL_DescribeEvent
 
 =============
 */
-void CL_DescribeEvent( int slot, int flags, const char *eventname )
-{
+void CL_DescribeEvent (int slot, int flags, const char* eventname)
+	{
 	int		idx = (slot & 31);
 	con_nprint_t	info;
 
-	if( !eventname || !cl_showevents->value )
+	if (!eventname || !cl_showevents->value)
 		return;
 
 	// mark reliable as green and unreliable as red
-	if( FBitSet( flags, FEV_RELIABLE ))
-		VectorSet( info.color, 0.0f, 1.0f, 0.0f );
-	else VectorSet( info.color, 1.0f, 0.0f, 0.0f );
+	if (FBitSet (flags, FEV_RELIABLE))
+		VectorSet (info.color, 0.0f, 1.0f, 0.0f);
+	else VectorSet (info.color, 1.0f, 0.0f, 0.0f);
 
 	info.time_to_live = 0.5f;
 	info.index = idx;
 
-	Con_NXPrintf( &info, "%i %f %s", slot, cl.time, eventname );
-}
+	Con_NXPrintf (&info, "%i %f %s", slot, cl.time, eventname);
+	}
 
 /*
 =============
@@ -103,27 +103,27 @@ CL_SetEventIndex
 
 =============
 */
-void CL_SetEventIndex( const char *szEvName, int ev_index )
-{
-	cl_user_event_t	*ev;
+void CL_SetEventIndex (const char* szEvName, int ev_index)
+	{
+	cl_user_event_t* ev;
 	int		i;
 
-	if( !szEvName || !*szEvName )
+	if (!szEvName || !*szEvName)
 		return; // ignore blank names
 
 	// search event by name to link with
-	for( i = 0; i < MAX_EVENTS; i++ )
-	{
-		ev = clgame.events[i];
-		if( !ev ) break;
-
-		if( !Q_stricmp( ev->name, szEvName ))
+	for (i = 0; i < MAX_EVENTS; i++)
 		{
+		ev = clgame.events[i];
+		if (!ev) break;
+
+		if (!Q_stricmp (ev->name, szEvName))
+			{
 			ev->index = ev_index;
 			return;
+			}
 		}
 	}
-}
 
 /*
 =============
@@ -131,20 +131,20 @@ CL_EventIndex
 
 =============
 */
-word CL_EventIndex( const char *name )
-{
+word CL_EventIndex (const char* name)
+	{
 	int	i;
-	
-	if( !COM_CheckString( name ))
+
+	if (!COM_CheckString (name))
 		return 0;
 
-	for( i = 1; i < MAX_EVENTS && cl.event_precache[i][0]; i++ )
-	{
-		if( !Q_stricmp( cl.event_precache[i], name ))
+	for (i = 1; i < MAX_EVENTS && cl.event_precache[i][0]; i++)
+		{
+		if (!Q_stricmp (cl.event_precache[i], name))
 			return i;
-	}
+		}
 	return 0;
-}
+	}
 
 /*
 =============
@@ -152,24 +152,24 @@ CL_RegisterEvent
 
 =============
 */
-void CL_RegisterEvent( int lastnum, const char *szEvName, pfnEventHook func )
-{
-	cl_user_event_t	*ev;
+void CL_RegisterEvent (int lastnum, const char* szEvName, pfnEventHook func)
+	{
+	cl_user_event_t* ev;
 
-	if( lastnum == MAX_EVENTS )
+	if (lastnum == MAX_EVENTS)
 		return;
 
 	// clear existing or allocate new one
-	if( !clgame.events[lastnum] )
-		clgame.events[lastnum] = Mem_Calloc( cls.mempool, sizeof( cl_user_event_t ));
-	else memset( clgame.events[lastnum], 0, sizeof( cl_user_event_t ));
+	if (!clgame.events[lastnum])
+		clgame.events[lastnum] = Mem_Calloc (cls.mempool, sizeof (cl_user_event_t));
+	else memset (clgame.events[lastnum], 0, sizeof (cl_user_event_t));
 
 	ev = clgame.events[lastnum];
 
 	// NOTE: ev->index will be set later
-	Q_strncpy( ev->name, szEvName, MAX_QPATH );
+	Q_strncpy (ev->name, szEvName, MAX_QPATH);
 	ev->func = func;
-}
+	}
 
 /*
 =============
@@ -177,44 +177,44 @@ CL_FireEvent
 
 =============
 */
-qboolean CL_FireEvent( event_info_t *ei, int slot )
-{
-	cl_user_event_t	*ev;
-	const char	*name;
+qboolean CL_FireEvent (event_info_t* ei, int slot)
+	{
+	cl_user_event_t* ev;
+	const char* name;
 	int		i, idx;
 
-	if( !ei || !ei->index )
+	if (!ei || !ei->index)
 		return false;
 
 	// get the func pointer
-	for( i = 0; i < MAX_EVENTS; i++ )
-	{
-		ev = clgame.events[i];		
-
-		if( !ev )
+	for (i = 0; i < MAX_EVENTS; i++)
 		{
-			idx = bound( 1, ei->index, ( MAX_EVENTS - 1 ));
-			Con_Reportf( S_ERROR "CL_FireEvent: %s not precached\n", cl.event_precache[idx] );
-			break;
-		}
+		ev = clgame.events[i];
 
-		if( ev->index == ei->index )
-		{
-			if( ev->func )
+		if (!ev)
 			{
-				CL_DescribeEvent( slot, ei->flags, cl.event_precache[ei->index] );
-				ev->func( &ei->args );
-				return true;
+			idx = bound (1, ei->index, (MAX_EVENTS - 1));
+			Con_Reportf (S_ERROR "CL_FireEvent: %s not precached\n", cl.event_precache[idx]);
+			break;
 			}
 
+		if (ev->index == ei->index)
+			{
+			if (ev->func)
+				{
+				CL_DescribeEvent (slot, ei->flags, cl.event_precache[ei->index]);
+				ev->func (&ei->args);
+				return true;
+				}
+
 			name = cl.event_precache[ei->index];
-			Con_Reportf( S_ERROR "CL_FireEvent: %s not hooked\n", name );
-			break;			
+			Con_Reportf (S_ERROR "CL_FireEvent: %s not hooked\n", name);
+			break;
+			}
 		}
-	}
 
 	return false;
-}
+	}
 
 /*
 =============
@@ -223,31 +223,31 @@ CL_FireEvents
 called right before draw frame
 =============
 */
-void CL_FireEvents( void )
-{
-	event_state_t	*es;
-	event_info_t	*ei;
+void CL_FireEvents (void)
+	{
+	event_state_t* es;
+	event_info_t* ei;
 	int		i;
 
 	es = &cl.events;
 
-	for( i = 0; i < MAX_EVENT_QUEUE; i++ )
-	{
+	for (i = 0; i < MAX_EVENT_QUEUE; i++)
+		{
 		ei = &es->ei[i];
 
-		if( ei->index == 0 )
+		if (ei->index == 0)
 			continue;
 
 		// delayed event!
-		if( ei->fire_time && ( ei->fire_time > cl.time ))
+		if (ei->fire_time && (ei->fire_time > cl.time))
 			continue;
 
-		CL_FireEvent( ei, i );
+		CL_FireEvent (ei, i);
 
 		// zero out the remaining fields
-		CL_ResetEvent( ei );
+		CL_ResetEvent (ei);
+		}
 	}
-}
 
 /*
 =============
@@ -256,26 +256,26 @@ CL_FindEvent
 find first empty event
 =============
 */
-event_info_t *CL_FindEmptyEvent( void )
-{
+event_info_t* CL_FindEmptyEvent (void)
+	{
 	int		i;
-	event_state_t	*es;
-	event_info_t	*ei;
+	event_state_t* es;
+	event_info_t* ei;
 
 	es = &cl.events;
 
 	// look for first slot where index is != 0
-	for( i = 0; i < MAX_EVENT_QUEUE; i++ )
-	{
+	for (i = 0; i < MAX_EVENT_QUEUE; i++)
+		{
 		ei = &es->ei[i];
-		if( ei->index != 0 )
+		if (ei->index != 0)
 			continue;
 		return ei;
-	}
+		}
 
 	// no slots available
 	return NULL;
-}
+	}
 
 /*
 =============
@@ -284,29 +284,29 @@ CL_FindEvent
 replace only unreliable events
 =============
 */
-event_info_t *CL_FindUnreliableEvent( void )
-{
-	event_state_t	*es;
-	event_info_t	*ei;
+event_info_t* CL_FindUnreliableEvent (void)
+	{
+	event_state_t* es;
+	event_info_t* ei;
 	int		i;
 
 	es = &cl.events;
 
-	for ( i = 0; i < MAX_EVENT_QUEUE; i++ )
-	{
-		ei = &es->ei[i];
-		if( ei->index != 0 )
+	for (i = 0; i < MAX_EVENT_QUEUE; i++)
 		{
+		ei = &es->ei[i];
+		if (ei->index != 0)
+			{
 			// it's reliable, so skip it
-			if( FBitSet( ei->flags, FEV_RELIABLE ))
+			if (FBitSet (ei->flags, FEV_RELIABLE))
 				continue;
-		}
+			}
 		return ei;
-	}
+		}
 
 	// this should never happen
 	return NULL;
-}
+	}
 
 /*
 =============
@@ -314,29 +314,29 @@ CL_QueueEvent
 
 =============
 */
-void CL_QueueEvent( int flags, int index, float delay, event_args_t *args )
-{
-	event_info_t	*ei;
+void CL_QueueEvent (int flags, int index, float delay, event_args_t* args)
+	{
+	event_info_t* ei;
 
 	// find a normal slot
-	ei = CL_FindEmptyEvent();
+	ei = CL_FindEmptyEvent ();
 
-	if( !ei )
-	{
-		if( FBitSet( flags, FEV_RELIABLE ))
+	if (!ei)
 		{
-			ei = CL_FindUnreliableEvent();
+		if (FBitSet (flags, FEV_RELIABLE))
+			{
+			ei = CL_FindUnreliableEvent ();
+			}
+
+		if (!ei) return;
 		}
 
-		if( !ei ) return;
-	}
-
-	ei->index	= index;
+	ei->index = index;
 	ei->packet_index = 0;
 	ei->fire_time = delay ? (cl.time + delay) : 0.0f;
-	ei->flags	= flags;
+	ei->flags = flags;
 	ei->args = *args;
-}
+	}
 
 /*
 =============
@@ -344,27 +344,27 @@ CL_ParseReliableEvent
 
 =============
 */
-void CL_ParseReliableEvent( sizebuf_t *msg )
-{
+void CL_ParseReliableEvent (sizebuf_t* msg)
+	{
 	int		event_index;
 	event_args_t	nullargs, args;
 	float		delay = 0.0f;
 
-	memset( &nullargs, 0, sizeof( nullargs ));
+	memset (&nullargs, 0, sizeof (nullargs));
 
-	event_index = MSG_ReadUBitLong( msg, MAX_EVENT_BITS );
+	event_index = MSG_ReadUBitLong (msg, MAX_EVENT_BITS);
 
-	if( MSG_ReadOneBit( msg ))
-		delay = (float)MSG_ReadWord( msg ) * (1.0f / 100.0f);
+	if (MSG_ReadOneBit (msg))
+		delay = (float)MSG_ReadWord (msg) * (1.0f / 100.0f);
 
 	// reliable events not use delta-compression just null-compression
-	MSG_ReadDeltaEvent( msg, &nullargs, &args );
+	MSG_ReadDeltaEvent (msg, &nullargs, &args);
 
-	if( args.entindex > 0 && args.entindex <= cl.maxclients )
+	if (args.entindex > 0 && args.entindex <= cl.maxclients)
 		args.angles[PITCH] *= -3.0f;
 
-	CL_QueueEvent( FEV_RELIABLE|FEV_SERVER, event_index, delay, &args );
-}
+	CL_QueueEvent (FEV_RELIABLE | FEV_SERVER, event_index, delay, &args);
+	}
 
 
 /*
@@ -373,76 +373,76 @@ CL_ParseEvent
 
 =============
 */
-void CL_ParseEvent( sizebuf_t *msg )
-{
+void CL_ParseEvent (sizebuf_t* msg)
+	{
 	int		event_index;
 	int		i, num_events;
 	int		packet_index;
 	event_args_t	nullargs, args;
-	entity_state_t	*state;
+	entity_state_t* state;
 	float		delay;
 
-	memset( &nullargs, 0, sizeof( nullargs ));
-	memset( &args, 0, sizeof( args ));
+	memset (&nullargs, 0, sizeof (nullargs));
+	memset (&args, 0, sizeof (args));
 
-	num_events = MSG_ReadUBitLong( msg, 5 );
+	num_events = MSG_ReadUBitLong (msg, 5);
 
 	// parse events queue
-	for( i = 0 ; i < num_events; i++ )
-	{
-		event_index = MSG_ReadUBitLong( msg, MAX_EVENT_BITS );
+	for (i = 0; i < num_events; i++)
+		{
+		event_index = MSG_ReadUBitLong (msg, MAX_EVENT_BITS);
 
-		if( MSG_ReadOneBit( msg ))
-			packet_index = MSG_ReadUBitLong( msg, MAX_ENTITY_BITS );
+		if (MSG_ReadOneBit (msg))
+			packet_index = MSG_ReadUBitLong (msg, MAX_ENTITY_BITS);
 		else packet_index = -1;
 
-		if( MSG_ReadOneBit( msg ))
-		{
-			MSG_ReadDeltaEvent( msg, &nullargs, &args );
-		}
+		if (MSG_ReadOneBit (msg))
+			{
+			MSG_ReadDeltaEvent (msg, &nullargs, &args);
+			}
 
-		if( MSG_ReadOneBit( msg ))
-			delay = (float)MSG_ReadWord( msg ) * (1.0f / 100.0f);
+		if (MSG_ReadOneBit (msg))
+			delay = (float)MSG_ReadWord (msg) * (1.0f / 100.0f);
 		else delay = 0.0f;
 
-		if( packet_index != -1 )
-		{
-			frame_t	*frame = &cl.frames[cl.parsecountmod];
-
-			if( packet_index < frame->num_entities )
+		if (packet_index != -1)
 			{
-				state = &cls.packet_entities[(frame->first_entity+packet_index)%cls.num_client_entities];
+			frame_t* frame = &cl.frames[cl.parsecountmod];
+
+			if (packet_index < frame->num_entities)
+				{
+				state = &cls.packet_entities[(frame->first_entity + packet_index) % cls.num_client_entities];
 				args.entindex = state->number;
 
-				if( VectorIsNull( args.origin ))
-					VectorCopy( state->origin, args.origin );
+				if (VectorIsNull (args.origin))
+					VectorCopy (state->origin, args.origin);
 
-				if( VectorIsNull( args.angles ))
-					VectorCopy( state->angles, args.angles );
+				if (VectorIsNull (args.angles))
+					VectorCopy (state->angles, args.angles);
 
-				COM_NormalizeAngles( args.angles );
+				COM_NormalizeAngles (args.angles);
 
-				if( state->number > 0 && state->number <= cl.maxclients )
-				{
+				if (state->number > 0 && state->number <= cl.maxclients)
+					{
 					args.angles[PITCH] *= -3.0f;
-					CL_CalcPlayerVelocity( state->number, args.velocity );
-					args.ducking = ( state->usehull == 1 );
+					CL_CalcPlayerVelocity (state->number, args.velocity);
+					args.ducking = (state->usehull == 1);
+					}
 				}
-			}
 			else
-			{
-				if( args.entindex != 0 )
 				{
-					if( args.entindex > 0 && args.entindex <= cl.maxclients )
+				if (args.entindex != 0)
+					{
+					if (args.entindex > 0 && args.entindex <= cl.maxclients)
 						args.angles[PITCH] /= -3.0f;
+					}
 				}
-			}
-		
+
 			// Place event on queue
-			CL_QueueEvent( FEV_SERVER, event_index, delay, &args );
+			CL_QueueEvent (FEV_SERVER, event_index, delay, &args);
+			}
 		}
 	}
-}
 
 /*
 =============
@@ -450,39 +450,39 @@ CL_PlaybackEvent
 
 =============
 */
-void CL_PlaybackEvent( int flags, const edict_t *pInvoker, word eventindex, float delay, float *origin,
-	float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2 )
-{
+void CL_PlaybackEvent (int flags, const edict_t* pInvoker, word eventindex, float delay, float* origin,
+	float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2)
+	{
 	event_args_t	args;
 
-	if( FBitSet( flags, FEV_SERVER ))
+	if (FBitSet (flags, FEV_SERVER))
 		return;
 
 	// first check event for out of bounds
-	if( eventindex < 1 || eventindex > MAX_EVENTS )
-	{
-		Con_DPrintf( S_ERROR "CL_PlaybackEvent: invalid eventindex %i\n", eventindex );
+	if (eventindex < 1 || eventindex > MAX_EVENTS)
+		{
+		Con_DPrintf (S_ERROR "CL_PlaybackEvent: invalid eventindex %i\n", eventindex);
 		return;
-	}
+		}
 
 	// check event for precached
-	if( !CL_EventIndex( cl.event_precache[eventindex] ))
-	{
-		Con_DPrintf( S_ERROR "CL_PlaybackEvent: event %i was not precached\n", eventindex );
-		return;		
-	}
+	if (!CL_EventIndex (cl.event_precache[eventindex]))
+		{
+		Con_DPrintf (S_ERROR "CL_PlaybackEvent: event %i was not precached\n", eventindex);
+		return;
+		}
 
-	SetBits( flags, FEV_CLIENT ); // it's a client event
-	ClearBits( flags, FEV_NOTHOST|FEV_HOSTONLY|FEV_GLOBAL );
-	if( delay < 0.0f ) delay = 0.0f; // fixup negative delays
+	SetBits (flags, FEV_CLIENT); // it's a client event
+	ClearBits (flags, FEV_NOTHOST | FEV_HOSTONLY | FEV_GLOBAL);
+	if (delay < 0.0f) delay = 0.0f; // fixup negative delays
 
-	memset( &args, 0, sizeof( args ));
+	memset (&args, 0, sizeof (args));
 
-	VectorCopy( origin, args.origin );
-	VectorCopy( angles, args.angles );
-	VectorCopy( cl.simvel, args.velocity );
+	VectorCopy (origin, args.origin);
+	VectorCopy (angles, args.angles);
+	VectorCopy (cl.simvel, args.velocity);
 	args.entindex = cl.playernum + 1;
-	args.ducking = ( cl.local.usehull == 1 );
+	args.ducking = (cl.local.usehull == 1);
 
 	args.fparam1 = fparam1;
 	args.fparam2 = fparam2;
@@ -491,5 +491,5 @@ void CL_PlaybackEvent( int flags, const edict_t *pInvoker, word eventindex, floa
 	args.bparam1 = bparam1;
 	args.bparam2 = bparam2;
 
-	CL_QueueEvent( flags, eventindex, delay, &args );
-}
+	CL_QueueEvent (flags, eventindex, delay, &args);
+	}

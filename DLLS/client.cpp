@@ -645,12 +645,9 @@ void PlayerPostThink (edict_t* pEntity)
 		pPlayer->PostThink ();
 	}
 
-
-
 void ParmsNewLevel (void)
 	{
 	}
-
 
 void ParmsChangeLevel (void)
 	{
@@ -660,7 +657,6 @@ void ParmsChangeLevel (void)
 	if (pSaveData)
 		pSaveData->connectionCount = BuildChangeList (pSaveData->levelList, MAX_LEVEL_CONNECTIONS);
 	}
-
 
 //
 // GLOBALS ASSUMED SET:  g_ulFrameCount
@@ -845,7 +841,8 @@ Engine is going to shut down, allows setting a breakpoint in game .dll to catch 
 */
 void Sys_Error (const char* error_string)
 	{
-	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
+	// Default case, do nothing. 
+	// MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
 	}
 
 /*
@@ -1191,8 +1188,6 @@ int AddToFullPack (struct entity_state_s* state, int e, edict_t* ent, edict_t* h
 		state->friction = ent->v.friction;
 
 		state->gravity = ent->v.gravity;
-		//		state->team			= ent->v.team;
-		//		
 		state->usehull = (ent->v.flags & FL_DUCKING) ? 1 : 0;
 		state->health = ent->v.health;
 		}

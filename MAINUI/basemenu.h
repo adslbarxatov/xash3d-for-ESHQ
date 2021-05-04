@@ -1,5 +1,5 @@
 /*
-basemenu.h - menu basic header 
+basemenu.h - menu basic header
 Copyright (C) 2010 Uncle Mike
 
 This program is free software: you can redistribute it and/or modify
@@ -96,9 +96,12 @@ GNU General Public License for more details.
 
 #define EMPTY_SAVE_PIC		"gfx\\lambda32"
 
+// ESHQ: основное определение в com_strings.h
+#define DEFAULT_SAVE_EXTENSION	"save/*.x3s"
+
 // Generic types
 typedef enum
-{
+	{
 	QMTYPE_SCROLLLIST,
 	QMTYPE_SPINCONTROL,
 	QMTYPE_CHECKBOX,
@@ -108,7 +111,7 @@ typedef enum
 	QMTYPE_BITMAP,
 	// CR: новый тип кнопки
 	QMTYPE_BM_BUTTON
-} menuType_t;
+	} menuType_t;
 
 // Generic flags
 #define QMF_LEFT_JUSTIFY		(1<<0)
@@ -143,23 +146,23 @@ typedef enum
 #define QM_PRESSED			5
 
 typedef struct
-{
+	{
 	int		cursor;
 	int		cursorPrev;
 
-	void		*items[UI_MAX_MENUITEMS];
+	void* items[UI_MAX_MENUITEMS];
 	int		numItems;
 
-	void		(*drawFunc)( void );
-	const char	*(*keyFunc)( int key, int down );
-	void		(*activateFunc)( void );
-	void		(*vidInitFunc)( void );
-} menuFramework_s;
+	void		(*drawFunc)(void);
+	const char* (*keyFunc)(int key, int down);
+	void		(*activateFunc)(void);
+	void		(*vidInitFunc)(void);
+	} menuFramework_s;
 
 typedef struct
-{
+	{
 	menuType_t	type;
-	const char	*name;
+	const char* name;
 	int		id;
 
 	unsigned int	flags;
@@ -183,93 +186,93 @@ typedef struct
 	int		lastFocusTime;
 	bool		bPressed;
 
-	const char	*statusText;
+	const char* statusText;
 
-	menuFramework_s	*parent;
+	menuFramework_s* parent;
 
-	void		(*callback) (void *self, int event);
-	void		(*ownerdraw) (void *self);
+	void		(*callback) (void* self, int event);
+	void		(*ownerdraw) (void* self);
 
-} menuCommon_s;
+	} menuCommon_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
- 	const char	*background;
-	const char	*upArrow;
-	const char	*upArrowFocus;
-	const char	*downArrow;
-	const char	*downArrowFocus;
-	const char	**itemNames;
+	const char* background;
+	const char* upArrow;
+	const char* upArrowFocus;
+	const char* downArrow;
+	const char* downArrowFocus;
+	const char** itemNames;
 	int		numItems;
 	int		curItem;
 	int		topItem;
 	int		numRows;
-// scrollbar stuff // ADAMIX
+	// scrollbar stuff // ADAMIX
 	int		scrollBarX;
 	int		scrollBarY;
 	int		scrollBarWidth;
 	int		scrollBarHeight;
 	int		scrollBarSliding;
-} menuScrollList_s;
+	} menuScrollList_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
-	const char	*background;
-	const char	*leftArrow;
-	const char	*rightArrow;
-	const char	*leftArrowFocus;
-	const char	*rightArrowFocus;
+	const char* background;
+	const char* leftArrow;
+	const char* rightArrow;
+	const char* leftArrowFocus;
+	const char* rightArrowFocus;
 	float		minValue;
 	float		maxValue;
 	float		curValue;
 	float		range;
-} menuSpinControl_s;
+	} menuSpinControl_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
-	const char	*background;
+	const char* background;
 	int		maxLength;		// can't be more than UI_MAX_FIELD_LINE
 	char		buffer[UI_MAX_FIELD_LINE];
 	int		widthInChars;
 	int		cursor;
 	int		scroll;
-} menuField_s;
+	} menuField_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
-	const char	*background;
-} menuAction_s;
+	const char* background;
+	} menuAction_s;
 
-typedef struct  
-{
+typedef struct
+	{
 	menuCommon_s	generic;
 	HIMAGE		pic;
 	int		button_id;
-} menuPicButton_s;
+	} menuPicButton_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
-	const char	*pic;
-	const char	*focusPic;
-} menuBitmap_s;
+	const char* pic;
+	const char* focusPic;
+	} menuBitmap_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
 	int		enabled;
-	const char	*emptyPic;
-	const char	*focusPic;	// can be replaced with pressPic manually
-	const char	*checkPic;
-	const char	*grayedPic;	// when QMF_GRAYED is set
-} menuCheckBox_s;
+	const char* emptyPic;
+	const char* focusPic;	// can be replaced with pressPic manually
+	const char* checkPic;
+	const char* grayedPic;	// when QMF_GRAYED is set
+	} menuCheckBox_s;
 
 typedef struct
-{
+	{
 	menuCommon_s	generic;
 	float		minValue;
 	float		maxValue;
@@ -278,61 +281,61 @@ typedef struct
 	int		numSteps;
 	float		range;
 	int		keepSlider;	// when mouse button is holds
-} menuSlider_s;
+	} menuSlider_s;
 
-void UI_ScrollList_Init( menuScrollList_s *sl );
-const char *UI_ScrollList_Key( menuScrollList_s *sl, int key, int down );
-void UI_ScrollList_Draw( menuScrollList_s *sl );
+void UI_ScrollList_Init (menuScrollList_s* sl);
+const char* UI_ScrollList_Key (menuScrollList_s* sl, int key, int down);
+void UI_ScrollList_Draw (menuScrollList_s* sl);
 
-void UI_SpinControl_Init( menuSpinControl_s *sc );
-const char *UI_SpinControl_Key( menuSpinControl_s *sc, int key, int down );
-void UI_SpinControl_Draw( menuSpinControl_s *sc );
+void UI_SpinControl_Init (menuSpinControl_s* sc);
+const char* UI_SpinControl_Key (menuSpinControl_s* sc, int key, int down);
+void UI_SpinControl_Draw (menuSpinControl_s* sc);
 
-void UI_Slider_Init( menuSlider_s *sl );
-const char *UI_Slider_Key( menuSlider_s *sl, int key, int down );
-void UI_Slider_Draw( menuSlider_s *sl );
+void UI_Slider_Init (menuSlider_s* sl);
+const char* UI_Slider_Key (menuSlider_s* sl, int key, int down);
+void UI_Slider_Draw (menuSlider_s* sl);
 
-void UI_CheckBox_Init( menuCheckBox_s *cb );
-const char *UI_CheckBox_Key( menuCheckBox_s *cb, int key, int down );
-void UI_CheckBox_Draw( menuCheckBox_s *cb );
+void UI_CheckBox_Init (menuCheckBox_s* cb);
+const char* UI_CheckBox_Key (menuCheckBox_s* cb, int key, int down);
+void UI_CheckBox_Draw (menuCheckBox_s* cb);
 
-void UI_Field_Init( menuField_s *f );
-const char *UI_Field_Key( menuField_s *f, int key, int down );
-void UI_Field_Char( menuField_s *f, int key );
-void UI_Field_Draw( menuField_s *f );
+void UI_Field_Init (menuField_s* f);
+const char* UI_Field_Key (menuField_s* f, int key, int down);
+void UI_Field_Char (menuField_s* f, int key);
+void UI_Field_Draw (menuField_s* f);
 
-void UI_Action_Init( menuAction_s *t );
-const char *UI_Action_Key( menuAction_s *t, int key, int down );
-void UI_Action_Draw( menuAction_s *t );
+void UI_Action_Init (menuAction_s* t);
+const char* UI_Action_Key (menuAction_s* t, int key, int down);
+void UI_Action_Draw (menuAction_s* t);
 
-void UI_Bitmap_Init( menuBitmap_s *b );
-const char *UI_Bitmap_Key( menuBitmap_s *b, int key, int down );
-void UI_Bitmap_Draw( menuBitmap_s *b );
+void UI_Bitmap_Init (menuBitmap_s* b);
+const char* UI_Bitmap_Key (menuBitmap_s* b, int key, int down);
+void UI_Bitmap_Draw (menuBitmap_s* b);
 
-void UI_PicButton_Init( menuPicButton_s *b );
-const char *UI_PicButton_Key( menuPicButton_s *b, int key, int down );
-void UI_PicButton_Draw( menuPicButton_s *item );
+void UI_PicButton_Init (menuPicButton_s* b);
+const char* UI_PicButton_Key (menuPicButton_s* b, int key, int down);
+void UI_PicButton_Draw (menuPicButton_s* item);
 
 // =====================================================================
 // Main menu interface
 
-extern cvar_t	*ui_precache;
-extern cvar_t	*ui_showmodels;
+extern cvar_t* ui_precache;
+extern cvar_t* ui_showmodels;
 
 #define MAX_BACKGROUNDS	48 // SC 5.0 have 35 tiled backgrounds!
 
 typedef struct
-{
+	{
 	HIMAGE	hImage;
 	int	x, y;
 	int	width;
 	int	height;
-} bimage_t;
+	} bimage_t;
 
 typedef struct
-{
-	menuFramework_s	*menuActive;
-	menuFramework_s	*menuStack[UI_MAX_MENUDEPTH];
+	{
+	menuFramework_s* menuActive;
+	menuFramework_s* menuStack[UI_MAX_MENUDEPTH];
 	int		menuDepth;
 
 	netadr_t		serverAddresses[UI_MAX_SERVERS];
@@ -379,20 +382,20 @@ typedef struct
 
 	int		buttons_draw_width;	// scaled image what we drawing
 	int		buttons_draw_height;
-} uiStatic_t;
+	} uiStatic_t;
 
 extern uiStatic_t		uiStatic;
 
 extern char		uiEmptyString[256];	// HACKHACK
-extern const char		*uiSoundIn;
-extern const char		*uiSoundOut;
-extern const char		*uiSoundKey;
-extern const char		*uiSoundRemoveKey;
-extern const char		*uiSoundLaunch;
-extern const char		*uiSoundBuzz;
-extern const char		*uiSoundGlow;
-extern const char		*uiSoundMove;
-extern const char		*uiSoundNull;
+extern const char* uiSoundIn;
+extern const char* uiSoundOut;
+extern const char* uiSoundKey;
+extern const char* uiSoundRemoveKey;
+extern const char* uiSoundLaunch;
+extern const char* uiSoundBuzz;
+extern const char* uiSoundGlow;
+extern const char* uiSoundMove;
+extern const char* uiSoundNull;
 
 extern int	uiColorHelp;
 extern int	uiPromptBgColor;
@@ -407,91 +410,91 @@ extern int	uiColorWhite;
 extern int	uiColorDkGrey;
 extern int	uiColorBlack;
 
-void UI_ScaleCoords( int *x, int *y, int *w, int *h );
-int UI_CursorInRect( int x, int y, int w, int h );
-void UI_UtilSetupPicButton( menuPicButton_s *pic, int ID );
-void UI_DrawPic( int x, int y, int w, int h, const int color, const char *pic );
-void UI_DrawPicAdditive( int x, int y, int w, int h, const int color, const char *pic );
-void UI_FillRect( int x, int y, int w, int h, const int color );
+void UI_ScaleCoords (int* x, int* y, int* w, int* h);
+int UI_CursorInRect (int x, int y, int w, int h);
+void UI_UtilSetupPicButton (menuPicButton_s* pic, int ID);
+void UI_DrawPic (int x, int y, int w, int h, const int color, const char* pic);
+void UI_DrawPicAdditive (int x, int y, int w, int h, const int color, const char* pic);
+void UI_FillRect (int x, int y, int w, int h, const int color);
 #define UI_DrawRectangle( x, y, w, h, color ) UI_DrawRectangleExt( x, y, w, h, color, uiStatic.outlineWidth )
-void UI_DrawRectangleExt( int in_x, int in_y, int in_w, int in_h, const int color, int outlineWidth );
-void UI_DrawString( int x, int y, int w, int h, const char *str, const int col, int forceCol, int charW, int charH, int justify, int shadow );
-void UI_StartSound( const char *sound );
-void UI_LoadBmpButtons( void );
+void UI_DrawRectangleExt (int in_x, int in_y, int in_w, int in_h, const int color, int outlineWidth);
+void UI_DrawString (int x, int y, int w, int h, const char* str, const int col, int forceCol, int charW, int charH, int justify, int shadow);
+void UI_StartSound (const char* sound);
+void UI_LoadBmpButtons (void);
 
-void UI_DrawBackground_Callback( void *self );
-void UI_AddItem ( menuFramework_s *menu, void *item );
-void UI_CursorMoved( menuFramework_s *menu );
-void UI_SetCursor( menuFramework_s *menu, int cursor );
-void UI_SetCursorToItem( menuFramework_s *menu, void *item );
-void *UI_ItemAtCursor( menuFramework_s *menu );
-void UI_AdjustCursor( menuFramework_s *menu, int dir );
-void UI_DrawMenu( menuFramework_s *menu );
-const char *UI_DefaultKey( menuFramework_s *menu, int key, int down );
-const char *UI_ActivateItem( menuFramework_s *menu, menuCommon_s *item );
-void UI_RefreshInternetServerList( void );
-void UI_RefreshServerList( void );
-int UI_CreditsActive( void );
-void UI_DrawFinalCredits( void );
+void UI_DrawBackground_Callback (void* self);
+void UI_AddItem (menuFramework_s* menu, void* item);
+void UI_CursorMoved (menuFramework_s* menu);
+void UI_SetCursor (menuFramework_s* menu, int cursor);
+void UI_SetCursorToItem (menuFramework_s* menu, void* item);
+void* UI_ItemAtCursor (menuFramework_s* menu);
+void UI_AdjustCursor (menuFramework_s* menu, int dir);
+void UI_DrawMenu (menuFramework_s* menu);
+const char* UI_DefaultKey (menuFramework_s* menu, int key, int down);
+const char* UI_ActivateItem (menuFramework_s* menu, menuCommon_s* item);
+void UI_RefreshInternetServerList (void);
+void UI_RefreshServerList (void);
+int UI_CreditsActive (void);
+void UI_DrawFinalCredits (void);
 
-void UI_CloseMenu( void );
-void UI_PushMenu( menuFramework_s *menu );
-void UI_PopMenu( void );
+void UI_CloseMenu (void);
+void UI_PushMenu (menuFramework_s* menu);
+void UI_PopMenu (void);
 
 // Precache
-void UI_Main_Precache( void );
-void UI_NewGame_Precache( void );
-void UI_LoadGame_Precache( void );
-void UI_SaveGame_Precache( void );
-void UI_SaveLoad_Precache( void );
-void UI_MultiPlayer_Precache( void );
-void UI_Options_Precache( void );
-void UI_InternetGames_Precache( void );
-void UI_LanGame_Precache( void );
-void UI_PlayerSetup_Precache( void );
-void UI_Controls_Precache( void );
-void UI_AdvControls_Precache( void );
-void UI_GameOptions_Precache( void );
-void UI_CreateGame_Precache( void );
-void UI_Audio_Precache( void );
-void UI_Video_Precache( void );
-void UI_VidOptions_Precache( void );
-void UI_VidModes_Precache( void );
-void UI_CustomGame_Precache( void );
-void UI_Credits_Precache( void );
-void UI_GoToSite_Precache( void );
+void UI_Main_Precache (void);
+void UI_NewGame_Precache (void);
+void UI_LoadGame_Precache (void);
+void UI_SaveGame_Precache (void);
+void UI_SaveLoad_Precache (void);
+void UI_MultiPlayer_Precache (void);
+void UI_Options_Precache (void);
+void UI_InternetGames_Precache (void);
+void UI_LanGame_Precache (void);
+void UI_PlayerSetup_Precache (void);
+void UI_Controls_Precache (void);
+void UI_AdvControls_Precache (void);
+void UI_GameOptions_Precache (void);
+void UI_CreateGame_Precache (void);
+void UI_Audio_Precache (void);
+void UI_Video_Precache (void);
+void UI_VidOptions_Precache (void);
+void UI_VidModes_Precache (void);
+void UI_CustomGame_Precache (void);
+void UI_Credits_Precache (void);
+void UI_GoToSite_Precache (void);
 
 // Menus
-void UI_Main_Menu( void );
-void UI_NewGame_Menu( void );
-void UI_LoadGame_Menu( void );
-void UI_SaveGame_Menu( void );
-void UI_SaveLoad_Menu( void );
-void UI_MultiPlayer_Menu( void );
-void UI_Options_Menu( void );
-void UI_InternetGames_Menu( void );
-void UI_LanGame_Menu( void );
-void UI_PlayerSetup_Menu( void );
-void UI_Controls_Menu( void );
-void UI_AdvControls_Menu( void );
-void UI_GameOptions_Menu( void );
-void UI_CreateGame_Menu( void );
-void UI_Audio_Menu( void );
-void UI_Video_Menu( void );
-void UI_VidOptions_Menu( void );
-void UI_VidModes_Menu( void );
-void UI_CustomGame_Menu( void );
-void UI_Credits_Menu( void );
+void UI_Main_Menu (void);
+void UI_NewGame_Menu (void);
+void UI_LoadGame_Menu (void);
+void UI_SaveGame_Menu (void);
+void UI_SaveLoad_Menu (void);
+void UI_MultiPlayer_Menu (void);
+void UI_Options_Menu (void);
+void UI_InternetGames_Menu (void);
+void UI_LanGame_Menu (void);
+void UI_PlayerSetup_Menu (void);
+void UI_Controls_Menu (void);
+void UI_AdvControls_Menu (void);
+void UI_GameOptions_Menu (void);
+void UI_CreateGame_Menu (void);
+void UI_Audio_Menu (void);
+void UI_Video_Menu (void);
+void UI_VidOptions_Menu (void);
+void UI_VidModes_Menu (void);
+void UI_CustomGame_Menu (void);
+void UI_Credits_Menu (void);
 
 //
 //-----------------------------------------------------
 //
 class CMenu
-{
-public:
-	// Game information
-	GAMEINFO		m_gameinfo;
-};
+	{
+	public:
+		// Game information
+		GAMEINFO		m_gameinfo;
+	};
 
 extern CMenu gMenu;
 

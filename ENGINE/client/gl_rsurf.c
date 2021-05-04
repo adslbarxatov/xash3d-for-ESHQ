@@ -285,7 +285,7 @@ void GL_BuildPolygonFromSurface (model_t* mod, msurface_t* fa)
 	if (!mod || !fa->texinfo || !fa->texinfo->texture)
 		return; // bad polygon ?
 
-	if (FBitSet (fa->flags, SURF_CONVEYOR) && fa->texinfo->texture->gl_texturenum != 0)
+	if (FBitSet (fa->flags, SURF_CONVEYOR) && (fa->texinfo->texture->gl_texturenum != 0))
 		{
 		glt = R_GetTexture (fa->texinfo->texture->gl_texturenum);
 		tex = fa->texinfo->texture;
@@ -730,15 +730,17 @@ void DrawGLPoly (glpoly_t* p, float xScale, float yScale)
 		float		flRate, flAngle;
 		gl_texture_t* texture;
 
-		if (CL_IsQuakeCompatible () && RI.currententity == clgame.entities)
+		if (CL_IsQuakeCompatible () && (RI.currententity == clgame.entities))
 			{
 			// same as doom speed
 			flConveyorSpeed = -35.0f;
 			}
 		else
 			{
-			flConveyorSpeed = (e->curstate.rendercolor.g << 8 | e->curstate.rendercolor.b) / 16.0f;
-			if (e->curstate.rendercolor.r) flConveyorSpeed = -flConveyorSpeed;
+			// ESHQ: fuck it too!
+			/*flConveyorSpeed = (e->curstate.rendercolor.g << 8 | e->curstate.rendercolor.b) / 16.0f;
+			if (e->curstate.rendercolor.r) flConveyorSpeed = -flConveyorSpeed;*/
+			flConveyorSpeed = (float)e->curstate.renderfx * 10.0f;
 			}
 		texture = R_GetTexture (glState.currentTextures[glState.activeTMU]);
 
@@ -762,7 +764,7 @@ void DrawGLPoly (glpoly_t* p, float xScale, float yScale)
 		sOffset = tOffset = 0.0f;
 		}
 
-	if (xScale != 0.0f && yScale != 0.0f)
+	if ((xScale != 0.0f) && (yScale != 0.0f))
 		hasScale = true;
 
 	pglBegin (GL_POLYGON);
@@ -771,7 +773,8 @@ void DrawGLPoly (glpoly_t* p, float xScale, float yScale)
 		{
 		if (hasScale)
 			pglTexCoord2f ((v[3] + sOffset) * xScale, (v[4] + tOffset) * yScale);
-		else pglTexCoord2f (v[3] + sOffset, v[4] + tOffset);
+		else 
+			pglTexCoord2f (v[3] + sOffset, v[4] + tOffset);
 
 		pglVertex3fv (v);
 		}
@@ -1408,7 +1411,14 @@ void R_SetRenderMode (cl_entity_t* e)
 			break;
 		case kRenderTransAdd:
 			pglTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			pglColor4f (tr.blend, tr.blend, tr.blend, 1.0f);
+
+			// ESHQ: поддержка цвета
+			if (e->curstate.rendercolor.r + e->curstate.rendercolor.g + e->curstate.rendercolor.b == 0)
+				pglColor4f (tr.blend, tr.blend, tr.blend, 1.0f);
+			else
+				pglColor4ub (e->curstate.rendercolor.r, e->curstate.rendercolor.g,
+					e->curstate.rendercolor.b, e->curstate.renderamt);
+			
 			pglBlendFunc (GL_ONE, GL_ONE);
 			pglDepthMask (GL_FALSE);
 			pglEnable (GL_BLEND);

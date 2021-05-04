@@ -1624,7 +1624,7 @@ find the entity in sphere
 edict_t* pfnFindEntityInSphere (edict_t* pStartEdict, const float* org, float flRadius)
 	{
 	float	distSquared;
-	int	j, e = 0;
+	int		j, e = 0;
 	float	eorg;
 	edict_t* ent;
 
@@ -1641,18 +1641,19 @@ edict_t* pfnFindEntityInSphere (edict_t* pStartEdict, const float* org, float fl
 			continue;
 
 		// ignore clients that not in a game
-		if (e <= svs.maxclients && !SV_ClientFromEdict (ent, true))
+		if ((e <= svs.maxclients) && !SV_ClientFromEdict (ent, true))
 			continue;
 
 		distSquared = 0.0f;
 
-		for (j = 0; j < 3 && distSquared <= flRadius; j++)
+		for (j = 0; (j < 3) && (distSquared <= flRadius); j++)
 			{
 			if (org[j] < ent->v.absmin[j])
 				eorg = org[j] - ent->v.absmin[j];
 			else if (org[j] > ent->v.absmax[j])
 				eorg = org[j] - ent->v.absmax[j];
-			else eorg = 0.0f;
+			else 
+				eorg = 0.0f;
 
 			distSquared += eorg * eorg;
 			}

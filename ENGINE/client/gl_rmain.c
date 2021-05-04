@@ -84,35 +84,41 @@ Sorting translucent entities by rendermode then by distance
 */
 static int R_TransEntityCompare (const cl_entity_t** a, const cl_entity_t** b)
 	{
-	cl_entity_t* ent1, * ent2;
-	vec3_t		vecLen, org;
-	float		dist1, dist2;
-	int		rendermode1;
-	int		rendermode2;
+	cl_entity_t*	ent1, * ent2;
+	vec3_t			vecLen, org;
+	float			dist1, dist2;
+	int				rendermode1;
+	int				rendermode2;
 
 	ent1 = (cl_entity_t*)*a;
 	ent2 = (cl_entity_t*)*b;
 	rendermode1 = R_GetEntityRenderMode (ent1);
 	rendermode2 = R_GetEntityRenderMode (ent2);
 
-	// sort by distance
-	if (ent1->model->type != mod_brush || rendermode1 != kRenderTransAlpha)
+	// ESHQ: сортировка по дистанции без игнорирования аддитивных текстур (иначе получается странная картинка)
+	if ((ent1->model->type != mod_brush) )//|| (rendermode1 != kRenderTransAlpha))
 		{
 		VectorAverage (ent1->model->mins, ent1->model->maxs, org);
 		VectorAdd (ent1->origin, org, org);
 		VectorSubtract (RI.vieworg, org, vecLen);
 		dist1 = DotProduct (vecLen, vecLen);
 		}
-	else dist1 = 1000000000;
+	else
+		{
+		dist1 = 1000000000;
+		}
 
-	if (ent2->model->type != mod_brush || rendermode2 != kRenderTransAlpha)
+	if ((ent2->model->type != mod_brush) )//|| (rendermode2 != kRenderTransAlpha))
 		{
 		VectorAverage (ent2->model->mins, ent2->model->maxs, org);
 		VectorAdd (ent2->origin, org, org);
 		VectorSubtract (RI.vieworg, org, vecLen);
 		dist2 = DotProduct (vecLen, vecLen);
 		}
-	else dist2 = 1000000000;
+	else
+		{
+		dist2 = 1000000000;
+		}
 
 	if (dist1 > dist2)
 		return -1;
@@ -146,9 +152,12 @@ qboolean R_WorldToScreen (const vec3_t point, vec3_t screen)
 		return true;
 
 	Matrix4x4_Copy (worldToScreen, RI.worldviewProjectionMatrix);
-	screen[0] = worldToScreen[0][0] * point[0] + worldToScreen[0][1] * point[1] + worldToScreen[0][2] * point[2] + worldToScreen[0][3];
-	screen[1] = worldToScreen[1][0] * point[0] + worldToScreen[1][1] * point[1] + worldToScreen[1][2] * point[2] + worldToScreen[1][3];
-	w = worldToScreen[3][0] * point[0] + worldToScreen[3][1] * point[1] + worldToScreen[3][2] * point[2] + worldToScreen[3][3];
+	screen[0] = worldToScreen[0][0] * point[0] + worldToScreen[0][1] * point[1] + 
+		worldToScreen[0][2] * point[2] + worldToScreen[0][3];
+	screen[1] = worldToScreen[1][0] * point[0] + worldToScreen[1][1] * point[1] + 
+		worldToScreen[1][2] * point[2] + worldToScreen[1][3];
+	w = worldToScreen[3][0] * point[0] + worldToScreen[3][1] * point[1] + 
+		worldToScreen[3][2] * point[2] + worldToScreen[3][3];
 	screen[2] = 0.0f; // just so we have something valid here
 
 	if (w < 0.001f)
@@ -185,11 +194,16 @@ void R_ScreenToWorld (const vec3_t screen, vec3_t point)
 
 	Matrix4x4_Invert_Full (screenToWorld, RI.worldviewProjectionMatrix);
 
-	point[0] = screen[0] * screenToWorld[0][0] + screen[1] * screenToWorld[0][1] + screen[2] * screenToWorld[0][2] + screenToWorld[0][3];
-	point[1] = screen[0] * screenToWorld[1][0] + screen[1] * screenToWorld[1][1] + screen[2] * screenToWorld[1][2] + screenToWorld[1][3];
-	point[2] = screen[0] * screenToWorld[2][0] + screen[1] * screenToWorld[2][1] + screen[2] * screenToWorld[2][2] + screenToWorld[2][3];
-	w = screen[0] * screenToWorld[3][0] + screen[1] * screenToWorld[3][1] + screen[2] * screenToWorld[3][2] + screenToWorld[3][3];
-	if (w != 0.0f) VectorScale (point, (1.0f / w), point);
+	point[0] = screen[0] * screenToWorld[0][0] + screen[1] * screenToWorld[0][1] + 
+		screen[2] * screenToWorld[0][2] + screenToWorld[0][3];
+	point[1] = screen[0] * screenToWorld[1][0] + screen[1] * screenToWorld[1][1] + 
+		screen[2] * screenToWorld[1][2] + screenToWorld[1][3];
+	point[2] = screen[0] * screenToWorld[2][0] + screen[1] * screenToWorld[2][1] + 
+		screen[2] * screenToWorld[2][2] + screenToWorld[2][3];
+	w = screen[0] * screenToWorld[3][0] + screen[1] * screenToWorld[3][1] + 
+		screen[2] * screenToWorld[3][2] + screenToWorld[3][3];
+	if (w != 0.0f) 
+		VectorScale (point, (1.0f / w), point);
 	}
 
 /*
@@ -284,7 +298,8 @@ static void R_Clear (int bitMask)
 
 	if (CL_IsDevOverviewMode ())
 		pglClearColor (0.0f, 1.0f, 0.0f, 1.0f); // green background (Valve rules)
-	else pglClearColor (0.5f, 0.5f, 0.5f, 1.0f);
+	else 
+		pglClearColor (0.5f, 0.5f, 0.5f, 1.0f);
 
 	bits = GL_DEPTH_BUFFER_BIT;
 
@@ -321,6 +336,7 @@ static float R_GetFarClip (void)
 	{
 	if (cl.worldmodel && RI.drawWorld)
 		return clgame.movevars.zmax * 1.73f;
+
 	return 2048.0f;
 	}
 
@@ -352,7 +368,9 @@ void R_SetupFrustum (void)
 
 	if (RI.drawOrtho)
 		GL_FrustumInitOrtho (&RI.frustum, ov->xLeft, ov->xRight, ov->yTop, ov->yBottom, ov->zNear, ov->zFar);
-	else GL_FrustumInitProj (&RI.frustum, 0.0f, R_GetFarClip (), RI.fov_x, RI.fov_y); // NOTE: we ignore nearplane here (mirrors only)
+	else 
+		GL_FrustumInitProj (&RI.frustum, 0.0f, R_GetFarClip (), RI.fov_x, RI.fov_y); 
+	// NOTE: we ignore nearplane here (mirrors only)
 	}
 
 /*
@@ -431,7 +449,7 @@ void R_RotateForEntity (cl_entity_t* e)
 		return;
 		}
 
-	if (e->model->type != mod_brush && e->curstate.scale > 0.0f)
+	if ((e->model->type != mod_brush) && (e->curstate.scale > 0.0f))
 		scale = e->curstate.scale;
 
 	Matrix4x4_CreateFromEntity (RI.objectMatrix, e->angles, e->origin, scale);
@@ -457,7 +475,7 @@ void R_TranslateForEntity (cl_entity_t* e)
 		return;
 		}
 
-	if (e->model->type != mod_brush && e->curstate.scale > 0.0f)
+	if ((e->model->type != mod_brush) && (e->curstate.scale > 0.0f))
 		scale = e->curstate.scale;
 
 	Matrix4x4_CreateFromEntity (RI.objectMatrix, vec3_origin, e->origin, scale);
@@ -604,7 +622,7 @@ static gl_texture_t* R_RecursiveFindWaterTexture (const mnode_t* node, const mno
 		int		i, c;
 
 		// ignore non-liquid leaves
-		if (node->contents != CONTENTS_WATER && node->contents != CONTENTS_LAVA && node->contents != CONTENTS_SLIME)
+		if ((node->contents != CONTENTS_WATER) && (node->contents != CONTENTS_LAVA) && (node->contents != CONTENTS_SLIME))
 			return NULL;
 
 		// find texture
@@ -614,7 +632,7 @@ static gl_texture_t* R_RecursiveFindWaterTexture (const mnode_t* node, const mno
 
 		for (i = 0; i < c; i++, mark++)
 			{
-			if ((*mark)->flags & SURF_DRAWTURB && (*mark)->texinfo && (*mark)->texinfo->texture)
+			if (((*mark)->flags & SURF_DRAWTURB) && (*mark)->texinfo && (*mark)->texinfo->texture)
 				return R_GetTexture ((*mark)->texinfo->texture->gl_texturenum);
 			}
 
@@ -688,7 +706,7 @@ static void R_CheckFog (void)
 
 	RI.fogEnabled = false;
 
-	if (RI.onlyClientDraw || cl.local.waterlevel < 3 || !RI.drawWorld || !RI.viewleaf)
+	if (RI.onlyClientDraw || (cl.local.waterlevel < 3) || !RI.drawWorld || !RI.viewleaf)
 		{
 		if (RI.cached_waterlevel == 3)
 			{
@@ -708,18 +726,20 @@ static void R_CheckFog (void)
 		}
 
 	ent = CL_GetWaterEntity (RI.vieworg);
-	if (ent && ent->model && ent->model->type == mod_brush && ent->curstate.skin < 0)
+	if (ent && ent->model && (ent->model->type == mod_brush) && (ent->curstate.skin < 0))
 		cnt = ent->curstate.skin;
-	else cnt = RI.viewleaf->contents;
+	else 
+		cnt = RI.viewleaf->contents;
 
 	RI.cached_waterlevel = cl.local.waterlevel;
 
-	if (!IsLiquidContents (RI.cached_contents) && IsLiquidContents (cnt))
-		{
+	// ESHQ: отменено дефектное исправление, выводящее туман из строя
+	/*if (!IsLiquidContents (RI.cached_contents) && IsLiquidContents (cnt))
+		{*/
 		tex = NULL;
 
 		// check for water texture
-		if (ent && ent->model && ent->model->type == mod_brush)
+		if (ent && ent->model && (ent->model->type == mod_brush))
 			{
 			msurface_t* surf;
 
@@ -727,7 +747,7 @@ static void R_CheckFog (void)
 
 			for (i = 0, surf = &ent->model->surfaces[ent->model->firstmodelsurface]; i < count; i++, surf++)
 				{
-				if (surf->flags & SURF_DRAWTURB && surf->texinfo && surf->texinfo->texture)
+				if ((surf->flags & SURF_DRAWTURB) && surf->texinfo && surf->texinfo->texture)
 					{
 					tex = R_GetTexture (surf->texinfo->texture->gl_texturenum);
 					RI.cached_contents = ent->curstate.skin;
@@ -735,11 +755,11 @@ static void R_CheckFog (void)
 					}
 				}
 			}
-		else
+		/*else
 			{
 			tex = R_RecursiveFindWaterTexture (RI.viewleaf->parent, NULL, false);
 			if (tex) RI.cached_contents = RI.viewleaf->contents;
-			}
+			}*/
 
 		if (!tex) return;	// no valid fogs
 
@@ -747,19 +767,20 @@ static void R_CheckFog (void)
 		RI.fogColor[0] = tex->fogParams[0] / 255.0f;
 		RI.fogColor[1] = tex->fogParams[1] / 255.0f;
 		RI.fogColor[2] = tex->fogParams[2] / 255.0f;
-		RI.fogDensity = tex->fogParams[3] * 0.000025f;
+		RI.fogDensity = tex->fogParams[3] * 0.000075f;
 		RI.fogStart = RI.fogEnd = 0.0f;
 		RI.fogColor[3] = 1.0f;
 		RI.fogCustom = false;
 		RI.fogEnabled = true;
 		RI.fogSkybox = true;
-		}
+		/*}
+
 	else
 		{
 		RI.fogCustom = false;
 		RI.fogEnabled = true;
 		RI.fogSkybox = true;
-		}
+		}*/
 	}
 
 /*
@@ -795,7 +816,8 @@ void R_DrawFog (void)
 	pglEnable (GL_FOG);
 	if (CL_IsQuakeCompatible ())
 		pglFogi (GL_FOG_MODE, GL_EXP2);
-	else pglFogi (GL_FOG_MODE, GL_EXP);
+	else 
+		pglFogi (GL_FOG_MODE, GL_EXP);
 	pglFogf (GL_FOG_DENSITY, RI.fogDensity);
 	pglFogfv (GL_FOG_COLOR, RI.fogColor);
 	pglHint (GL_FOG_HINT, GL_NICEST);
@@ -888,7 +910,8 @@ void R_DrawEntitiesOnList (void)
 		else 
 			tr.blend = 1.0f; // draw as solid but sorted by distance
 
-		if (tr.blend <= 0.0f) continue;
+		if (tr.blend <= 0.0f) 
+			continue;
 
 		Assert (RI.currententity != NULL);
 		Assert (RI.currentmodel != NULL);
@@ -957,7 +980,8 @@ void R_RenderScene (void)
 	// frametime is valid only for normal pass
 	if (RP_NORMALPASS ())
 		tr.frametime = cl.time - cl.oldtime;
-	else tr.frametime = 0.0;
+	else
+		tr.frametime = 0.0;
 
 	// begin a new frame
 	tr.framecount++;

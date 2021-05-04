@@ -1401,7 +1401,8 @@ void R_StudioBuildNormalTable (void)
 
 	if (e->curstate.rendercolor.r || e->curstate.rendercolor.g || e->curstate.rendercolor.b)
 		TriColor4ub (e->curstate.rendercolor.r, e->curstate.rendercolor.g, e->curstate.rendercolor.b, 255);
-	else TriColor4ub (255, 255, 255, 255);
+	else 
+		TriColor4ub (255, 255, 255, 255);
 	}
 
 /*
@@ -3572,14 +3573,16 @@ void R_StudioDrawModelInternal (cl_entity_t* e, int flags)
 		{
 		if (e->player)
 			R_StudioDrawPlayer (flags, &e->curstate);
-		else R_StudioDrawModel (flags);
+		else 
+			R_StudioDrawModel (flags);
 		}
 	else
 		{
 		// select the properly method
 		if (e->player)
 			pStudioDraw->StudioDrawPlayer (flags, R_StudioGetPlayerState (e->index - 1));
-		else pStudioDraw->StudioDrawModel (flags);
+		else 
+			pStudioDraw->StudioDrawModel (flags);
 		}
 	}
 

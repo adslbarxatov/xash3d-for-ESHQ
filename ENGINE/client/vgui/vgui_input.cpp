@@ -25,88 +25,88 @@ static KeyCode s_pVirtualKeyTrans[256];
 static HICON s_pDefaultCursor[20];
 static HICON s_hCurrentCursor = NULL;
 
-void VGUI_InitCursors( void )
-{
+void VGUI_InitCursors (void)
+	{
 	// load up all default cursors
-	s_pDefaultCursor[Cursor::dc_none]     = NULL;
-	s_pDefaultCursor[Cursor::dc_arrow]    = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_NORMAL );
-	s_pDefaultCursor[Cursor::dc_ibeam]    = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_IBEAM );
-	s_pDefaultCursor[Cursor::dc_hourglass]= (HICON)LoadCursor( NULL, (LPCTSTR)OCR_WAIT );
-	s_pDefaultCursor[Cursor::dc_crosshair]= (HICON)LoadCursor( NULL, (LPCTSTR)OCR_CROSS );
-	s_pDefaultCursor[Cursor::dc_up]       = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_UP );
-	s_pDefaultCursor[Cursor::dc_sizenwse] = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_SIZENWSE );
-	s_pDefaultCursor[Cursor::dc_sizenesw] = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_SIZENESW );
-	s_pDefaultCursor[Cursor::dc_sizewe]   = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_SIZEWE );
-	s_pDefaultCursor[Cursor::dc_sizens]   = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_SIZENS );
-	s_pDefaultCursor[Cursor::dc_sizeall]  = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_SIZEALL );
-	s_pDefaultCursor[Cursor::dc_no]       = (HICON)LoadCursor( NULL, (LPCTSTR)OCR_NO );
-	s_pDefaultCursor[Cursor::dc_hand]     = (HICON)LoadCursor( NULL, (LPCTSTR)32649 );
+	s_pDefaultCursor[Cursor::dc_none] = NULL;
+	s_pDefaultCursor[Cursor::dc_arrow] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_NORMAL);
+	s_pDefaultCursor[Cursor::dc_ibeam] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_IBEAM);
+	s_pDefaultCursor[Cursor::dc_hourglass] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_WAIT);
+	s_pDefaultCursor[Cursor::dc_crosshair] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_CROSS);
+	s_pDefaultCursor[Cursor::dc_up] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_UP);
+	s_pDefaultCursor[Cursor::dc_sizenwse] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_SIZENWSE);
+	s_pDefaultCursor[Cursor::dc_sizenesw] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_SIZENESW);
+	s_pDefaultCursor[Cursor::dc_sizewe] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_SIZEWE);
+	s_pDefaultCursor[Cursor::dc_sizens] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_SIZENS);
+	s_pDefaultCursor[Cursor::dc_sizeall] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_SIZEALL);
+	s_pDefaultCursor[Cursor::dc_no] = (HICON)LoadCursor (NULL, (LPCTSTR)OCR_NO);
+	s_pDefaultCursor[Cursor::dc_hand] = (HICON)LoadCursor (NULL, (LPCTSTR)32649);
 
 	s_hCurrentCursor = s_pDefaultCursor[Cursor::dc_arrow];
 	host.mouse_visible = true;
-}
+	}
 
-void VGUI_CursorSelect( Cursor *cursor )
-{
-	Assert( cursor != NULL );
+void VGUI_CursorSelect (Cursor* cursor)
+	{
+	Assert (cursor != NULL);
 
 	host.mouse_visible = true;
 
-	switch( cursor->getDefaultCursor( ))
-	{
-	case Cursor::dc_user:
-	case Cursor::dc_none:
-		host.mouse_visible = false;
-		break;
-	case Cursor::dc_arrow:
-	case Cursor::dc_ibeam:
-	case Cursor::dc_hourglass:
-	case Cursor::dc_crosshair:
-	case Cursor::dc_up:
-	case Cursor::dc_sizenwse:
-	case Cursor::dc_sizenesw:
-	case Cursor::dc_sizewe:
-	case Cursor::dc_sizens:
-	case Cursor::dc_sizeall:
-	case Cursor::dc_no:
-	case Cursor::dc_hand:
-		s_hCurrentCursor = s_pDefaultCursor[cursor->getDefaultCursor()];
-		break;
-	default:
-		host.mouse_visible = false;
-		Assert( 0 );
-		break;
+	switch (cursor->getDefaultCursor ())
+		{
+		case Cursor::dc_user:
+		case Cursor::dc_none:
+			host.mouse_visible = false;
+			break;
+		case Cursor::dc_arrow:
+		case Cursor::dc_ibeam:
+		case Cursor::dc_hourglass:
+		case Cursor::dc_crosshair:
+		case Cursor::dc_up:
+		case Cursor::dc_sizenwse:
+		case Cursor::dc_sizenesw:
+		case Cursor::dc_sizewe:
+		case Cursor::dc_sizens:
+		case Cursor::dc_sizeall:
+		case Cursor::dc_no:
+		case Cursor::dc_hand:
+			s_hCurrentCursor = s_pDefaultCursor[cursor->getDefaultCursor ()];
+			break;
+		default:
+			host.mouse_visible = false;
+			Assert (0);
+			break;
+		}
+
+	VGUI_ActivateCurrentCursor ();
 	}
 
-	VGUI_ActivateCurrentCursor();
-}
-
-void VGUI_ActivateCurrentCursor( void )
-{
-	if( cls.key_dest != key_game || cl.paused )
+void VGUI_ActivateCurrentCursor (void)
+	{
+	if (cls.key_dest != key_game || cl.paused)
 		return;
 
-	if( host.mouse_visible )
-	{
-		while( ShowCursor( true ) < 0 );
-		SetCursor( s_hCurrentCursor );
-	}
+	if (host.mouse_visible)
+		{
+		while (ShowCursor (true) < 0);
+		SetCursor (s_hCurrentCursor);
+		}
 	else
-	{
-		while( ShowCursor( false ) >= 0 );
-		SetCursor( NULL );
+		{
+		while (ShowCursor (false) >= 0);
+		SetCursor (NULL);
+		}
 	}
-}
 
-void VGUI_InitKeyTranslationTable( void )
-{
+void VGUI_InitKeyTranslationTable (void)
+	{
 	static bool bInitted = false;
 
-	if( bInitted ) return;
+	if (bInitted) return;
 	bInitted = true;
 
 	// set virtual key translation table
-	memset( s_pVirtualKeyTrans, -1, sizeof( s_pVirtualKeyTrans ));	
+	memset (s_pVirtualKeyTrans, -1, sizeof (s_pVirtualKeyTrans));
 
 	s_pVirtualKeyTrans['0'] = KEY_0;
 	s_pVirtualKeyTrans['1'] = KEY_1;
@@ -154,11 +154,11 @@ void VGUI_InitKeyTranslationTable( void )
 	s_pVirtualKeyTrans[VK_NUMPAD7] = KEY_PAD_7;
 	s_pVirtualKeyTrans[VK_NUMPAD8] = KEY_PAD_8;
 	s_pVirtualKeyTrans[VK_NUMPAD9] = KEY_PAD_9;
-	s_pVirtualKeyTrans[VK_DIVIDE]	= KEY_PAD_DIVIDE;
+	s_pVirtualKeyTrans[VK_DIVIDE] = KEY_PAD_DIVIDE;
 	s_pVirtualKeyTrans[VK_MULTIPLY] = KEY_PAD_MULTIPLY;
 	s_pVirtualKeyTrans[VK_SUBTRACT] = KEY_PAD_MINUS;
 	s_pVirtualKeyTrans[VK_ADD] = KEY_PAD_PLUS;
-	s_pVirtualKeyTrans[VK_RETURN]	= KEY_PAD_ENTER;
+	s_pVirtualKeyTrans[VK_RETURN] = KEY_PAD_ENTER;
 	s_pVirtualKeyTrans[VK_DECIMAL] = KEY_PAD_DECIMAL;
 	s_pVirtualKeyTrans[0xdb] = KEY_LBRACKET;
 	s_pVirtualKeyTrans[0xdd] = KEY_RBRACKET;
@@ -171,16 +171,16 @@ void VGUI_InitKeyTranslationTable( void )
 	s_pVirtualKeyTrans[0xdc] = KEY_BACKSLASH;
 	s_pVirtualKeyTrans[0xbd] = KEY_MINUS;
 	s_pVirtualKeyTrans[0xbb] = KEY_EQUAL;
-	s_pVirtualKeyTrans[VK_RETURN]	= KEY_ENTER;
+	s_pVirtualKeyTrans[VK_RETURN] = KEY_ENTER;
 	s_pVirtualKeyTrans[VK_SPACE] = KEY_SPACE;
 	s_pVirtualKeyTrans[VK_BACK] = KEY_BACKSPACE;
 	s_pVirtualKeyTrans[VK_TAB] = KEY_TAB;
 	s_pVirtualKeyTrans[VK_CAPITAL] = KEY_CAPSLOCK;
 	s_pVirtualKeyTrans[VK_NUMLOCK] = KEY_NUMLOCK;
-	s_pVirtualKeyTrans[VK_ESCAPE]	= KEY_ESCAPE;
-	s_pVirtualKeyTrans[VK_SCROLL]	= KEY_SCROLLLOCK;
-	s_pVirtualKeyTrans[VK_INSERT]	= KEY_INSERT;
-	s_pVirtualKeyTrans[VK_DELETE]	= KEY_DELETE;
+	s_pVirtualKeyTrans[VK_ESCAPE] = KEY_ESCAPE;
+	s_pVirtualKeyTrans[VK_SCROLL] = KEY_SCROLLLOCK;
+	s_pVirtualKeyTrans[VK_INSERT] = KEY_INSERT;
+	s_pVirtualKeyTrans[VK_DELETE] = KEY_DELETE;
 	s_pVirtualKeyTrans[VK_HOME] = KEY_HOME;
 	s_pVirtualKeyTrans[VK_END] = KEY_END;
 	s_pVirtualKeyTrans[VK_PRIOR] = KEY_PAGEUP;
@@ -198,7 +198,7 @@ void VGUI_InitKeyTranslationTable( void )
 	s_pVirtualKeyTrans[VK_UP] = KEY_UP;
 	s_pVirtualKeyTrans[VK_LEFT] = KEY_LEFT;
 	s_pVirtualKeyTrans[VK_DOWN] = KEY_DOWN;
-	s_pVirtualKeyTrans[VK_RIGHT] = KEY_RIGHT;	
+	s_pVirtualKeyTrans[VK_RIGHT] = KEY_RIGHT;
 	s_pVirtualKeyTrans[VK_F1] = KEY_F1;
 	s_pVirtualKeyTrans[VK_F2] = KEY_F2;
 	s_pVirtualKeyTrans[VK_F3] = KEY_F3;
@@ -211,80 +211,80 @@ void VGUI_InitKeyTranslationTable( void )
 	s_pVirtualKeyTrans[VK_F10] = KEY_F10;
 	s_pVirtualKeyTrans[VK_F11] = KEY_F11;
 	s_pVirtualKeyTrans[VK_F12] = KEY_F12;
-}
+	}
 
-KeyCode VGUI_MapKey( int keyCode )
-{
-	VGUI_InitKeyTranslationTable();
-
-	if( keyCode < 0 || keyCode >= ARRAYSIZE( s_pVirtualKeyTrans ))
+KeyCode VGUI_MapKey (int keyCode)
 	{
-		Assert( 0 );
+	VGUI_InitKeyTranslationTable ();
+
+	if (keyCode < 0 || keyCode >= ARRAYSIZE (s_pVirtualKeyTrans))
+		{
+		Assert (0);
 		return (KeyCode)-1;
-	}
+		}
 	else
-	{
+		{
 		return s_pVirtualKeyTrans[keyCode];
+		}
 	}
-}
 
-LONG VGUI_SurfaceWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-	if( !engSurface )
+LONG VGUI_SurfaceWndProc (HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+	if (!engSurface)
 		return 0;
 
-	switch( uMsg )
-	{
-	case WM_SETCURSOR:
-		VGUI_ActivateCurrentCursor();
-		break;
-	case WM_MOUSEMOVE:
-		engApp->internalCursorMoved((short)LOWORD( lParam ), (short)HIWORD( lParam ), engSurface );
-		break;
-	case WM_LBUTTONDOWN:
-		engApp->internalMousePressed( MOUSE_LEFT, engSurface );
-		break;
-	case WM_RBUTTONDOWN:
-		engApp->internalMousePressed( MOUSE_RIGHT, engSurface );
-		break;
-	case WM_MBUTTONDOWN:
-		engApp->internalMousePressed( MOUSE_MIDDLE, engSurface );
-		break;
-	case WM_LBUTTONUP:
-		engApp->internalMouseReleased( MOUSE_LEFT, engSurface );
-		break;
-	case WM_RBUTTONUP:
-		engApp->internalMouseReleased( MOUSE_RIGHT, engSurface );
-		break;
-	case WM_MBUTTONUP:
-		engApp->internalMouseReleased( MOUSE_MIDDLE, engSurface );
-		break;
-	case WM_LBUTTONDBLCLK:
-		engApp->internalMouseDoublePressed( MOUSE_LEFT, engSurface );
-		break;
-	case WM_RBUTTONDBLCLK:
-		engApp->internalMouseDoublePressed( MOUSE_RIGHT, engSurface );
-		break;
-	case WM_MBUTTONDBLCLK:
-		engApp->internalMouseDoublePressed( MOUSE_MIDDLE, engSurface );
-		break;
-	case WM_MOUSEWHEEL:
-		engApp->internalMouseWheeled(((short)HIWORD( wParam )) / WHEEL_DELTA, engSurface );
-		break;
-	case WM_KEYDOWN:
-	case WM_SYSKEYDOWN:
-		if( !FBitSet( lParam, BIT( 30 )))
-			engApp->internalKeyPressed( VGUI_MapKey( wParam ), engSurface );
-		engApp->internalKeyTyped( VGUI_MapKey( wParam ), engSurface );
-		break;
-	case WM_CHAR:
-	case WM_SYSCHAR:
-		// already handled in Key_Event
-		break;
-	case WM_KEYUP:
-	case WM_SYSKEYUP:
-		engApp->internalKeyReleased( VGUI_MapKey( wParam ), engSurface );
-		break;
-	}
+	switch (uMsg)
+		{
+		case WM_SETCURSOR:
+			VGUI_ActivateCurrentCursor ();
+			break;
+		case WM_MOUSEMOVE:
+			engApp->internalCursorMoved ((short)LOWORD (lParam), (short)HIWORD (lParam), engSurface);
+			break;
+		case WM_LBUTTONDOWN:
+			engApp->internalMousePressed (MOUSE_LEFT, engSurface);
+			break;
+		case WM_RBUTTONDOWN:
+			engApp->internalMousePressed (MOUSE_RIGHT, engSurface);
+			break;
+		case WM_MBUTTONDOWN:
+			engApp->internalMousePressed (MOUSE_MIDDLE, engSurface);
+			break;
+		case WM_LBUTTONUP:
+			engApp->internalMouseReleased (MOUSE_LEFT, engSurface);
+			break;
+		case WM_RBUTTONUP:
+			engApp->internalMouseReleased (MOUSE_RIGHT, engSurface);
+			break;
+		case WM_MBUTTONUP:
+			engApp->internalMouseReleased (MOUSE_MIDDLE, engSurface);
+			break;
+		case WM_LBUTTONDBLCLK:
+			engApp->internalMouseDoublePressed (MOUSE_LEFT, engSurface);
+			break;
+		case WM_RBUTTONDBLCLK:
+			engApp->internalMouseDoublePressed (MOUSE_RIGHT, engSurface);
+			break;
+		case WM_MBUTTONDBLCLK:
+			engApp->internalMouseDoublePressed (MOUSE_MIDDLE, engSurface);
+			break;
+		case WM_MOUSEWHEEL:
+			engApp->internalMouseWheeled (((short)HIWORD (wParam)) / WHEEL_DELTA, engSurface);
+			break;
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+			if (!FBitSet (lParam, BIT (30)))
+				engApp->internalKeyPressed (VGUI_MapKey (wParam), engSurface);
+			engApp->internalKeyTyped (VGUI_MapKey (wParam), engSurface);
+			break;
+		case WM_CHAR:
+		case WM_SYSCHAR:
+			// already handled in Key_Event
+			break;
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+			engApp->internalKeyReleased (VGUI_MapKey (wParam), engSurface);
+			break;
+		}
 	return 1;
-}
+	}

@@ -42,12 +42,11 @@ extern DLL_GLOBAL Vector		g_vecAttackDir;
 //
 Vector VecBModelOrigin (entvars_t* pevBModel)
 	{
-	/* ESHQ: возможно, в этом больше нет необходимости
-	
-	// Из-за функции SetObjectCollisionBox, вносящей дефект в absmin и absmax, будем пересчитывать это значение
-	return pevBModel->origin + pevBModel->mins + pevBModel->size * 0.5;*/
+	// ESHQ: из-за функции SetObjectCollisionBox, вносящей дефект в absmin и absmax, 
+	// будем пересчитывать это значение здесь
+	return pevBModel->origin + pevBModel->mins + pevBModel->size * 0.5;
 
-	return pevBModel->absmin + (pevBModel->size * 0.5);
+	/*return pevBModel->absmin + (pevBModel->size * 0.5);*/
 	}
 
 // =================== FUNC_WALL ==============================================
@@ -123,6 +122,7 @@ BOOL CFuncWallToggle::IsOn (void)
 	{
 	if (pev->solid == SOLID_NOT)
 		return FALSE;
+
 	return TRUE;
 	}
 
@@ -172,10 +172,11 @@ void CFuncConveyor::Spawn (void)
 	UpdateSpeed (pev->speed);
 	}
 
+// ESHQ: fuck it!
 // HACKHACK -- This is ugly, but encode the speed in the rendercolor to avoid adding more data to the network stream
 void CFuncConveyor::UpdateSpeed (float speed)
 	{
-	// Encode it as an integer with 4 fractional bits
+	/*// Encode it as an integer with 4 fractional bits
 	int speedCode = (int)(fabs (speed) * 16.0);
 
 	if (speed < 0)
@@ -184,7 +185,8 @@ void CFuncConveyor::UpdateSpeed (float speed)
 		pev->rendercolor.x = 0;
 
 	pev->rendercolor.y = (speedCode >> 8);
-	pev->rendercolor.z = (speedCode & 0xFF);
+	pev->rendercolor.z = (speedCode & 0xFF);*/
+	pev->renderfx = (int)speed / 10;
 	}
 
 void CFuncConveyor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
@@ -222,7 +224,7 @@ void CFuncIllusionary::KeyValue (KeyValueData* pkvd)
 		CBaseToggle::KeyValue (pkvd);
 	}
 
-// ESHQ
+// ESHQ: обработка текстур
 void CFuncIllusionary::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
 	if (ShouldToggle (useType, (int)(pev->frame)))
@@ -233,7 +235,7 @@ void CFuncIllusionary::Spawn (void)
 	{
 	pev->angles = g_vecZero;
 	pev->movetype = MOVETYPE_NONE;
-	pev->solid = SOLID_NOT;// always solid_not 
+	pev->solid = SOLID_NOT;	// always solid_not 
 	SET_MODEL (ENT (pev), STRING (pev->model));
 
 	// I'd rather eat the network bandwidth of this than figure out how to save/restore
@@ -902,7 +904,6 @@ void CPendulum::Swing (void)
 			pev->speed = m_dampSpeed;
 		else if (pev->speed < -m_dampSpeed)
 			pev->speed = -m_dampSpeed;
-
 		}
 	}
 

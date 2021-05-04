@@ -51,6 +51,9 @@ GNU General Public License for more details.
 // path store saved games
 #define DEFAULT_SAVE_DIRECTORY	"save/"
 
+// ESHQ: дополнительно определено в basemenu.h
+#define DEFAULT_SAVE_EXTENSION	"x3s"
+
 // fallback to this skybox
 #define DEFAULT_SKYBOX_PATH		"gfx/env/desert"
 

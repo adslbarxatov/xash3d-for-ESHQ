@@ -313,12 +313,10 @@ class CBaseEntity
 
 #endif
 
-
 		// virtual functions used by a few classes
 
 		// used by monsters that are created by the MonsterMaker
 		virtual	void UpdateOwner (void) { return; };
-
 
 		//
 		static CBaseEntity* Create (char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner = NULL);

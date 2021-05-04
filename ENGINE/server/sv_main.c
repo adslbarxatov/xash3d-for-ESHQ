@@ -37,7 +37,7 @@ CVAR_DEFINE_AUTO (sv_maxupdaterate, "30.0", FCVAR_ARCHIVE, "maximal value for 'c
 CVAR_DEFINE_AUTO (sv_minrate, "0", FCVAR_SERVER, "min bandwidth rate allowed on server, 0 == unlimited");
 CVAR_DEFINE_AUTO (sv_maxrate, "0", FCVAR_SERVER, "max bandwidth rate allowed on server, 0 == unlimited");
 CVAR_DEFINE_AUTO (sv_logrelay, "0", FCVAR_ARCHIVE, "allow log messages from remote machines to be logged on this server");
-CVAR_DEFINE_AUTO (sv_newunit, "0", 0, "clear level-saves from previous SP game chapter to help keep .sav file size as minimum");
+CVAR_DEFINE_AUTO (sv_newunit, "0", 0, "clear level-saves from previous SP game chapter to help keep save file size as minimum");
 CVAR_DEFINE_AUTO (sv_clienttrace, "1", FCVAR_SERVER, "0 = big box(Quake), 0.5 = halfsize, 1 = normal (100%), otherwise it's a scaling factor");
 CVAR_DEFINE_AUTO (sv_timeout, "65", 0, "after this many seconds without a message from a client, the client is dropped");
 CVAR_DEFINE_AUTO (sv_failuretime, "0.5", 0, "after this long without a packet from client, don't send any more until client starts sending again");
@@ -893,7 +893,7 @@ void SV_FinalMessage (const char* message, qboolean reconnect)
 	// 4529
 	//byte			msg_buf[64];
 	byte			msg_buf[1024];
-	sv_client_t*	cl;
+	sv_client_t* cl;
 	sizebuf_t		msg;
 	int				i;
 
@@ -1000,8 +1000,8 @@ void SV_Shutdown (const char* finalmsg)
 	svs.maxclients = 0;
 
 	// 4529: release all models
-	Mod_FreeAll (); 
-	
+	Mod_FreeAll ();
+
 	HPAK_FlushHostQueue ();
 	Log_Printf ("Server shutdown\n");
 	Log_Close ();

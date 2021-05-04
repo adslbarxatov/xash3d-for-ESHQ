@@ -388,7 +388,7 @@ static int EntityInSolid (edict_t* pent)
 ClearSaveDir
 
 remove all the temp files HL1-HL3
-(it will be extracted again from another .sav file)
+(it will be extracted again from another save file)
 =============
 */
 static void ClearSaveDir (void)
@@ -489,8 +489,8 @@ static void AgeSaveList (const char* pName, int count)
 	char	newName[MAX_OSPATH], oldName[MAX_OSPATH];
 	char	newShot[MAX_OSPATH], oldShot[MAX_OSPATH];
 
-	// delete last quick/autosave (e.g. quick05.sav)
-	Q_snprintf (newName, sizeof (newName), "%s%s%02d.sav", DEFAULT_SAVE_DIRECTORY, pName, count);
+	// delete last quick/autosave (e.g. quick05)
+	Q_snprintf (newName, sizeof (newName), "%s%s%02d.%s", DEFAULT_SAVE_DIRECTORY, pName, count, DEFAULT_SAVE_EXTENSION);
 	Q_snprintf (newShot, sizeof (newShot), "%s%s%02d.bmp", DEFAULT_SAVE_DIRECTORY, pName, count);
 
 	// only delete from game directory, basedir is read-only
@@ -504,24 +504,26 @@ static void AgeSaveList (const char* pName, int count)
 		{
 		if (count == 1)
 			{
-			// quick.sav
-			Q_snprintf (oldName, sizeof (oldName), "%s%s.sav", DEFAULT_SAVE_DIRECTORY, pName);
+			// quick
+			Q_snprintf (oldName, sizeof (oldName), "%s%s.%s", DEFAULT_SAVE_DIRECTORY, pName, DEFAULT_SAVE_EXTENSION);
 			Q_snprintf (oldShot, sizeof (oldShot), "%s%s.bmp", DEFAULT_SAVE_DIRECTORY, pName);
 			}
 		else
 			{
-			// quick04.sav, etc.
-			Q_snprintf (oldName, sizeof (oldName), "%s%s%02d.sav", DEFAULT_SAVE_DIRECTORY, pName, count - 1);
-			Q_snprintf (oldShot, sizeof (oldShot), "%s%s%02d.bmp", DEFAULT_SAVE_DIRECTORY, pName, count - 1);
+			// quick04, etc.
+			Q_snprintf (oldName, sizeof (oldName), "%s%s%02d.%s", DEFAULT_SAVE_DIRECTORY, pName, 
+				count - 1, DEFAULT_SAVE_EXTENSION);
+			Q_snprintf (oldShot, sizeof (oldShot), "%s%s%02d.bmp", DEFAULT_SAVE_DIRECTORY, pName, 
+				count - 1);
 			}
 
-		Q_snprintf (newName, sizeof (newName), "%s%s%02d.sav", DEFAULT_SAVE_DIRECTORY, pName, count);
+		Q_snprintf (newName, sizeof (newName), "%s%s%02d.%s", DEFAULT_SAVE_DIRECTORY, pName, count, DEFAULT_SAVE_EXTENSION);
 		Q_snprintf (newShot, sizeof (newShot), "%s%s%02d.bmp", DEFAULT_SAVE_DIRECTORY, pName, count);
 
 		// unloading the oldshot footprint too
 		GL_FreeImage (oldShot);
 
-		// scroll the name list down (e.g. rename quick04.sav to quick05.sav)
+		// scroll the name list down (e.g. rename quick04 to quick05)
 		FS_Rename (oldName, newName);
 		FS_Rename (oldShot, newShot);
 		count--;
@@ -555,7 +557,7 @@ static qboolean SaveGetName (int lastnum, char* filename)
 =============
 DirectoryCopy
 
-put the HL1-HL3 files into .sav file
+put the HL1-HL3 files into save file
 =============
 */
 static void DirectoryCopy (const char* pPath, file_t* pFile)
@@ -587,7 +589,7 @@ static void DirectoryCopy (const char* pPath, file_t* pFile)
 =============
 DirectoryExtract
 
-extract the HL1-HL3 files from the .sav file
+extract the HL1-HL3 files from the save file
 =============
 */
 static void DirectoryExtract (file_t* pFile, int fileCount)
@@ -1632,7 +1634,7 @@ static int SaveGameSlot (const char* pSaveName, const char* pSaveComment)
 	// Write entity string token table
 	pTokenData = StoreHashTable (pSaveData);
 
-	Q_snprintf (name, sizeof (name), "%s%s.sav", DEFAULT_SAVE_DIRECTORY, pSaveName);
+	Q_snprintf (name, sizeof (name), "%s%s.%s", DEFAULT_SAVE_DIRECTORY, pSaveName, DEFAULT_SAVE_EXTENSION);
 	COM_FixSlashes (name);
 
 	// output to disk
@@ -1675,7 +1677,7 @@ static int SaveGameSlot (const char* pSaveName, const char* pSaveComment)
 =============
 SaveReadHeader
 
-read header of .sav file
+read header of save file
 =============
 */
 static int SaveReadHeader (file_t* pFile, GAME_HEADER* pHeader)
@@ -2097,7 +2099,7 @@ void SV_SaveGame (const char* pName)
 			if (!SaveGetName (n, savename))
 				return;
 
-			if (!FS_FileExists (va ("%s%s.sav", DEFAULT_SAVE_DIRECTORY, savename), true))
+			if (!FS_FileExists (va ("%s%s.%s", DEFAULT_SAVE_DIRECTORY, savename, DEFAULT_SAVE_EXTENSION), true))
 				break;
 			}
 
@@ -2133,7 +2135,7 @@ const char* SV_GetLatestSave (void)
 	int		i, found = 0;
 	search_t* t;
 
-	if ((t = FS_Search (va ("%s*.sav", DEFAULT_SAVE_DIRECTORY), true, true)) == NULL)
+	if ((t = FS_Search (va ("%s*.%s", DEFAULT_SAVE_DIRECTORY, DEFAULT_SAVE_EXTENSION), true, true)) == NULL)
 		return NULL;
 
 	for (i = 0; i < t->numfilenames; i++)
