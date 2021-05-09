@@ -725,7 +725,7 @@ void CGib::BounceGibTouch (CBaseEntity* pOther)
 		{
 		if (g_Language != LANGUAGE_GERMAN && m_cBloodDecals > 0 && m_bloodColor != DONT_BLEED)
 			{
-			vecSpot = pev->origin + Vector (0, 0, 8);//move up a bit, and trace down.
+			vecSpot = pev->origin + Vector (0, 0, 8);	//move up a bit, and trace down
 			UTIL_TraceLine (vecSpot, vecSpot + Vector (0, 0, -24), ignore_monsters, ENT (pev), &tr);
 
 			UTIL_BloodDecalTrace (&tr, m_bloodColor);

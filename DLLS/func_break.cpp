@@ -160,8 +160,8 @@ void CBreakable::Spawn (void)
 	m_angle = pev->angles.y;
 	pev->angles.y = 0;
 
-	// HACK:  matGlass can receive decals, we need the client to know about this
-	//  so use class to store the material flag
+	// HACK: matGlass can receive decals, we need the client to know about this
+	// so use class to store the material flag
 	if (m_Material == matGlass)
 		{
 		pev->playerclass = 1;
@@ -283,10 +283,10 @@ void CBreakable::MaterialSoundRandom (edict_t* pEdict, Materials soundMaterial, 
 
 	pSoundList = MaterialSoundList (soundMaterial, soundCount);
 
+	// ESHQ: исправление радиуса для звука обломков
 	if (soundCount)
-		EMIT_SOUND (pEdict, CHAN_BODY, pSoundList[RANDOM_LONG (0, soundCount - 1)], volume, 1.0);
+		EMIT_SOUND (pEdict, CHAN_BODY, pSoundList[RANDOM_LONG (0, soundCount - 1)], volume, ATTN_SMALL);
 	}
-
 
 void CBreakable::Precache (void)
 	{
@@ -363,7 +363,6 @@ void CBreakable::Precache (void)
 
 // play shard sound when func_breakable takes damage.
 // the more damage, the louder the shard sound.
-
 
 void CBreakable::DamageSound (void)
 	{
@@ -479,10 +478,6 @@ void CBreakable::BreakTouch (CBaseEntity* pOther)
 		}
 	}
 
-//
-// Smash the our breakable object
-//
-
 // Break when triggered
 void CBreakable::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
@@ -517,8 +512,12 @@ void CBreakable::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vec
 				float flVolume = RANDOM_FLOAT (0.7, 1.0);
 				switch (RANDOM_LONG (0, 1))
 					{
-					case 0: EMIT_SOUND (ENT (pev), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_MEDIUM);	break;
-					case 1: EMIT_SOUND (ENT (pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_MEDIUM);	break;
+					case 0: 
+						EMIT_SOUND (ENT (pev), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_MEDIUM);	
+						break;
+					case 1: 
+						EMIT_SOUND (ENT (pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_MEDIUM);	
+						break;
 					}
 				}
 				break;
@@ -592,8 +591,8 @@ int CBreakable::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 
 void CBreakable::Die (void)
 	{
-	Vector vecSpot;// shard origin
-	Vector vecVelocity;// shard velocity
+	Vector vecSpot;		// shard origin
+	Vector vecVelocity;	// shard velocity
 	CBaseEntity* pEntity = NULL;
 	char cFlag = 0;
 	int pitch;
@@ -604,9 +603,7 @@ void CBreakable::Die (void)
 	if (pitch > 97 && pitch < 103)
 		pitch = 100;
 
-	// The more negative pev->health, the louder
-	// the sound should be.
-
+	// The more negative pev->health, the louder the sound should be
 	fvol = RANDOM_FLOAT (0.85, 1.0) + (abs (pev->health) / 100.0);
 	if (fvol > 1.0)
 		fvol = 1.0;
@@ -616,11 +613,14 @@ void CBreakable::Die (void)
 		case matGlass:
 			switch (RANDOM_LONG (0, 2))
 				{
-				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustglass1.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 0:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustglass1.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 1:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustglass2.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 1:
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustglass2.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 2:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustglass3.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 2:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustglass3.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
 				}
 			cFlag = BREAK_GLASS;
@@ -629,11 +629,14 @@ void CBreakable::Die (void)
 		case matWood:
 			switch (RANDOM_LONG (0, 2))
 				{
-				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustcrate1.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 0:
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustcrate1.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 1:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustcrate2.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 1:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustcrate2.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 2:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustcrate3.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 2:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustcrate3.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
 				}
 			cFlag = BREAK_WOOD;
@@ -643,9 +646,11 @@ void CBreakable::Die (void)
 		case matMetal:
 			switch (RANDOM_LONG (0, 1))
 				{
-				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 0:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 1:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustmetal2.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 1:
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustmetal2.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
 				}
 			cFlag = BREAK_METAL;
@@ -654,9 +659,11 @@ void CBreakable::Die (void)
 		case matFlesh:
 			switch (RANDOM_LONG (0, 1))
 				{
-				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustflesh1.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 0:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustflesh1.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 1:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustflesh2.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 1:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustflesh2.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
 				}
 			cFlag = BREAK_FLESH;
@@ -666,9 +673,11 @@ void CBreakable::Die (void)
 		case matCinderBlock:
 			switch (RANDOM_LONG (0, 1))
 				{
-				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustconcrete1.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 0:
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustconcrete1.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 1:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustconcrete2.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 1:
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustconcrete2.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
 				}
 			cFlag = BREAK_CONCRETE;
@@ -677,9 +686,11 @@ void CBreakable::Die (void)
 		case matCeilingTile:
 			switch (RANDOM_LONG (0, 1))
 				{
-				case 0:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustceiling1.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 0:	
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustceiling1.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
-				case 1:	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustceiling2.wav", fvol, ATTN_MEDIUM, 0, pitch);
+				case 1:
+					EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "debris/bustceiling2.wav", fvol, ATTN_MEDIUM, 0, pitch);
 					break;
 				}
 			break;

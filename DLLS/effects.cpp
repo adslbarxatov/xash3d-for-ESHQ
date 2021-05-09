@@ -1525,13 +1525,11 @@ void CEnvShooter::KeyValue (KeyValueData* pkvd)
 		}
 	}
 
-
 void CEnvShooter::Precache (void)
 	{
 	m_iGibModelIndex = PRECACHE_MODEL ((char*)STRING (pev->model));
 	CBreakable::MaterialSoundPrecache ((Materials)m_iGibMaterial);
 	}
-
 
 CGib* CEnvShooter::CreateGib (void)
 	{
@@ -1569,7 +1567,7 @@ class CTestEffect: public CBaseDelay
 
 		int		m_iLoop;
 		int		m_iBeam;
-		CBeam* m_pBeam[24];
+		CBeam*	m_pBeam[24];
 		float	m_flBeamTime[24];
 		float	m_flStartTime;
 	};

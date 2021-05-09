@@ -186,7 +186,7 @@ void CFuncConveyor::UpdateSpeed (float speed)
 
 	pev->rendercolor.y = (speedCode >> 8);
 	pev->rendercolor.z = (speedCode & 0xFF);*/
-	pev->renderfx = (int)speed / 10;
+	pev->renderfx = (int)speed / 10 + kRenderFxClampMinScale;
 	}
 
 void CFuncConveyor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

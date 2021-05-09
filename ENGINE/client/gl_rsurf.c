@@ -557,9 +557,7 @@ void R_SetCacheState (msurface_t* surf)
 
 /*
 =============================================================================
-
-  LIGHTMAP ALLOCATION
-
+LIGHTMAP ALLOCATION
 =============================================================================
 */
 static void LM_InitBlock (void)
@@ -740,7 +738,7 @@ void DrawGLPoly (glpoly_t* p, float xScale, float yScale)
 			// ESHQ: fuck it too!
 			/*flConveyorSpeed = (e->curstate.rendercolor.g << 8 | e->curstate.rendercolor.b) / 16.0f;
 			if (e->curstate.rendercolor.r) flConveyorSpeed = -flConveyorSpeed;*/
-			flConveyorSpeed = (float)e->curstate.renderfx * 10.0f;
+			flConveyorSpeed = (float)(e->curstate.renderfx - kRenderFxClampMinScale) * 10.0f;
 			}
 		texture = R_GetTexture (glState.currentTextures[glState.activeTMU]);
 

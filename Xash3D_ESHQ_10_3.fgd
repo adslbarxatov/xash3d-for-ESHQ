@@ -2,10 +2,6 @@
 //
 // Half-Life game definition file (.fgd)
 //
-// version 3.1.0.0
-// - updated with studio() references to enable model display in 3D view
-//
-// - translation and names improvement expected
 ////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////
@@ -873,7 +869,7 @@
 	spawnflags(flags) =
 	[
 		1: "Наоборот" : 0
-		2: "Исп. цвет" : 0
+		2: "Аддитивный режим" : 0
 		4: "Только игрок" : 0
 	]
 	duration(string) : "Длительность перехода" : "3"
@@ -1130,7 +1126,7 @@
 	_minlight(string) : "Мин. уровень освещения"
 ]
 
-@SolidClass base(Global,RenderFields, Targetname, Angles, ZHLT) = func_conveyor : "Conveyor Belt"
+@SolidClass base(Global,RenderModeChoices, RenderParams, Targetname, Angles, ZHLT) = func_conveyor : "Conveyor Belt"
 [
 	spawnflags(flags) =
 	[

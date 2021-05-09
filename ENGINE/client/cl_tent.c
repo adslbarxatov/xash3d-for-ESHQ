@@ -229,7 +229,7 @@ int CL_FxBlend (cl_entity_t* e)
 				{
 				if (e->curstate.renderamt > 0)
 					e->curstate.renderamt -= 1;
-				else 
+				else
 					e->curstate.renderamt = 0;
 				}
 			blend = e->curstate.renderamt;
@@ -263,37 +263,37 @@ int CL_FxBlend (cl_entity_t* e)
 			break;
 		case kRenderFxStrobeSlow:
 			blend = 20 * sin (cl.time * 4 + offset);
-			if (blend < 0) 
+			if (blend < 0)
 				blend = 0;
-			else 
+			else
 				blend = e->curstate.renderamt;
 			break;
 		case kRenderFxStrobeFast:
 			blend = 20 * sin (cl.time * 16 + offset);
-			if (blend < 0) 
+			if (blend < 0)
 				blend = 0;
-			else 
+			else
 				blend = e->curstate.renderamt;
 			break;
 		case kRenderFxStrobeFaster:
 			blend = 20 * sin (cl.time * 36 + offset);
 			if (blend < 0)
 				blend = 0;
-			else 
+			else
 				blend = e->curstate.renderamt;
 			break;
 		case kRenderFxFlickerSlow:
 			blend = 20 * (sin (cl.time * 2) + sin (cl.time * 17 + offset));
 			if (blend < 0)
 				blend = 0;
-			else 
+			else
 				blend = e->curstate.renderamt;
 			break;
 		case kRenderFxFlickerFast:
 			blend = 20 * (sin (cl.time * 16) + sin (cl.time * 23 + offset));
 			if (blend < 0)
 				blend = 0;
-			else 
+			else
 				blend = e->curstate.renderamt;
 			break;
 		case kRenderFxHologram:
@@ -313,9 +313,9 @@ int CL_FxBlend (cl_entity_t* e)
 			else
 				{
 				e->curstate.renderamt = 180;
-				if (dist <= 100) 
+				if (dist <= 100)
 					blend = e->curstate.renderamt;
-				else 
+				else
 					blend = (int)((1.0f - (dist - 100) * (1.0f / 400.0f)) * e->curstate.renderamt);
 				blend += COM_RandomLong (-32, 31);
 				}
