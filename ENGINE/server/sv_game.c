@@ -2017,7 +2017,7 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 		vol = bound (0, vol, 255);
 		}
 
-	if (attn < 0.0f || attn > 4.0f)
+	if ((attn < 0.0f) || (attn > 4.0f))
 		{
 		Con_Reportf (S_ERROR "SV_StartSound: attenuation %g must be in range 0-4\n", attn);
 		attn = bound (0.0f, attn, 4.0f);
@@ -2144,7 +2144,8 @@ void SV_StartSound (edict_t* ent, int chan, const char* sample, float vol, float
 		msg_dest = MSG_ALL;
 	else if (FBitSet (host.features, ENGINE_QUAKE_COMPATIBLE))
 		msg_dest = MSG_ALL;
-	else msg_dest = (svs.maxclients <= 1) ? MSG_ALL : MSG_PAS_R;
+	else 
+		msg_dest = (svs.maxclients <= 1) ? MSG_ALL : MSG_PAS_R;
 
 	// always sending stop sound command
 	if (FBitSet (flags, SND_STOP))

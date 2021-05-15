@@ -499,11 +499,11 @@ void CFuncRotating::Precache (void)
 			}
 		}
 
-	if (pev->avelocity != g_vecZero)
+	// ESHQ
+	if (isSpinningUpOrRunning)
 		{
 		// if fan was spinning, and we went through transition or save/restore,
-		// make sure we restart the sound.  1.5 sec delay is magic number. KDB
-
+		// make sure we restart the sound
 		SetThink (&CFuncRotating::SpinUp);
 		pev->nextthink = pev->ltime + 1.5;
 		}
@@ -537,7 +537,6 @@ void CFuncRotating::HurtTouch (CBaseEntity* pOther)
 
 void CFuncRotating::RampPitchVol (int fUp)
 	{
-
 	Vector vecAVel = pev->avelocity;
 	vec_t vecCur;
 	vec_t vecFinal;
@@ -547,17 +546,14 @@ void CFuncRotating::RampPitchVol (int fUp)
 	int pitch;
 
 	// get current angular velocity
-
 	vecCur = abs (vecAVel.x != 0 ? vecAVel.x : (vecAVel.y != 0 ? vecAVel.y : vecAVel.z));
 
 	// get target angular velocity
-
 	vecFinal = (pev->movedir.x != 0 ? pev->movedir.x : (pev->movedir.y != 0 ? pev->movedir.y : pev->movedir.z));
 	vecFinal *= pev->speed;
 	vecFinal = abs (vecFinal);
 
 	// calc volume and pitch as % of final vol and pitch
-
 	fpct = vecCur / vecFinal;
 	//	if (fUp)
 	//		fvol = m_flVolume * (0.5 + fpct/2.0); // spinup volume ramps up from 50% max vol
@@ -571,10 +567,8 @@ void CFuncRotating::RampPitchVol (int fUp)
 		pitch = PITCH_NORM - 1;
 
 	// change the fan's vol and pitch
-
 	EMIT_SOUND_DYN (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseRunning),
 		fvol, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
-
 	}
 
 //
@@ -671,8 +665,6 @@ void CFuncRotating::RotatingUse (CBaseEntity* pActivator, CBaseEntity* pCaller, 
 			// ESHQ
 			isSpinningUpOrRunning = 0;
 			SetThink (&CFuncRotating::SpinDown);
-			//EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, (char *)STRING (pev->noiseStop), 
-			//	m_flVolume, m_flAttenuation, 0, m_pitch);
 
 			pev->nextthink = pev->ltime + 0.1;
 			}
@@ -688,7 +680,7 @@ void CFuncRotating::RotatingUse (CBaseEntity* pActivator, CBaseEntity* pCaller, 
 			pev->nextthink = pev->ltime + 0.1;
 			}
 		}
-	else if (!FBitSet (pev->spawnflags, SF_BRUSH_ACCDCC))//this is a normal start/stop brush.
+	else if (!FBitSet (pev->spawnflags, SF_BRUSH_ACCDCC))	//this is a normal start/stop brush
 		{
 		if (pev->avelocity != g_vecZero)
 			{
@@ -696,11 +688,7 @@ void CFuncRotating::RotatingUse (CBaseEntity* pActivator, CBaseEntity* pCaller, 
 			isSpinningUpOrRunning = 0;
 			SetThink (&CFuncRotating::SpinDown);
 
-			// EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, (char *)STRING(pev->noiseStop), 
-			//	m_flVolume, m_flAttenuation, 0, m_pitch);
-
 			pev->nextthink = pev->ltime + 0.1;
-			// pev->avelocity = g_vecZero;
 			}
 		else
 			{
@@ -720,12 +708,11 @@ void CFuncRotating::RotatingUse (CBaseEntity* pActivator, CBaseEntity* pCaller, 
 // RotatingBlocked - An entity has blocked the brush
 //
 void CFuncRotating::Blocked (CBaseEntity* pOther)
-
 	{
 	pOther->TakeDamage (pev, pev, pev->dmg, DMG_CRUSH);
 	}
 
-//#endif
+
 
 class CPendulum: public CBaseEntity
 	{

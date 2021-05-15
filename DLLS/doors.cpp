@@ -153,7 +153,7 @@ void PlayLockSounds (entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 		{
 		// UNLOCKED SOUND
 
-		int fplaysound = (pls->sUnlockedSound && gpGlobals->time > pls->flwaitSound);
+		int fplaysound = (pls->sUnlockedSound && (gpGlobals->time > pls->flwaitSound));
 		int fplaysentence = (pls->sUnlockedSentence && !pls->bEOFUnlocked && gpGlobals->time > pls->flwaitSentence);
 		float fvol;
 
@@ -189,7 +189,6 @@ void PlayLockSounds (entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 //
 // Cache user-entity-field values until spawn is called.
 //
-
 void CBaseDoor::KeyValue (KeyValueData* pkvd)
 	{
 
@@ -279,21 +278,22 @@ LINK_ENTITY_TO_CLASS (func_door, CBaseDoor);
 //
 LINK_ENTITY_TO_CLASS (func_water, CBaseDoor);
 
-
 void CBaseDoor::Spawn ()
 	{
 	Precache ();
 	SetMovedir (pev);
 
+	// normal door
 	if (pev->skin == 0)
-		{//normal door
+		{
 		if (FBitSet (pev->spawnflags, SF_DOOR_PASSABLE))
 			pev->solid = SOLID_NOT;
 		else
 			pev->solid = SOLID_BSP;
 		}
+	// special contents
 	else
-		{// special contents
+		{
 		pev->solid = SOLID_NOT;
 		SetBits (pev->spawnflags, SF_DOOR_SILENT);	// water is silent for now
 		}
@@ -313,8 +313,10 @@ void CBaseDoor::Spawn ()
 		fabs (pev->movedir.y * (pev->size.y - 2)) + fabs (pev->movedir.z * (pev->size.z - 2)) - m_flLip));
 
 	ASSERTSZ (m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
+
+	// swap pos1 and pos2, put door at pos2
 	if (FBitSet (pev->spawnflags, SF_DOOR_START_OPEN))
-		{	// swap pos1 and pos2, put door at pos2
+		{	
 		UTIL_SetOrigin (pev, m_vecPosition2);
 		m_vecPosition2 = m_vecPosition1;
 		m_vecPosition1 = pev->origin;
@@ -530,7 +532,6 @@ void CBaseDoor::DoorTouch (CBaseEntity* pOther)
 
 	// If door is somebody's target, then touching does nothing.
 	// You have to activate the owner (e.g. button).
-
 	if (!FStringNull (pev->targetname))
 		{
 		// ESHQ: звук блокировки доступен, только когда дверь действительно закрыта
@@ -578,7 +579,8 @@ void CBaseDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		}
 
 	// Обработка двери
-	if (m_toggle_state == TS_AT_BOTTOM || FBitSet (pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP)
+	if ((m_toggle_state == TS_AT_BOTTOM) || FBitSet (pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && 
+		(m_toggle_state == TS_AT_TOP))
 		DoorActivate ();
 	}
 
@@ -590,7 +592,7 @@ int CBaseDoor::DoorActivate ()
 	if (!UTIL_IsMasterTriggered (m_sMaster, m_hActivator))
 		return 0;
 
-	if (FBitSet (pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP)
+	if (FBitSet (pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && (m_toggle_state == TS_AT_TOP))
 		{
 		// door should close
 		// ESHQ: исправление на случай DOOR_START_OPEN
@@ -605,9 +607,7 @@ int CBaseDoor::DoorActivate ()
 		{
 		// door should open
 		if (m_hActivator != NULL && m_hActivator->IsPlayer ())
-			{// give health if player opened the door (medikit)
-			// VARS( m_eoActivator )->health += m_bHealthValue;
-
+			{
 			m_hActivator->TakeHealth (m_bHealthValue, DMG_GENERIC);
 			}
 
@@ -633,12 +633,16 @@ void CBaseDoor::DoorGoUp (void)
 	entvars_t* pevActivator;
 
 	// It could be going-down, if blocked
-	ASSERT (m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
+	ASSERT ((m_toggle_state == TS_AT_BOTTOM) || (m_toggle_state == TS_GOING_DOWN));
 
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
 	if (!FBitSet (pev->spawnflags, SF_DOOR_SILENT))
+		{
+		// ESHQ: исправление для одинаковых звуков закрытия и открытия
+		STOP_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseReturned));
 		EMIT_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving), 1, ATTN_MEDIUM);
+		}
 
 	m_toggle_state = TS_GOING_UP;
 
@@ -719,7 +723,11 @@ void CBaseDoor::DoorHitTop (void)
 void CBaseDoor::DoorGoDown (void)
 	{
 	if (!FBitSet (pev->spawnflags, SF_DOOR_SILENT))
+		{
+		// ESHQ: исправление для одинаковых звуков закрытия и открытия
+		STOP_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseArrived));
 		EMIT_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving), 1, ATTN_MEDIUM);
+		}
 
 #ifdef DOOR_ASSERT
 	ASSERT (m_toggle_state == TS_AT_TOP);
