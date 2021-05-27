@@ -146,7 +146,6 @@ void CSquidSpit::Touch (CBaseEntity* pOther)
 
 	if (!pOther->pev->takedamage)
 		{
-
 		// make a splat on the wall
 		UTIL_TraceLine (pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT (pev), &tr);
 		UTIL_DecalTrace (&tr, DECAL_SPIT1 + RANDOM_LONG (0, 1));
@@ -323,25 +322,25 @@ BOOL CBullsquid::CheckRangeAttack1 (float flDot, float flDist)
 		return FALSE;
 		}
 
-	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextSpitTime)
+	if ((flDist > 64) && (flDist <= 784) && (flDot >= 0.5) && (gpGlobals->time >= m_flNextSpitTime))
 		{
 		if (m_hEnemy != NULL)
 			{
 			if (fabs (pev->origin.z - m_hEnemy->pev->origin.z) > 256)
 				{
-				// don't try to spit at someone up really high or down really low.
+				// don't try to spit at someone up really high or down really low
 				return FALSE;
 				}
 			}
 
 		if (IsMoving ())
 			{
-			// don't spit again for a long time, resume chasing enemy.
+			// don't spit again for a long time, resume chasing enemy
 			m_flNextSpitTime = gpGlobals->time + 5;
 			}
 		else
 			{
-			// not moving, so spit again pretty soon.
+			// not moving, so spit again pretty soon
 			m_flNextSpitTime = gpGlobals->time + 0.5;
 			}
 
@@ -357,7 +356,7 @@ BOOL CBullsquid::CheckRangeAttack1 (float flDot, float flDist)
 //=========================================================
 BOOL CBullsquid::CheckMeleeAttack1 (float flDot, float flDist)
 	{
-	if (m_hEnemy->pev->health <= gSkillData.bullsquidDmgWhip && flDist <= 85 && flDot >= 0.7)
+	if ((m_hEnemy->pev->health <= gSkillData.bullsquidDmgWhip) && (flDist <= 85) && (flDot >= 0.7))
 		return TRUE;
 
 	return FALSE;
@@ -373,7 +372,7 @@ BOOL CBullsquid::CheckMeleeAttack2 (float flDot, float flDist)
 	{
 	// The player & bullsquid can be as much as their bboxes
 	// apart (48 * sqrt(3)) and he can still attack (85 is a little more than 48*sqrt(3))
-	if (flDist <= 85 && flDot >= 0.7 && !HasConditions (bits_COND_CAN_MELEE_ATTACK1))
+	if ((flDist <= 85) && (flDot >= 0.7) && !HasConditions (bits_COND_CAN_MELEE_ATTACK1))
 		return TRUE;
 
 	return FALSE;
@@ -533,32 +532,33 @@ void CBullsquid::HandleAnimEvent (MonsterEvent_t* pEvent)
 
 			UTIL_MakeVectors (pev->angles);
 
-			// !!!HACKHACK - the spot at which the spit originates (in front of the mouth) was measured in 3ds and hardcoded here.
-			// we should be able to read the position of bones at runtime for this info.
+			// !!!HACKHACK - the spot at which the spit originates (in front of the mouth) was measured in 3ds
+			// and hardcoded here. We should be able to read the position of bones at runtime for this info
 			vecSpitOffset = (gpGlobals->v_right * 8 + gpGlobals->v_forward * 37 + gpGlobals->v_up * 23);
 			vecSpitOffset = (pev->origin + vecSpitOffset);
 
 			// ESHQ: в некоторых случаях сюда попадает m_hEnemy == NULL. Обрабатываем этот случай.
 			// Это, в частности, случилось тогда, когда зомби был разломан на потроха до того, как плевок буллсквида
 			// долетел до него
-			if (m_hEnemy)	
+			if (m_hEnemy)
 				{
 				vecSpitDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize ();
 				}
 			else
 				{
-				vecSpitDir.x = vecSpitDir.y = vecSpitDir.z = 0;
+				//vecSpitDir.x = vecSpitDir.y = 0;
+				//vecSpitDir.z = -1000;
+				break;
 				}
 
 			vecSpitDir.x += RANDOM_FLOAT (-0.05, 0.05);
 			vecSpitDir.y += RANDOM_FLOAT (-0.05, 0.05);
 			vecSpitDir.z += RANDOM_FLOAT (-0.05, 0);
 
-
-			// do stuff for this event.
+			// do stuff for this event
 			AttackSound ();
 
-			// spew the spittle temporary ents.
+			// spew the spittle temporary ents
 			MESSAGE_BEGIN (MSG_PVS, SVC_TEMPENTITY, vecSpitOffset);
 			WRITE_BYTE (TE_SPRITE_SPRAY);
 			WRITE_COORD (vecSpitOffset.x);	// pos
@@ -607,7 +607,7 @@ void CBullsquid::HandleAnimEvent (MonsterEvent_t* pEvent)
 
 		case BSQUID_AE_BLINK:
 			{
-			// close eye. 
+			// close eye
 			pev->skin = 1;
 			}
 			break;
@@ -616,7 +616,7 @@ void CBullsquid::HandleAnimEvent (MonsterEvent_t* pEvent)
 			{
 			float flGravity = g_psv_gravity->value;
 
-			// throw the squid up into the air on this frame.
+			// throw the squid up into the air on this frame
 			if (FBitSet (pev->flags, FL_ONGROUND))
 				{
 				pev->flags -= FL_ONGROUND;
@@ -634,7 +634,6 @@ void CBullsquid::HandleAnimEvent (MonsterEvent_t* pEvent)
 			// squid throws its prey IF the prey is a client. 
 			CBaseEntity* pHurt = CheckTraceHullAttack (70, 0, 0);
 
-
 			if (pHurt)
 				{
 				// croonchy bite sound
@@ -642,14 +641,18 @@ void CBullsquid::HandleAnimEvent (MonsterEvent_t* pEvent)
 				switch (RANDOM_LONG (0, 2))
 					{
 					case 0: 
-						EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_bite1.wav", 1, ATTN_MEDIUM, 0, iPitch); break;
+						EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_bite1.wav", 1, ATTN_MEDIUM, 0, iPitch);
+						break;
 					case 1: 
-						EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_bite2.wav", 1, ATTN_MEDIUM, 0, iPitch); break;
+						EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_bite2.wav", 1, ATTN_MEDIUM, 0, iPitch);
+						break;
 					case 2: 
-						EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_bite3.wav", 1, ATTN_MEDIUM, 0, iPitch); break;
+						EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "bullchicken/bc_bite3.wav", 1, ATTN_MEDIUM, 0, iPitch);
+						break;
 					}
 
-				// screeshake transforms the viewmodel as well as the viewangle. No problems with seeing the ends of the viewmodels.
+				// screeshake transforms the viewmodel as well as the viewangle. 
+				// No problems with seeing the ends of the viewmodels
 				UTIL_ScreenShake (pHurt->pev->origin, 25.0, 1.5, 0.7, 2);
 
 				if (pHurt->IsPlayer ())
@@ -802,7 +805,6 @@ void CBullsquid::RunAI (void)
 			pev->framerate = 1.25;
 			}
 		}
-
 	}
 
 //========================================================

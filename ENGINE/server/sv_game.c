@@ -2023,13 +2023,13 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 		attn = bound (0.0f, attn, 4.0f);
 		}
 
-	if (chan < 0 || chan > 7)
+	if ((chan < 0) || (chan > 7))
 		{
 		Con_Reportf (S_ERROR "SV_StartSound: channel must be in range 0-7\n");
 		chan = bound (0, chan, 7);
 		}
 
-	if (pitch < 0 || pitch > 255)
+	if ((pitch < 0) || (pitch > 255))
 		{
 		Con_Reportf (S_ERROR "SV_StartSound: pitch = %i\n", pitch);
 		pitch = bound (0, pitch, 255);
@@ -2063,7 +2063,8 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 	else
 		{
 		// TESTTEST
-		if (*sample == '*') chan = CHAN_AUTO;
+		if (*sample == '*') 
+			chan = CHAN_AUTO;
 
 		// precache_sound can be used twice: cache sounds when loading
 		// and return sound index when server is active
@@ -2110,7 +2111,7 @@ int SV_BuildSoundMsg (sizebuf_t* msg, edict_t* ent, int chan, const char* sample
 	if (FBitSet (flags, SND_VOLUME)) 
 		MSG_WriteByte (msg, vol);
 	if (FBitSet (flags, SND_ATTENUATION)) 
-		MSG_WriteByte (msg, attn * 64);
+		MSG_WriteByte (msg, attn * 64.0f);
 	if (FBitSet (flags, SND_PITCH)) 
 		MSG_WriteByte (msg, pitch);
 

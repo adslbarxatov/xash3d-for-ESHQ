@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ID_BACKGROUND		0
 #define ID_BANNER			1
-#define ID_DONE			2
+#define ID_DONE				2
 #define ID_SUITVOLUME		3
 #define ID_SOUNDVOLUME		4
 #define ID_MUSICVOLUME		5

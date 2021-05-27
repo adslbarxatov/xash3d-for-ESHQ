@@ -903,31 +903,39 @@ void S_StartSound (const vec3_t pos, int ent, int chan, sound_t handle, float fv
 	int	vol, ch_idx;
 	qboolean	bIgnore = false;
 
-	if (!dma.initialized) return;
+	if (!dma.initialized) 
+		return;
+
 	sfx = S_GetSfxByHandle (handle);
-	if (!sfx) return;
+	if (!sfx) 
+		return;
 
 	vol = bound (0, fvol * 255, 255);
-	if (pitch <= 1) pitch = PITCH_NORM; // Invasion issues
+	if (pitch <= 1) 
+		pitch = PITCH_NORM; // Invasion issues
 
 	if (flags & (SND_STOP | SND_CHANGE_VOL | SND_CHANGE_PITCH))
 		{
 		if (S_AlterChannel (ent, chan, sfx, vol, pitch, flags))
 			return;
 
-		if (flags & SND_STOP) return;
+		if (flags & SND_STOP) 
+			return;
 		// fall through - if we're not trying to stop the sound, 
 		// and we didn't find it (it's not playing), go ahead and start it up
 		}
 
-	if (!pos) pos = RI.vieworg;
+	if (!pos) 
+		pos = RI.vieworg;
 
 	if (chan == CHAN_STREAM)
 		SetBits (flags, SND_STOP_LOOPING);
 
 	// pick a channel to play on
-	if (chan == CHAN_STATIC) target_chan = SND_PickStaticChannel (pos, sfx);
-	else target_chan = SND_PickDynamicChannel (ent, chan, sfx, &bIgnore);
+	if (chan == CHAN_STATIC) 
+		target_chan = SND_PickStaticChannel (pos, sfx);
+	else 
+		target_chan = SND_PickDynamicChannel (ent, chan, sfx, &bIgnore);
 
 	if (!target_chan)
 		{
@@ -994,9 +1002,9 @@ void S_StartSound (const vec3_t pos, int ent, int chan, sound_t handle, float fv
 	if (!target_chan->leftvol && !target_chan->rightvol)
 		{
 		// looping sounds don't use this optimization because they should stick around until they're killed.
-		if (!sfx->cache || sfx->cache->loopStart == -1)
+		if (!sfx->cache || (sfx->cache->loopStart == -1))
 			{
-			// if this is a streaming sound, play the whole thing.
+			// if this is a streaming sound, play the whole thing
 			if (chan != CHAN_STREAM)
 				{
 				S_FreeChannel (target_chan);
@@ -1010,9 +1018,10 @@ void S_StartSound (const vec3_t pos, int ent, int chan, sound_t handle, float fv
 
 	for (ch_idx = NUM_AMBIENTS, check = channels + NUM_AMBIENTS; ch_idx < MAX_DYNAMIC_CHANNELS; ch_idx++, check++)
 		{
-		if (check == target_chan) continue;
+		if (check == target_chan) 
+			continue;
 
-		if (check->sfx == sfx && !check->pMixer.sample)
+		if ((check->sfx == sfx) && !check->pMixer.sample)
 			{
 			// skip up to 0.1 seconds of audio
 			int skip = COM_RandomLong (0, (long)(0.1f * check->sfx->cache->rate));
@@ -1030,7 +1039,8 @@ S_RestoreSound
 Restore a sound effect for the given entity on the given channel
 ====================
 */
-void S_RestoreSound (const vec3_t pos, int ent, int chan, sound_t handle, float fvol, float attn, int pitch, int flags, double sample, double end, int wordIndex)
+void S_RestoreSound (const vec3_t pos, int ent, int chan, sound_t handle, float fvol, float attn, 
+	int pitch, int flags, double sample, double end, int wordIndex)
 	{
 	wavdata_t* pSource;
 	sfx_t* sfx = NULL;
@@ -1170,7 +1180,8 @@ void S_AmbientSound (const vec3_t pos, int ent, sound_t handle, float fvol, floa
 		{
 		if (S_AlterChannel (ent, CHAN_STATIC, sfx, vol, pitch, flags))
 			return;
-		if (flags & SND_STOP) return;
+		if (flags & SND_STOP) 
+			return;
 		}
 
 	// pick a channel to play on from the static area

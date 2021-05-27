@@ -384,7 +384,8 @@ void CISlave::HandleAnimEvent (MonsterEvent_t* pEvent)
 					WackBeam (-1, pNew);
 					WackBeam (1, pNew);
 					UTIL_Remove (m_hDead);
-					EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_MEDIUM, 0, RANDOM_LONG (130, 160));
+					EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_MEDIUM, 0, 
+						RANDOM_LONG (130, 160));
 
 					break;
 					}
@@ -397,7 +398,6 @@ void CISlave::HandleAnimEvent (MonsterEvent_t* pEvent)
 			ZapBeam (1);
 
 			EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_MEDIUM, 0, RANDOM_LONG (130, 160));
-			// STOP_SOUND( ENT(pev), CHAN_WEAPON, "debris/zap4.wav" );
 			ApplyMultiDamage (pev, pev);
 
 			m_flNextAttack = gpGlobals->time + RANDOM_FLOAT (0.5, 4.0);

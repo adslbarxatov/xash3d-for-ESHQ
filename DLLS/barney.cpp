@@ -192,9 +192,7 @@ Schedule_t	slIdleBaStand[] =
 			bits_COND_SMELL |
 			bits_COND_PROVOKED,
 
-			bits_SOUND_COMBAT |// sound flags - change these, and you'll break the talking code.
-			//bits_SOUND_PLAYER		|
-			//bits_SOUND_WORLD		|
+			bits_SOUND_COMBAT |
 
 			bits_SOUND_DANGER |
 			bits_SOUND_MEAT |// scents
@@ -237,9 +235,6 @@ void CBarney::RunTask (Task_t* pTask)
 		}
 	}
 
-
-
-
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
 // of sounds this monster regards. 
@@ -276,8 +271,8 @@ void CBarney::AlertSound (void)
 			PlaySentence ("BA_ATTACK", RANDOM_FLOAT (2.8, 3.2), VOL_NORM, ATTN_SMALL);
 			}
 		}
-
 	}
+
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
@@ -414,8 +409,8 @@ void CBarney::Spawn ()
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->health = gSkillData.barneyHealth;
-	pev->view_ofs = Vector (0, 0, 50);// position of the eyes relative to monster's origin.
-	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
+	pev->view_ofs = Vector (0, 0, 50);	// position of the eyes relative to monster's origin
+	m_flFieldOfView = VIEW_FIELD_WIDE;	// NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
 
 	pev->body = 0; // gun in holster
@@ -487,7 +482,6 @@ void CBarney::TalkInit ()
 	m_voicePitch = 100;
 	}
 
-
 static BOOL IsFacing (entvars_t* pevTest, const Vector& reference)
 	{
 	Vector vecDir = (reference - pevTest->origin);
@@ -497,6 +491,7 @@ static BOOL IsFacing (entvars_t* pevTest, const Vector& reference)
 	angle = pevTest->v_angle;
 	angle.x = 0;
 	UTIL_MakeVectorsPrivate (angle, forward, NULL, NULL);
+
 	// He's facing me, he meant it
 	if (DotProduct (forward, vecDir) > 0.96)	// +/- 15 degrees or so
 		{
@@ -504,7 +499,6 @@ static BOOL IsFacing (entvars_t* pevTest, const Vector& reference)
 		}
 	return FALSE;
 	}
-
 
 int CBarney::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
@@ -546,7 +540,6 @@ int CBarney::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	return ret;
 	}
 
-
 //=========================================================
 // PainSound
 //=========================================================
@@ -560,11 +553,14 @@ void CBarney::PainSound (void)
 	switch (RANDOM_LONG (0, 2))
 		{
 		case 0: 
-			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_pain1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_pain1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		case 1: 
-			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_pain2.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_pain2.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		case 2: 
-			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_pain3.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_pain3.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		}
 	}
 
@@ -576,14 +572,16 @@ void CBarney::DeathSound (void)
 	switch (RANDOM_LONG (0, 2))
 		{
 		case 0: 
-			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_die1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_die1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		case 1: 
-			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_die2.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_die2.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		case 2: 
-			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_die3.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "barney/ba_die3.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		}
 	}
-
 
 void CBarney::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 	{
@@ -613,7 +611,6 @@ void CBarney::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir
 
 	CTalkMonster::TraceAttack (pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 	}
-
 
 void CBarney::Killed (entvars_t* pevAttacker, int iGib)
 	{
@@ -646,15 +643,14 @@ Schedule_t* CBarney::GetScheduleOfType (int Type)
 		case SCHED_ARM_WEAPON:
 			if (m_hEnemy != NULL)
 				{
-				// face enemy, then draw.
+				// face enemy, then draw
 				return slBarneyEnemyDraw;
 				}
 			break;
 
 			// Hook these to make a looping schedule
 		case SCHED_TARGET_FACE:
-			// call base class default so that barney will talk
-			// when 'used' 
+			// call base class default so that barney will talk when 'used' 
 			psched = CTalkMonster::GetScheduleOfType (Type);
 
 			if (psched == slIdleStand)
@@ -795,7 +791,7 @@ class CDeadBarney: public CBaseMonster
 
 		void KeyValue (KeyValueData* pkvd);
 
-		int	m_iPose; // which sequence to display	-- temporary, don't need to save
+		int	m_iPose; // which sequence to display; temporary, don't need to save
 		static char* m_szPoses[3];
 	};
 
@@ -815,7 +811,9 @@ void CDeadBarney::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseMonster::KeyValue (pkvd);
+		}
 	}
 
 LINK_ENTITY_TO_CLASS (monster_barney_dead, CDeadBarney);

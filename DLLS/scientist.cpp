@@ -151,7 +151,6 @@ Task_t	tlFollowScared[] =
 	{
 		{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_TARGET_CHASE },// If you fail, follow normally
 		{ TASK_MOVE_TO_TARGET_RANGE_SCARED,(float)128		},	// Move within 128 of target ent (client)
-	//	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_FACE_SCARED },
 	};
 
 Schedule_t	slFollowScared[] =
@@ -298,7 +297,6 @@ Schedule_t	slIdleSciStand[] =
 			bits_SOUND_CARCASS |
 			bits_SOUND_GARBAGE,
 			"IdleSciStand"
-
 		},
 	};
 
@@ -401,19 +399,18 @@ Schedule_t	slFear[] =
 DEFINE_CUSTOM_SCHEDULES (CScientist)
 	{
 	slFollow,
-		slFaceTarget,
-		slIdleSciStand,
-		slFear,
-		slScientistCover,
-		slScientistHide,
-		slScientistStartle,
-		slHeal,
-		slStopFollowing,
-		slSciPanic,
-		slFollowScared,
-		slFaceTargetScared,
+	slFaceTarget,
+	slIdleSciStand,
+	slFear,
+	slScientistCover,
+	slScientistHide,
+	slScientistStartle,
+	slHeal,
+	slStopFollowing,
+	slSciPanic,
+	slFollowScared,
+	slFaceTargetScared,
 	};
-
 
 IMPLEMENT_CUSTOM_SCHEDULES (CScientist, CTalkMonster);
 
@@ -447,7 +444,6 @@ void CScientist::StartTask (Task_t* pTask)
 	switch (pTask->iTask)
 		{
 		case TASK_SAY_HEAL:
-			//		if ( FOkToSpeak() )
 			Talk (2);
 			m_hTalkTarget = m_hTargetEnt;
 			PlaySentence ("SC_HEAL", 2, VOL_NORM, ATTN_SMALL);
@@ -534,7 +530,8 @@ void CScientist::RunTask (Task_t* pTask)
 
 				distance = (m_vecMoveGoal - pev->origin).Length2D ();
 				// Re-evaluate when you think your finished, or the target has moved too far
-				if ((distance < pTask->flData) || (m_vecMoveGoal - m_hTargetEnt->pev->origin).Length () > pTask->flData * 0.5)
+				if ((distance < pTask->flData) || ((m_vecMoveGoal - m_hTargetEnt->pev->origin).Length () > 
+					pTask->flData * 0.5))
 					{
 					m_vecMoveGoal = m_hTargetEnt->pev->origin;
 					distance = (m_vecMoveGoal - pev->origin).Length2D ();
@@ -548,10 +545,14 @@ void CScientist::RunTask (Task_t* pTask)
 					TaskComplete ();
 					RouteClear ();		// Stop moving
 					}
-				else if (distance < 190 && m_movementActivity != ACT_WALK_SCARED)
+				else if ((distance < 190) && (m_movementActivity != ACT_WALK_SCARED))
+					{
 					m_movementActivity = ACT_WALK_SCARED;
-				else if (distance >= 270 && m_movementActivity != ACT_RUN_SCARED)
+					}
+				else if ((distance >= 270) && (m_movementActivity != ACT_RUN_SCARED))
+					{
 					m_movementActivity = ACT_RUN_SCARED;
+					}
 				}
 			}
 			break;
@@ -577,17 +578,16 @@ void CScientist::RunTask (Task_t* pTask)
 
 //=========================================================
 // Classify - indicates this monster's place in the 
-// relationship table.
+// relationship table
 //=========================================================
 int	CScientist::Classify (void)
 	{
 	return	CLASS_HUMAN_PASSIVE;
 	}
 
-
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
+// turn rate associated with it
 //=========================================================
 void CScientist::SetYawSpeed (void)
 	{
@@ -662,8 +662,6 @@ void CScientist::Spawn (void)
 	m_flFieldOfView = VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so scientists will notice player and say hello
 	m_MonsterState = MONSTERSTATE_NONE;
 
-	//	m_flDistTooFar		= 256.0;
-
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
 
 	// White hands
@@ -671,7 +669,7 @@ void CScientist::Spawn (void)
 
 	if (pev->body == -1)
 		{// -1 chooses a random head
-		pev->body = RANDOM_LONG (0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
+		pev->body = RANDOM_LONG (0, NUM_SCIENTIST_HEADS - 1);	// pick a head, any head
 		}
 
 	// Luther is black, make his hands black
@@ -704,17 +702,14 @@ void CScientist::Precache (void)
 // Init talk data
 void CScientist::TalkInit ()
 	{
-
 	CTalkMonster::TalkInit ();
 
 	// scientist will try to talk to friends in this order:
-
 	m_szFriends[0] = "monster_scientist";
 	m_szFriends[1] = "monster_sitting_scientist";
 	m_szFriends[2] = "monster_barney";
 
 	// scientists speach group names (group names are in sentences.txt)
-
 	m_szGrp[TLK_ANSWER] = "SC_ANSWER";
 	m_szGrp[TLK_QUESTION] = "SC_QUESTION";
 	m_szGrp[TLK_IDLE] = "SC_IDLE";
@@ -787,11 +782,21 @@ void CScientist::PainSound (void)
 
 	switch (RANDOM_LONG (0, 4))
 		{
-		case 0: EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
-		case 1: EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain2.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
-		case 2: EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain3.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
-		case 3: EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain4.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
-		case 4: EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); break;
+		case 0: 
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
+		case 1: 
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain2.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
+		case 2: 
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain3.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
+		case 3: 
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain4.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
+		case 4:
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
 		}
 	}
 
@@ -803,13 +808,11 @@ void CScientist::DeathSound (void)
 	PainSound ();
 	}
 
-
 void CScientist::Killed (entvars_t* pevAttacker, int iGib)
 	{
 	SetUse (NULL);
 	CTalkMonster::Killed (pevAttacker, iGib);
 	}
-
 
 void CScientist::SetActivity (Activity newActivity)
 	{
@@ -822,7 +825,6 @@ void CScientist::SetActivity (Activity newActivity)
 		newActivity = ACT_IDLE;
 	CTalkMonster::SetActivity (newActivity);
 	}
-
 
 Schedule_t* CScientist::GetScheduleOfType (int Type)
 	{
@@ -1056,10 +1058,10 @@ MONSTERSTATE CScientist::GetIdealState (void)
 	return CTalkMonster::GetIdealState ();
 	}
 
-
 BOOL CScientist::CanHeal (void)
 	{
-	if ((m_healTime > gpGlobals->time) || (m_hTargetEnt == NULL) || (m_hTargetEnt->pev->health > (m_hTargetEnt->pev->max_health * 0.5)))
+	if ((m_healTime > gpGlobals->time) || (m_hTargetEnt == NULL) || (m_hTargetEnt->pev->health > 
+		(m_hTargetEnt->pev->max_health * 0.5)))
 		return FALSE;
 
 	return TRUE;
@@ -1086,7 +1088,6 @@ int CScientist::FriendNumber (int arrayNumber)
 		return array[arrayNumber];
 	return arrayNumber;
 	}
-
 
 //=========================================================
 // Dead Scientist PROP
@@ -1135,7 +1136,7 @@ void CDeadScientist::Spawn ()
 
 	if (pev->body == -1)
 		{// -1 chooses a random head
-		pev->body = RANDOM_LONG (0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
+		pev->body = RANDOM_LONG (0, NUM_SCIENTIST_HEADS - 1);	// pick a head, any head
 		}
 	// Luther is black, make his hands black
 	if (pev->body == HEAD_LUTHER)
@@ -1149,10 +1150,8 @@ void CDeadScientist::Spawn ()
 		ALERT (at_console, "Dead scientist with bad pose\n");
 		}
 
-	//	pev->skin += 2; // use bloody skin -- UNDONE: Turn this back on when we have a bloody skin again!
 	MonsterInitDead ();
 	}
-
 
 //=========================================================
 // Sitting Scientist PROP
@@ -1217,7 +1216,7 @@ void CSittingScientist::Spawn ()
 	pev->health = 50;
 
 	m_bloodColor = BLOOD_COLOR_RED;
-	m_flFieldOfView = VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone (as a dotproduct result)
 
 	m_afCapability = bits_CAP_HEAR | bits_CAP_TURN_HEAD;
 
@@ -1225,7 +1224,7 @@ void CSittingScientist::Spawn ()
 
 	if (pev->body == -1)
 		{// -1 chooses a random head
-		pev->body = RANDOM_LONG (0, NUM_SCIENTIST_HEADS - 1);// pick a head, any head
+		pev->body = RANDOM_LONG (0, NUM_SCIENTIST_HEADS - 1);	// pick a head, any head
 		}
 	// Luther is black, make his hands black
 	if (pev->body == HEAD_LUTHER)
@@ -1255,7 +1254,6 @@ int	CSittingScientist::Classify (void)
 	return	CLASS_HUMAN_PASSIVE;
 	}
 
-
 int CSittingScientist::FriendNumber (int arrayNumber)
 	{
 	static int array[3] = {2, 1, 0};
@@ -1281,8 +1279,10 @@ void CSittingScientist::SittingThink (void)
 			{
 			float yaw = VecToYaw (pent->pev->origin - pev->origin) - pev->angles.y;
 
-			if (yaw > 180) yaw -= 360;
-			if (yaw < -180) yaw += 360;
+			if (yaw > 180) 
+				yaw -= 360;
+			if (yaw < -180) 
+				yaw += 360;
 
 			if (yaw > 0)
 				pev->sequence = m_baseSequence + SITTING_ANIM_sitlookleft;
@@ -1327,8 +1327,10 @@ void CSittingScientist::SittingThink (void)
 				// only turn head if we spoke
 				float yaw = VecToYaw (pent->pev->origin - pev->origin) - pev->angles.y;
 
-				if (yaw > 180) yaw -= 360;
-				if (yaw < -180) yaw += 360;
+				if (yaw > 180) 
+					yaw -= 360;
+				if (yaw < -180) 
+					yaw += 360;
 
 				if (yaw > 0)
 					pev->sequence = m_baseSequence + SITTING_ANIM_sitlookleft;
@@ -1371,7 +1373,6 @@ void CSittingScientist::SetAnswerQuestion (CTalkMonster* pSpeaker)
 	m_hTalkTarget = (CBaseMonster*)pSpeaker;
 	}
 
-
 //=========================================================
 // FIdleSpeak
 // ask question of nearby friend, or make statement
@@ -1390,7 +1391,6 @@ int CSittingScientist::FIdleSpeak (void)
 	pitch = GetVoicePitch ();
 
 	// if there is a friend nearby to speak to, play sentence, set friend's response time, return
-
 	// try to talk to any standing or sitting scientists nearby
 	CBaseEntity* pentFriend = FindNearestFriend (FALSE);
 

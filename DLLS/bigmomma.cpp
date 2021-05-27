@@ -1203,6 +1203,7 @@ void CBMortar::Touch (CBaseEntity* pOther)
 		tr.vecEndPos = pev->origin;
 		tr.vecPlaneNormal = -1 * pev->velocity.Normalize ();
 		}
+
 	// make some flecks
 	MortarSpray (tr.vecEndPos, tr.vecPlaneNormal, gSpitSprite, 24);
 

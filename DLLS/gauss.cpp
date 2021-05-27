@@ -25,8 +25,8 @@
 #include "shake.h"
 #include "gamerules.h"
 
-#define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
-#define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
+#define	GAUSS_PRIMARY_CHARGE_VOLUME	256	// how loud gauss is while charging
+#define GAUSS_PRIMARY_FIRE_VOLUME	450	// how loud gauss is when discharged
 
 enum gauss_e {
 	GAUSS_IDLE = 0,
@@ -68,7 +68,7 @@ void CGauss::Spawn ()
 
 	m_iDefaultAmmo = GAUSS_DEFAULT_GIVE;
 
-	FallInit ();// get ready to fall down.
+	FallInit ();	// get ready to fall down
 	}
 
 void CGauss::Precache (void)
@@ -130,7 +130,8 @@ BOOL CGauss::Deploy ()
 
 void CGauss::Holster (int skiplocal /* = 0 */)
 	{
-	PLAYBACK_EVENT_FULL (FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict (), m_usGaussFire, 0.01, (float*)&m_pPlayer->pev->origin, (float*)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1);
+	PLAYBACK_EVENT_FULL (FEV_RELIABLE | FEV_GLOBAL, m_pPlayer->edict (), m_usGaussFire, 0.01, 
+		(float*)&m_pPlayer->pev->origin, (float*)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1);
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase () + 0.5;
 
@@ -173,7 +174,8 @@ void CGauss::SecondaryAttack ()
 		{
 		if (m_fInAttack != 0)
 			{
-			EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", 1.0, ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 0x3f));
+			EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", 1.0, 
+				ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 0x3f));
 			SendWeaponAnim (GAUSS_IDLE);
 			m_fInAttack = 0;
 			}
@@ -197,7 +199,7 @@ void CGauss::SecondaryAttack ()
 
 		m_fPrimaryFire = FALSE;
 
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;// take one ammo just to start the spin
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;	// take one ammo just to start the spin
 		m_pPlayer->m_flNextAmmoBurn = UTIL_WeaponTimeBase ();
 
 		// spin up
@@ -209,7 +211,8 @@ void CGauss::SecondaryAttack ()
 		m_pPlayer->m_flStartCharge = gpGlobals->time;
 		m_pPlayer->m_flAmmoStartCharge = UTIL_WeaponTimeBase () + GetFullChargeTime ();
 
-		PLAYBACK_EVENT_FULL (FEV_NOTHOST, m_pPlayer->edict (), m_usGaussSpin, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0.0, 0.0, 110, 0, 0, 0);
+		PLAYBACK_EVENT_FULL (FEV_NOTHOST, m_pPlayer->edict (), m_usGaussSpin, 0.0, (float*)&g_vecZero, 
+			(float*)&g_vecZero, 0.0, 0.0, 110, 0, 0, 0);
 
 		m_iSoundState = SND_CHANGE_PITCH;
 		}
@@ -224,7 +227,7 @@ void CGauss::SecondaryAttack ()
 	else
 		{
 		// during the charging process, eat one bit of ammo every once in a while
-		if (UTIL_WeaponTimeBase () >= m_pPlayer->m_flNextAmmoBurn && m_pPlayer->m_flNextAmmoBurn != 1000)
+		if ((UTIL_WeaponTimeBase () >= m_pPlayer->m_flNextAmmoBurn) && (m_pPlayer->m_flNextAmmoBurn != 1000))
 			{
 #ifdef CLIENT_DLL
 			if (bIsMultiplayer ())
@@ -267,7 +270,8 @@ void CGauss::SecondaryAttack ()
 		if (m_iSoundState == 0)
 			ALERT (at_console, "sound state %d\n", m_iSoundState);
 
-		PLAYBACK_EVENT_FULL (FEV_NOTHOST, m_pPlayer->edict (), m_usGaussSpin, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0.0, 0.0, pitch, 0, (m_iSoundState == SND_CHANGE_PITCH) ? 1 : 0, 0);
+		PLAYBACK_EVENT_FULL (FEV_NOTHOST, m_pPlayer->edict (), m_usGaussSpin, 0.0, (float*)&g_vecZero, 
+			(float*)&g_vecZero, 0.0, 0.0, pitch, 0, (m_iSoundState == SND_CHANGE_PITCH) ? 1 : 0, 0);
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
@@ -276,9 +280,11 @@ void CGauss::SecondaryAttack ()
 		// m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
 		if (m_pPlayer->m_flStartCharge < gpGlobals->time - 10)
 			{
-			// Player charged up too long. Zap him.
-			EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", 1.0, ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 0x3f));
-			EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/electro6.wav", 1.0, ATTN_MEDIUM, 0, 75 + RANDOM_LONG (0, 0x3f));
+			// Player charged up too long. Zap him
+			EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", 1.0, 
+				ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 0x3f));
+			EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/electro6.wav", 1.0, 
+				ATTN_MEDIUM, 0, 75 + RANDOM_LONG (0, 0x3f));
 
 			m_fInAttack = 0;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + 1.0;
@@ -342,7 +348,6 @@ void CGauss::StartFire (void)
 			}
 
 		if (!g_pGameRules->IsMultiplayer ())
-
 			{
 			// in deathmatch, gauss can pop you up into the air. Not in single play.
 			m_pPlayer->pev->velocity.z = flZVel;
@@ -379,25 +384,18 @@ void CGauss::Fire (Vector vecOrigSrc, Vector vecDir, float flDamage)
 		g_irunninggausspred = true;
 #endif
 
-	// The main firing event is sent unreliably so it won't be delayed.
-	PLAYBACK_EVENT_FULL (FEV_NOTHOST, m_pPlayer->edict (), m_usGaussFire, 0.0, (float*)&m_pPlayer->pev->origin, (float*)&m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0);
+	// The main firing event is sent unreliably so it won't be delayed
+	PLAYBACK_EVENT_FULL (FEV_NOTHOST, m_pPlayer->edict (), m_usGaussFire, 0.0, 
+		(float*)&m_pPlayer->pev->origin, (float*)&m_pPlayer->pev->angles, flDamage, 0.0, 0, 0, m_fPrimaryFire ? 1 : 0, 0);
 
 	// This reliable event is used to stop the spinning sound
 	// It's delayed by a fraction of second to make sure it is delayed by 1 frame on the client
 	// It's sent reliably anyway, which could lead to other delays
-
-	PLAYBACK_EVENT_FULL (FEV_NOTHOST | FEV_RELIABLE, m_pPlayer->edict (), m_usGaussFire, 0.01, (float*)&m_pPlayer->pev->origin, (float*)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1);
-
-
-	/*ALERT( at_console, "%f %f %f\n%f %f %f\n",
-		vecSrc.x, vecSrc.y, vecSrc.z,
-		vecDest.x, vecDest.y, vecDest.z );*/
-
-
-		//	ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
+	PLAYBACK_EVENT_FULL (FEV_NOTHOST | FEV_RELIABLE, m_pPlayer->edict (), m_usGaussFire, 0.01, 
+		(float*)&m_pPlayer->pev->origin, (float*)&m_pPlayer->pev->angles, 0.0, 0.0, 0, 0, 0, 1);
 
 #ifndef CLIENT_DLL
-	while (flDamage > 10 && nMaxHits > 0)
+	while ((flDamage > 10) && (nMaxHits > 0))
 		{
 		nMaxHits--;
 
@@ -427,7 +425,8 @@ void CGauss::Fire (Vector vecOrigSrc, Vector vecDir, float flDamage)
 			ApplyMultiDamage (m_pPlayer->pev, m_pPlayer->pev);
 			}
 
-		if (pEntity->ReflectGauss ())
+		// ESHQ: дефектная зона
+		/*if (pEntity->ReflectGauss ())
 			{
 			float n;
 
@@ -488,7 +487,6 @@ void CGauss::Fire (Vector vecOrigSrc, Vector vecDir, float flDamage)
 							//m_pPlayer->RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, CLASS_NONE, DMG_BLAST );
 							float damage_radius;
 
-
 							if (g_pGameRules->IsMultiplayer ())
 								{
 								damage_radius = flDamage * 1.75;  // Old code == 2.5
@@ -522,14 +520,13 @@ void CGauss::Fire (Vector vecOrigSrc, Vector vecDir, float flDamage)
 
 				}
 			}
-		else
+		else*/
 			{
 			vecSrc = tr.vecEndPos + vecDir;
 			pentIgnore = ENT (pEntity->pev);
 			}
 		}
 #endif
-	// ALERT( at_console, "%d bytes\n", nTotal );
 	}
 
 void CGauss::WeaponIdle (void)
@@ -541,10 +538,17 @@ void CGauss::WeaponIdle (void)
 		{
 		switch (RANDOM_LONG (0, 3))
 			{
-			case 0:	EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", RANDOM_FLOAT (0.7, 0.8), ATTN_MEDIUM); break;
-			case 1:	EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro5.wav", RANDOM_FLOAT (0.7, 0.8), ATTN_MEDIUM); break;
-			case 2:	EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro6.wav", RANDOM_FLOAT (0.7, 0.8), ATTN_MEDIUM); break;
-			case 3:	break; // no sound
+			case 0:	
+				EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", RANDOM_FLOAT (0.7, 0.8), ATTN_MEDIUM); 
+				break;
+			case 1:	
+				EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro5.wav", RANDOM_FLOAT (0.7, 0.8), ATTN_MEDIUM); 
+				break;
+			case 2:	
+				EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_WEAPON, "weapons/electro6.wav", RANDOM_FLOAT (0.7, 0.8), ATTN_MEDIUM); 
+				break;
+			case 3:	
+				break; // no sound
 			}
 		m_pPlayer->m_flPlayAftershock = 0.0;
 		}
@@ -577,8 +581,8 @@ void CGauss::WeaponIdle (void)
 			iAnim = GAUSS_FIDGET;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + 3;
 			}
-		SendWeaponAnim (iAnim);
 
+		SendWeaponAnim (iAnim);
 		}
 	}
 

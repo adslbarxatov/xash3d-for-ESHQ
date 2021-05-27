@@ -723,9 +723,9 @@ void CGib::BounceGibTouch (CBaseEntity* pOther)
 		}
 	else
 		{
-		if (g_Language != LANGUAGE_GERMAN && m_cBloodDecals > 0 && m_bloodColor != DONT_BLEED)
+		if ((g_Language != LANGUAGE_GERMAN) && (m_cBloodDecals > 0) && (m_bloodColor != DONT_BLEED))
 			{
-			vecSpot = pev->origin + Vector (0, 0, 8);	//move up a bit, and trace down
+			vecSpot = pev->origin + Vector (0, 0, 8);	// move up a bit, and trace down
 			UTIL_TraceLine (vecSpot, vecSpot + Vector (0, 0, -24), ignore_monsters, ENT (pev), &tr);
 
 			UTIL_BloodDecalTrace (&tr, m_bloodColor);
@@ -733,7 +733,7 @@ void CGib::BounceGibTouch (CBaseEntity* pOther)
 			m_cBloodDecals--;
 			}
 
-		if (m_material != matNone && RANDOM_LONG (0, 2) == 0)
+		if ((m_material != matNone) && (RANDOM_LONG (0, 2) == 0))
 			{
 			float volume;
 			float zvel = fabs (pev->velocity.z);

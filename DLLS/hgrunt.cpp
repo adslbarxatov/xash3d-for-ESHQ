@@ -267,7 +267,7 @@ int CHGrunt::IRelationship (CBaseEntity* pTarget)
 	}
 
 //=========================================================
-// GibMonster - make gun fly through the air.
+// GibMonster - make gun fly through the air
 //=========================================================
 void CHGrunt::GibMonster (void)
 	{
@@ -338,7 +338,7 @@ BOOL CHGrunt::FOkToSpeak (void)
 		{
 		if (m_MonsterState != MONSTERSTATE_COMBAT)
 			{
-			// no talking outside of combat if gagged.
+			// no talking outside of combat if gagged
 			return FALSE;
 			}
 		}
@@ -420,9 +420,9 @@ BOOL CHGrunt::CheckMeleeAttack1 (float flDot, float flDist)
 			}
 		}
 
-	if (flDist <= 64 && flDot >= 0.7 &&
-		pEnemy->Classify () != CLASS_ALIEN_BIOWEAPON &&
-		pEnemy->Classify () != CLASS_PLAYER_BIOWEAPON)
+	if ((flDist <= 64) && (flDot >= 0.7) &&
+		(pEnemy->Classify () != CLASS_ALIEN_BIOWEAPON) &&
+		(pEnemy->Classify () != CLASS_PLAYER_BIOWEAPON))
 		{
 		return TRUE;
 		}
@@ -439,13 +439,13 @@ BOOL CHGrunt::CheckMeleeAttack1 (float flDot, float flDist)
 //=========================================================
 BOOL CHGrunt::CheckRangeAttack1 (float flDot, float flDist)
 	{
-	if (!HasConditions (bits_COND_ENEMY_OCCLUDED) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire ())
+	if (!HasConditions (bits_COND_ENEMY_OCCLUDED) && (flDist <= 2048) && (flDot >= 0.5) && NoFriendlyFire ())
 		{
 		TraceResult	tr;
 
-		if (!m_hEnemy->IsPlayer () && flDist <= 64)
+		if (!m_hEnemy->IsPlayer () && (flDist <= 64))
 			{
-			// kick nonclients, but don't shoot at them.
+			// kick nonclients, but don't shoot at them
 			return FALSE;
 			}
 
@@ -487,7 +487,7 @@ BOOL CHGrunt::CheckRangeAttack2 (float flDot, float flDist)
 		return m_fThrowGrenade;
 		}
 
-	if (!FBitSet (m_hEnemy->pev->flags, FL_ONGROUND) && m_hEnemy->pev->waterlevel == 0 && m_vecEnemyLKP.z > pev->absmax.z)
+	if (!FBitSet (m_hEnemy->pev->flags, FL_ONGROUND) && (m_hEnemy->pev->waterlevel == 0) && (m_vecEnemyLKP.z > pev->absmax.z))
 		{
 		//!!!BUGBUG - we should make this check movetype and make sure it isn't FLY? Players who jump a lot are unlikely to 
 		// be grenaded.
@@ -522,7 +522,8 @@ BOOL CHGrunt::CheckRangeAttack2 (float flDot, float flDist)
 		vecTarget = m_vecEnemyLKP + (m_hEnemy->BodyTarget (pev->origin) - m_hEnemy->pev->origin);
 		// estimate position
 		if (HasConditions (bits_COND_SEE_ENEMY))
-			vecTarget = vecTarget + ((vecTarget - pev->origin).Length () / gSkillData.hgruntGrenadeSpeed) * m_hEnemy->pev->velocity;
+			vecTarget = vecTarget + ((vecTarget - pev->origin).Length () / gSkillData.hgruntGrenadeSpeed) * 
+				m_hEnemy->pev->velocity;
 		}
 
 	// are any of my squad members near the intended grenade impact area?
@@ -539,7 +540,7 @@ BOOL CHGrunt::CheckRangeAttack2 (float flDot, float flDist)
 	if ((vecTarget - pev->origin).Length2D () <= 256)
 		{
 		// crap, I don't want to blow myself up
-		m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
+		m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second
 		m_fThrowGrenade = FALSE;
 		return m_fThrowGrenade;
 		}
@@ -555,14 +556,14 @@ BOOL CHGrunt::CheckRangeAttack2 (float flDot, float flDist)
 			// throw a hand grenade
 			m_fThrowGrenade = TRUE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time; // 1/3 second.
+			m_flNextGrenadeCheck = gpGlobals->time; // 1/3 second
 			}
 		else
 			{
 			// don't throw
 			m_fThrowGrenade = FALSE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
+			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second
 			}
 		}
 	else
@@ -575,21 +576,20 @@ BOOL CHGrunt::CheckRangeAttack2 (float flDot, float flDist)
 
 			// throw a hand grenade
 			m_fThrowGrenade = TRUE;
-			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 0.3; // 1/3 second.
+			// don't check again for a while
+			m_flNextGrenadeCheck = gpGlobals->time + 0.3; // 1/3 second
 			}
 		else
 			{
 			// don't throw
 			m_fThrowGrenade = FALSE;
 			// don't check again for a while.
-			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second.
+			m_flNextGrenadeCheck = gpGlobals->time + 1; // one full second
 			}
 		}
 
 	return m_fThrowGrenade;
 	}
-
 
 //=========================================================
 // TraceAttack - make sure we're not taking it in the helmet
@@ -600,7 +600,7 @@ void CHGrunt::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir
 	if (ptr->iHitgroup == 11)
 		{
 		// make sure we're wearing one
-		if (GetBodygroup (1) == HEAD_GRUNT && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB)))
+		if ((GetBodygroup (1) == HEAD_GRUNT) && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB)))
 			{
 			// absorb damage
 			flDamage -= 20;
@@ -613,9 +613,9 @@ void CHGrunt::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir
 		// it's head shot anyways
 		ptr->iHitgroup = HITGROUP_HEAD;
 		}
+
 	CSquadMonster::TraceAttack (pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 	}
-
 
 //=========================================================
 // TakeDamage - overridden for the grunt because the grunt
@@ -789,13 +789,14 @@ void CHGrunt::Shoot (void)
 
 	UTIL_MakeVectors (pev->angles);
 
-	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT (40, 90) + gpGlobals->v_up * RANDOM_FLOAT (75, 200) + gpGlobals->v_forward * RANDOM_FLOAT (-40, 40);
+	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT (40, 90) + gpGlobals->v_up * 
+		RANDOM_FLOAT (75, 200) + gpGlobals->v_forward * RANDOM_FLOAT (-40, 40);
 	EjectBrass (vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
 	FireBullets (1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5); // shoot +-5 degrees
 
 	pev->effects |= EF_MUZZLEFLASH;
 
-	m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;	// take away a bullet
 
 	Vector angDir = UTIL_VecToAngles (vecShootDir);
 	SetBlending (0, angDir.x);
@@ -816,13 +817,15 @@ void CHGrunt::Shotgun (void)
 
 	UTIL_MakeVectors (pev->angles);
 
-	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT (40, 90) + gpGlobals->v_up * RANDOM_FLOAT (75, 200) + gpGlobals->v_forward * RANDOM_FLOAT (-40, 40);
+	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT (40, 90) + gpGlobals->v_up * 
+		RANDOM_FLOAT (75, 200) + gpGlobals->v_forward * RANDOM_FLOAT (-40, 40);
 	EjectBrass (vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iShotgunShell, TE_BOUNCE_SHOTSHELL);
-	FireBullets (gSkillData.hgruntShotgunPellets, vecShootOrigin, vecShootDir, VECTOR_CONE_15DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0); // shoot +-7.5 degrees
+	FireBullets (gSkillData.hgruntShotgunPellets, vecShootOrigin, vecShootDir, VECTOR_CONE_15DEGREES, 2048,
+		BULLET_PLAYER_BUCKSHOT, 0); // shoot +-7.5 degrees
 
 	pev->effects |= EF_MUZZLEFLASH;
 
-	m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;	// take away a bullet
 
 	Vector angDir = UTIL_VecToAngles (vecShootDir);
 	SetBlending (0, angDir.x);
@@ -830,7 +833,7 @@ void CHGrunt::Shotgun (void)
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
+// that occur when tagged animation frames are played
 //=========================================================
 void CHGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 	{
@@ -846,7 +849,7 @@ void CHGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 
 			GetAttachment (0, vecGunPos, vecGunAngles);
 
-			// switch to body group with no gun.
+			// switch to body group with no gun
 			SetBodygroup (GUN_GROUP, GUN_NONE);
 
 			// now spawn a gun.
@@ -862,7 +865,6 @@ void CHGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 				{
 				DropItem ("ammo_ARgrenades", BodyTarget (pev->origin), vecGunAngles);
 				}
-
 			}
 			break;
 
@@ -875,7 +877,6 @@ void CHGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 		case HGRUNT_AE_GREN_TOSS:
 			{
 			UTIL_MakeVectors (pev->angles);
-			// CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 34 + Vector (0, 0, 32), m_vecTossVelocity, 3.5 );
 			CGrenade::ShootTimed (pev, GetGunPosition (), m_vecTossVelocity, 3.5);
 
 			m_fThrowGrenade = FALSE;
@@ -899,7 +900,8 @@ void CHGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 		case HGRUNT_AE_GREN_DROP:
 			{
 			UTIL_MakeVectors (pev->angles);
-			CGrenade::ShootTimed (pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3);
+			CGrenade::ShootTimed (pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + 
+				gpGlobals->v_up * 6, g_vecZero, 3);
 			}
 			break;
 
@@ -957,7 +959,6 @@ void CHGrunt::HandleAnimEvent (MonsterEvent_t* pEvent)
 				SENTENCEG_PlayRndSz (ENT (pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 				JustSpoke ();
 				}
-
 			}
 
 		default:
@@ -981,7 +982,7 @@ void CHGrunt::Spawn ()
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
 	pev->health = gSkillData.hgruntHealth;
-	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone (as a dotproduct result)
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_flNextGrenadeCheck = gpGlobals->time + 1;
 	m_flNextPainTime = gpGlobals->time;
@@ -998,8 +999,6 @@ void CHGrunt::Spawn ()
 		{
 		// initialize to original values
 		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
-		// pev->weapons = HGRUNT_SHOTGUN;
-		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
 		}
 
 	if (FBitSet (pev->weapons, HGRUNT_SHOTGUN))
@@ -1059,7 +1058,7 @@ void CHGrunt::Precache ()
 
 	PRECACHE_SOUND ("weapons/sbarrel1.wav");
 
-	PRECACHE_SOUND ("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
+	PRECACHE_SOUND ("zombie/claw_miss2.wav");	// because we use the basemonster SWIPE animation event
 
 	// get voice pitch
 	if (RANDOM_LONG (0, 1))
@@ -1131,7 +1130,7 @@ void CHGrunt::RunTask (Task_t* pTask)
 		{
 		case TASK_GRUNT_FACE_TOSS_DIR:
 			{
-			// project a point along the toss vector and turn to face that point.
+			// project a point along the toss vector and turn to face that point
 			MakeIdealYaw (pev->origin + m_vecTossVelocity * 64);
 			ChangeYaw (pev->yaw_speed);
 
@@ -1156,34 +1155,22 @@ void CHGrunt::PainSound (void)
 	{
 	if (gpGlobals->time > m_flNextPainTime)
 		{
-#if 0
-		if (RANDOM_LONG (0, 99) < 5)
-			{
-			// pain sentences are rare
-			if (FOkToSpeak ())
-				{
-				SENTENCEG_PlayRndSz (ENT (pev), "HG_PAIN", HGRUNT_SENTENCE_VOLUME, ATTN_MEDIUM, 0, PITCH_NORM);
-				JustSpoke ();
-				return;
-				}
-			}
-#endif 
 		switch (RANDOM_LONG (0, 6))
 			{
 			case 0:
-				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain3.wav", 1, ATTN_MEDIUM);
-				break;
-			case 1:
-				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain4.wav", 1, ATTN_MEDIUM);
-				break;
-			case 2:
-				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain5.wav", 1, ATTN_MEDIUM);
-				break;
-			case 3:
 				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain1.wav", 1, ATTN_MEDIUM);
 				break;
-			case 4:
+			case 1:
 				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain2.wav", 1, ATTN_MEDIUM);
+				break;
+			case 2:
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain3.wav", 1, ATTN_MEDIUM);
+				break;
+			case 3:
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain4.wav", 1, ATTN_MEDIUM);
+				break;
+			case 4:
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hgrunt/gr_pain5.wav", 1, ATTN_MEDIUM);
 				break;
 			}
 
@@ -2363,7 +2350,6 @@ Schedule_t* CHGrunt::GetScheduleOfType (int Type)
 		}
 	}
 
-
 //=========================================================
 // CHGruntRepel - when triggered, spawns a monster_human_grunt
 // repelling down a line.
@@ -2398,10 +2384,6 @@ void CHGruntRepel::RepelUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 	{
 	TraceResult tr;
 	UTIL_TraceLine (pev->origin, pev->origin + Vector (0, 0, -4096.0), dont_ignore_monsters, ENT (pev), &tr);
-	/*
-	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP)
-		return NULL;
-	*/
 
 	CBaseEntity* pEntity = Create ("monster_human_grunt", pev->origin, pev->angles);
 	CBaseMonster* pGrunt = pEntity->MyMonsterPointer ();

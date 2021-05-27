@@ -943,7 +943,6 @@ void CScriptedSentence::KeyValue (KeyValueData* pkvd)
 		CBaseToggle::KeyValue (pkvd);
 	}
 
-
 void CScriptedSentence::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
 	if (!m_active)
