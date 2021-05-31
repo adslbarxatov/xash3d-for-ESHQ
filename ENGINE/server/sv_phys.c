@@ -1371,9 +1371,10 @@ void SV_CheckWaterTransition (edict_t* ent)
 		return;
 		}
 
-	if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+	if ((cont <= CONTENTS_WATER) && (cont > CONTENTS_TRANSLUCENT))
 		{
-		if (ent->v.watertype == CONTENTS_EMPTY)
+		// ESHQ: с какой стати небо булькает?
+		if ((ent->v.watertype == CONTENTS_EMPTY) && (cont != CONTENTS_SKY))
 			{
 			// just crossed into water
 			SV_StartSound (ent, CHAN_AUTO, "player/pl_wade1.wav", 1.0f, ATTN_MEDIUM, 0, 100);
@@ -1389,13 +1390,14 @@ void SV_CheckWaterTransition (edict_t* ent)
 			svs.groupmask = ent->v.groupinfo;
 			cont = SV_PointContents (point);
 
-			if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+			if ((cont <= CONTENTS_WATER) && (cont > CONTENTS_TRANSLUCENT))
 				{
 				ent->v.waterlevel = 2;
 				VectorAdd (point, ent->v.view_ofs, point);
 				svs.groupmask = ent->v.groupinfo;
 				cont = SV_PointContents (point);
-				if (cont <= CONTENTS_WATER && cont > CONTENTS_TRANSLUCENT)
+
+				if ((cont <= CONTENTS_WATER) && (cont > CONTENTS_TRANSLUCENT))
 					ent->v.waterlevel = 3;
 				}
 			}
@@ -1407,11 +1409,13 @@ void SV_CheckWaterTransition (edict_t* ent)
 		}
 	else
 		{
-		if (ent->v.watertype != CONTENTS_EMPTY)
+		// ESHQ: с какой стати небо булькает?
+		if ((ent->v.watertype != CONTENTS_EMPTY) && (ent->v.watertype != CONTENTS_SKY))
 			{
 			// just crossed into water
 			SV_StartSound (ent, CHAN_AUTO, "player/pl_wade2.wav", 1.0f, ATTN_MEDIUM, 0, 100);
 			}
+
 		ent->v.watertype = CONTENTS_EMPTY;
 		ent->v.waterlevel = 0;
 		}

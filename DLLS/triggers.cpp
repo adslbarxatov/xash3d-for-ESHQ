@@ -817,7 +817,6 @@ void CTriggerHurt::Spawn (void)
 // trigger hurt that causes radiation will do a radius
 // check and set the player's geiger counter level
 // according to distance from center of trigger
-
 void CTriggerHurt::RadiationThink (void)
 	{
 	edict_t* pentPlayer;
@@ -846,16 +845,13 @@ void CTriggerHurt::RadiationThink (void)
 	pev->view_ofs = view_ofs;
 
 	// reset origin
-
 	if (!FNullEnt (pentPlayer))
 		{
-
 		pPlayer = GetClassPtr ((CBasePlayer*)VARS (pentPlayer));
 
 		pevTarget = VARS (pentPlayer);
 
-		// get range to player;
-
+		// get range to player
 		vecSpot1 = (pev->absmin + pev->absmax) * 0.5;
 		vecSpot2 = (pevTarget->absmin + pevTarget->absmax) * 0.5;
 
@@ -865,7 +861,6 @@ void CTriggerHurt::RadiationThink (void)
 		// if player's current geiger counter range is larger
 		// than range to this trigger hurt, reset player's
 		// geiger counter range 
-
 		if (pPlayer->m_flgeigerRange >= flRange)
 			pPlayer->m_flgeigerRange = flRange;
 		}
@@ -1152,9 +1147,6 @@ void CBaseTrigger::ActivateMultiTrigger (CBaseEntity* pActivator, int RoomType)
 
 	if (!FStringNull (pev->noise))
 		EMIT_SOUND (ENT (pev), CHAN_VOICE, (char*)STRING (pev->noise), 1, ATTN_MEDIUM);
-
-	// don't trigger again until reset
-	// pev->takedamage = DAMAGE_NO;
 
 	m_hActivator = pActivator;
 	

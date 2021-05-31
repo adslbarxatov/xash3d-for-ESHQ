@@ -1755,7 +1755,7 @@ edict_t* pfnFindClientInPVS (edict_t* pEdict)
 	bMergePVS = FBitSet (pEdict->v.flags, FL_MONSTER) ? true : false;
 
 	// find a new check if on a new frame
-	if (delta < 0.0f || delta >= 0.1f)
+	if ((delta < 0.0f) || (delta >= 0.1f))
 		{
 		sv.lastcheck = SV_CheckClientPVS (sv.lastcheck, bMergePVS);
 		sv.lastchecktime = sv.time;
@@ -1770,8 +1770,9 @@ edict_t* pfnFindClientInPVS (edict_t* pEdict)
 	mod = SV_ModelHandle (pEdict->v.modelindex);
 
 	// portals & monitors
-	// NOTE: this specific break "radiaton tick" in normal half-life. use only as feature
-	if (FBitSet (host.features, ENGINE_PHYSICS_PUSHER_EXT) && mod && mod->type == mod_brush && !FBitSet (mod->flags, MODEL_HAS_ORIGIN))
+	// NOTE: this specific break "radiaton tick" in normal half-life. Use only as feature
+	if (FBitSet (host.features, ENGINE_PHYSICS_PUSHER_EXT) && mod && (mod->type == mod_brush) &&
+		!FBitSet (mod->flags, MODEL_HAS_ORIGIN))
 		{
 		// handle PVS origin for bmodels
 		VectorAverage (pEdict->v.mins, pEdict->v.maxs, view);
@@ -3525,7 +3526,8 @@ pfnRunPlayerMove
 
 =============
 */
-void pfnRunPlayerMove (edict_t* pClient, const float* viewangles, float fmove, float smove, float upmove, word buttons, byte impulse, byte msec)
+void pfnRunPlayerMove (edict_t* pClient, const float* viewangles, float fmove, float smove, 
+	float upmove, word buttons, byte impulse, byte msec)
 	{
 	sv_client_t* cl, * oldcl;
 	usercmd_t		cmd;

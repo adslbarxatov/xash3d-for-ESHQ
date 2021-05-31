@@ -22,7 +22,7 @@ GNU General Public License for more details.
 #include "particledef.h"
 #include "entity_types.h"
 
-#define IsLiquidContents( cnt )	( cnt == CONTENTS_WATER || cnt == CONTENTS_SLIME || cnt == CONTENTS_LAVA )
+#define IsLiquidContents( cnt )	((cnt == CONTENTS_WATER) || (cnt == CONTENTS_SLIME) || (cnt == CONTENTS_LAVA))
 
 float		gldepthmin, gldepthmax;
 ref_instance_t	RI;

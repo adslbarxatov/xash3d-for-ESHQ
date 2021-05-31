@@ -2049,7 +2049,6 @@ void CBasePlayer::UpdateGeigerCounter (void)
 	m_flgeigerDelay = gpGlobals->time + GEIGERDELAY;
 
 	// send range to radition source to client
-
 	range = (BYTE)(m_flgeigerRange / 4);
 
 	if (range != m_igeigerRangePrev)
@@ -3034,7 +3033,6 @@ void CBasePlayer::SelectPrevItem (int iItem)
 	{
 	}
 
-
 const char* CBasePlayer::TeamID (void)
 	{
 	if (pev == NULL)		// Not fully connected yet
@@ -3090,17 +3088,17 @@ void CSprayCan::Think (void)
 	UTIL_MakeVectors (pev->angles);
 	UTIL_TraceLine (pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, &tr);
 
-	// No customization present.
-	if (nFrames == -1)
+	// ESHQ: исправление логики для отсутствующих собственных граффити
+	if (nFrames < 1)
 		{
-		// ESHQ
 		UTIL_DecalTrace (&tr, DECAL_RDAAOW);
 		UTIL_Remove (this);
 		}
 	else
 		{
 		UTIL_PlayerDecalTrace (&tr, playernum, pev->frame, TRUE);
-		// Just painted last custom frame.
+
+		// Just painted last custom frame
 		if (pev->frame++ >= (nFrames - 1))
 			UTIL_Remove (this);
 		}
@@ -3256,7 +3254,6 @@ void CBasePlayer::ImpulseCommands ()
 		{
 		case 99:
 			{
-
 			int iOn;
 
 			if (!gmsgLogo)
@@ -3300,7 +3297,8 @@ void CBasePlayer::ImpulseCommands ()
 				}
 
 			UTIL_MakeVectors (pev->v_angle);
-			UTIL_TraceLine (pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT (pev), &tr);
+			UTIL_TraceLine (pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128,
+				ignore_monsters, ENT (pev), &tr);
 
 			if (tr.flFraction != 1.0)
 				{// line hit something, so paint a decal

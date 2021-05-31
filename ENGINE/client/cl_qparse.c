@@ -154,7 +154,7 @@ static void CL_ParseQuakeSound (sizebuf_t* msg)
 	if (FBitSet (flags, SND_ATTENUATION))
 		attn = (float)MSG_ReadByte (msg) / 64.0f;
 	else
-		attn = ATTN_MEDIUM; // ATTN_EVERYWHERE; // ESHQ: плохая идея
+		attn = ATTN_EVERYWHERE; // ESHQ: плохая идея
 
 	channel = MSG_ReadWord (msg);
 	sound = MSG_ReadByte (msg);	// Quake1 have max 255 precached sounds. erm

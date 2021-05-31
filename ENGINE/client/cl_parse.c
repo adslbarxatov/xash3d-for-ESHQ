@@ -77,7 +77,7 @@ void CL_ParseSoundPacket (sizebuf_t* msg)
 	if (FBitSet (flags, SND_ATTENUATION))
 		attn = (float)MSG_ReadByte (msg) / 64.0f;
 	else
-		attn = ATTN_MEDIUM;// ATTN_EVERYWHERE;	// ESHQ: не уверен, что это – правильное решение
+		attn = ATTN_EVERYWHERE;	// ESHQ: не уверен, что это – правильное решение
 
 	if (FBitSet (flags, SND_PITCH))
 		pitch = MSG_ReadByte (msg);
@@ -143,13 +143,13 @@ void CL_ParseRestoreSoundPacket (sizebuf_t* msg)
 	if (flags & SND_ATTENUATION)
 		attn = (float)MSG_ReadByte (msg) / 64.0f;
 	else
-		attn = ATTN_MEDIUM;	// ATTN_EVERYWHERE; // ESHQ: не уверен, что это – правильное решение
+		attn = ATTN_EVERYWHERE; // ESHQ: не уверен, что это – правильное решение
 
 	if (flags & SND_PITCH)
 		pitch = MSG_ReadByte (msg);
 	else pitch = PITCH_NORM;
 
-	// entity reletive
+	// entity relative
 	entnum = MSG_ReadUBitLong (msg, MAX_ENTITY_BITS);
 
 	// positioned in space
