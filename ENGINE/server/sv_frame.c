@@ -81,14 +81,16 @@ static void SV_AddEntitiesToPacket (edict_t* pViewEnt, edict_t* pClient, client_
 		// setup hostflags
 		if (FBitSet (cl->flags, FCL_LOCAL_WEAPONS))
 			SetBits (sv.hostflags, SVF_SKIPLOCALHOST);
-		else ClearBits (sv.hostflags, SVF_SKIPLOCALHOST);
+		else 
+			ClearBits (sv.hostflags, SVF_SKIPLOCALHOST);
 
 		// reset viewents each frame
 		cl->num_viewents = 0;
 		}
 
 	svgame.dllFuncs.pfnSetupVisibility (pViewEnt, pClient, &clientpvs, &clientphs);
-	if (!clientpvs) fullvis = true;
+	if (!clientpvs) 
+		fullvis = true;
 
 	// g-cont: of course we can send world but not want to do it :-)
 	for (e = 1; e < svgame.numEntities; e++)

@@ -256,7 +256,6 @@ int CBullsquid::IgnoreConditions (void)
 			}
 		}
 
-
 	return iIgnore;
 	}
 
@@ -287,7 +286,7 @@ int CBullsquid::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 
 	// if the squid is running, has an enemy, was hurt by the enemy, hasn't been hurt in the last 3 seconds, and isn't too close to the enemy,
 	// it will swerve. (whew).
-	if (m_hEnemy != NULL && IsMoving () && pevAttacker == m_hEnemy->pev && gpGlobals->time - m_flLastHurtTime > 3)
+	if ((m_hEnemy != NULL) && IsMoving () && (pevAttacker == m_hEnemy->pev) && (gpGlobals->time - m_flLastHurtTime > 3))
 		{
 		flDist = (pev->origin - m_hEnemy->pev->origin).Length2D ();
 

@@ -552,7 +552,8 @@ void V_CalcNormalRefdef (struct ref_params_s* pparams)
 		{
 		for (i = 0; i < 3; i++)
 			{
-			pparams->vieworg[i] += scr_ofsx->value * pparams->forward[i] + scr_ofsy->value * pparams->right[i] + scr_ofsz->value * pparams->up[i];
+			pparams->vieworg[i] += scr_ofsx->value * pparams->forward[i] + scr_ofsy->value * pparams->right[i] +
+				scr_ofsz->value * pparams->up[i];
 			}
 		}
 
@@ -1475,8 +1476,8 @@ void V_CalcSpectatorRefdef (struct ref_params_s* pparams)
 
 	// write back new values into pparams
 	VectorCopy (v_cl_angles, pparams->cl_viewangles);
-	VectorCopy (v_angles, pparams->viewangles)
-		VectorCopy (v_origin, pparams->vieworg);
+	VectorCopy (v_angles, pparams->viewangles);
+	VectorCopy (v_origin, pparams->vieworg);
 	}
 
 void DLLEXPORT V_CalcRefdef (struct ref_params_s* pparams)

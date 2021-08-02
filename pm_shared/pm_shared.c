@@ -2052,12 +2052,13 @@ void PM_Duck (void)
 		return;
 		}
 
-	if (pmove->flags & FL_DUCKING)
+	// ESHQ: удаление коэффициентов в связи с разворотом клавиш бега
+	/*if (pmove->flags & FL_DUCKING)
 		{
-		pmove->cmd.forwardmove *= 0.333;
-		pmove->cmd.sidemove *= 0.333;
-		pmove->cmd.upmove *= 0.333;
-		}
+		pmove->cmd.forwardmove *= 0.9;
+		pmove->cmd.sidemove *= 0.9;
+		pmove->cmd.upmove *= 0.9;
+		}*/
 
 	if ((pmove->cmd.buttons & IN_DUCK) || (pmove->bInDuck) || (pmove->flags & FL_DUCKING))
 		{
@@ -2603,10 +2604,8 @@ void PM_Jump (void)
 		{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
-		if (cansuperjump &&
-			(pmove->cmd.buttons & IN_DUCK) &&
-			(pmove->flDuckTime > 0) &&
-			Length (pmove->velocity) > 50)
+		if (cansuperjump && (pmove->cmd.buttons & IN_DUCK) &&
+			(pmove->flDuckTime > 0) && Length (pmove->velocity) > 50)
 			{
 			pmove->punchangle[0] = -5;
 
@@ -3320,7 +3319,7 @@ void PM_CreateStuckTable (void)
 	}
 
 /*
-This modume implements the shared player physics code between any particular game and
+This module implements the shared player physics code between any particular game and
 the engine.  The same PM_Move routine is built into the game .dll and the client .dll and is
 invoked by each side as appropriate.  There should be no distinction, internally, between server
 and client.  This will ensure that prediction behaves appropriately.

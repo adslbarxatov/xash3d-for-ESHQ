@@ -1143,7 +1143,7 @@ static void SaveClientState (SAVERESTOREDATA* pSaveData, const char* level, int 
 		}
 
 	// save viewentity to allow camera works after save\restore
-	if (SV_IsValidEdict (cl->pViewEntity) && cl->pViewEntity != cl->edict)
+	if (SV_IsValidEdict (cl->pViewEntity) && (cl->pViewEntity != cl->edict))
 		header.viewentity = NUM_FOR_EDICT (cl->pViewEntity);
 
 	header.wateralpha = sv_wateralpha.value;
@@ -1304,7 +1304,7 @@ static void LoadClientState (SAVERESTOREDATA* pSaveData, const char* level, qboo
 			}
 
 		// don't go camera across the levels
-		if (header.viewentity > svs.maxclients && !changelevel)
+		if ((header.viewentity > svs.maxclients) && !changelevel)
 			cl->pViewEntity = pent;
 
 		// restore some client cvars

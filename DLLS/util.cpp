@@ -580,7 +580,7 @@ CBaseEntity* UTIL_PlayerByIndex (int playerIndex)
 	{
 	CBaseEntity* pPlayer = NULL;
 
-	if (playerIndex > 0 && playerIndex <= gpGlobals->maxClients)
+	if ((playerIndex > 0) && (playerIndex <= gpGlobals->maxClients))
 		{
 		edict_t* pPlayerEdict = INDEXENT (playerIndex);
 		if (pPlayerEdict && !pPlayerEdict->free)
@@ -592,12 +592,10 @@ CBaseEntity* UTIL_PlayerByIndex (int playerIndex)
 	return pPlayer;
 	}
 
-
 void UTIL_MakeVectors (const Vector& vecAngles)
 	{
 	MAKE_VECTORS (vecAngles);
 	}
-
 
 void UTIL_MakeAimVectors (const Vector& vecAngles)
 	{
@@ -606,7 +604,6 @@ void UTIL_MakeAimVectors (const Vector& vecAngles)
 	rgflVec[0] = -rgflVec[0];
 	MAKE_VECTORS (rgflVec);
 	}
-
 
 #define SWAP(a,b,temp)	((temp)=(a),(a)=(b),(b)=(temp))
 
@@ -622,8 +619,8 @@ void UTIL_MakeInvVectors (const Vector& vec, globalvars_t* pgv)
 	SWAP (pgv->v_right.z, pgv->v_up.y, tmp);
 	}
 
-
-void UTIL_EmitAmbientSound (edict_t* entity, const Vector& vecOrigin, const char* samp, float vol, float attenuation, int fFlags, int pitch)
+void UTIL_EmitAmbientSound (edict_t* entity, const Vector& vecOrigin, const char* samp, float vol, 
+	float attenuation, int fFlags, int pitch)
 	{
 	float rgfl[3];
 	vecOrigin.CopyToArray (rgfl);
@@ -677,7 +674,7 @@ void UTIL_ScreenShake (const Vector& center, float amplitude, float frequency, f
 	float		localAmplitude;
 	ScreenShake	shake;
 
-	shake.duration = FixedUnsigned16 (duration, 1 << 12);		// 4.12 fixed
+	shake.duration = FixedUnsigned16 (duration, 1 << 12);	// 4.12 fixed
 	shake.frequency = FixedUnsigned16 (frequency, 1 << 8);	// 8.8 fixed
 
 	for (i = 1; i <= gpGlobals->maxClients; i++)
@@ -691,7 +688,9 @@ void UTIL_ScreenShake (const Vector& center, float amplitude, float frequency, f
 		localAmplitude = 0;
 
 		if (radius <= 0)
+			{
 			localAmplitude = amplitude;
+			}
 		else
 			{
 			Vector delta = center - pPlayer->pev->origin;
@@ -716,13 +715,10 @@ void UTIL_ScreenShake (const Vector& center, float amplitude, float frequency, f
 		}
 	}
 
-
-
 void UTIL_ScreenShakeAll (const Vector& center, float amplitude, float frequency, float duration)
 	{
 	UTIL_ScreenShake (center, amplitude, frequency, duration, 0);
 	}
-
 
 void UTIL_ScreenFadeBuild (ScreenFade& fade, const Vector& color, float fadeTime, float fadeHold, int alpha, int flags)
 	{
@@ -734,7 +730,6 @@ void UTIL_ScreenFadeBuild (ScreenFade& fade, const Vector& color, float fadeTime
 	fade.a = alpha;
 	fade.fadeFlags = flags;
 	}
-
 
 void UTIL_ScreenFadeWrite (const ScreenFade& fade, CBaseEntity* pEntity)
 	{
@@ -754,12 +749,10 @@ void UTIL_ScreenFadeWrite (const ScreenFade& fade, CBaseEntity* pEntity)
 	MESSAGE_END ();
 	}
 
-
 void UTIL_ScreenFadeAll (const Vector& color, float fadeTime, float fadeHold, int alpha, int flags)
 	{
 	int			i;
 	ScreenFade	fade;
-
 
 	UTIL_ScreenFadeBuild (fade, color, fadeTime, fadeHold, alpha, flags);
 
@@ -835,9 +828,9 @@ void UTIL_HudMessageAll (const hudtextparms_t& textparms, const char* pMessage)
 		}
 	}
 
-
 extern int gmsgTextMsg, gmsgSayText;
-void UTIL_ClientPrintAll (int msg_dest, const char* msg_name, const char* param1, const char* param2, const char* param3, const char* param4)
+void UTIL_ClientPrintAll (int msg_dest, const char* msg_name, const char* param1, const char* param2, 
+	const char* param3, const char* param4)
 	{
 	MESSAGE_BEGIN (MSG_ALL, gmsgTextMsg);
 	WRITE_BYTE (msg_dest);
@@ -855,7 +848,8 @@ void UTIL_ClientPrintAll (int msg_dest, const char* msg_name, const char* param1
 	MESSAGE_END ();
 	}
 
-void ClientPrint (entvars_t* client, int msg_dest, const char* msg_name, const char* param1, const char* param2, const char* param3, const char* param4)
+void ClientPrint (entvars_t* client, int msg_dest, const char* msg_name, const char* param1, 
+	const char* param2, const char* param3, const char* param4)
 	{
 	MESSAGE_BEGIN (MSG_ONE, gmsgTextMsg, NULL, client);
 	WRITE_BYTE (msg_dest);
@@ -891,7 +885,6 @@ void UTIL_SayTextAll (const char* pText, CBaseEntity* pEntity)
 	WRITE_STRING (pText);
 	MESSAGE_END ();
 	}
-
 
 char* UTIL_dtos1 (int d)
 	{
@@ -947,19 +940,20 @@ void UTIL_ShowMessageAll (const char* pString)
 	}
 
 // Overloaded to add IGNORE_GLASS
-void UTIL_TraceLine (const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t* pentIgnore, TraceResult* ptr)
+void UTIL_TraceLine (const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, 
+	IGNORE_GLASS ignoreGlass, edict_t* pentIgnore, TraceResult* ptr)
 	{
 	TRACE_LINE (vecStart, vecEnd, (igmon == ignore_monsters ? TRUE : FALSE) | (ignoreGlass ? 0x100 : 0), pentIgnore, ptr);
 	}
 
-
-void UTIL_TraceLine (const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, edict_t* pentIgnore, TraceResult* ptr)
+void UTIL_TraceLine (const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, 
+	edict_t* pentIgnore, TraceResult* ptr)
 	{
 	TRACE_LINE (vecStart, vecEnd, (igmon == ignore_monsters ? TRUE : FALSE), pentIgnore, ptr);
 	}
 
-
-void UTIL_TraceHull (const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t* pentIgnore, TraceResult* ptr)
+void UTIL_TraceHull (const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, int hullNumber, 
+	edict_t* pentIgnore, TraceResult* ptr)
 	{
 	TRACE_HULL (vecStart, vecEnd, (igmon == ignore_monsters ? TRUE : FALSE), hullNumber, pentIgnore, ptr);
 	}
@@ -968,7 +962,6 @@ void UTIL_TraceModel (const Vector& vecStart, const Vector& vecEnd, int hullNumb
 	{
 	g_engfuncs.pfnTraceModel (vecStart, vecEnd, hullNumber, pentModel, ptr);
 	}
-
 
 TraceResult UTIL_GetGlobalTrace ()
 	{
@@ -987,18 +980,15 @@ TraceResult UTIL_GetGlobalTrace ()
 	return tr;
 	}
 
-
 void UTIL_SetSize (entvars_t* pev, const Vector& vecMin, const Vector& vecMax)
 	{
 	SET_SIZE (ENT (pev), vecMin, vecMax);
 	}
 
-
 float UTIL_VecToYaw (const Vector& vec)
 	{
 	return VEC_TO_YAW (vec);
 	}
-
 
 void UTIL_SetOrigin (entvars_t* pev, const Vector& vecOrigin)
 	{
@@ -1052,7 +1042,6 @@ float UTIL_ApproachAngle (float target, float value, float speed)
 	return value;
 	}
 
-
 float UTIL_AngleDistance (float next, float cur)
 	{
 	float delta = next - cur;
@@ -1074,7 +1063,6 @@ float UTIL_SplineFraction (float value, float scale)
 	// Nice little ease-in, ease-out spline-like curve
 	return 3 * valueSquared - 2 * valueSquared * value;
 	}
-
 
 char* UTIL_VarArgs (char* format, ...)
 	{
@@ -1145,7 +1133,6 @@ void UTIL_BloodStream (const Vector& origin, const Vector& direction, int color,
 
 	if (g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED)
 		color = 0;
-
 
 	MESSAGE_BEGIN (MSG_PVS, SVC_TEMPENTITY, origin);
 	WRITE_BYTE (TE_BLOODSTREAM);
@@ -1222,7 +1209,7 @@ void UTIL_DecalTrace (TraceResult* pTrace, int decalNumber)
 	short entityIndex;
 	int index;
 	int message;
-
+	
 	if (decalNumber < 0)
 		return;
 

@@ -410,7 +410,6 @@ int CHudSpectator::Draw (float flTime)
 		VectorScale (right, m_moveDelta, right);
 
 		VectorAdd (m_mapOrigin, right, m_mapOrigin)
-
 		}
 
 	// Only draw the icon names only if map mode is in Main Mode

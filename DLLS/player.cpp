@@ -207,7 +207,6 @@ void LinkUserMessages (void)
 
 	gmsgStatusText = REG_USER_MSG ("StatusText", -1);
 	gmsgStatusValue = REG_USER_MSG ("StatusValue", 3);
-
 	}
 
 LINK_ENTITY_TO_CLASS (player, CBasePlayer);
@@ -1510,6 +1509,7 @@ void FixPlayerCrouchStuck (edict_t* pPlayer)
 
 void CBasePlayer::Duck ()
 	{
+	
 	if (pev->button & IN_DUCK)
 		{
 		if (m_IdealActivity != ACT_LEAP)
@@ -3830,7 +3830,6 @@ void CBasePlayer::UpdateClientData (void)
 		m_iClientHealth = pev->health;
 		}
 
-
 	if (pev->armorvalue != m_iClientBattery)
 		{
 		m_iClientBattery = pev->armorvalue;
@@ -3842,7 +3841,7 @@ void CBasePlayer::UpdateClientData (void)
 		MESSAGE_END ();
 		}
 
-	if (pev->dmg_take || pev->dmg_save || m_bitsHUDDamage != m_bitsDamageType)
+	if (pev->dmg_take || pev->dmg_save || (m_bitsHUDDamage != m_bitsDamageType))
 		{
 		// Comes from inside me if not set
 		Vector damageOrigin = pev->origin;
@@ -3906,7 +3905,6 @@ void CBasePlayer::UpdateClientData (void)
 		MESSAGE_END ();
 		}
 
-
 	if (m_iTrain & TRAIN_NEW)
 		{
 		ASSERT (gmsgTrain > 0);
@@ -3968,7 +3966,6 @@ void CBasePlayer::UpdateClientData (void)
 			}
 		}
 
-
 	SendAmmoUpdate ();
 
 	// Update all the items
@@ -4020,7 +4017,6 @@ void CBasePlayer::BarnacleVictimReleased (void)
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
 	}
 
-
 //=========================================================
 // Illumination 
 // return player light level plus virtual muzzle flash
@@ -4034,7 +4030,6 @@ int CBasePlayer::Illumination (void)
 		return 255;
 	return iIllum;
 	}
-
 
 void CBasePlayer::EnableControl (BOOL fControl)
 	{
@@ -4173,7 +4168,7 @@ Vector CBasePlayer::AutoaimDeflection (Vector& vecSrc, float flDist, float flDel
 	UTIL_TraceLine (vecSrc, vecSrc + bestdir * flDist, dont_ignore_monsters, edict (), &tr);
 
 
-	if (tr.pHit && tr.pHit->v.takedamage != DAMAGE_NO)
+	if (tr.pHit && (tr.pHit->v.takedamage != DAMAGE_NO))
 		{
 		// don't look through water
 		if (!((pev->waterlevel != 3 && tr.pHit->v.waterlevel == 3)

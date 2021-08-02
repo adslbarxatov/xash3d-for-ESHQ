@@ -1421,7 +1421,7 @@ void pfnChangeLevel (const char* level, const char* landmark)
 	char		landname[MAX_QPATH];
 	char* text;
 
-	if (!COM_CheckString (level) || sv.state != ss_active)
+	if (!COM_CheckString (level) || (sv.state != ss_active))
 		return; // ???
 
 	// make sure we don't issue two changelevels
@@ -1557,7 +1557,7 @@ edict_t* SV_FindEntityByString (edict_t* pStartEdict, const char* pszField, cons
 		ed = EDICT_NUM (e);
 		if (!SV_IsValidEdict (ed)) continue;
 
-		if (e <= svs.maxclients && !SV_ClientFromEdict (ed, (svs.maxclients != 1)))
+		if ((e <= svs.maxclients) && !SV_ClientFromEdict (ed, (svs.maxclients != 1)))
 			continue;
 
 		switch (desc->fieldType)
@@ -1566,7 +1566,7 @@ edict_t* SV_FindEntityByString (edict_t* pStartEdict, const char* pszField, cons
 			case FIELD_MODELNAME:
 			case FIELD_SOUNDNAME:
 				t = STRING (*(string_t*)&((byte*)&ed->v)[desc->fieldOffset]);
-				if (t != NULL && t != svgame.globals->pStringBase)
+				if ((t != NULL) && (t != svgame.globals->pStringBase))
 					{
 					if (!Q_strcmp (t, pszValue))
 						return ed;
@@ -3411,9 +3411,10 @@ void pfnSetView (const edict_t* pClient, const edict_t* pViewent)
 		return;
 		}
 
-	if (!SV_IsValidEdict (pViewent) || pClient == pViewent)
+	if (!SV_IsValidEdict (pViewent) || (pClient == pViewent))
 		client->pViewEntity = NULL; // just reset viewentity
-	else client->pViewEntity = (edict_t*)pViewent;
+	else 
+		client->pViewEntity = (edict_t*)pViewent;
 
 	// fakeclients ignore to send client message (but can see into the trigger_camera through the PVS)
 	if (FBitSet (client->flags, FCL_FAKECLIENT))
@@ -3421,7 +3422,8 @@ void pfnSetView (const edict_t* pClient, const edict_t* pViewent)
 
 	if (client->pViewEntity)
 		viewEnt = NUM_FOR_EDICT (client->pViewEntity);
-	else viewEnt = NUM_FOR_EDICT (client->edict);
+	else 
+		viewEnt = NUM_FOR_EDICT (client->edict);
 
 	MSG_BeginServerCmd (&client->netchan.message, svc_setview);
 	MSG_WriteWord (&client->netchan.message, viewEnt);
@@ -3962,7 +3964,10 @@ byte* pfnSetFatPVS (const float* org)
 			VectorSubtract (svgame.pmove->player_mins[0], svgame.pmove->player_mins[1], offset);
 			VectorSubtract (org, offset, viewPos);
 			}
-		else VectorCopy (org, viewPos);
+		else
+			{
+			VectorCopy (org, viewPos);
+			}
 
 		// build a new PVS frame
 		Mod_FatPVS (viewPos, FATPVS_RADIUS, fatpvs, world.fatbytes, false, fullvis);
@@ -4012,7 +4017,10 @@ byte* pfnSetFatPAS (const float* org)
 			VectorSubtract (svgame.pmove->player_mins[0], svgame.pmove->player_mins[1], offset);
 			VectorSubtract (org, offset, viewPos);
 			}
-		else VectorCopy (org, viewPos);
+		else
+			{
+			VectorCopy (org, viewPos);
+			}
 
 		// build a new PHS frame
 		Mod_FatPVS (viewPos, FATPHS_RADIUS, fatphs, world.fatbytes, false, fullvis);
@@ -4513,7 +4521,7 @@ static enginefuncs_t gEngfuncs =
 		pfnQueryClientCvarValue,
 		pfnQueryClientCvarValue2,
 		COM_CheckParm,
-		// ESHQ: ¤®¡ ¢«¥­® ¤«ï ¯®¤¤¥à¦ª¨ ¤®áâ¨¦¥­¨©
+		// ESHQ: ïîääåðæêà ñîáèðàåìûõ îáúåêòîâ
 		FS_WriteAchievementsScript
 	};
 
@@ -4952,4 +4960,10 @@ qboolean SV_LoadProgs (const char* name)
 	svgame.dllFuncs.pfnRegisterEncoders ();
 
 	return true;
+	}
+
+// ESHQ: ïîëó÷åíèå ñîñòîÿíèÿ äëÿ îïðåäåëåíèÿ ñêîðîñòè
+int pfnGetCurrentDuckState (void)
+	{
+	return (svgame.pmove->flags & FL_DUCKING);
 	}

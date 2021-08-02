@@ -290,7 +290,6 @@ typedef struct KeyValueData_s
 	long	fHandled;		// out: DLL sets to true if key-value pair was understood
 	} KeyValueData;
 
-
 typedef struct
 	{
 	char	mapName[32];

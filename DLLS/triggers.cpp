@@ -1920,7 +1920,6 @@ void CBaseTrigger::TeleportTouch (CBaseEntity* pOther)
 		}
 	}
 
-
 class CTriggerTeleport: public CBaseTrigger
 	{
 	public:
@@ -2312,7 +2311,7 @@ void CTriggerCamera::FollowTarget ()
 	if (m_hPlayer == NULL)
 		return;
 
-	if (m_hTarget == NULL || m_flReturnTime < gpGlobals->time)
+	if ((m_hTarget == NULL) || (m_flReturnTime < gpGlobals->time))
 		{
 		if (m_hPlayer->IsAlive ())
 			{

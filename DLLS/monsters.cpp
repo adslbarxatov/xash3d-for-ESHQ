@@ -296,7 +296,8 @@ void CBaseMonster::Look (int iDistance)
 	int	iSighted = 0;
 
 	// DON'T let visibility information from last frame sit around!
-	ClearConditions (bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR | bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT);
+	ClearConditions (bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR |
+		bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT);
 
 	m_pLink = NULL;
 
@@ -375,7 +376,8 @@ void CBaseMonster::Look (int iDistance)
 						case    R_AL:
 							break;
 						default:
-							ALERT (at_aiconsole, "%s can't assess %s\n", STRING (pev->classname), STRING (pSightEnt->pev->classname));
+							ALERT (at_aiconsole, "%s can't assess %s\n", STRING (pev->classname), 
+								STRING (pSightEnt->pev->classname));
 							break;
 						}
 					}

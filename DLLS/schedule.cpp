@@ -523,11 +523,11 @@ void CBaseMonster::SetTurnActivity (void)
 	float flYD;
 	flYD = FlYawDiff ();
 
-	if (flYD <= -45 && LookupActivity (ACT_TURN_RIGHT) != ACTIVITY_NOT_AVAILABLE)
+	if ((flYD <= -45) && (LookupActivity (ACT_TURN_RIGHT) != ACTIVITY_NOT_AVAILABLE))
 		{// big right turn
 		m_IdealActivity = ACT_TURN_RIGHT;
 		}
-	else if (flYD > 45 && LookupActivity (ACT_TURN_LEFT) != ACTIVITY_NOT_AVAILABLE)
+	else if ((flYD > 45) && (LookupActivity (ACT_TURN_LEFT) != ACTIVITY_NOT_AVAILABLE))
 		{// big left turn
 		m_IdealActivity = ACT_TURN_LEFT;
 		}

@@ -1264,7 +1264,8 @@ void SV_PutClientInServer (sv_client_t* cl)
 
 		if (cl->pViewEntity)
 			viewEnt = NUM_FOR_EDICT (cl->pViewEntity);
-		else viewEnt = NUM_FOR_EDICT (cl->edict);
+		else 
+			viewEnt = NUM_FOR_EDICT (cl->edict);
 
 		MSG_BeginServerCmd (&msg, svc_setview);
 		MSG_WriteWord (&msg, viewEnt);
@@ -1300,7 +1301,8 @@ void SV_UpdateClientView (sv_client_t* cl)
 
 	if (cl->pViewEntity)
 		viewEnt = NUM_FOR_EDICT (cl->pViewEntity);
-	else viewEnt = NUM_FOR_EDICT (cl->edict);
+	else 
+		viewEnt = NUM_FOR_EDICT (cl->edict);
 
 	MSG_BeginServerCmd (&cl->netchan.message, svc_setview);
 	MSG_WriteWord (&cl->netchan.message, viewEnt);

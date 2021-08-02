@@ -722,7 +722,8 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 		return;
 		}
 
-	if (in_speed.state & 1)
+	// ESHQ: разворот клавиш скорости движения (аналогично HL2)
+	if (!(in_speed.state & 1))
 		speed = cl_movespeedkey->value;
 	else
 		speed = 1;

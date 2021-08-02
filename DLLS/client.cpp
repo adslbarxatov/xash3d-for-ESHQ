@@ -410,11 +410,8 @@ void ClientCommand (edict_t* pEntity)
 				{
 				TraceResult tr;
 				UTIL_MakeVectors (pev->v_angle);
-				UTIL_TraceLine (
-					pev->origin + pev->view_ofs,
-					pev->origin + pev->view_ofs + gpGlobals->v_forward * 1000,
-					dont_ignore_monsters, pEntity, &tr
-				);
+				UTIL_TraceLine (pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 1000,
+					dont_ignore_monsters, pEntity, &tr);
 
 				if (tr.pHit)
 					{
@@ -422,7 +419,8 @@ void ClientCommand (edict_t* pEntity)
 					if (pHitEnt)
 						{
 						pHitEnt->Use (pPlayer, pPlayer, USE_TOGGLE, 0);
-						ClientPrint (&pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs ("Fired %s \"%s\"\n", STRING (pHitEnt->pev->classname), STRING (pHitEnt->pev->targetname)));
+						ClientPrint (&pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs ("Fired %s \"%s\"\n", 
+							STRING (pHitEnt->pev->classname), STRING (pHitEnt->pev->targetname)));
 						}
 					}
 				}
@@ -973,7 +971,8 @@ void SetupVisibility (edict_t* pViewEntity, edict_t* pClient, unsigned char** pv
 			{
 			org = pView->v.origin;
 			}
-		else return; // don't merge pvs
+		else 
+			return; // don't merge pvs
 		}
 	else
 		{
@@ -1035,7 +1034,6 @@ int AddToFullPack (struct entity_state_s* state, int e, edict_t* ent, edict_t* h
 				}
 			}
 		}
-
 
 	// Don't send entity to local client if the client says it's predicting the entity itself.
 	if (ent->v.flags & FL_SKIPLOCALHOST)

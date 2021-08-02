@@ -16,7 +16,7 @@
 #include "camera.h"
 extern "C"
 	{
-#include "kbutton.h"
+	#include "kbutton.h"
 	}
 #include "cvardef.h"
 #include "usercmd.h"
@@ -310,7 +310,7 @@ void KeyDown (kbutton_t* b)
 	else
 		k = -1;		// typed manually at the console for continuous down
 
-	if (k == b->down[0] || k == b->down[1])
+	if ((k == b->down[0]) || (k == b->down[1]))
 		return;		// repeating key
 
 	if (!b->down[0])
@@ -609,7 +609,8 @@ void CL_AdjustAngles (float frametime, float* viewangles)
 	float	speed;
 	float	up, down;
 
-	if (in_speed.state & 1)
+	// ESHQ: разворот клавиш скорости движения (аналогично HL2)
+	if (!(in_speed.state & 1))
 		{
 		speed = frametime * cl_anglespeedkey->value;
 		}
@@ -668,8 +669,6 @@ void DLLEXPORT CL_CreateMove (float frametime, struct usercmd_s* cmd, int active
 
 	if (active)
 		{
-		//memset( viewangles, 0, sizeof( vec3_t ) );
-		//viewangles[ 0 ] = viewangles[ 1 ] = viewangles[ 2 ] = 0.0;
 		gEngfuncs.GetViewAngles ((float*)viewangles);
 
 		CL_AdjustAngles (frametime, viewangles);
@@ -696,8 +695,14 @@ void DLLEXPORT CL_CreateMove (float frametime, struct usercmd_s* cmd, int active
 			cmd->forwardmove -= cl_backspeed->value * CL_KeyState (&in_back);
 			}
 
-		// adjust for speed key
-		if (in_speed.state & 1)
+		// ESHQ: получение состояния для определения скорости (прокидывается через интерфейс из xash.dll)
+		if (gEngfuncs.pfnGetCurrentDuckState ())
+			{
+			cmd->forwardmove *= 0.333;
+			cmd->sidemove *= 0.333;
+			cmd->upmove *= 0.333;
+			}
+		else if (!(in_speed.state & 1))
 			{
 			cmd->forwardmove *= cl_movespeedkey->value;
 			cmd->sidemove *= cl_movespeedkey->value;
@@ -709,7 +714,8 @@ void DLLEXPORT CL_CreateMove (float frametime, struct usercmd_s* cmd, int active
 		if (spd != 0.0)
 			{
 			// scale the 3 speeds so that the total velocity is not > cl.maxspeed
-			float fmov = sqrt ((cmd->forwardmove * cmd->forwardmove) + (cmd->sidemove * cmd->sidemove) + (cmd->upmove * cmd->upmove));
+			float fmov = sqrt ((cmd->forwardmove * cmd->forwardmove) + (cmd->sidemove * cmd->sidemove) + 
+				(cmd->upmove * cmd->upmove));
 
 			if (fmov > spd)
 				{
@@ -980,14 +986,14 @@ void InitInput (void)
 
 	lookstrafe = gEngfuncs.pfnRegisterVariable ("lookstrafe", "0", FCVAR_ARCHIVE);
 	lookspring = gEngfuncs.pfnRegisterVariable ("lookspring", "0", FCVAR_ARCHIVE);
-	cl_anglespeedkey = gEngfuncs.pfnRegisterVariable ("cl_anglespeedkey", "0.67", 0);
+	cl_anglespeedkey = gEngfuncs.pfnRegisterVariable ("cl_anglespeedkey", "0.5", 0);
 	cl_yawspeed = gEngfuncs.pfnRegisterVariable ("cl_yawspeed", "210", 0);
 	cl_pitchspeed = gEngfuncs.pfnRegisterVariable ("cl_pitchspeed", "225", 0);
 	cl_upspeed = gEngfuncs.pfnRegisterVariable ("cl_upspeed", "320", 0);
 	cl_forwardspeed = gEngfuncs.pfnRegisterVariable ("cl_forwardspeed", "400", FCVAR_ARCHIVE);
 	cl_backspeed = gEngfuncs.pfnRegisterVariable ("cl_backspeed", "400", FCVAR_ARCHIVE);
 	cl_sidespeed = gEngfuncs.pfnRegisterVariable ("cl_sidespeed", "400", 0);
-	cl_movespeedkey = gEngfuncs.pfnRegisterVariable ("cl_movespeedkey", "0.3", 0);
+	cl_movespeedkey = gEngfuncs.pfnRegisterVariable ("cl_movespeedkey", "0.5", 0);
 	cl_pitchup = gEngfuncs.pfnRegisterVariable ("cl_pitchup", "89", 0);
 	cl_pitchdown = gEngfuncs.pfnRegisterVariable ("cl_pitchdown", "89", 0);
 
