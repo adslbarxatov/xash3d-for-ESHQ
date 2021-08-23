@@ -103,13 +103,9 @@ TYPEDESCRIPTION	CApache::m_SaveData[] =
 		DEFINE_FIELD (CApache, m_angGun, FIELD_VECTOR),
 		DEFINE_FIELD (CApache, m_flLastSeen, FIELD_TIME),
 		DEFINE_FIELD (CApache, m_flPrevSeen, FIELD_TIME),
-		//	DEFINE_FIELD( CApache, m_iSoundState, FIELD_INTEGER ),		// Don't save, precached
-		//	DEFINE_FIELD( CApache, m_iSpriteTexture, FIELD_INTEGER ),
-		//	DEFINE_FIELD( CApache, m_iExplode, FIELD_INTEGER ),
-		//	DEFINE_FIELD( CApache, m_iBodyGibs, FIELD_INTEGER ),
-			DEFINE_FIELD (CApache, m_pBeam, FIELD_CLASSPTR),
-			DEFINE_FIELD (CApache, m_flGoalSpeed, FIELD_FLOAT),
-			DEFINE_FIELD (CApache, m_iDoSmokePuff, FIELD_INTEGER),
+		DEFINE_FIELD (CApache, m_pBeam, FIELD_CLASSPTR),
+		DEFINE_FIELD (CApache, m_flGoalSpeed, FIELD_FLOAT),
+		DEFINE_FIELD (CApache, m_iDoSmokePuff, FIELD_INTEGER),
 	};
 IMPLEMENT_SAVERESTORE (CApache, CBaseMonster);
 

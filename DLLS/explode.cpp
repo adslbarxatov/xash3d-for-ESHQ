@@ -57,7 +57,6 @@ void CShower::Spawn (void)
 	pev->angles = g_vecZero;
 	}
 
-
 void CShower::Think (void)
 	{
 	UTIL_Sparks (pev->origin);
@@ -123,22 +122,10 @@ void CEnvExplosion::Spawn (void)
 	pev->effects = EF_NODRAW;
 
 	pev->movetype = MOVETYPE_NONE;
-	/*
-	if ( m_iMagnitude > 250 )
-	{
-		m_iMagnitude = 250;
-	}
-	*/
 
 	float flSpriteScale;
 	flSpriteScale = (m_iMagnitude - 50) * 0.6;
 
-	/*
-	if ( flSpriteScale > 50 )
-	{
-		flSpriteScale = 50;
-	}
-	*/
 	if (flSpriteScale < 10)
 		{
 		flSpriteScale = 10;
@@ -151,10 +138,10 @@ void CEnvExplosion::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	{
 	TraceResult tr;
 
-	pev->model = iStringNull;//invisible
-	pev->solid = SOLID_NOT;// intangible
+	pev->model = iStringNull;	// invisible
+	pev->solid = SOLID_NOT;		// intangible
 
-	Vector		vecSpot;// trace starts here!
+	Vector		vecSpot;		// trace starts here!
 
 	vecSpot = pev->origin + Vector (0, 0, 8);
 

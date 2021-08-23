@@ -193,7 +193,8 @@ void CGib::SpawnRandomGibs (entvars_t* pevVictim, int cGibs, int human)
 				{
 				// human pieces
 				pGib->Spawn ("models/hgibs.mdl");
-				pGib->pev->body = RANDOM_LONG (1, HUMAN_GIB_COUNT - 1);// start at one to avoid throwing random amounts of skulls (0th gib)
+				pGib->pev->body = RANDOM_LONG (1, HUMAN_GIB_COUNT - 1);
+				// start at one to avoid throwing random amounts of skulls (0th gib)
 				}
 			else
 				{
@@ -208,7 +209,8 @@ void CGib::SpawnRandomGibs (entvars_t* pevVictim, int cGibs, int human)
 			// spawn the gib somewhere in the monster's bounding volume
 			pGib->pev->origin.x = pevVictim->absmin.x + pevVictim->size.x * (RANDOM_FLOAT (0, 1));
 			pGib->pev->origin.y = pevVictim->absmin.y + pevVictim->size.y * (RANDOM_FLOAT (0, 1));
-			pGib->pev->origin.z = pevVictim->absmin.z + pevVictim->size.z * (RANDOM_FLOAT (0, 1)) + 1;	// absmin.z is in the floor because the engine subtracts 1 to enlarge the box
+			pGib->pev->origin.z = pevVictim->absmin.z + pevVictim->size.z * (RANDOM_FLOAT (0, 1)) + 1;	
+			// absmin.z is in the floor because the engine subtracts 1 to enlarge the box
 
 			// make the gib fly away from the attack vector
 			pGib->pev->velocity = g_vecAttackDir * -1;
@@ -245,7 +247,6 @@ void CGib::SpawnRandomGibs (entvars_t* pevVictim, int cGibs, int human)
 		pGib->LimitVelocity ();
 		}
 	}
-
 
 BOOL CBaseMonster::HasHumanGibs (void)
 	{
@@ -412,7 +413,6 @@ Activity CBaseMonster::GetDeathActivity (void)
 				}
 			break;
 		}
-
 
 	// can we perform the prescribed death?
 	if (LookupActivity (deathActivity) == ACTIVITY_NOT_AVAILABLE)
@@ -789,8 +789,8 @@ void CGib::Spawn (const char* szGibModel)
 
 	// ESHQ: возможно, это больше не потребуется
 	// Устраняет бесконечное прыгание гибсов, хотя остальные последствия неизвестны
-	//pev->solid = SOLID_TRIGGER;
-	pev->solid = SOLID_SLIDEBOX;
+	pev->solid = SOLID_TRIGGER;
+	//pev->solid = SOLID_SLIDEBOX;
 
 	pev->classname = MAKE_STRING ("gib");
 

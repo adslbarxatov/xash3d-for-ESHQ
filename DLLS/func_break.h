@@ -31,6 +31,10 @@ class CBreakable: public CBaseDelay
 		void Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 		void DamageSound (void);
 
+		// ESHQ: расчЄт громкости с помощью размера
+		float GetVolume (void);
+		int GetPitch (void);
+
 		// breakables use an overridden takedamage
 		virtual int TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 		// To spark when hit
@@ -69,6 +73,9 @@ class CBreakable: public CBaseDelay
 		float		m_angle;
 		int			m_iszGibModel;
 		int			m_iszSpawnObject;
+
+		// ESHQ: переменна€ дл€ хранени€ значени€, определ€ющего громкость и высоту звуков
+		float		m_sizeFactor;
 	};
 
 #endif	// FUNC_BREAK_H

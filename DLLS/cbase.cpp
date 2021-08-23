@@ -493,10 +493,10 @@ int CBaseEntity::TakeHealth (float flHealth, int bitsDamageType)
 	return 1;
 	}
 
-// inflict damage on this entity.  bitsDamageType indicates type of damage inflicted, ie: DMG_CRUSH
+// inflict damage on this entity. bitsDamageType indicates type of damage inflicted, ie: DMG_CRUSH
 int CBaseEntity::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
-	Vector			vecTemp;
+	Vector vecTemp;
 
 	if (!pev->takedamage)
 		return 0;
@@ -521,7 +521,8 @@ int CBaseEntity::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	// save damage based on the target's armor level
 
 	// figure momentum add (don't let hurt brushes or other triggers move player)
-	if ((!FNullEnt (pevInflictor)) && (pev->movetype == MOVETYPE_WALK || pev->movetype == MOVETYPE_STEP) && (pevAttacker->solid != SOLID_TRIGGER))
+	if ((!FNullEnt (pevInflictor)) && ((pev->movetype == MOVETYPE_WALK) || (pev->movetype == MOVETYPE_STEP)) && 
+		(pevAttacker->solid != SOLID_TRIGGER))
 		{
 		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
 		vecDir = vecDir.Normalize ();

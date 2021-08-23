@@ -92,7 +92,7 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 
 		pkvd->fHandled = TRUE;
 		}
-	else if (FStrEq (pkvd->szKeyName, "deadmodel"))
+	/*else if (FStrEq (pkvd->szKeyName, "deadmodel"))
 		{
 		pkvd->fHandled = TRUE;
 		}
@@ -100,7 +100,7 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 		{
 		//			m_iShards = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-		}
+		}*/
 	else if (FStrEq (pkvd->szKeyName, "gibmodel"))
 		{
 		m_iszGibModel = ALLOC_STRING (pkvd->szValue);
@@ -119,11 +119,14 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else if (FStrEq (pkvd->szKeyName, "lip"))
+		{
 		pkvd->fHandled = TRUE;
+		}
 	else
+		{
 		CBaseDelay::KeyValue (pkvd);
+		}
 	}
-
 
 //
 // func_breakable - bmodel that breaks into pieces after taking damage
@@ -133,15 +136,11 @@ TYPEDESCRIPTION CBreakable::m_SaveData[] =
 	{
 		DEFINE_FIELD (CBreakable, m_Material, FIELD_INTEGER),
 		DEFINE_FIELD (CBreakable, m_Explosion, FIELD_INTEGER),
-
-		// Don't need to save/restore these because we precache after restore
-		//	DEFINE_FIELD( CBreakable, m_idShard, FIELD_INTEGER ),
-
-			DEFINE_FIELD (CBreakable, m_angle, FIELD_FLOAT),
-			DEFINE_FIELD (CBreakable, m_iszGibModel, FIELD_STRING),
-			DEFINE_FIELD (CBreakable, m_iszSpawnObject, FIELD_STRING),
-
-			// Explosion magnitude is stored in pev->impulse
+		DEFINE_FIELD (CBreakable, m_angle, FIELD_FLOAT),
+		DEFINE_FIELD (CBreakable, m_iszGibModel, FIELD_STRING),
+		DEFINE_FIELD (CBreakable, m_iszSpawnObject, FIELD_STRING),
+		DEFINE_FIELD (CBreakable, m_sizeFactor, FIELD_FLOAT)
+		// Explosion magnitude is stored in pev->impulse
 	};
 
 IMPLEMENT_SAVERESTORE (CBreakable, CBaseEntity);
@@ -167,7 +166,7 @@ void CBreakable::Spawn (void)
 		pev->playerclass = 1;
 		}
 
-	SET_MODEL (ENT (pev), STRING (pev->model));//set size and link into world.
+	SET_MODEL (ENT (pev), STRING (pev->model));	// set size and link into world
 
 	SetTouch (&CBreakable::BreakTouch);
 	if (FBitSet (pev->spawnflags, SF_BREAK_TRIGGER_ONLY))		// Only break on trigger
@@ -176,6 +175,12 @@ void CBreakable::Spawn (void)
 	// Flag unbreakable glass as "worldbrush" so it will block ALL tracelines
 	if (!IsBreakable () && (pev->rendermode != kRenderNormal))
 		pev->flags |= FL_WORLDBRUSH;
+
+	// ESHQ: расчёт фактора размера для звуков
+	m_sizeFactor = (pev->size.x * pev->size.x + pev->size.y * pev->size.y + 
+		pev->size.z * pev->size.z) / 6144.0;	// Коробка 32 х 32 х 32 с двойным запасом
+	if (m_sizeFactor > 1.0)
+		m_sizeFactor = 1.0;
 	}
 
 const char* CBreakable::pSoundsWood[] =
@@ -361,9 +366,18 @@ void CBreakable::Precache (void)
 		UTIL_PrecacheOther ((char*)STRING (m_iszSpawnObject));
 	}
 
-// play shard sound when func_breakable takes damage.
-// the more damage, the louder the shard sound.
+// ESHQ: громкость и высота теперь зависят от размера объекта
+float CBreakable::GetVolume (void)
+	{
+	return RANDOM_FLOAT (0.20, 0.35) + 0.6 * m_sizeFactor;
+	}
 
+int CBreakable::GetPitch (void)
+	{
+	return RANDOM_LONG (130, 145) - (int)(45 * m_sizeFactor);
+	}
+
+// Play shard sound when func_breakable takes damage
 void CBreakable::DamageSound (void)
 	{
 	int pitch;
@@ -372,14 +386,18 @@ void CBreakable::DamageSound (void)
 	int i;
 	int material = m_Material;
 
-	if (RANDOM_LONG (0, 2))
+	/*if (RANDOM_LONG (0, 2))
 		pitch = PITCH_NORM;
 	else
 		pitch = 95 + RANDOM_LONG (0, 34);
 
-	fvol = RANDOM_FLOAT (0.75, 1.0);
+	fvol = RANDOM_FLOAT (0.75, 1.0);*/
 
-	if (material == matComputer && RANDOM_LONG (0, 1))
+	// ESHQ: громкость и высота теперь зависят от размера объекта
+	fvol = GetVolume ();
+	pitch = GetPitch ();
+
+	if ((material == matComputer) && RANDOM_LONG (0, 1))
 		material = matMetal;
 
 	// ESHQ: звуки повреждения объекта breakable
@@ -426,7 +444,6 @@ void CBreakable::DamageSound (void)
 			break;
 
 		case matCeilingTile:
-			// UNDONE: no ceiling tile shard sound yet
 			i = 0;
 			break;
 		}
@@ -460,10 +477,11 @@ void CBreakable::BreakTouch (CBaseEntity* pOther)
 			}
 		}
 
-	if (FBitSet (pev->spawnflags, SF_BREAK_PRESSURE) && pevToucher->absmin.z >= pev->maxs.z - 2)
-		{// can be broken when stood upon
+	if (FBitSet (pev->spawnflags, SF_BREAK_PRESSURE) && (pevToucher->absmin.z >= pev->maxs.z - 2))
+		{
+		// can be broken when stood upon
 
-			// play creaking sound here.
+		// play creaking sound here
 		DamageSound ();
 
 		SetThink (&CBreakable::Die);
@@ -522,7 +540,7 @@ void CBreakable::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vec
 				}
 				break;
 
-				// Ударопрочное стекло
+			// Ударопрочное стекло
 			case matUnbreakableGlass:
 				UTIL_Ricochet (ptr->vecEndPos, RANDOM_FLOAT (0.5, 1.5));
 				break;
@@ -553,7 +571,7 @@ int CBreakable::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 			flDamage = pev->health;
 		}
 	else
-		// an actual missile was involved.
+		// an actual missile was involved
 		{
 		vecTemp = pevInflictor->origin - (pev->absmin + (pev->size * 0.5));
 		}
@@ -581,8 +599,8 @@ int CBreakable::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 		return 0;
 		}
 
-	// Make a shard noise each time func breakable is hit.
-	// Don't play shard noise if cbreakable actually died.
+	// Make a shard noise each time func_breakable is hit.
+	// Don't play shard noise if breakable actually died
 
 	DamageSound ();
 
@@ -598,15 +616,16 @@ void CBreakable::Die (void)
 	int pitch;
 	float fvol;
 
-	pitch = 95 + RANDOM_LONG (0, 29);
+	/*pitch = 95 + RANDOM_LONG (0, 29);
 
-	if (pitch > 97 && pitch < 103)
+	if ((pitch > 97) && (pitch < 103))
 		pitch = 100;
 
-	// The more negative pev->health, the louder the sound should be
-	fvol = RANDOM_FLOAT (0.85, 1.0) + (abs (pev->health) / 100.0);
-	if (fvol > 1.0)
-		fvol = 1.0;
+	fvol = RANDOM_FLOAT (0.85, 1.0) + (abs (pev->health) / 100.0);*/
+
+	// ESHQ: громкость и высота теперь зависят от размера объекта
+	fvol = GetVolume ();
+	pitch = GetPitch ();
 
 	switch (m_Material)
 		{
@@ -696,9 +715,10 @@ void CBreakable::Die (void)
 			break;
 		}
 
-
 	if (m_Explosion == expDirected)
+		{
 		vecVelocity = g_vecAttackDir * 200;
+		}
 	else
 		{
 		vecVelocity.x = 0;
@@ -893,7 +913,6 @@ void CPushable::Spawn (void)
 	m_soundTime = 0;
 	}
 
-
 void CPushable::Precache (void)
 	{
 	for (int i = 0; i < PUSH_SOUND_NAMES; i++)
@@ -931,13 +950,16 @@ void CPushable::KeyValue (KeyValueData* pkvd)
 				break;
 			}
 		}
-	else*/ if (FStrEq (pkvd->szKeyName, "buoyancy"))
+	else*/ 
+	if (FStrEq (pkvd->szKeyName, "buoyancy"))
 		{
 		pev->skin = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBreakable::KeyValue (pkvd);
+		}
 	}
 
 // Pull the func_pushable
