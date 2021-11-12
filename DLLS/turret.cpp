@@ -205,7 +205,6 @@ void CBaseTurret::KeyValue (KeyValueData* pkvd)
 		{
 		m_iOrientation = atoi (pkvd->szValue);
 		pkvd->fHandled = TRUE;
-
 		}
 	else if (FStrEq (pkvd->szKeyName, "searchspeed"))
 		{
@@ -225,7 +224,9 @@ void CBaseTurret::KeyValue (KeyValueData* pkvd)
 		FStrEq (pkvd->szKeyName, "value3"))
 		pkvd->fHandled = TRUE;
 	else
+		{
 		CBaseMonster::KeyValue (pkvd);
+		}
 	}
 
 void CBaseTurret::Spawn ()
@@ -338,9 +339,12 @@ void CBaseTurret::Initialize (void)
 	SetBoneController (0, 0);
 	SetBoneController (1, 0);
 
-	if (m_iBaseTurnRate == 0) m_iBaseTurnRate = TURRET_TURNRATE;
-	if (m_flMaxWait == 0) m_flMaxWait = TURRET_MAXWAIT;
+	if (m_iBaseTurnRate == 0) 
+		m_iBaseTurnRate = TURRET_TURNRATE;
+	if (m_flMaxWait == 0) 
+		m_flMaxWait = TURRET_MAXWAIT;
 	m_flStartYaw = pev->angles.y;
+
 	if (m_iOrientation == 1)
 		{
 		pev->idealpitch = 180;

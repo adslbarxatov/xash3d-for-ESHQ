@@ -83,8 +83,7 @@ extern bool		hold_button_stack;
 
 static void UI_ResetToDefaultsDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide reset to defaults dialog
+	// toggle main menu between active\inactive, show\hide reset to defaults dialog
 	uiControls.defaults.generic.flags ^= QMF_INACTIVE;
 	uiControls.advanced.generic.flags ^= QMF_INACTIVE;
 	uiControls.done.generic.flags ^= QMF_INACTIVE;
@@ -234,8 +233,7 @@ static void UI_Controls_ParseKeysList (void)
 
 static void UI_PromptDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide quit dialog
+	// toggle main menu between active\inactive, show\hide quit dialog
 	uiControls.defaults.generic.flags ^= QMF_INACTIVE;
 	uiControls.advanced.generic.flags ^= QMF_INACTIVE;
 	uiControls.done.generic.flags ^= QMF_INACTIVE;
@@ -346,7 +344,7 @@ static const char* UI_Controls_KeyFunc (int key, int down)
 			return uiSoundLaunch;
 			}
 
-		if ((key == K_BACKSPACE || key == K_DEL) && uiControls.dlgMessage.generic.flags & QMF_HIDDEN)
+		if (((key == K_BACKSPACE) || (key == K_DEL)) && (uiControls.dlgMessage.generic.flags & QMF_HIDDEN))
 			{
 			// delete bindings
 			if (!strlen (uiControls.keysBind[uiControls.keysList.curItem]))
@@ -370,7 +368,7 @@ static const char* UI_Controls_KeyFunc (int key, int down)
 				}
 			}
 
-		if ((key == K_ENTER || key == K_KP_ENTER) && uiControls.dlgMessage.generic.flags & QMF_HIDDEN)
+		if (((key == K_ENTER) || (key == K_KP_ENTER)) && (uiControls.dlgMessage.generic.flags & QMF_HIDDEN))
 			{
 			if (!strlen (uiControls.keysBind[uiControls.keysList.curItem]))
 				{
@@ -391,6 +389,7 @@ static const char* UI_Controls_KeyFunc (int key, int down)
 			return uiSoundKey;
 			}
 		}
+
 	return UI_DefaultKey (&uiControls.menu, key, down);
 	}
 
@@ -449,11 +448,23 @@ static void UI_Controls_Init (void)
 	uiControls.menu.vidInitFunc = UI_Controls_Init;
 	uiControls.menu.keyFunc = UI_Controls_KeyFunc;
 
+#ifdef RU
+	StringConcat (uiControls.hintText, "Действие", CMD_LENGTH);
+#else
 	StringConcat (uiControls.hintText, "Action", CMD_LENGTH);
+#endif
 	StringConcat (uiControls.hintText, uiEmptyString, CMD_LENGTH - 4);
+#ifdef RU
+	StringConcat (uiControls.hintText, "Клавиша/Кнопка", KEY1_LENGTH);
+#else
 	StringConcat (uiControls.hintText, "Key/Button", KEY1_LENGTH);
+#endif
 	StringConcat (uiControls.hintText, uiEmptyString, KEY1_LENGTH - 8);
+#ifdef RU
+	StringConcat (uiControls.hintText, "Вариант", KEY2_LENGTH);
+#else
 	StringConcat (uiControls.hintText, "Alternate", KEY2_LENGTH);
+#endif
 	StringConcat (uiControls.hintText, uiEmptyString, KEY2_LENGTH);
 
 	uiControls.background.generic.id = ID_BACKGROUND;
@@ -467,7 +478,7 @@ static void UI_Controls_Init (void)
 
 	uiControls.banner.generic.id = ID_BANNER;
 	uiControls.banner.generic.type = QMTYPE_BITMAP;
-	uiControls.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiControls.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiControls.banner.generic.x = UI_BANNER_POSX;
 	uiControls.banner.generic.y = UI_BANNER_POSY;
 	uiControls.banner.generic.width = UI_BANNER_WIDTH;
@@ -480,10 +491,13 @@ static void UI_Controls_Init (void)
 	uiControls.defaults.generic.x = 72;
 	uiControls.defaults.generic.y = 230;
 	uiControls.defaults.generic.name = "Use defaults";
-	uiControls.defaults.generic.statusText = "Reset all buttons binding to their default values";
 	uiControls.defaults.generic.callback = UI_Controls_Callback;
-
 	UI_UtilSetupPicButton (&uiControls.defaults, PC_USE_DEFAULTS);
+#ifdef RU
+	uiControls.defaults.generic.statusText = "Сбросить все привязки клавиш к значениям по умолчанию";
+#else
+	uiControls.defaults.generic.statusText = "Reset all buttons binding to their default values";
+#endif
 
 	uiControls.advanced.generic.id = ID_ADVANCED;
 	uiControls.advanced.generic.type = QMTYPE_BM_BUTTON;
@@ -491,21 +505,27 @@ static void UI_Controls_Init (void)
 	uiControls.advanced.generic.x = 72;
 	uiControls.advanced.generic.y = 280;
 	uiControls.advanced.generic.name = "Adv controls";
-	uiControls.advanced.generic.statusText = "Change mouse sensitivity, enable autoaim, mouselook and crosshair";
 	uiControls.advanced.generic.callback = UI_Controls_Callback;
-
 	UI_UtilSetupPicButton (&uiControls.advanced, PC_ADV_CONTROLS);
+#ifdef RU
+	uiControls.advanced.generic.statusText = "Чувствительность мыши, автоприцеливание, перекрестие и обзор";
+#else
+	uiControls.advanced.generic.statusText = "Change mouse sensitivity, enable autoaim, mouselook and crosshair";
+#endif
 
 	uiControls.done.generic.id = ID_DONE;
 	uiControls.done.generic.type = QMTYPE_BM_BUTTON;
 	uiControls.done.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW;
 	uiControls.done.generic.x = 72;
 	uiControls.done.generic.y = 330;
-	uiControls.done.generic.name = "Ok";
-	uiControls.done.generic.statusText = "Save changes and return to configuration menu";
+	uiControls.done.generic.name = "OK";
 	uiControls.done.generic.callback = UI_Controls_Callback;
-
 	UI_UtilSetupPicButton (&uiControls.done, PC_DONE);
+#ifdef RU
+	uiControls.done.generic.statusText = "Сохранить изменения и вернуться в меню конфигурации";
+#else
+	uiControls.done.generic.statusText = "Save changes and return to configuration menu";
+#endif
 
 	uiControls.cancel.generic.id = ID_CANCEL;
 	uiControls.cancel.generic.type = QMTYPE_BM_BUTTON;
@@ -513,18 +533,25 @@ static void UI_Controls_Init (void)
 	uiControls.cancel.generic.x = 72;
 	uiControls.cancel.generic.y = 380;
 	uiControls.cancel.generic.name = "Cancel";
-	uiControls.cancel.generic.statusText = "Discard changes and return to configuration menu";
 	uiControls.cancel.generic.callback = UI_Controls_Callback;
-
 	UI_UtilSetupPicButton (&uiControls.cancel, PC_CANCEL);
+#ifdef RU
+	uiControls.cancel.generic.statusText = "Отменить изменения и вернуться в меню конфигурации";
+#else
+	uiControls.cancel.generic.statusText = "Discard changes and return to configuration menu";
+#endif
 
 	uiControls.tipMessage.generic.id = ID_TABLEHINT;
 	uiControls.tipMessage.generic.type = QMTYPE_ACTION;
 	uiControls.tipMessage.generic.flags = QMF_INACTIVE | QMF_SMALLFONT;
 	uiControls.tipMessage.generic.color = uiInputFgColor;
-	uiControls.tipMessage.generic.name = "    Press 'Enter' to set/add a key, 'Del' to clear keys,\n              'Backspace' to clear and set key";
 	uiControls.tipMessage.generic.x = 360;
 	uiControls.tipMessage.generic.y = 175;
+#ifdef RU
+	uiControls.tipMessage.generic.name = "    Нажмите 'Enter' для задания/добавления, 'Del' для очистки,\n           'Backspace' для очистки и установки клавиши";
+#else
+	uiControls.tipMessage.generic.name = "    Press 'Enter' to set/add a key, 'Del' to clear keys,\n              'Backspace' to clear and set key";
+#endif
 
 	uiControls.hintMessage.generic.id = ID_TABLEHINT;
 	uiControls.hintMessage.generic.type = QMTYPE_ACTION;
@@ -542,7 +569,6 @@ static void UI_Controls_Init (void)
 	uiControls.keysList.generic.width = 640;
 	uiControls.keysList.generic.height = 440;
 	uiControls.keysList.generic.callback = UI_Controls_Callback;
-
 	UI_Controls_ParseKeysList ();
 
 	uiControls.msgBox1.generic.id = ID_MSGBOX1;
@@ -566,25 +592,32 @@ static void UI_Controls_Init (void)
 	uiControls.dlgMessage.generic.id = ID_MSGTEXT;
 	uiControls.dlgMessage.generic.type = QMTYPE_ACTION;
 	uiControls.dlgMessage.generic.flags = QMF_INACTIVE | QMF_HIDDEN | QMF_DROPSHADOW;
-	uiControls.dlgMessage.generic.name = "Press a key or button";
-	uiControls.dlgMessage.generic.x = 320;
+	uiControls.dlgMessage.generic.x = 280;
 	uiControls.dlgMessage.generic.y = 280;
+#ifdef RU
+	uiControls.dlgMessage.generic.name = "Нажмите клавишу или кнопку";
+#else
+	uiControls.dlgMessage.generic.name = "   Press a key or button";
+#endif
 
 	uiControls.promptMessage.generic.id = ID_PROMPT;
 	uiControls.promptMessage.generic.type = QMTYPE_ACTION;
 	uiControls.promptMessage.generic.flags = QMF_INACTIVE | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiControls.promptMessage.generic.name = "Reset buttons to default?";
 	uiControls.promptMessage.generic.x = 290;
 	uiControls.promptMessage.generic.y = 280;
+#ifdef RU
+	uiControls.promptMessage.generic.name = "Сбросить настройки клавиш?";
+#else
+	uiControls.promptMessage.generic.name = "Reset buttons to default?";
+#endif
 
 	uiControls.yes.generic.id = ID_YES;
 	uiControls.yes.generic.type = QMTYPE_BM_BUTTON;
 	uiControls.yes.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiControls.yes.generic.name = "Ok";
+	uiControls.yes.generic.name = "OK";
 	uiControls.yes.generic.x = 380;
 	uiControls.yes.generic.y = 460;
 	uiControls.yes.generic.callback = UI_Controls_Callback;
-
 	UI_UtilSetupPicButton (&uiControls.yes, PC_OK);
 
 	uiControls.no.generic.id = ID_NO;
@@ -594,7 +627,6 @@ static void UI_Controls_Init (void)
 	uiControls.no.generic.x = 530;
 	uiControls.no.generic.y = 460;
 	uiControls.no.generic.callback = UI_Controls_Callback;
-
 	UI_UtilSetupPicButton (&uiControls.no, PC_CANCEL);
 
 	UI_AddItem (&uiControls.menu, (void*)&uiControls.background);

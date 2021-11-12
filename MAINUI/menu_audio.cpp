@@ -128,7 +128,8 @@ static void UI_Audio_Callback (void* self, int event)
 		case ID_NODSP:
 			if (event == QM_PRESSED)
 				((menuCheckBox_s*)self)->focusPic = UI_CHECKBOX_PRESSED;
-			else ((menuCheckBox_s*)self)->focusPic = UI_CHECKBOX_FOCUS;
+			else 
+				((menuCheckBox_s*)self)->focusPic = UI_CHECKBOX_FOCUS;
 			break;
 		}
 
@@ -171,7 +172,7 @@ static void UI_Audio_Init (void)
 
 	uiAudio.banner.generic.id = ID_BANNER;
 	uiAudio.banner.generic.type = QMTYPE_BITMAP;
-	uiAudio.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiAudio.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiAudio.banner.generic.x = UI_BANNER_POSX;
 	uiAudio.banner.generic.y = UI_BANNER_POSY;
 	uiAudio.banner.generic.width = UI_BANNER_WIDTH;
@@ -184,64 +185,93 @@ static void UI_Audio_Init (void)
 	uiAudio.done.generic.x = 72;
 	uiAudio.done.generic.y = 230;
 	uiAudio.done.generic.name = "Done";
-	uiAudio.done.generic.statusText = "Go back to the Configuration Menu";
 	uiAudio.done.generic.callback = UI_Audio_Callback;
+#ifdef RU
+	uiAudio.done.generic.statusText = "Вернуться в меню конфигурации";
+#else
+	uiAudio.done.generic.statusText = "Go back to the configuration menu";
+#endif
 
 	UI_UtilSetupPicButton (&uiAudio.done, PC_DONE);
 
 	uiAudio.soundVolume.generic.id = ID_SOUNDVOLUME;
 	uiAudio.soundVolume.generic.type = QMTYPE_SLIDER;
 	uiAudio.soundVolume.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW;
-	uiAudio.soundVolume.generic.name = "Game sound volume";
 	uiAudio.soundVolume.generic.x = 320;
 	uiAudio.soundVolume.generic.y = 280;
 	uiAudio.soundVolume.generic.callback = UI_Audio_Callback;
-	uiAudio.soundVolume.generic.statusText = "Set master volume level";
 	uiAudio.soundVolume.minValue = 0.0;
 	uiAudio.soundVolume.maxValue = 1.0;
 	uiAudio.soundVolume.range = 0.05f;
+#ifdef RU
+	uiAudio.soundVolume.generic.name = "Громкость звуков";
+	uiAudio.soundVolume.generic.statusText = "Задать базовую громкость звуков";
+#else
+	uiAudio.soundVolume.generic.name = "Game sound volume";
+	uiAudio.soundVolume.generic.statusText = "Set master volume level";
+#endif
 
 	uiAudio.musicVolume.generic.id = ID_MUSICVOLUME;
 	uiAudio.musicVolume.generic.type = QMTYPE_SLIDER;
 	uiAudio.musicVolume.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW;
-	uiAudio.musicVolume.generic.name = "Game music volume";
 	uiAudio.musicVolume.generic.x = 320;
 	uiAudio.musicVolume.generic.y = 340;
 	uiAudio.musicVolume.generic.callback = UI_Audio_Callback;
-	uiAudio.musicVolume.generic.statusText = "Set background music volume level";
 	uiAudio.musicVolume.minValue = 0.0;
 	uiAudio.musicVolume.maxValue = 1.0;
 	uiAudio.musicVolume.range = 0.05f;
+#ifdef RU
+	uiAudio.musicVolume.generic.name = "Громкость музыки";
+	uiAudio.musicVolume.generic.statusText = "Задать громкость фоновой музыки";
+#else
+	uiAudio.musicVolume.generic.name = "Game music volume";
+	uiAudio.musicVolume.generic.statusText = "Set background music volume level";
+#endif
 
 	uiAudio.suitVolume.generic.id = ID_SUITVOLUME;
 	uiAudio.suitVolume.generic.type = QMTYPE_SLIDER;
 	uiAudio.suitVolume.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW;
-	uiAudio.suitVolume.generic.name = "Suit volume";
 	uiAudio.suitVolume.generic.x = 320;
 	uiAudio.suitVolume.generic.y = 400;
 	uiAudio.suitVolume.generic.callback = UI_Audio_Callback;
-	uiAudio.suitVolume.generic.statusText = "Singleplayer suit volume";
 	uiAudio.suitVolume.minValue = 0.0;
 	uiAudio.suitVolume.maxValue = 1.0;
 	uiAudio.suitVolume.range = 0.05f;
+#ifdef RU
+	uiAudio.suitVolume.generic.name = "Громкость костюма";
+	uiAudio.suitVolume.generic.statusText = "Громкость голоса костюма (сюжетный режим)";
+#else
+	uiAudio.suitVolume.generic.name = "Suit volume";
+	uiAudio.suitVolume.generic.statusText = "Singleplayer suit volume";
+#endif
 
 	uiAudio.lerping.generic.id = ID_INTERP;
 	uiAudio.lerping.generic.type = QMTYPE_CHECKBOX;
 	uiAudio.lerping.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_ACT_ONRELEASE | QMF_MOUSEONLY | QMF_DROPSHADOW;
-	uiAudio.lerping.generic.name = "Enable sound interpolation";
 	uiAudio.lerping.generic.x = 320;
 	uiAudio.lerping.generic.y = 470;
 	uiAudio.lerping.generic.callback = UI_Audio_Callback;
-	uiAudio.lerping.generic.statusText = "enable/disable interpolation on sound output";
+#ifdef RU
+	uiAudio.lerping.generic.name = "Включить интерполяцию звука";
+	uiAudio.lerping.generic.statusText = "Включение / выключение интерполяции звукового выхода";
+#else
+	uiAudio.lerping.generic.name = "Enable sound interpolation";
+	uiAudio.lerping.generic.statusText = "Enable / disable interpolation on sound output";
+#endif
 
 	uiAudio.noDSP.generic.id = ID_NODSP;
 	uiAudio.noDSP.generic.type = QMTYPE_CHECKBOX;
 	uiAudio.noDSP.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_ACT_ONRELEASE | QMF_MOUSEONLY | QMF_DROPSHADOW;
-	uiAudio.noDSP.generic.name = "Disable DSP effects";
 	uiAudio.noDSP.generic.x = 320;
 	uiAudio.noDSP.generic.y = 520;
 	uiAudio.noDSP.generic.callback = UI_Audio_Callback;
-	uiAudio.noDSP.generic.statusText = "this disables sound processing (like echo, flanger etc)";
+#ifdef RU
+	uiAudio.noDSP.generic.name = "Отключить DSP-эффекты";
+	uiAudio.noDSP.generic.statusText = "Отключение обработки звука (эхо, фланжер и т.п.)";
+#else
+	uiAudio.noDSP.generic.name = "Disable DSP effects";
+	uiAudio.noDSP.generic.statusText = "Disables sound processing (like echo, flanger etc)";
+#endif
 
 	UI_Audio_GetConfig ();
 

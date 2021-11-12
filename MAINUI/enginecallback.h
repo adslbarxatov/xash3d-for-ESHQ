@@ -40,15 +40,15 @@ GNU General Public License for more details.
 #define GetLogoHeight	(*g_engfuncs.pfnGetLogoHeight)
 #define GetLogoLength	(*g_engfuncs.pfnGetLogoLength)
 
-inline HIMAGE PIC_Load( const char *szPicName, long flags = 0 )
-{
-	return g_engfuncs.pfnPIC_Load( szPicName, NULL, 0, flags );
-}
+inline HIMAGE PIC_Load (const char *szPicName, long flags = 0)
+	{
+	return g_engfuncs.pfnPIC_Load (szPicName, NULL, 0, flags);
+	}
 
-inline HIMAGE PIC_Load( const char *szPicName, const byte *ucRawImage, long ulRawImageSize, long flags = 0 )
-{
-	return g_engfuncs.pfnPIC_Load( szPicName, ucRawImage, ulRawImageSize, flags );
-}
+inline HIMAGE PIC_Load (const char *szPicName, const byte *ucRawImage, long ulRawImageSize, long flags = 0)
+	{
+	return g_engfuncs.pfnPIC_Load (szPicName, ucRawImage, ulRawImageSize, flags);
+	}
 
 #define PIC_Free		(*g_engfuncs.pfnPIC_Free)
 #define PLAY_SOUND		(*g_engfuncs.pfnPlayLocalSound)
@@ -82,7 +82,7 @@ inline HIMAGE PIC_Load( const char *szPicName, const byte *ucRawImage, long ulRa
 #define KEY_SetOverstrike	(*g_engfuncs.pfnKeySetOverstrikeMode)
 #define Key_GetState	(*g_engfuncs.pfnKeyGetState)
 #define SET_CURSOR		(*g_engfuncs.pfnSetCursor)
-	
+
 #define Cmd_AddCommand	(*g_engfuncs.pfnAddCommand)
 #define Cmd_RemoveCommand	(*g_engfuncs.pfnDelCommand)
 #define CMD_ARGC		(*g_engfuncs.pfnCmdArgc)
@@ -106,75 +106,75 @@ inline HIMAGE PIC_Load( const char *szPicName, const byte *ucRawImage, long ulRa
 
 #define CL_IsActive()	(g_engfuncs.pfnClientInGame() && !CVAR_GET_FLOAT( "cl_background" ))
 
-inline void PIC_Set( HIMAGE hPic, int r, int g, int b )
-{
-	g_engfuncs.pfnPIC_Set( hPic, r, g, b, 255 );
-}
+inline void PIC_Set (HIMAGE hPic, int r, int g, int b)
+	{
+	g_engfuncs.pfnPIC_Set (hPic, r, g, b, 255);
+	}
 
-inline void PIC_Set( HIMAGE hPic, int r, int g, int b, int a )
-{
-	g_engfuncs.pfnPIC_Set( hPic, r, g, b, a );
-}
+inline void PIC_Set (HIMAGE hPic, int r, int g, int b, int a)
+	{
+	g_engfuncs.pfnPIC_Set (hPic, r, g, b, a);
+	}
 
-inline void PIC_Draw( int x, int y, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_Draw( x, y, -1, -1, prc );
-}
+inline void PIC_Draw (int x, int y, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_Draw (x, y, -1, -1, prc);
+	}
 
-inline void PIC_Draw( int x, int y, int width, int height )
-{
-	g_engfuncs.pfnPIC_Draw( x, y, width, height, NULL );
-}
+inline void PIC_Draw (int x, int y, int width, int height)
+	{
+	g_engfuncs.pfnPIC_Draw (x, y, width, height, NULL);
+	}
 
-inline void PIC_Draw( int x, int y, int width, int height, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_Draw( x, y, width, height, prc );
-}
+inline void PIC_Draw (int x, int y, int width, int height, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_Draw (x, y, width, height, prc);
+	}
 
-inline void PIC_DrawTrans( int x, int y, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_DrawTrans( x, y, -1, -1, prc );
-}
+inline void PIC_DrawTrans (int x, int y, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_DrawTrans (x, y, -1, -1, prc);
+	}
 
-inline void PIC_DrawTrans( int x, int y, int width, int height )
-{
-	g_engfuncs.pfnPIC_DrawTrans( x, y, width, height, NULL );
-}
+inline void PIC_DrawTrans (int x, int y, int width, int height)
+	{
+	g_engfuncs.pfnPIC_DrawTrans (x, y, width, height, NULL);
+	}
 
-inline void PIC_DrawTrans( int x, int y, int width, int height, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_DrawTrans( x, y, width, height, prc );
-}
+inline void PIC_DrawTrans (int x, int y, int width, int height, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_DrawTrans (x, y, width, height, prc);
+	}
 
-inline void PIC_DrawHoles( int x, int y, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_DrawHoles( x, y, -1, -1, prc );
-}
+inline void PIC_DrawHoles (int x, int y, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_DrawHoles (x, y, -1, -1, prc);
+	}
 
-inline void SPR_DrawHoles( int x, int y, int width, int height )
-{
-	g_engfuncs.pfnPIC_DrawHoles( x, y, width, height, NULL );
-}
+inline void SPR_DrawHoles (int x, int y, int width, int height)
+	{
+	g_engfuncs.pfnPIC_DrawHoles (x, y, width, height, NULL);
+	}
 
-inline void PIC_DrawAdditive( int x, int y, int width, int height )
-{
-	g_engfuncs.pfnPIC_DrawAdditive( x, y, width, height, NULL );
-}
+inline void PIC_DrawAdditive (int x, int y, int width, int height)
+	{
+	g_engfuncs.pfnPIC_DrawAdditive (x, y, width, height, NULL);
+	}
 
-inline void PIC_DrawAdditive( int x, int y, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_DrawAdditive( x, y, -1, -1, prc );
-}
+inline void PIC_DrawAdditive (int x, int y, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_DrawAdditive (x, y, -1, -1, prc);
+	}
 
-inline void PIC_DrawAdditive( int x, int y, int w, int h, const wrect_t *prc )
-{
-	g_engfuncs.pfnPIC_DrawAdditive( x, y, w, h, prc );
-}
+inline void PIC_DrawAdditive (int x, int y, int w, int h, const wrect_t *prc)
+	{
+	g_engfuncs.pfnPIC_DrawAdditive (x, y, w, h, prc);
+	}
 
-inline void TextMessageSetColor( int r, int g, int b, int alpha = 255 )
-{
-	g_engfuncs.pfnDrawSetTextColor( r, g, b, alpha );
-}
+inline void TextMessageSetColor (int r, int g, int b, int alpha = 255)
+	{
+	g_engfuncs.pfnDrawSetTextColor (r, g, b, alpha);
+	}
 
 #define TextMessageDrawChar	(*g_engfuncs.pfnDrawCharacter)
 #define DrawConsoleString	(*g_engfuncs.pfnDrawConsoleString)

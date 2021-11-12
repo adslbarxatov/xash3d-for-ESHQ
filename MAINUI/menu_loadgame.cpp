@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ID_BACKGROUND	0
 #define ID_BANNER		1
-#define ID_LOAD		2
+#define ID_LOAD			2
 #define ID_DELETE		3
 #define ID_CANCEL		4
 #define ID_SAVELIST		5
@@ -36,8 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_LEVELSHOT	7
 #define ID_MSGBOX	 	8
 #define ID_MSGTEXT	 	9
-#define ID_YES	 	130
-#define ID_NO	 	131
+#define ID_YES	 		130
+#define ID_NO	 		131
 
 #define LEVELSHOT_X		72
 #define LEVELSHOT_Y		400
@@ -50,10 +50,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 	{
-	char		saveName[UI_MAXGAMES][CS_SIZE];
-	char		delName[UI_MAXGAMES][CS_SIZE];
-	char		saveDescription[UI_MAXGAMES][95];
-	char* saveDescriptionPtr[UI_MAXGAMES];
+	char	saveName[UI_MAXGAMES][CS_SIZE];
+	char	delName[UI_MAXGAMES][CS_SIZE];
+	char	saveDescription[UI_MAXGAMES][95];
+	char	*saveDescriptionPtr[UI_MAXGAMES];
 
 	menuFramework_s	menu;
 
@@ -92,8 +92,7 @@ static void UI_MsgBox_Ownerdraw (void* self)
 
 static void UI_DeleteDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide remove dialog
+	// toggle main menu between active\inactive, show\hide remove dialog
 	uiLoadGame.load.generic.flags ^= QMF_INACTIVE;
 	uiLoadGame.remove.generic.flags ^= QMF_INACTIVE;
 	uiLoadGame.cancel.generic.flags ^= QMF_INACTIVE;
@@ -152,7 +151,10 @@ static void UI_LoadGame_GetGameList (void)
 				uiLoadGame.saveDescriptionPtr[i] = uiLoadGame.saveDescription[i];
 				COM_FileBase (filenames[i], uiLoadGame.delName[i]);
 				}
-			else uiLoadGame.saveDescriptionPtr[i] = NULL;
+			else
+				{
+				uiLoadGame.saveDescriptionPtr[i] = NULL;
+				}
 			continue;
 			}
 
@@ -179,11 +181,13 @@ static void UI_LoadGame_GetGameList (void)
 
 	if (strlen (uiLoadGame.saveName[0]) == 0)
 		uiLoadGame.load.generic.flags |= QMF_GRAYED;
-	else uiLoadGame.load.generic.flags &= ~QMF_GRAYED;
+	else 
+		uiLoadGame.load.generic.flags &= ~QMF_GRAYED;
 
 	if (strlen (uiLoadGame.delName[0]) == 0)
 		uiLoadGame.remove.generic.flags |= QMF_GRAYED;
-	else uiLoadGame.remove.generic.flags &= ~QMF_GRAYED;
+	else
+		uiLoadGame.remove.generic.flags &= ~QMF_GRAYED;
 	}
 
 /*
@@ -199,11 +203,13 @@ static void UI_LoadGame_Callback (void* self, int event)
 		{
 		if (strlen (uiLoadGame.saveName[uiLoadGame.savesList.curItem]) == 0)
 			uiLoadGame.load.generic.flags |= QMF_GRAYED;
-		else uiLoadGame.load.generic.flags &= ~QMF_GRAYED;
+		else 
+			uiLoadGame.load.generic.flags &= ~QMF_GRAYED;
 
 		if (strlen (uiLoadGame.delName[uiLoadGame.savesList.curItem]) == 0)
 			uiLoadGame.remove.generic.flags |= QMF_GRAYED;
-		else uiLoadGame.remove.generic.flags &= ~QMF_GRAYED;
+		else
+			uiLoadGame.remove.generic.flags &= ~QMF_GRAYED;
 		return;
 		}
 
@@ -280,9 +286,13 @@ static void UI_LoadGame_Ownerdraw (void* self)
 
 			if (!g_engfuncs.pfnFileExists (saveshot, TRUE))
 				UI_DrawPicAdditive (x, y, w, h, uiColorWhite, EMPTY_SAVE_PIC);
-			else UI_DrawPic (x, y, w, h, uiColorWhite, saveshot);
+			else 
+				UI_DrawPic (x, y, w, h, uiColorWhite, saveshot);
 			}
-		else UI_DrawPicAdditive (x, y, w, h, uiColorWhite, EMPTY_SAVE_PIC);
+		else
+			{
+			UI_DrawPicAdditive (x, y, w, h, uiColorWhite, EMPTY_SAVE_PIC);
+			}
 
 		// draw the rectangle
 		UI_DrawRectangle (item->x, item->y, item->width, item->height, uiInputFgColor);
@@ -301,11 +311,23 @@ static void UI_LoadGame_Init (void)
 	uiLoadGame.menu.vidInitFunc = UI_LoadGame_Init;
 	uiLoadGame.menu.keyFunc = UI_LoadGame_KeyFunc;
 
+#ifdef RU
+	StringConcat (uiLoadGame.hintText, "Время", TIME_LENGTH);
+#else
 	StringConcat (uiLoadGame.hintText, "Time", TIME_LENGTH);
+#endif
 	StringConcat (uiLoadGame.hintText, uiEmptyString, TIME_LENGTH);
+#ifdef RU
+	StringConcat (uiLoadGame.hintText, "Игра", NAME_LENGTH);
+#else
 	StringConcat (uiLoadGame.hintText, "Game", NAME_LENGTH);
+#endif
 	StringConcat (uiLoadGame.hintText, uiEmptyString, NAME_LENGTH);
+#ifdef RU
+	StringConcat (uiLoadGame.hintText, "Заняла времени", GAMETIME_LENGTH);
+#else
 	StringConcat (uiLoadGame.hintText, "Elapsed time", GAMETIME_LENGTH);
+#endif
 	StringConcat (uiLoadGame.hintText, uiEmptyString, GAMETIME_LENGTH);
 
 	uiLoadGame.background.generic.id = ID_BACKGROUND;
@@ -319,7 +341,7 @@ static void UI_LoadGame_Init (void)
 
 	uiLoadGame.banner.generic.id = ID_BANNER;
 	uiLoadGame.banner.generic.type = QMTYPE_BITMAP;
-	uiLoadGame.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiLoadGame.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiLoadGame.banner.generic.x = UI_BANNER_POSX;
 	uiLoadGame.banner.generic.y = UI_BANNER_POSY;
 	uiLoadGame.banner.generic.width = UI_BANNER_WIDTH;
@@ -332,10 +354,13 @@ static void UI_LoadGame_Init (void)
 	uiLoadGame.load.generic.x = 72;
 	uiLoadGame.load.generic.y = 230;
 	uiLoadGame.load.generic.name = "Load";
-	uiLoadGame.load.generic.statusText = "Load saved game";
 	uiLoadGame.load.generic.callback = UI_LoadGame_Callback;
-
 	UI_UtilSetupPicButton (&uiLoadGame.load, PC_LOAD_GAME);
+#ifdef RU
+	uiLoadGame.load.generic.statusText = "Загрузить сохранение";
+#else
+	uiLoadGame.load.generic.statusText = "Load saved game";
+#endif
 
 	uiLoadGame.remove.generic.id = ID_DELETE;
 	uiLoadGame.remove.generic.type = QMTYPE_BM_BUTTON;
@@ -343,10 +368,13 @@ static void UI_LoadGame_Init (void)
 	uiLoadGame.remove.generic.x = 72;
 	uiLoadGame.remove.generic.y = 280;
 	uiLoadGame.remove.generic.name = "Delete";
-	uiLoadGame.remove.generic.statusText = "Delete saved game";
 	uiLoadGame.remove.generic.callback = UI_LoadGame_Callback;
-
 	UI_UtilSetupPicButton (&uiLoadGame.remove, PC_DELETE);
+#ifdef RU
+	uiLoadGame.remove.generic.statusText = "Удалить сохранение";
+#else
+	uiLoadGame.remove.generic.statusText = "Delete saved game";
+#endif
 
 	uiLoadGame.cancel.generic.id = ID_CANCEL;
 	uiLoadGame.cancel.generic.type = QMTYPE_BM_BUTTON;
@@ -354,10 +382,13 @@ static void UI_LoadGame_Init (void)
 	uiLoadGame.cancel.generic.x = 72;
 	uiLoadGame.cancel.generic.y = 330;
 	uiLoadGame.cancel.generic.name = "Cancel";
-	uiLoadGame.cancel.generic.statusText = "Return back to main menu";
 	uiLoadGame.cancel.generic.callback = UI_LoadGame_Callback;
-
 	UI_UtilSetupPicButton (&uiLoadGame.cancel, PC_CANCEL);
+#ifdef RU
+	uiLoadGame.cancel.generic.statusText = "Вернуться в главное меню";
+#else
+	uiLoadGame.cancel.generic.statusText = "Return back to main menu";
+#endif
 
 	uiLoadGame.hintMessage.generic.id = ID_TABLEHINT;
 	uiLoadGame.hintMessage.generic.type = QMTYPE_ACTION;
@@ -397,18 +428,21 @@ static void UI_LoadGame_Init (void)
 	uiLoadGame.promptMessage.generic.id = ID_MSGBOX;
 	uiLoadGame.promptMessage.generic.type = QMTYPE_ACTION;
 	uiLoadGame.promptMessage.generic.flags = QMF_INACTIVE | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiLoadGame.promptMessage.generic.name = "Delete selected game?";
 	uiLoadGame.promptMessage.generic.x = 315;
 	uiLoadGame.promptMessage.generic.y = 280;
+#ifdef RU
+	uiLoadGame.promptMessage.generic.name = "Удалить сохранение?";
+#else
+	uiLoadGame.promptMessage.generic.name = "Delete selected game?";
+#endif
 
 	uiLoadGame.yes.generic.id = ID_YES;
 	uiLoadGame.yes.generic.type = QMTYPE_BM_BUTTON;
 	uiLoadGame.yes.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiLoadGame.yes.generic.name = "Ok";
+	uiLoadGame.yes.generic.name = "OK";
 	uiLoadGame.yes.generic.x = 380;
 	uiLoadGame.yes.generic.y = 460;
 	uiLoadGame.yes.generic.callback = UI_LoadGame_Callback;
-
 	UI_UtilSetupPicButton (&uiLoadGame.yes, PC_OK);
 
 	uiLoadGame.no.generic.id = ID_NO;
@@ -418,7 +452,6 @@ static void UI_LoadGame_Init (void)
 	uiLoadGame.no.generic.x = 530;
 	uiLoadGame.no.generic.y = 460;
 	uiLoadGame.no.generic.callback = UI_LoadGame_Callback;
-
 	UI_UtilSetupPicButton (&uiLoadGame.no, PC_CANCEL);
 
 	UI_LoadGame_GetGameList ();

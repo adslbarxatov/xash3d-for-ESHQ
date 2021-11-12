@@ -818,7 +818,7 @@ void UTIL_HudMessage (CBaseEntity* pEntity, const hudtextparms_t& textparms, con
 
 void UTIL_HudMessageAll (const hudtextparms_t& textparms, const char* pMessage)
 	{
-	int			i;
+	int i;
 
 	for (i = 1; i <= gpGlobals->maxClients; i++)
 		{

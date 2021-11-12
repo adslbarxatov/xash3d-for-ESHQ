@@ -246,7 +246,7 @@ TYPEDESCRIPTION	CGameText::m_SaveData[] =
 IMPLEMENT_SAVERESTORE (CGameText, CRulePointEntity);
 
 
-void CGameText::KeyValue (KeyValueData* pkvd)
+void CGameText::KeyValue (KeyValueData *pkvd)
 	{
 	if (FStrEq (pkvd->szKeyName, "channel"))
 		{
@@ -309,7 +309,9 @@ void CGameText::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CRulePointEntity::KeyValue (pkvd);
+		}
 	}
 
 

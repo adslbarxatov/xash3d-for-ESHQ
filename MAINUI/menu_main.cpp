@@ -43,13 +43,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_CUSTOMGAME	8
 // ESHQ: изменено для поддержки титров
 #define ID_CREDITS		9
-#define ID_QUIT		10
+#define ID_QUIT			10
 #define ID_QUIT_BUTTON	11
 #define ID_MINIMIZE		12
 #define ID_MSGBOX	 	13
 #define ID_MSGTEXT	 	14
-#define ID_YES	 	130
-#define ID_NO	 	131
+#define ID_YES	 		130
+#define ID_NO	 		131
 
 typedef struct
 	{
@@ -128,8 +128,7 @@ static void UI_Background_Ownerdraw (void* self)
 
 static void UI_QuitDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide quit dialog
+	// toggle main menu between active\inactive, show\hide quit dialog
 	uiMain.console.generic.flags ^= QMF_INACTIVE;
 	uiMain.resumeGame.generic.flags ^= QMF_INACTIVE;
 	uiMain.newGame.generic.flags ^= QMF_INACTIVE;
@@ -147,13 +146,11 @@ static void UI_QuitDialog (void)
 	uiMain.quitMessage.generic.flags ^= QMF_HIDDEN;
 	uiMain.no.generic.flags ^= QMF_HIDDEN;
 	uiMain.yes.generic.flags ^= QMF_HIDDEN;
-
 	}
 
 static void UI_PromptDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide quit dialog
+	// toggle main menu between active\inactive, show\hide quit dialog
 	uiMain.console.generic.flags ^= QMF_INACTIVE;
 	uiMain.resumeGame.generic.flags ^= QMF_INACTIVE;
 	uiMain.newGame.generic.flags ^= QMF_INACTIVE;
@@ -188,9 +185,13 @@ static const char* UI_Main_KeyFunc (int key, int down)
 				UI_PromptDialog ();
 			else if (!(uiMain.quitMessage.generic.flags & QMF_HIDDEN))
 				UI_QuitDialog ();
-			else UI_CloseMenu ();
+			else 
+				UI_CloseMenu ();
 			}
-		else UI_QuitDialog ();
+		else
+			{
+			UI_QuitDialog ();
+			}
 		return uiSoundNull;
 		}
 	return UI_DefaultKey (&uiMain.menu, key, down);
@@ -270,12 +271,14 @@ static void UI_Main_Callback (void* self, int event)
 		case ID_QUIT_BUTTON:
 			if (event == QM_PRESSED)
 				((menuBitmap_s*)self)->focusPic = ART_CLOSEBTN_D;
-			else ((menuBitmap_s*)self)->focusPic = ART_CLOSEBTN_F;
+			else 
+				((menuBitmap_s*)self)->focusPic = ART_CLOSEBTN_F;
 			break;
 		case ID_MINIMIZE:
 			if (event == QM_PRESSED)
 				((menuBitmap_s*)self)->focusPic = ART_MINIMIZE_D;
-			else ((menuBitmap_s*)self)->focusPic = ART_MINIMIZE_F;
+			else 
+				((menuBitmap_s*)self)->focusPic = ART_MINIMIZE_F;
 			break;
 		}
 
@@ -308,7 +311,8 @@ static void UI_Main_Callback (void* self, int event)
 		case ID_SAVERESTORE:
 			if (CL_IsActive ())
 				UI_SaveLoad_Menu ();
-			else UI_LoadGame_Menu ();
+			else 
+				UI_LoadGame_Menu ();
 			break;
 		case ID_CUSTOMGAME:
 			UI_CustomGame_Menu ();
@@ -332,12 +336,14 @@ static void UI_Main_Callback (void* self, int event)
 		case ID_YES:
 			if (!(uiMain.quitMessage.generic.flags & QMF_HIDDEN))
 				CLIENT_COMMAND (FALSE, "quit\n");
-			else UI_Main_HazardCourse ();
+			else
+				UI_Main_HazardCourse ();
 			break;
 		case ID_NO:
 			if (!(uiMain.quitMessage.generic.flags & QMF_HIDDEN))
 				UI_QuitDialog ();
-			else UI_PromptDialog ();
+			else
+				UI_PromptDialog ();
 			break;
 		}
 	}
@@ -361,7 +367,8 @@ static void UI_Main_Init (void)
 
 	if (CVAR_GET_FLOAT ("host_allow_changegame"))
 		bCustomGame = true;
-	else bCustomGame = false;
+	else 
+		bCustomGame = false;
 
 	// precache .avi file and get logo width and height
 	PRECACHE_LOGO ("logo.avi");
@@ -387,7 +394,6 @@ static void UI_Main_Init (void)
 	uiMain.console.generic.x = 72;
 	uiMain.console.generic.y = CL_IsActive () ? 180 : 230;
 	uiMain.console.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.console, PC_CONSOLE);
 
 	uiMain.resumeGame.generic.id = ID_RESUME;
@@ -398,7 +404,6 @@ static void UI_Main_Init (void)
 	uiMain.resumeGame.generic.x = 72;
 	uiMain.resumeGame.generic.y = 230;
 	uiMain.resumeGame.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.resumeGame, PC_RESUME_GAME);
 
 	uiMain.newGame.generic.id = ID_NEWGAME;
@@ -409,7 +414,6 @@ static void UI_Main_Init (void)
 	uiMain.newGame.generic.x = 72;
 	uiMain.newGame.generic.y = 280;
 	uiMain.newGame.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.newGame, PC_NEW_GAME);
 
 	if (gMenu.m_gameinfo.gamemode == GAME_MULTIPLAYER_ONLY || !strlen (gMenu.m_gameinfo.startmap))
@@ -423,7 +427,6 @@ static void UI_Main_Init (void)
 	uiMain.hazardCourse.generic.x = 72;
 	uiMain.hazardCourse.generic.y = 330;
 	uiMain.hazardCourse.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.hazardCourse, PC_HAZARD_COURSE);
 
 	uiMain.saveRestore.generic.id = ID_SAVERESTORE;
@@ -464,7 +467,6 @@ static void UI_Main_Init (void)
 	uiMain.configuration.generic.x = 72;
 	uiMain.configuration.generic.y = bTrainMap ? 430 : 380;
 	uiMain.configuration.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.configuration, PC_CONFIG);
 
 	uiMain.multiPlayer.generic.id = ID_MULTIPLAYER;
@@ -475,7 +477,6 @@ static void UI_Main_Init (void)
 	uiMain.multiPlayer.generic.x = 72;
 	uiMain.multiPlayer.generic.y = bTrainMap ? 480 : 430;
 	uiMain.multiPlayer.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.multiPlayer, PC_MULTIPLAYER);
 
 	if (gMenu.m_gameinfo.gamemode == GAME_SINGLEPLAYER_ONLY)
@@ -495,7 +496,6 @@ static void UI_Main_Init (void)
 	uiMain.customGame.generic.x = 72;
 	uiMain.customGame.generic.y = bTrainMap ? 530 : 480;
 	uiMain.customGame.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.customGame, PC_CUSTOM_GAME);
 
 	// ESHQ: изменено для поддержки титров
@@ -522,7 +522,6 @@ static void UI_Main_Init (void)
 	uiMain.quit.generic.x = 72;
 	uiMain.quit.generic.y = (bCustomGame) ? (bTrainMap ? 630 : 580) : (bTrainMap ? 580 : 530);
 	uiMain.quit.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.quit, PC_QUIT);
 
 	uiMain.minimizeBtn.generic.id = ID_MINIMIZE;
@@ -577,11 +576,10 @@ static void UI_Main_Init (void)
 	uiMain.yes.generic.id = ID_YES;
 	uiMain.yes.generic.type = QMTYPE_BM_BUTTON;
 	uiMain.yes.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiMain.yes.generic.name = "Ok";
+	uiMain.yes.generic.name = "OK";
 	uiMain.yes.generic.x = 380;
 	uiMain.yes.generic.y = 460;
 	uiMain.yes.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.yes, PC_OK);
 
 	uiMain.no.generic.id = ID_NO;
@@ -591,7 +589,6 @@ static void UI_Main_Init (void)
 	uiMain.no.generic.x = 530;
 	uiMain.no.generic.y = 460;
 	uiMain.no.generic.callback = UI_Main_Callback;
-
 	UI_UtilSetupPicButton (&uiMain.no, PC_CANCEL);
 
 	UI_AddItem (&uiMain.menu, (void*)&uiMain.background);

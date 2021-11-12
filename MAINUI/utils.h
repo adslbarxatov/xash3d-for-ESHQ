@@ -33,7 +33,7 @@ extern ui_enginefuncs_t g_engfuncs;
 // How did I ever live without ASSERT?
 //
 #ifdef _DEBUG
-void DBG_AssertFunction( BOOL fExpr, const char* szExpr, const char* szFile, int szLine, const char* szMessage );
+void DBG_AssertFunction (BOOL fExpr, const char *szExpr, const char *szFile, int szLine, const char *szMessage);
 #define ASSERT( f )		DBG_AssertFunction( f, #f, __FILE__, __LINE__, NULL )
 #define ASSERTSZ( f, sz )	DBG_AssertFunction( f, #f, __FILE__, __LINE__, sz )
 #else
@@ -41,25 +41,25 @@ void DBG_AssertFunction( BOOL fExpr, const char* szExpr, const char* szFile, int
 #define ASSERTSZ( f, sz )
 #endif
 
-extern ui_globalvars_t		*gpGlobals;
+extern ui_globalvars_t *gpGlobals;
 
 // exports
-extern int UI_VidInit( void );
-extern void UI_Init( void );
-extern void UI_Shutdown( void );
-extern void UI_UpdateMenu( float flTime );
-extern void UI_KeyEvent( int key, int down );
-extern void UI_MouseMove( int x, int y );
-extern void UI_SetActiveMenu( int fActive );
-extern void UI_AddServerToList( netadr_t adr, const char *info );
-extern void UI_GetCursorPos( int *pos_x, int *pos_y );
-extern void UI_SetCursorPos( int pos_x, int pos_y );
-extern void UI_ShowCursor( int show );
-extern void UI_CharEvent( int key );
-extern int UI_MouseInRect( void );
-extern int UI_IsVisible( void );
-extern int UI_CreditsActive( void );
-extern void UI_FinalCredits( void );
+extern int UI_VidInit (void);
+extern void UI_Init (void);
+extern void UI_Shutdown (void);
+extern void UI_UpdateMenu (float flTime);
+extern void UI_KeyEvent (int key, int down);
+extern void UI_MouseMove (int x, int y);
+extern void UI_SetActiveMenu (int fActive);
+extern void UI_AddServerToList (netadr_t adr, const char *info);
+extern void UI_GetCursorPos (int *pos_x, int *pos_y);
+extern void UI_SetCursorPos (int pos_x, int pos_y);
+extern void UI_ShowCursor (int show);
+extern void UI_CharEvent (int key);
+extern int UI_MouseInRect (void);
+extern int UI_IsVisible (void);
+extern int UI_CreditsActive (void);
+extern void UI_FinalCredits (void);
 
 #include "cvardef.h"
 
@@ -68,58 +68,58 @@ extern void UI_FinalCredits( void );
 // ScreenWidth returns the width of the screen, in pixels
 #define ScreenWidth		(gpGlobals->scrWidth)
 
-inline unsigned int PackRGB( int r, int g, int b )
-{
-	return ((0xFF)<<24|(r)<<16|(g)<<8|(b));
-}
+inline unsigned int PackRGB (int r, int g, int b)
+	{
+	return ((0xFF) << 24 | (r) << 16 | (g) << 8 | (b));
+	}
 
-inline unsigned int PackRGBA( int r, int g, int b, int a )
-{
-	return ((a)<<24|(r)<<16|(g)<<8|(b));
-}
+inline unsigned int PackRGBA (int r, int g, int b, int a)
+	{
+	return ((a) << 24 | (r) << 16 | (g) << 8 | (b));
+	}
 
-inline void UnpackRGB( int &r, int &g, int &b, unsigned int ulRGB )
-{
+inline void UnpackRGB (int &r, int &g, int &b, unsigned int ulRGB)
+	{
 	r = (ulRGB & 0xFF0000) >> 16;
 	g = (ulRGB & 0xFF00) >> 8;
 	b = (ulRGB & 0xFF) >> 0;
-}
+	}
 
-inline void UnpackRGBA( int &r, int &g, int &b, int &a, unsigned int ulRGBA )
-{
+inline void UnpackRGBA (int &r, int &g, int &b, int &a, unsigned int ulRGBA)
+	{
 	a = (ulRGBA & 0xFF000000) >> 24;
 	r = (ulRGBA & 0xFF0000) >> 16;
 	g = (ulRGBA & 0xFF00) >> 8;
 	b = (ulRGBA & 0xFF) >> 0;
-}
+	}
 
-inline int PackAlpha( unsigned int ulRGB, unsigned int ulAlpha )
-{
-	return (ulRGB)|(ulAlpha<<24);
-}
+inline int PackAlpha (unsigned int ulRGB, unsigned int ulAlpha)
+	{
+	return (ulRGB) | (ulAlpha << 24);
+	}
 
-inline int UnpackAlpha( unsigned int ulRGBA )
-{
-	return ((ulRGBA & 0xFF000000) >> 24);	
-}
+inline int UnpackAlpha (unsigned int ulRGBA)
+	{
+	return ((ulRGBA & 0xFF000000) >> 24);
+	}
 
-// Remap a value in the range [A,B] to [C,D].
-inline float RemapVal( float val, float A, float B, float C, float D)
-{
-	if( A == B ) return val >= B ? D : C;
+	// Remap a value in the range [A,B] to [C,D].
+inline float RemapVal (float val, float A, float B, float C, float D)
+	{
+	if (A == B) return val >= B ? D : C;
 	return C + (D - C) * (val - A) / (B - A);
-}
+	}
 
-extern int ColorStrlen( const char *str );	// returns string length without color symbols
-extern int ColorPrexfixCount( const char *str );
-extern void COM_FileBase( const char *in, char *out );		// ripped out from hlsdk 2.3
-extern int UI_FadeAlpha( int starttime, int endtime );
-extern void StringConcat( char *dst, const char *src, size_t size );	// strncat safe prototype
-extern char *Info_ValueForKey( const char *s, const char *key );
-extern int KEY_GetKey( const char *binding );			// ripped out from engine
-extern char *StringCopy( const char *input );			// copy string into new memory
-extern int COM_CompareSaves( const void **a, const void **b );
+extern int ColorStrlen (const char *str);	// returns string length without color symbols
+extern int ColorPrexfixCount (const char *str);
+extern void COM_FileBase (const char *in, char *out);		// ripped out from hlsdk 2.3
+extern int UI_FadeAlpha (int starttime, int endtime);
+extern void StringConcat (char *dst, const char *src, size_t size);	// strncat safe prototype
+extern char *Info_ValueForKey (const char *s, const char *key);
+extern int KEY_GetKey (const char *binding);			// ripped out from engine
+extern char *StringCopy (const char *input);			// copy string into new memory
+extern int COM_CompareSaves (const void **a, const void **b);
 
-extern void UI_LoadCustomStrings( void );
+extern void UI_LoadCustomStrings (void);
 
 #endif//UTILS_H

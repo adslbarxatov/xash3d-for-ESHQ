@@ -49,7 +49,7 @@ const char* MenuButtons[PC_BUTTONCOUNT] =
 		"Done",
 		"Quickstart",
 		"Use defaults",
-		"Ok",
+		"OK",
 		"Video options",
 		"Video modes",
 		"Adv controls",

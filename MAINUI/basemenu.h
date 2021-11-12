@@ -17,20 +17,20 @@ GNU General Public License for more details.
 #define BASEMENU_H
 
 // engine constants
-#define GAME_NORMAL			0
-#define GAME_SINGLEPLAYER_ONLY	1
+#define GAME_NORMAL					0
+#define GAME_SINGLEPLAYER_ONLY		1
 #define GAME_MULTIPLAYER_ONLY		2
 
 #define KEY_CONSOLE			0
 #define KEY_GAME			1
 #define KEY_MENU			2
 
-#define CS_SIZE			64	// size of one config string
-#define CS_TIME			16	// size of time string
+#define CS_SIZE				64	// size of one config string
+#define CS_TIME				16	// size of time string
 
 // color strings
 #define ColorIndex( c )		((( c ) - '0' ) & 7 )
-#define IsColorString( p )		( p && *( p ) == '^' && *(( p ) + 1) && *(( p ) + 1) >= '0' && *(( p ) + 1 ) <= '9' )
+#define IsColorString( p )	( p && *( p ) == '^' && *(( p ) + 1) && *(( p ) + 1) >= '0' && *(( p ) + 1 ) <= '9' )
 
 #define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
 
@@ -39,34 +39,34 @@ GNU General Public License for more details.
 #define ART_BACKGROUND		"gfx/shell/splash"
 #define UI_SLIDER_MAIN		"gfx/shell/slider"
 #define UI_LEFTARROW		"gfx/shell/larrowdefault"
-#define UI_LEFTARROWFOCUS		"gfx/shell/larrowflyover"
-#define UI_LEFTARROWPRESSED		"gfx/shell/larrowpressed"
+#define UI_LEFTARROWFOCUS	"gfx/shell/larrowflyover"
+#define UI_LEFTARROWPRESSED	"gfx/shell/larrowpressed"
 #define UI_RIGHTARROW		"gfx/shell/rarrowdefault"
-#define UI_RIGHTARROWFOCUS		"gfx/shell/rarrowflyover"
-#define UI_RIGHTARROWPRESSED		"gfx/shell/rarrowpressed"
+#define UI_RIGHTARROWFOCUS	"gfx/shell/rarrowflyover"
+#define UI_RIGHTARROWPRESSED	"gfx/shell/rarrowpressed"
 #define UI_UPARROW			"gfx/shell/uparrowd"
 #define UI_UPARROWFOCUS		"gfx/shell/uparrowf"
-#define UI_UPARROWPRESSED		"gfx/shell/uparrowp"
+#define UI_UPARROWPRESSED	"gfx/shell/uparrowp"
 #define UI_DOWNARROW		"gfx/shell/dnarrowd"
-#define UI_DOWNARROWFOCUS		"gfx/shell/dnarrowf"
-#define UI_DOWNARROWPRESSED		"gfx/shell/dnarrowp"
-#define UI_CHECKBOX_EMPTY		"gfx/shell/cb_empty"
-#define UI_CHECKBOX_GRAYED		"gfx/shell/cb_disabled"
-#define UI_CHECKBOX_FOCUS		"gfx/shell/cb_over"
-#define UI_CHECKBOX_PRESSED		"gfx/shell/cb_down"
-#define UI_CHECKBOX_ENABLED		"gfx/shell/cb_checked"
+#define UI_DOWNARROWFOCUS	"gfx/shell/dnarrowf"
+#define UI_DOWNARROWPRESSED	"gfx/shell/dnarrowp"
+#define UI_CHECKBOX_EMPTY	"gfx/shell/cb_empty"
+#define UI_CHECKBOX_GRAYED	"gfx/shell/cb_disabled"
+#define UI_CHECKBOX_FOCUS	"gfx/shell/cb_over"
+#define UI_CHECKBOX_PRESSED	"gfx/shell/cb_down"
+#define UI_CHECKBOX_ENABLED	"gfx/shell/cb_checked"
 
 #define UI_CURSOR_SIZE		40
 
-#define UI_MAX_MENUDEPTH		8
-#define UI_MAX_MENUITEMS		64
+#define UI_MAX_MENUDEPTH	8
+#define UI_MAX_MENUITEMS	64
 
-#define UI_PULSE_DIVISOR		75
+#define UI_PULSE_DIVISOR	75
 #define UI_BLINK_TIME		250
 #define UI_BLINK_MASK		499
 
 #define UI_SMALL_CHAR_WIDTH		10
-#define UI_SMALL_CHAR_HEIGHT		20
+#define UI_SMALL_CHAR_HEIGHT	20
 #define UI_MED_CHAR_WIDTH		18
 #define UI_MED_CHAR_HEIGHT		26
 #define UI_BIG_CHAR_WIDTH		20
@@ -82,10 +82,10 @@ GNU General Public License for more details.
 #define MAX_HINT_TEXT		512
 
 // menu banners used fiexed rectangle (virtual screenspace at 640x480)
-#define UI_BANNER_POSX		72
-#define UI_BANNER_POSY		72
+#define UI_BANNER_POSX		48
+#define UI_BANNER_POSY		48
 #define UI_BANNER_WIDTH		736
-#define UI_BANNER_HEIGHT		128
+#define UI_BANNER_HEIGHT	128
 
 // menu buttons dims
 #define UI_BUTTONS_WIDTH		240
@@ -117,26 +117,26 @@ typedef enum
 #define QMF_LEFT_JUSTIFY		(1<<0)
 #define QMF_CENTER_JUSTIFY		(1<<1)
 #define QMF_RIGHT_JUSTIFY		(1<<2)
-#define QMF_GRAYED			(1<<3)	// Grays and disables
-#define QMF_INACTIVE		(1<<4)	// Disables any input
-#define QMF_HIDDEN			(1<<5)	// Doesn't draw
-#define QMF_NUMBERSONLY		(1<<6)	// Edit field is only numbers
-#define QMF_LOWERCASE		(1<<7)	// Edit field is all lower case
-#define QMF_UPPERCASE		(1<<8)	// Edit field is all upper case
+#define QMF_GRAYED				(1<<3)	// Grays and disables
+#define QMF_INACTIVE			(1<<4)	// Disables any input
+#define QMF_HIDDEN				(1<<5)	// Doesn't draw
+#define QMF_NUMBERSONLY			(1<<6)	// Edit field is only numbers
+#define QMF_LOWERCASE			(1<<7)	// Edit field is all lower case
+#define QMF_UPPERCASE			(1<<8)	// Edit field is all upper case
 #define QMF_DRAW_ADDITIVE		(1<<9)	// enable additive for this bitmap
 #define QMF_PULSEIFFOCUS		(1<<10)
-#define QMF_HIGHLIGHTIFFOCUS		(1<<11)
-#define QMF_SMALLFONT		(1<<12)
-#define QMF_BIGFONT			(1<<13)
-#define QMF_DROPSHADOW		(1<<14)
-#define QMF_SILENT			(1<<15)	// Don't play sounds
+#define QMF_HIGHLIGHTIFFOCUS	(1<<11)
+#define QMF_SMALLFONT			(1<<12)
+#define QMF_BIGFONT				(1<<13)
+#define QMF_DROPSHADOW			(1<<14)
+#define QMF_SILENT				(1<<15)	// Don't play sounds
 #define QMF_HASMOUSEFOCUS		(1<<16)
-#define QMF_MOUSEONLY		(1<<17)	// Only mouse input allowed
-#define QMF_FOCUSBEHIND		(1<<18)	// Focus draws behind normal item
-#define QMF_NOTIFY			(1<<19)	// draw notify at right screen side
+#define QMF_MOUSEONLY			(1<<17)	// Only mouse input allowed
+#define QMF_FOCUSBEHIND			(1<<18)	// Focus draws behind normal item
+#define QMF_NOTIFY				(1<<19)	// draw notify at right screen side
 #define QMF_ACT_ONRELEASE		(1<<20)	// call Key_Event when button is released
 #define QMF_ALLOW_COLORSTRINGS	(1<<21)	// allow colorstring in MENU_FIELD
-#define QMF_HIDEINPUT		(1<<22)	// used for "password" field
+#define QMF_HIDEINPUT			(1<<22)	// used for "password" field
 
 // Callback notifications
 #define QM_GOTFOCUS			1
@@ -418,7 +418,8 @@ void UI_DrawPicAdditive (int x, int y, int w, int h, const int color, const char
 void UI_FillRect (int x, int y, int w, int h, const int color);
 #define UI_DrawRectangle( x, y, w, h, color ) UI_DrawRectangleExt( x, y, w, h, color, uiStatic.outlineWidth )
 void UI_DrawRectangleExt (int in_x, int in_y, int in_w, int in_h, const int color, int outlineWidth);
-void UI_DrawString (int x, int y, int w, int h, const char* str, const int col, int forceCol, int charW, int charH, int justify, int shadow);
+void UI_DrawString (int x, int y, int w, int h, const char* str, const int col, int forceCol, int charW, 
+	int charH, int justify, int shadow);
 void UI_StartSound (const char* sound);
 void UI_LoadBmpButtons (void);
 

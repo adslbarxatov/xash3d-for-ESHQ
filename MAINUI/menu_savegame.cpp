@@ -24,11 +24,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "keydefs.h"
 #include "menu_btnsbmp_table.h"
 
-#define ART_BANNER	     	"gfx/shell/head_save"
+#define ART_BANNER	     "gfx/shell/head_save"
 
 #define ID_BACKGROUND	0
 #define ID_BANNER		1
-#define ID_SAVE		2
+#define ID_SAVE			2
 #define ID_DELETE		3
 #define ID_CANCEL		4
 #define ID_SAVELIST		5
@@ -36,8 +36,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_LEVELSHOT	7
 #define ID_MSGBOX	 	8
 #define ID_MSGTEXT	 	9
-#define ID_YES	 	130
-#define ID_NO	 	131
+#define ID_YES	 		130
+#define ID_NO	 		131
 
 #define LEVELSHOT_X		72
 #define LEVELSHOT_Y		400
@@ -50,10 +50,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 	{
-	char		saveName[UI_MAXGAMES][CS_SIZE];
-	char		delName[UI_MAXGAMES][CS_SIZE];
-	char		saveDescription[UI_MAXGAMES][256];
-	char* saveDescriptionPtr[UI_MAXGAMES];
+	char	saveName[UI_MAXGAMES][CS_SIZE];
+	char	delName[UI_MAXGAMES][CS_SIZE];
+	char	saveDescription[UI_MAXGAMES][256];
+	char	*saveDescriptionPtr[UI_MAXGAMES];
 
 	menuFramework_s	menu;
 
@@ -92,8 +92,7 @@ static void UI_MsgBox_Ownerdraw (void* self)
 
 static void UI_DeleteDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide remove dialog
+	// toggle main menu between active\inactive, show\hide remove dialog
 	uiSaveGame.save.generic.flags ^= QMF_INACTIVE;
 	uiSaveGame.remove.generic.flags ^= QMF_INACTIVE;
 	uiSaveGame.cancel.generic.flags ^= QMF_INACTIVE;
@@ -103,7 +102,6 @@ static void UI_DeleteDialog (void)
 	uiSaveGame.promptMessage.generic.flags ^= QMF_HIDDEN;
 	uiSaveGame.no.generic.flags ^= QMF_HIDDEN;
 	uiSaveGame.yes.generic.flags ^= QMF_HIDDEN;
-
 	}
 
 /*
@@ -113,7 +111,7 @@ UI_SaveGame_KeyFunc
 */
 static const char* UI_SaveGame_KeyFunc (int key, int down)
 	{
-	if (down && key == K_ESCAPE && uiSaveGame.save.generic.flags & QMF_INACTIVE)
+	if (down && (key == K_ESCAPE) && uiSaveGame.save.generic.flags & QMF_INACTIVE)
 		{
 		UI_DeleteDialog ();
 		return uiSoundNull;
@@ -141,11 +139,23 @@ static void UI_SaveGame_GetGameList (void)
 		{
 		// create new entry for current save game
 		strncpy (uiSaveGame.saveName[i], "new", CS_SIZE);
+#ifdef RU
+		StringConcat (uiSaveGame.saveDescription[i], "Текущая", TIME_LENGTH);
+#else
 		StringConcat (uiSaveGame.saveDescription[i], "Current", TIME_LENGTH);
+#endif
 		StringConcat (uiSaveGame.saveDescription[i], uiEmptyString, TIME_LENGTH); // fill remaining entries
-		StringConcat (uiSaveGame.saveDescription[i], "New Saved Game", NAME_LENGTH);
+#ifdef RU
+		StringConcat (uiSaveGame.saveDescription[i], "Новое сохранение", NAME_LENGTH);
+#else
+		StringConcat (uiSaveGame.saveDescription[i], "New saved game", NAME_LENGTH);
+#endif
 		StringConcat (uiSaveGame.saveDescription[i], uiEmptyString, NAME_LENGTH);
+#ifdef RU
+		StringConcat (uiSaveGame.saveDescription[i], "Новая", GAMETIME_LENGTH);
+#else
 		StringConcat (uiSaveGame.saveDescription[i], "New", GAMETIME_LENGTH);
+#endif
 		StringConcat (uiSaveGame.saveDescription[i], uiEmptyString, GAMETIME_LENGTH);
 		uiSaveGame.saveDescriptionPtr[i] = uiSaveGame.saveDescription[i];
 		i++;
@@ -169,7 +179,10 @@ static void UI_SaveGame_GetGameList (void)
 				COM_FileBase (filenames[j], uiSaveGame.saveName[i]);
 				COM_FileBase (filenames[j], uiSaveGame.delName[i]);
 				}
-			else uiSaveGame.saveDescriptionPtr[i] = NULL;
+			else
+				{
+				uiSaveGame.saveDescriptionPtr[i] = NULL;
+				}
 			continue;
 			}
 
@@ -196,11 +209,13 @@ static void UI_SaveGame_GetGameList (void)
 
 	if (strlen (uiSaveGame.saveName[0]) == 0 || CL_IsActive () == FALSE)
 		uiSaveGame.save.generic.flags |= QMF_GRAYED;
-	else uiSaveGame.save.generic.flags &= ~QMF_GRAYED;
+	else 
+		uiSaveGame.save.generic.flags &= ~QMF_GRAYED;
 
 	if (strlen (uiSaveGame.delName[0]) == 0)
 		uiSaveGame.remove.generic.flags |= QMF_GRAYED;
-	else uiSaveGame.remove.generic.flags &= ~QMF_GRAYED;
+	else 
+		uiSaveGame.remove.generic.flags &= ~QMF_GRAYED;
 	}
 
 /*
@@ -217,11 +232,13 @@ static void UI_SaveGame_Callback (void* self, int event)
 		// never overwrite existing saves, because their names was never get collision
 		if (strlen (uiSaveGame.saveName[uiSaveGame.savesList.curItem]) == 0 || CL_IsActive () == FALSE)
 			uiSaveGame.save.generic.flags |= QMF_GRAYED;
-		else uiSaveGame.save.generic.flags &= ~QMF_GRAYED;
+		else 
+			uiSaveGame.save.generic.flags &= ~QMF_GRAYED;
 
 		if (strlen (uiSaveGame.delName[uiSaveGame.savesList.curItem]) == 0)
 			uiSaveGame.remove.generic.flags |= QMF_GRAYED;
-		else uiSaveGame.remove.generic.flags &= ~QMF_GRAYED;
+		else 
+			uiSaveGame.remove.generic.flags &= ~QMF_GRAYED;
 		return;
 		}
 
@@ -280,7 +297,7 @@ static void UI_SaveGame_Ownerdraw (void* self)
 	{
 	menuCommon_s* item = (menuCommon_s*)self;
 
-	if (item->type != QMTYPE_ACTION && item->id == ID_LEVELSHOT)
+	if ((item->type != QMTYPE_ACTION) && (item->id == ID_LEVELSHOT))
 		{
 		int	x, y, w, h;
 
@@ -302,7 +319,10 @@ static void UI_SaveGame_Ownerdraw (void* self)
 				UI_DrawPicAdditive (x, y, w, h, uiColorWhite, EMPTY_SAVE_PIC);
 			else UI_DrawPic (x, y, w, h, uiColorWhite, saveshot);
 			}
-		else UI_DrawPicAdditive (x, y, w, h, uiColorWhite, EMPTY_SAVE_PIC);
+		else
+			{
+			UI_DrawPicAdditive (x, y, w, h, uiColorWhite, EMPTY_SAVE_PIC);
+			}
 
 		// draw the rectangle
 		UI_DrawRectangle (item->x, item->y, item->width, item->height, uiInputFgColor);
@@ -321,11 +341,23 @@ static void UI_SaveGame_Init (void)
 	uiSaveGame.menu.vidInitFunc = UI_SaveGame_Init;
 	uiSaveGame.menu.keyFunc = UI_SaveGame_KeyFunc;
 
+#ifdef RU
+	StringConcat (uiSaveGame.hintText, "Время", TIME_LENGTH);
+#else
 	StringConcat (uiSaveGame.hintText, "Time", TIME_LENGTH);
+#endif
 	StringConcat (uiSaveGame.hintText, uiEmptyString, TIME_LENGTH);
+#ifdef RU
+	StringConcat (uiSaveGame.hintText, "Игра", NAME_LENGTH);
+#else
 	StringConcat (uiSaveGame.hintText, "Game", NAME_LENGTH);
+#endif
 	StringConcat (uiSaveGame.hintText, uiEmptyString, NAME_LENGTH);
+#ifdef RU
+	StringConcat (uiSaveGame.hintText, "Заняла времени", GAMETIME_LENGTH);
+#else
 	StringConcat (uiSaveGame.hintText, "Elapsed time", GAMETIME_LENGTH);
+#endif
 	StringConcat (uiSaveGame.hintText, uiEmptyString, GAMETIME_LENGTH);
 
 	uiSaveGame.background.generic.id = ID_BACKGROUND;
@@ -339,7 +371,7 @@ static void UI_SaveGame_Init (void)
 
 	uiSaveGame.banner.generic.id = ID_BANNER;
 	uiSaveGame.banner.generic.type = QMTYPE_BITMAP;
-	uiSaveGame.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiSaveGame.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiSaveGame.banner.generic.x = UI_BANNER_POSX;
 	uiSaveGame.banner.generic.y = UI_BANNER_POSY;
 	uiSaveGame.banner.generic.width = UI_BANNER_WIDTH;
@@ -352,10 +384,13 @@ static void UI_SaveGame_Init (void)
 	uiSaveGame.save.generic.x = 72;
 	uiSaveGame.save.generic.y = 230;
 	uiSaveGame.save.generic.name = "Save";
-	uiSaveGame.save.generic.statusText = "Save current game";
 	uiSaveGame.save.generic.callback = UI_SaveGame_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveGame.save, PC_SAVE_GAME);
+#ifdef RU
+	uiSaveGame.save.generic.statusText = "Сохранить текущую игру";
+#else
+	uiSaveGame.save.generic.statusText = "Save current game";
+#endif
 
 	uiSaveGame.remove.generic.id = ID_DELETE;
 	uiSaveGame.remove.generic.type = QMTYPE_BM_BUTTON;
@@ -363,10 +398,13 @@ static void UI_SaveGame_Init (void)
 	uiSaveGame.remove.generic.x = 72;
 	uiSaveGame.remove.generic.y = 280;
 	uiSaveGame.remove.generic.name = "Delete";
-	uiSaveGame.remove.generic.statusText = "Delete saved game";
 	uiSaveGame.remove.generic.callback = UI_SaveGame_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveGame.remove, PC_DELETE);
+#ifdef RU
+	uiSaveGame.remove.generic.statusText = "Удалить сохранение";
+#else
+	uiSaveGame.remove.generic.statusText = "Delete saved game";
+#endif
 
 	uiSaveGame.cancel.generic.id = ID_CANCEL;
 	uiSaveGame.cancel.generic.type = QMTYPE_BM_BUTTON;
@@ -374,10 +412,13 @@ static void UI_SaveGame_Init (void)
 	uiSaveGame.cancel.generic.x = 72;
 	uiSaveGame.cancel.generic.y = 330;
 	uiSaveGame.cancel.generic.name = "Cancel";
-	uiSaveGame.cancel.generic.statusText = "Return back to main menu";
 	uiSaveGame.cancel.generic.callback = UI_SaveGame_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveGame.cancel, PC_CANCEL);
+#ifdef RU
+	uiSaveGame.cancel.generic.statusText = "Вернуться в главное меню";
+#else
+	uiSaveGame.cancel.generic.statusText = "Return back to main menu";
+#endif
 
 	uiSaveGame.hintMessage.generic.id = ID_TABLEHINT;
 	uiSaveGame.hintMessage.generic.type = QMTYPE_ACTION;
@@ -417,18 +458,21 @@ static void UI_SaveGame_Init (void)
 	uiSaveGame.promptMessage.generic.id = ID_MSGBOX;
 	uiSaveGame.promptMessage.generic.type = QMTYPE_ACTION;
 	uiSaveGame.promptMessage.generic.flags = QMF_INACTIVE | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiSaveGame.promptMessage.generic.name = "Delete selected game?";
 	uiSaveGame.promptMessage.generic.x = 315;
 	uiSaveGame.promptMessage.generic.y = 280;
+#ifdef RU
+	uiSaveGame.promptMessage.generic.name = "Удалить выбранную игру?";
+#else
+	uiSaveGame.promptMessage.generic.name = "Delete selected game?";
+#endif
 
 	uiSaveGame.yes.generic.id = ID_YES;
 	uiSaveGame.yes.generic.type = QMTYPE_BM_BUTTON;
 	uiSaveGame.yes.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiSaveGame.yes.generic.name = "Ok";
+	uiSaveGame.yes.generic.name = "OK";
 	uiSaveGame.yes.generic.x = 380;
 	uiSaveGame.yes.generic.y = 460;
 	uiSaveGame.yes.generic.callback = UI_SaveGame_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveGame.yes, PC_OK);
 
 	uiSaveGame.no.generic.id = ID_NO;
@@ -438,7 +482,6 @@ static void UI_SaveGame_Init (void)
 	uiSaveGame.no.generic.x = 530;
 	uiSaveGame.no.generic.y = 460;
 	uiSaveGame.no.generic.callback = UI_SaveGame_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveGame.no, PC_CANCEL);
 
 	UI_SaveGame_GetGameList ();

@@ -88,8 +88,7 @@ static void UI_MsgBox_Ownerdraw (void* self)
 
 static void UI_EndGameDialog (void)
 	{
-	// toggle main menu between active\inactive
-	// show\hide delete dialog
+	// toggle main menu between active\inactive, show\hide delete dialog
 	uiCustomGame.load.generic.flags ^= QMF_INACTIVE;
 	uiCustomGame.go2url.generic.flags ^= QMF_INACTIVE;
 	uiCustomGame.done.generic.flags ^= QMF_INACTIVE;
@@ -151,7 +150,8 @@ static void UI_CustomGame_GetModList (void)
 		StringConcat (uiCustomGame.modsDescription[i], uiEmptyString, VER_LENGTH);
 		if (strlen (games[i]->size))
 			StringConcat (uiCustomGame.modsDescription[i], games[i]->size, SIZE_LENGTH);
-		else StringConcat (uiCustomGame.modsDescription[i], "0.0 Mb", SIZE_LENGTH);
+		else 
+			StringConcat (uiCustomGame.modsDescription[i], "0.0 Mb", SIZE_LENGTH);
 		StringConcat (uiCustomGame.modsDescription[i], uiEmptyString, SIZE_LENGTH);
 		uiCustomGame.modsDescriptionPtr[i] = uiCustomGame.modsDescription[i];
 
@@ -234,13 +234,29 @@ static void UI_CustomGame_Init (void)
 	uiCustomGame.menu.vidInitFunc = UI_CustomGame_Init;
 	uiCustomGame.menu.keyFunc = UI_CustomGame_KeyFunc;
 
+#ifdef RU
+	StringConcat (uiCustomGame.hintText, "Тип", TYPE_LENGTH);
+#else
 	StringConcat (uiCustomGame.hintText, "Type", TYPE_LENGTH);
+#endif
 	StringConcat (uiCustomGame.hintText, uiEmptyString, TYPE_LENGTH);
+#ifdef RU
+	StringConcat (uiCustomGame.hintText, "Название", NAME_LENGTH);
+#else
 	StringConcat (uiCustomGame.hintText, "Name", NAME_LENGTH);
+#endif
 	StringConcat (uiCustomGame.hintText, uiEmptyString, NAME_LENGTH);
+#ifdef RU
+	StringConcat (uiCustomGame.hintText, "Версия", VER_LENGTH);
+#else
 	StringConcat (uiCustomGame.hintText, "Version", VER_LENGTH);
+#endif
 	StringConcat (uiCustomGame.hintText, uiEmptyString, VER_LENGTH);
+#ifdef RU
+	StringConcat (uiCustomGame.hintText, "Размер", SIZE_LENGTH);
+#else
 	StringConcat (uiCustomGame.hintText, "Size", SIZE_LENGTH);
+#endif
 	StringConcat (uiCustomGame.hintText, uiEmptyString, SIZE_LENGTH);
 
 	uiCustomGame.background.generic.id = ID_BACKGROUND;
@@ -254,7 +270,7 @@ static void UI_CustomGame_Init (void)
 
 	uiCustomGame.banner.generic.id = ID_BANNER;
 	uiCustomGame.banner.generic.type = QMTYPE_BITMAP;
-	uiCustomGame.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiCustomGame.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiCustomGame.banner.generic.x = UI_BANNER_POSX;
 	uiCustomGame.banner.generic.y = UI_BANNER_POSY;
 	uiCustomGame.banner.generic.width = UI_BANNER_WIDTH;
@@ -267,10 +283,13 @@ static void UI_CustomGame_Init (void)
 	uiCustomGame.load.generic.x = 72;
 	uiCustomGame.load.generic.y = 230;
 	uiCustomGame.load.generic.name = "Activate";
-	uiCustomGame.load.generic.statusText = "Activate selected custom game";
 	uiCustomGame.load.generic.callback = UI_CustomGame_Callback;
-
 	UI_UtilSetupPicButton (&uiCustomGame.load, PC_ACTIVATE);
+#ifdef RU
+	uiCustomGame.load.generic.statusText = "Запустить выбранную игру";
+#else
+	uiCustomGame.load.generic.statusText = "Activate selected custom game";
+#endif
 
 	uiCustomGame.go2url.generic.id = ID_GOTOSITE;
 	uiCustomGame.go2url.generic.type = QMTYPE_BM_BUTTON;
@@ -278,10 +297,13 @@ static void UI_CustomGame_Init (void)
 	uiCustomGame.go2url.generic.x = 72;
 	uiCustomGame.go2url.generic.y = 280;
 	uiCustomGame.go2url.generic.name = "Visit web site";
-	uiCustomGame.go2url.generic.statusText = "Visit the web site of game developrs";
 	uiCustomGame.go2url.generic.callback = UI_CustomGame_Callback;
-
 	UI_UtilSetupPicButton (&uiCustomGame.go2url, PC_VISIT_WEB_SITE);
+#ifdef RU
+	uiCustomGame.go2url.generic.statusText = "Посетить вебсайт разработчиков игры";
+#else
+	uiCustomGame.go2url.generic.statusText = "Visit the web site of the game developers";
+#endif
 
 	uiCustomGame.done.generic.id = ID_DONE;
 	uiCustomGame.done.generic.type = QMTYPE_BM_BUTTON;
@@ -289,10 +311,13 @@ static void UI_CustomGame_Init (void)
 	uiCustomGame.done.generic.x = 72;
 	uiCustomGame.done.generic.y = 330;
 	uiCustomGame.done.generic.name = "Done";
-	uiCustomGame.done.generic.statusText = "Return to main menu";
 	uiCustomGame.done.generic.callback = UI_CustomGame_Callback;
-
 	UI_UtilSetupPicButton (&uiCustomGame.done, PC_DONE);
+#ifdef RU
+	uiCustomGame.done.generic.statusText = "Вернуться в главное меню";
+#else
+	uiCustomGame.done.generic.statusText = "Return to main menu";
+#endif
 
 	uiCustomGame.hintMessage.generic.id = ID_TABLEHINT;
 	uiCustomGame.hintMessage.generic.type = QMTYPE_ACTION;
@@ -323,18 +348,21 @@ static void UI_CustomGame_Init (void)
 	uiCustomGame.promptMessage.generic.id = ID_MSGBOX;
 	uiCustomGame.promptMessage.generic.type = QMTYPE_ACTION;
 	uiCustomGame.promptMessage.generic.flags = QMF_INACTIVE | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiCustomGame.promptMessage.generic.name = "Leave current game?";
 	uiCustomGame.promptMessage.generic.x = 315;
 	uiCustomGame.promptMessage.generic.y = 280;
+#ifdef RU
+	uiCustomGame.promptMessage.generic.name = "Покинуть текущую игру?";
+#else
+	uiCustomGame.promptMessage.generic.name = "Leave current game?";
+#endif
 
 	uiCustomGame.yes.generic.id = ID_YES;
 	uiCustomGame.yes.generic.type = QMTYPE_BM_BUTTON;
 	uiCustomGame.yes.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_HIDDEN;
-	uiCustomGame.yes.generic.name = "Ok";
+	uiCustomGame.yes.generic.name = "OK";
 	uiCustomGame.yes.generic.x = 380;
 	uiCustomGame.yes.generic.y = 460;
 	uiCustomGame.yes.generic.callback = UI_CustomGame_Callback;
-
 	UI_UtilSetupPicButton (&uiCustomGame.yes, PC_OK);
 
 	uiCustomGame.no.generic.id = ID_NO;
@@ -344,7 +372,6 @@ static void UI_CustomGame_Init (void)
 	uiCustomGame.no.generic.x = 530;
 	uiCustomGame.no.generic.y = 460;
 	uiCustomGame.no.generic.callback = UI_CustomGame_Callback;
-
 	UI_UtilSetupPicButton (&uiCustomGame.no, PC_CANCEL);
 
 	UI_CustomGame_GetModList ();

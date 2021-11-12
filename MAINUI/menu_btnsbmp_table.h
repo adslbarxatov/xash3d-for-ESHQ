@@ -15,9 +15,9 @@ GNU General Public License for more details.
 
 #ifndef MENU_BTNSBMP_TABLE_H
 #define MENU_BTNSBMP_TABLE_H
-	
+
 enum
-{
+	{
 	PC_NEW_GAME = 0,
 	PC_RESUME_GAME,
 	PC_HAZARD_COURSE,
@@ -91,7 +91,7 @@ enum
 	PC_SPECTATE_GAME,
 	PC_SPECTATE_GAMES,
 	PC_BUTTONCOUNT		// must be last
-};
+	};
 
 #define BUTTON_NOFOCUS	0 
 #define BUTTON_FOCUS	1
@@ -99,12 +99,12 @@ enum
 
 extern const char *MenuButtons[PC_BUTTONCOUNT];
 
-inline int PicButtonWidth( int pic_id )
-{
-	if( pic_id < 0 || pic_id > PC_BUTTONCOUNT )
+inline int PicButtonWidth (int pic_id)
+	{
+	if ((pic_id < 0) || (pic_id > PC_BUTTONCOUNT))
 		return 0;
-	
-	return strlen( MenuButtons[pic_id] );
-}
+
+	return strlen (MenuButtons[pic_id]);
+	}
 
 #endif//MENU_BTNSBMP_TABLE_H

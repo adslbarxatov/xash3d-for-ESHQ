@@ -49,7 +49,6 @@ typedef struct
 
 static uiCredits_t		uiCredits;
 
-
 /*
 =================
 UI_Credits_DrawFunc
@@ -80,7 +79,8 @@ static void UI_Credits_DrawFunc (void)
 	for (i = 0; i < uiCredits.numLines && uiCredits.credits[i]; i++, y += h)
 		{
 		// skip not visible lines, but always draw end line
-		if (y <= -h && i != uiCredits.numLines - 1) continue;
+		if (y <= -h && i != uiCredits.numLines - 1) 
+			continue;
 
 		if ((y < (ScreenHeight - h) / 2) && i == uiCredits.numLines - 1)
 			{
@@ -89,7 +89,10 @@ static void UI_Credits_DrawFunc (void)
 			if (UnpackAlpha (color))
 				UI_DrawString (0, (ScreenHeight - h) / 2, 1024 * uiStatic.scaleX, h, uiCredits.credits[i], color, true, w, h, 1, true);
 			}
-		else UI_DrawString (0, y, 1024 * uiStatic.scaleX, h, uiCredits.credits[i], uiColorWhite, false, w, h, 1, true);
+		else
+			{
+			UI_DrawString (0, y, 1024 * uiStatic.scaleX, h, uiCredits.credits[i], uiColorWhite, false, w, h, 1, true);
+			}
 		}
 
 	if (y < 0 && UnpackAlpha (color) == 0)
@@ -110,7 +113,8 @@ UI_Credits_KeyFunc
 */
 static const char* UI_Credits_KeyFunc (int key, int down)
 	{
-	if (!down) return uiSoundNull;
+	if (!down) 
+		return uiSoundNull;
 
 	// final credits can't be intterupted
 	if (uiCredits.finalCredits)

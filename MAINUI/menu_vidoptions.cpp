@@ -8,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -28,13 +28,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ID_BACKGROUND 	0
 #define ID_BANNER	  	1
-#define ID_DONE	  	2
+#define ID_DONE	  		2
 #define ID_SCREEN_SIZE	3
 #define ID_GAMMA		4
 #define ID_GLARE_REDUCTION	5 
 
 typedef struct
-{
+	{
 	int		outlineWidth;
 	menuFramework_s	menu;
 
@@ -48,76 +48,76 @@ typedef struct
 	menuSlider_s	gammaIntensity;
 	menuSlider_s	glareReduction;
 
-	HIMAGE		hTestImage;
-} uiVidOptions_t;
+	HIMAGE			hTestImage;
+	} uiVidOptions_t;
 
 static uiVidOptions_t	uiVidOptions;
-
 
 /*
 =================
 UI_VidOptions_GetConfig
 =================
 */
-static void UI_VidOptions_GetConfig( void )
-{
-	uiVidOptions.screenSize.curValue = RemapVal( CVAR_GET_FLOAT( "viewsize" ), 30.0f, 120.0f, 0.0f, 1.0f );
-	uiVidOptions.glareReduction.curValue = RemapVal( CVAR_GET_FLOAT( "brightness" ), 0.0f, 3.0f, 0.0f, 1.0f );
-	uiVidOptions.gammaIntensity.curValue = RemapVal( CVAR_GET_FLOAT( "gamma" ), 1.8f, 3.0f, 0.0f, 1.0f );
-	PIC_SetGamma( uiVidOptions.hTestImage, 1.0f );
+static void UI_VidOptions_GetConfig (void)
+	{
+	uiVidOptions.screenSize.curValue = RemapVal (CVAR_GET_FLOAT ("viewsize"), 30.0f, 120.0f, 0.0f, 1.0f);
+	uiVidOptions.glareReduction.curValue = RemapVal (CVAR_GET_FLOAT ("brightness"), 0.0f, 3.0f, 0.0f, 1.0f);
+	uiVidOptions.gammaIntensity.curValue = RemapVal (CVAR_GET_FLOAT ("gamma"), 1.8f, 3.0f, 0.0f, 1.0f);
+	PIC_SetGamma (uiVidOptions.hTestImage, 1.0f);
 
 	uiVidOptions.outlineWidth = 2;
-	UI_ScaleCoords( NULL, NULL, &uiVidOptions.outlineWidth, NULL );
-}
+	UI_ScaleCoords (NULL, NULL, &uiVidOptions.outlineWidth, NULL);
+	}
 
 /*
 =================
 UI_VidOptions_UpdateConfig
 =================
 */
-static void UI_VidOptions_UpdateConfig( void )
-{
-	CVAR_SET_FLOAT( "viewsize", RemapVal( uiVidOptions.screenSize.curValue, 0.0f, 1.0f, 30.0f, 120.0f ));
-	CVAR_SET_FLOAT( "brightness", RemapVal( uiVidOptions.glareReduction.curValue, 0.0f, 1.0f, 0.0f, 3.0f ));
-	CVAR_SET_FLOAT( "gamma", RemapVal( uiVidOptions.gammaIntensity.curValue, 0.0f, 1.0f, 1.8f, 3.0f ));
-	PIC_SetGamma( uiVidOptions.hTestImage, 1.0f );
-}
+static void UI_VidOptions_UpdateConfig (void)
+	{
+	CVAR_SET_FLOAT ("viewsize", RemapVal (uiVidOptions.screenSize.curValue, 0.0f, 1.0f, 30.0f, 120.0f));
+	CVAR_SET_FLOAT ("brightness", RemapVal (uiVidOptions.glareReduction.curValue, 0.0f, 1.0f, 0.0f, 3.0f));
+	CVAR_SET_FLOAT ("gamma", RemapVal (uiVidOptions.gammaIntensity.curValue, 0.0f, 1.0f, 1.8f, 3.0f));
+	PIC_SetGamma (uiVidOptions.hTestImage, 1.0f);
+	}
 
-static void UI_VidOptions_SetConfig( void )
-{
-	CVAR_SET_FLOAT( "viewsize", RemapVal( uiVidOptions.screenSize.curValue, 0.0f, 1.0f, 30.0f, 120.0f ));
-	CVAR_SET_FLOAT( "brightness", RemapVal( uiVidOptions.glareReduction.curValue, 0.0f, 1.0f, 0.0f, 3.0f ));
-	CVAR_SET_FLOAT( "gamma", RemapVal( uiVidOptions.gammaIntensity.curValue, 0.0f, 1.0f, 1.8f, 3.0f ));
-}
+static void UI_VidOptions_SetConfig (void)
+	{
+	CVAR_SET_FLOAT ("viewsize", RemapVal (uiVidOptions.screenSize.curValue, 0.0f, 1.0f, 30.0f, 120.0f));
+	CVAR_SET_FLOAT ("brightness", RemapVal (uiVidOptions.glareReduction.curValue, 0.0f, 1.0f, 0.0f, 3.0f));
+	CVAR_SET_FLOAT ("gamma", RemapVal (uiVidOptions.gammaIntensity.curValue, 0.0f, 1.0f, 1.8f, 3.0f));
+	}
 
 /*
 =================
 UI_VidOptions_Ownerdraw
 =================
 */
-static void UI_VidOptions_Ownerdraw( void *self )
-{
-	menuCommon_s	*item = (menuCommon_s *)self;
+static void UI_VidOptions_Ownerdraw (void *self)
+	{
+	menuCommon_s *item = (menuCommon_s *)self;
 	int		color = 0xFFFF0000; // 255, 0, 0, 255
 	int		viewport[4];
 	int		viewsize, size, sb_lines;
 
-	viewsize = CVAR_GET_FLOAT( "viewsize" );
+	viewsize = CVAR_GET_FLOAT ("viewsize");
 
-	if( viewsize >= 120 )
+	if (viewsize >= 120)
 		sb_lines = 0;	// no status bar at all
-	else if( viewsize >= 110 )
+	else if (viewsize >= 110)
 		sb_lines = 24;	// no inventory
-	else sb_lines = 48;
+	else 
+		sb_lines = 48;
 
-	size = min( viewsize, 100 );
+	size = min (viewsize, 100);
 
 	viewport[2] = item->width * size / 100;
 	viewport[3] = item->height * size / 100;
 
-	if( viewport[3] > item->height - sb_lines )
+	if (viewport[3] > item->height - sb_lines)
 		viewport[3] = item->height - sb_lines;
-	if( viewport[3] > item->height )
+	if (viewport[3] > item->height)
 		viewport[3] = item->height;
 
 	viewport[2] &= ~7;
@@ -126,47 +126,47 @@ static void UI_VidOptions_Ownerdraw( void *self )
 	viewport[0] = (item->width - viewport[2]) / 2;
 	viewport[1] = (item->height - sb_lines - viewport[3]) / 2;
 
-	UI_DrawPic( item->x + viewport[0], item->y + viewport[1], viewport[2], viewport[3], uiColorWhite, ((menuBitmap_s *)self)->pic );
-	UI_DrawRectangleExt( item->x, item->y, item->width, item->height, color, uiVidOptions.outlineWidth );
-}
+	UI_DrawPic (item->x + viewport[0], item->y + viewport[1], viewport[2], viewport[3], uiColorWhite, ((menuBitmap_s *)self)->pic);
+	UI_DrawRectangleExt (item->x, item->y, item->width, item->height, color, uiVidOptions.outlineWidth);
+	}
 
 /*
 =================
 UI_VidOptions_Callback
 =================
 */
-static void UI_VidOptions_Callback( void *self, int event )
-{
-	menuCommon_s	*item = (menuCommon_s *)self;
-
-	if( event == QM_CHANGED )
+static void UI_VidOptions_Callback (void *self, int event)
 	{
-		UI_VidOptions_UpdateConfig();
-		return;
-	}
+	menuCommon_s *item = (menuCommon_s *)self;
 
-	if( event != QM_ACTIVATED )
+	if (event == QM_CHANGED)
+		{
+		UI_VidOptions_UpdateConfig ();
+		return;
+		}
+
+	if (event != QM_ACTIVATED)
 		return;
 
-	switch( item->id )
-	{
-	case ID_DONE:
-		UI_VidOptions_SetConfig();
-		UI_PopMenu();
-		break;
+	switch (item->id)
+		{
+		case ID_DONE:
+			UI_VidOptions_SetConfig ();
+			UI_PopMenu ();
+			break;
+		}
 	}
-}
 
 /*
 =================
 UI_VidOptions_Init
 =================
 */
-static void UI_VidOptions_Init( void )
-{
-	memset( &uiVidOptions, 0, sizeof( uiVidOptions_t ));
+static void UI_VidOptions_Init (void)
+	{
+	memset (&uiVidOptions, 0, sizeof (uiVidOptions_t));
 
-	uiVidOptions.hTestImage = PIC_Load( ART_GAMMA, PIC_KEEP_SOURCE );
+	uiVidOptions.hTestImage = PIC_Load (ART_GAMMA, PIC_KEEP_SOURCE);
 
 	uiVidOptions.menu.vidInitFunc = UI_VidOptions_Init;
 
@@ -181,7 +181,7 @@ static void UI_VidOptions_Init( void )
 
 	uiVidOptions.banner.generic.id = ID_BANNER;
 	uiVidOptions.banner.generic.type = QMTYPE_BITMAP;
-	uiVidOptions.banner.generic.flags = QMF_INACTIVE|QMF_DRAW_ADDITIVE;
+	uiVidOptions.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiVidOptions.banner.generic.x = UI_BANNER_POSX;
 	uiVidOptions.banner.generic.y = UI_BANNER_POSY;
 	uiVidOptions.banner.generic.width = UI_BANNER_WIDTH;
@@ -200,82 +200,100 @@ static void UI_VidOptions_Init( void )
 
 	uiVidOptions.done.generic.id = ID_DONE;
 	uiVidOptions.done.generic.type = QMTYPE_BM_BUTTON;
-	uiVidOptions.done.generic.flags = QMF_HIGHLIGHTIFFOCUS|QMF_DROPSHADOW;
+	uiVidOptions.done.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW;
 	uiVidOptions.done.generic.x = 72;
 	uiVidOptions.done.generic.y = 435;
 	uiVidOptions.done.generic.name = "Done";
-	uiVidOptions.done.generic.statusText = "Go back to the Video Menu";
 	uiVidOptions.done.generic.callback = UI_VidOptions_Callback;
-
-	UI_UtilSetupPicButton( &uiVidOptions.done, PC_DONE );
+	UI_UtilSetupPicButton (&uiVidOptions.done, PC_DONE);
+#ifdef RU
+	uiVidOptions.done.generic.statusText = "Вернуться в меню видео";
+#else
+	uiVidOptions.done.generic.statusText = "Go back to the video menu";
+#endif
 
 	uiVidOptions.screenSize.generic.id = ID_SCREEN_SIZE;
 	uiVidOptions.screenSize.generic.type = QMTYPE_SLIDER;
-	uiVidOptions.screenSize.generic.flags = QMF_PULSEIFFOCUS|QMF_DROPSHADOW;
-	uiVidOptions.screenSize.generic.name = "Screen size";
+	uiVidOptions.screenSize.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW;
 	uiVidOptions.screenSize.generic.x = 72;
 	uiVidOptions.screenSize.generic.y = 280;
 	uiVidOptions.screenSize.generic.callback = UI_VidOptions_Callback;
-	uiVidOptions.screenSize.generic.statusText = "Set the screen size";
 	uiVidOptions.screenSize.minValue = 0.0;
 	uiVidOptions.screenSize.maxValue = 1.0;
 	uiVidOptions.screenSize.range = 0.05f;
+#ifdef RU
+	uiVidOptions.screenSize.generic.name = "Размер экрана";
+	uiVidOptions.screenSize.generic.statusText = "Задать размеры экрана";
+#else
+	uiVidOptions.screenSize.generic.name = "Screen size";
+	uiVidOptions.screenSize.generic.statusText = "Set the screen size";
+#endif
 
 	uiVidOptions.gammaIntensity.generic.id = ID_GAMMA;
 	uiVidOptions.gammaIntensity.generic.type = QMTYPE_SLIDER;
-	uiVidOptions.gammaIntensity.generic.flags = QMF_PULSEIFFOCUS|QMF_DROPSHADOW;
-	uiVidOptions.gammaIntensity.generic.name = "Gamma";
+	uiVidOptions.gammaIntensity.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW;
 	uiVidOptions.gammaIntensity.generic.x = 72;
 	uiVidOptions.gammaIntensity.generic.y = 340;
 	uiVidOptions.gammaIntensity.generic.callback = UI_VidOptions_Callback;
-	uiVidOptions.gammaIntensity.generic.statusText = "Set gamma value (1.8 - 3.0)";
 	uiVidOptions.gammaIntensity.minValue = 0.0;
 	uiVidOptions.gammaIntensity.maxValue = 1.0;
 	uiVidOptions.gammaIntensity.range = 0.05f;
+#ifdef RU
+	uiVidOptions.gammaIntensity.generic.name = "Гамма";
+	uiVidOptions.gammaIntensity.generic.statusText = "Задать гамму (1.8 - 3.0)";
+#else
+	uiVidOptions.gammaIntensity.generic.name = "Gamma";
+	uiVidOptions.gammaIntensity.generic.statusText = "Set gamma value (1.8 - 3.0)";
+#endif
 
 	uiVidOptions.glareReduction.generic.id = ID_GLARE_REDUCTION;
 	uiVidOptions.glareReduction.generic.type = QMTYPE_SLIDER;
-	uiVidOptions.glareReduction.generic.flags = QMF_PULSEIFFOCUS|QMF_DROPSHADOW;
-	uiVidOptions.glareReduction.generic.name = "Glare reduction";
+	uiVidOptions.glareReduction.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW;
 	uiVidOptions.glareReduction.generic.x = 72;
 	uiVidOptions.glareReduction.generic.y = 400;
 	uiVidOptions.glareReduction.generic.callback = UI_VidOptions_Callback;
-	uiVidOptions.glareReduction.generic.statusText = "Set glare reduction level";
 	uiVidOptions.glareReduction.minValue = 0.0;
 	uiVidOptions.glareReduction.maxValue = 1.0;
 	uiVidOptions.glareReduction.range = 0.05f;
+#ifdef RU
+	uiVidOptions.glareReduction.generic.name = "Подавление бликов";
+	uiVidOptions.glareReduction.generic.statusText = "Задать уровень подавления бликов";
+#else
+	uiVidOptions.glareReduction.generic.name = "Glare reduction";
+	uiVidOptions.glareReduction.generic.statusText = "Set glare reduction level";
+#endif
 
-	UI_VidOptions_GetConfig();
+	UI_VidOptions_GetConfig ();
 
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.background );
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.banner );
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.done );
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.screenSize );
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.gammaIntensity );
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.glareReduction );
-	UI_AddItem( &uiVidOptions.menu, (void *)&uiVidOptions.testImage );
-}
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.background);
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.banner);
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.done);
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.screenSize);
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.gammaIntensity);
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.glareReduction);
+	UI_AddItem (&uiVidOptions.menu, (void *)&uiVidOptions.testImage);
+	}
 
 /*
 =================
 UI_VidOptions_Precache
 =================
 */
-void UI_VidOptions_Precache( void )
-{
-	PIC_Load( ART_BACKGROUND );
-	PIC_Load( ART_BANNER );
-}
+void UI_VidOptions_Precache (void)
+	{
+	PIC_Load (ART_BACKGROUND);
+	PIC_Load (ART_BANNER);
+	}
 
 /*
 =================
 UI_VidOptions_Menu
 =================
 */
-void UI_VidOptions_Menu( void )
-{
-	UI_VidOptions_Precache();
-	UI_VidOptions_Init();
+void UI_VidOptions_Menu (void)
+	{
+	UI_VidOptions_Precache ();
+	UI_VidOptions_Init ();
 
-	UI_PushMenu( &uiVidOptions.menu );
-}
+	UI_PushMenu (&uiVidOptions.menu);
+	}

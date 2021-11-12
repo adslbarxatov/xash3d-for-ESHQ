@@ -98,7 +98,7 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 		}
 	else if (FStrEq (pkvd->szKeyName, "shards"))
 		{
-		//			m_iShards = atof(pkvd->szValue);
+		m_iShards = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}*/
 	else if (FStrEq (pkvd->szKeyName, "gibmodel"))

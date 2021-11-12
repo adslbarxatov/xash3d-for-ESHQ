@@ -680,7 +680,8 @@ Template to show hud messages
 */
 void CL_HudMessage (const char* pMessage)
 	{
-	if (!COM_CheckString (pMessage)) return;
+	if (!COM_CheckString (pMessage)) 
+		return;
 	CL_DispatchUserMessage ("HudText", Q_strlen (pMessage), (void*)pMessage);
 	}
 
@@ -726,7 +727,8 @@ void CL_ParseTextMessage (sizebuf_t* msg)
 
 	if (text->effect == 2)
 		text->fxtime = (float)(MSG_ReadShort (msg) / 256.0f);
-	else text->fxtime = 0.0f;
+	else 
+		text->fxtime = 0.0f;
 
 	// to prevent grab too long messages
 	Q_strncpy ((char*)text->pMessage, MSG_ReadString (msg), 2048);

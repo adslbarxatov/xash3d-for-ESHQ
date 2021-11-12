@@ -33,10 +33,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define ID_BACKGROUND	0
 #define ID_BANNER		1
-#define ID_DONE		2
+#define ID_DONE			2
 #define ID_ADVOPTIONS	3
-#define ID_VIEW		4
-#define ID_NAME		5
+#define ID_VIEW			4
+#define ID_NAME			5
 #define ID_MODEL		6
 #define ID_TOPCOLOR		7
 #define ID_BOTTOMCOLOR	8
@@ -47,9 +47,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 	{
-	char		models[MAX_PLAYERMODELS][CS_SIZE];
+	char	models[MAX_PLAYERMODELS][CS_SIZE];
 	int		num_models;
-	char		currentModel[CS_SIZE];
+	char	currentModel[CS_SIZE];
 
 	ref_viewpass_t	rvp;
 	cl_entity_t* ent;
@@ -107,11 +107,11 @@ static void UI_PlayerSetup_FindModels (void)
 	// Get file list
 	filenames = FS_SEARCH ("models/player/*", &numFiles, TRUE);
 	if (!numFiles) filenames = FS_SEARCH ("models/player/*", &numFiles, FALSE);
-#if 1
+
 	// add default singleplayer model
 	strcpy (uiPlayerSetup.models[uiPlayerSetup.num_models], "player");
 	uiPlayerSetup.num_models++;
-#endif
+
 	// build the model list
 	for (i = 0; i < numFiles; i++)
 		{
@@ -270,7 +270,8 @@ static void UI_PlayerSetup_Callback (void* self, int event)
 		case ID_SHOWMODELS:
 			if (event == QM_PRESSED)
 				((menuCheckBox_s*)self)->focusPic = UI_CHECKBOX_PRESSED;
-			else ((menuCheckBox_s*)self)->focusPic = UI_CHECKBOX_FOCUS;
+			else 
+				((menuCheckBox_s*)self)->focusPic = UI_CHECKBOX_FOCUS;
 			break;
 		}
 
@@ -356,7 +357,7 @@ static void UI_PlayerSetup_Init (void)
 
 	uiPlayerSetup.banner.generic.id = ID_BANNER;
 	uiPlayerSetup.banner.generic.type = QMTYPE_BITMAP;
-	uiPlayerSetup.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiPlayerSetup.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiPlayerSetup.banner.generic.x = UI_BANNER_POSX;
 	uiPlayerSetup.banner.generic.y = UI_BANNER_POSY;
 	uiPlayerSetup.banner.generic.width = UI_BANNER_WIDTH;
@@ -369,21 +370,27 @@ static void UI_PlayerSetup_Init (void)
 	uiPlayerSetup.done.generic.x = 72;
 	uiPlayerSetup.done.generic.y = 230;
 	uiPlayerSetup.done.generic.name = "Done";
-	uiPlayerSetup.done.generic.statusText = "Go back to the Multiplayer Menu";
 	uiPlayerSetup.done.generic.callback = UI_PlayerSetup_Callback;
-
 	UI_UtilSetupPicButton (&uiPlayerSetup.done, PC_DONE);
+#ifdef RU
+	uiPlayerSetup.done.generic.statusText = "Вернуться в многопользовательское меню";
+#else
+	uiPlayerSetup.done.generic.statusText = "Go back to the multiplayer menu";
+#endif
 
 	uiPlayerSetup.AdvOptions.generic.id = ID_ADVOPTIONS;
 	uiPlayerSetup.AdvOptions.generic.type = QMTYPE_BM_BUTTON;
 	uiPlayerSetup.AdvOptions.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW;
 	uiPlayerSetup.AdvOptions.generic.x = 72;
 	uiPlayerSetup.AdvOptions.generic.y = 280;
-	uiPlayerSetup.AdvOptions.generic.name = "Adv. Options";
-	uiPlayerSetup.AdvOptions.generic.statusText = "Configure handness, fov and other advanced options";
+	uiPlayerSetup.AdvOptions.generic.name = "Adv. options";
 	uiPlayerSetup.AdvOptions.generic.callback = UI_PlayerSetup_Callback;
-
 	UI_UtilSetupPicButton (&uiPlayerSetup.AdvOptions, PC_ADV_OPT);
+#ifdef RU
+	uiPlayerSetup.AdvOptions.generic.statusText = "Настроить сложность, угол обзора и другие опции";
+#else
+	uiPlayerSetup.AdvOptions.generic.statusText = "Configure handness, fov and other advanced options";
+#endif
 
 	uiPlayerSetup.view.generic.id = ID_VIEW;
 	uiPlayerSetup.view.generic.type = QMTYPE_BITMAP;
@@ -402,8 +409,12 @@ static void UI_PlayerSetup_Init (void)
 	uiPlayerSetup.name.generic.width = 256;
 	uiPlayerSetup.name.generic.height = 36;
 	uiPlayerSetup.name.generic.callback = UI_PlayerSetup_Callback;
-	uiPlayerSetup.name.generic.statusText = "Enter your multiplayer display name";
 	uiPlayerSetup.name.maxLength = 32;
+#ifdef RU
+	uiPlayerSetup.name.generic.statusText = "Введите имя игрока для отображения";
+#else
+	uiPlayerSetup.name.generic.statusText = "Enter your multiplayer display name";
+#endif
 
 	uiPlayerSetup.model.generic.id = ID_MODEL;
 	uiPlayerSetup.model.generic.type = QMTYPE_SPINCONTROL;
@@ -413,54 +424,78 @@ static void UI_PlayerSetup_Init (void)
 	uiPlayerSetup.model.generic.width = FBitSet (gMenu.m_gameinfo.flags, GFL_NOMODELS) ? 256 : 176;
 	uiPlayerSetup.model.generic.height = FBitSet (gMenu.m_gameinfo.flags, GFL_NOMODELS) ? 36 : 32;
 	uiPlayerSetup.model.generic.callback = UI_PlayerSetup_Callback;
-	uiPlayerSetup.model.generic.statusText = "Select a model for representation in multiplayer";
 	uiPlayerSetup.model.minValue = 0;
 	uiPlayerSetup.model.maxValue = 1;
 	uiPlayerSetup.model.range = 1;
+#ifdef RU
+	uiPlayerSetup.model.generic.statusText = "Выберите модель, представляющую игрока";
+#else
+	uiPlayerSetup.model.generic.statusText = "Select a model for representation in multiplayer";
+#endif
 
 	uiPlayerSetup.topColor.generic.id = ID_TOPCOLOR;
 	uiPlayerSetup.topColor.generic.type = QMTYPE_SLIDER;
 	uiPlayerSetup.topColor.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW | addFlags;
-	uiPlayerSetup.topColor.generic.name = "Top color";
 	uiPlayerSetup.topColor.generic.x = 250;
 	uiPlayerSetup.topColor.generic.y = 550;
 	uiPlayerSetup.topColor.generic.width = 300;
 	uiPlayerSetup.topColor.generic.callback = UI_PlayerSetup_Callback;
-	uiPlayerSetup.topColor.generic.statusText = "Set a player model top color";
 	uiPlayerSetup.topColor.minValue = 0.0;
 	uiPlayerSetup.topColor.maxValue = 1.0;
 	uiPlayerSetup.topColor.range = 0.05f;
+#ifdef RU
+	uiPlayerSetup.topColor.generic.name = "Верхний цвет";
+	uiPlayerSetup.topColor.generic.statusText = "Верхний цвет модели игрока";
+#else
+	uiPlayerSetup.topColor.generic.name = "Top color";
+	uiPlayerSetup.topColor.generic.statusText = "Set a player model top color";
+#endif
 
 	uiPlayerSetup.bottomColor.generic.id = ID_BOTTOMCOLOR;
 	uiPlayerSetup.bottomColor.generic.type = QMTYPE_SLIDER;
 	uiPlayerSetup.bottomColor.generic.flags = QMF_PULSEIFFOCUS | QMF_DROPSHADOW | addFlags;
-	uiPlayerSetup.bottomColor.generic.name = "Bottom color";
 	uiPlayerSetup.bottomColor.generic.x = 250;
 	uiPlayerSetup.bottomColor.generic.y = 620;
 	uiPlayerSetup.bottomColor.generic.width = 300;
 	uiPlayerSetup.bottomColor.generic.callback = UI_PlayerSetup_Callback;
-	uiPlayerSetup.bottomColor.generic.statusText = "Set a player model bottom color";
 	uiPlayerSetup.bottomColor.minValue = 0.0;
 	uiPlayerSetup.bottomColor.maxValue = 1.0;
 	uiPlayerSetup.bottomColor.range = 0.05f;
+#ifdef RU
+	uiPlayerSetup.bottomColor.generic.name = "Нижний цвет";
+	uiPlayerSetup.bottomColor.generic.statusText = "Нижний цвет модели игрока";
+#else
+	uiPlayerSetup.bottomColor.generic.name = "Bottom color";
+	uiPlayerSetup.bottomColor.generic.statusText = "Set a player model bottom color";
+#endif
 
 	uiPlayerSetup.showModels.generic.id = ID_SHOWMODELS;
 	uiPlayerSetup.showModels.generic.type = QMTYPE_CHECKBOX;
 	uiPlayerSetup.showModels.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_ACT_ONRELEASE | QMF_MOUSEONLY | QMF_DROPSHADOW | addFlags;
-	uiPlayerSetup.showModels.generic.name = "Show 3D Preview";
 	uiPlayerSetup.showModels.generic.x = 72;
 	uiPlayerSetup.showModels.generic.y = 380;
 	uiPlayerSetup.showModels.generic.callback = UI_PlayerSetup_Callback;
-	uiPlayerSetup.showModels.generic.statusText = "show 3D player models instead of preview thumbnails";
+#ifdef RU
+	uiPlayerSetup.showModels.generic.name = "Показать 3D-превью";
+	uiPlayerSetup.showModels.generic.statusText = "Показывать 3D-модель вместо эскизов";
+#else
+	uiPlayerSetup.showModels.generic.name = "Show 3D preview";
+	uiPlayerSetup.showModels.generic.statusText = "Show 3D player models instead of preview thumbnails";
+#endif
 
 	uiPlayerSetup.hiModels.generic.id = ID_HIMODELS;
 	uiPlayerSetup.hiModels.generic.type = QMTYPE_CHECKBOX;
 	uiPlayerSetup.hiModels.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_ACT_ONRELEASE | QMF_MOUSEONLY | QMF_DROPSHADOW | addFlags;
-	uiPlayerSetup.hiModels.generic.name = "High quality models";
 	uiPlayerSetup.hiModels.generic.x = 72;
 	uiPlayerSetup.hiModels.generic.y = 430;
 	uiPlayerSetup.hiModels.generic.callback = UI_PlayerSetup_Callback;
-	uiPlayerSetup.hiModels.generic.statusText = "show hi-res models in multiplayer";
+#ifdef RU
+	uiPlayerSetup.hiModels.generic.name = "Модели высокого качества";
+	uiPlayerSetup.hiModels.generic.statusText = "Показывать модели высокого разрешения в игре";
+#else
+	uiPlayerSetup.hiModels.generic.name = "High quality models";
+	uiPlayerSetup.hiModels.generic.statusText = "Show hi-res models in multiplayer";
+#endif
 
 	UI_PlayerSetup_GetConfig ();
 

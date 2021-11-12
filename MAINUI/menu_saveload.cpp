@@ -28,9 +28,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_BACKGROUND	0
 #define ID_BANNER		1
 
-#define ID_LOAD	  	2
-#define ID_SAVE	  	3
-#define ID_DONE		4
+#define ID_LOAD	  		2
+#define ID_SAVE	  		3
+#define ID_DONE			4
 
 #define ID_MSGHINT		5
 
@@ -88,11 +88,19 @@ static void UI_SaveLoad_Init (void)
 
 	uiSaveLoad.menu.vidInitFunc = UI_SaveLoad_Init;
 
+#ifdef RU
+	strcat (uiSaveLoad.hintText, "Во время игры вы можете быстро сохранить её, нажав ");
+#else
 	strcat (uiSaveLoad.hintText, "During play, you can quickly save your game by pressing ");
+#endif
 	strcat (uiSaveLoad.hintText, KEY_KeynumToString (KEY_GetKey ("save quick")));
-	strcat (uiSaveLoad.hintText, ".\nLoad this game again by pressing ");
+#ifdef RU
+	strcat (uiSaveLoad.hintText, ".\nТакже можно снова загрузить эту игру, нажав ");
+#else
+	strcat (uiSaveLoad.hintText, ".\nAlso you can load this game again by pressing ");
+#endif
 	strcat (uiSaveLoad.hintText, KEY_KeynumToString (KEY_GetKey ("load quick")));
-	strcat (uiSaveLoad.hintText, ".\n");
+	//strcat (uiSaveLoad.hintText, ".\n");
 
 	uiSaveLoad.background.generic.id = ID_BACKGROUND;
 	uiSaveLoad.background.generic.type = QMTYPE_BITMAP;
@@ -105,7 +113,7 @@ static void UI_SaveLoad_Init (void)
 
 	uiSaveLoad.banner.generic.id = ID_BANNER;
 	uiSaveLoad.banner.generic.type = QMTYPE_BITMAP;
-	uiSaveLoad.banner.generic.flags = QMF_INACTIVE | QMF_DRAW_ADDITIVE;
+	uiSaveLoad.banner.generic.flags = QMF_INACTIVE;// | QMF_DRAW_ADDITIVE;
 	uiSaveLoad.banner.generic.x = UI_BANNER_POSX;
 	uiSaveLoad.banner.generic.y = UI_BANNER_POSY;
 	uiSaveLoad.banner.generic.width = UI_BANNER_WIDTH;
@@ -116,34 +124,43 @@ static void UI_SaveLoad_Init (void)
 	uiSaveLoad.load.generic.type = QMTYPE_BM_BUTTON;
 	uiSaveLoad.load.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_NOTIFY;
 	uiSaveLoad.load.generic.name = "Load game";
-	uiSaveLoad.load.generic.statusText = "Load a previously saved game";
 	uiSaveLoad.load.generic.x = 72;
 	uiSaveLoad.load.generic.y = 230;
 	uiSaveLoad.load.generic.callback = UI_SaveLoad_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveLoad.load, PC_LOAD_GAME);
+#ifdef RU
+	uiSaveLoad.load.generic.statusText = "Загрузить ранее сохранённую игру";
+#else
+	uiSaveLoad.load.generic.statusText = "Load a previously saved game";
+#endif
 
 	uiSaveLoad.save.generic.id = ID_SAVE;
 	uiSaveLoad.save.generic.type = QMTYPE_BM_BUTTON;
 	uiSaveLoad.save.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_NOTIFY;
 	uiSaveLoad.save.generic.name = "Save game";
-	uiSaveLoad.save.generic.statusText = "Save current game";
 	uiSaveLoad.save.generic.x = 72;
 	uiSaveLoad.save.generic.y = 280;
 	uiSaveLoad.save.generic.callback = UI_SaveLoad_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveLoad.save, PC_SAVE_GAME);
+#ifdef RU
+	uiSaveLoad.save.generic.statusText = "Сохранить текущую игру";
+#else
+	uiSaveLoad.save.generic.statusText = "Save current game";
+#endif
 
 	uiSaveLoad.done.generic.id = ID_DONE;
 	uiSaveLoad.done.generic.type = QMTYPE_BM_BUTTON;
 	uiSaveLoad.done.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_DROPSHADOW | QMF_NOTIFY;
 	uiSaveLoad.done.generic.name = "Done";
-	uiSaveLoad.done.generic.statusText = "Go back to the Main Menu";
 	uiSaveLoad.done.generic.x = 72;
 	uiSaveLoad.done.generic.y = 330;
 	uiSaveLoad.done.generic.callback = UI_SaveLoad_Callback;
-
 	UI_UtilSetupPicButton (&uiSaveLoad.done, PC_DONE);
+#ifdef RU
+	uiSaveLoad.done.generic.statusText = "Вернуться в главное меню";
+#else
+	uiSaveLoad.done.generic.statusText = "Go back to the main menu";
+#endif
 
 	uiSaveLoad.hintMessage.generic.id = ID_MSGHINT;
 	uiSaveLoad.hintMessage.generic.type = QMTYPE_ACTION;
