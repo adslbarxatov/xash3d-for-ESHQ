@@ -1770,6 +1770,16 @@ Create an explosion (scale is magnitude)
 void R_Explosion (vec3_t pos, int model, float scale, float framerate, int flags)
 	{
 	sound_t	hSound;
+	float sizeFactor = scale / 8.0;	// scale == 25 <=> explMagnitude == 500
+	float volume, pitch;
+
+	// ESHQ: звук взрыва теперь зависит от его мощности
+	if (sizeFactor > 1.0)
+		sizeFactor = 1.0;
+	else if (sizeFactor < 0.01)
+		sizeFactor = 0.01;
+	volume = sizeFactor + 0.2;
+	pitch = COM_RandomLong (125, 135) - (int)(45 * sizeFactor);
 
 	if (scale != 0.0f)
 		{
@@ -1805,10 +1815,11 @@ void R_Explosion (vec3_t pos, int model, float scale, float framerate, int flags
 			}
 		}
 
+	// ESHQ: звук взрыва теперь зависит от его мощности
 	if (!FBitSet (flags, TE_EXPLFLAG_NOSOUND))
 		{
 		hSound = S_RegisterSound (va ("%s", cl_explode_sounds[COM_RandomLong (0, 2)]));
-		S_StartSound (pos, 0, CHAN_STATIC, hSound, VOL_NORM, 0.3f, PITCH_NORM, 0);
+		S_StartSound (pos, 0, CHAN_STATIC, hSound, volume, 0.3f, pitch, 0);
 		}
 	}
 

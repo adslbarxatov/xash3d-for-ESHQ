@@ -171,7 +171,6 @@ inline BOOL FStringNull (int iString) { return iString == iStringNull; }
 
 typedef enum
 	{
-
 	MONSTERSTATE_NONE = 0,
 	MONSTERSTATE_IDLE,
 	MONSTERSTATE_COMBAT,

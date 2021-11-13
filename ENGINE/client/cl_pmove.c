@@ -454,18 +454,18 @@ void CL_AddLinksToPmove (frame_t* frame)
 		if ((state->owner != 0) && (state->owner == cl.playernum + 1))
 			continue;
 
-		if ((model->hulls[1].lastclipnode || model->type == mod_studio) && clgame.pmove->numvisent < MAX_PHYSENTS)
+		if (((model->hulls[1].lastclipnode) || (model->type == mod_studio)) && (clgame.pmove->numvisent < MAX_PHYSENTS))
 			{
 			pe = &clgame.pmove->visents[clgame.pmove->numvisent];
 			CL_CopyEntityToPhysEnt (pe, state, true);
 			clgame.pmove->numvisent++;
 			}
 
-		if (state->solid == SOLID_TRIGGER || (state->solid == SOLID_NOT && state->skin >= CONTENTS_EMPTY))
+		if ((state->solid == SOLID_TRIGGER) || ((state->solid == SOLID_NOT) && (state->skin >= CONTENTS_EMPTY)))
 			continue;
 
 		// dead body
-		if (state->mins[2] == 0.0f && state->maxs[2] == 1.0f)
+		if ((state->mins[2] == 0.0f) && (state->maxs[2] == 1.0f))
 			continue;
 
 		// can't collide with zeroed hull
@@ -809,7 +809,7 @@ static int pfnPointContents (float* p, int* truecontents)
 
 	if (truecontents) *truecontents = truecont;
 
-	if (cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN)
+	if ((cont <= CONTENTS_CURRENT_0) && (cont >= CONTENTS_CURRENT_DOWN))
 		cont = CONTENTS_WATER;
 	return cont;
 	}

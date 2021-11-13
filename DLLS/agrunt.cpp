@@ -585,7 +585,7 @@ void CAGrunt::Spawn ()
 	m_bloodColor = BLOOD_COLOR_GREEN;
 	pev->effects = 0;
 	pev->health = gSkillData.agruntHealth;
-	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone (as a dotproduct result)
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = 0;
 	m_afCapability |= bits_CAP_SQUAD;
@@ -593,7 +593,6 @@ void CAGrunt::Spawn ()
 	m_HackedGunPos = Vector (24, 64, 48);
 
 	m_flNextSpeakTime = m_flNextWordTime = gpGlobals->time + 10 + RANDOM_LONG (0, 10);
-
 
 	MonsterInit ();
 	}

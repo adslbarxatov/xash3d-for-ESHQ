@@ -113,23 +113,20 @@ void CEnvExplosion::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseEntity::KeyValue (pkvd);
+		}
 	}
 
 void CEnvExplosion::Spawn (void)
 	{
 	pev->solid = SOLID_NOT;
 	pev->effects = EF_NODRAW;
-
 	pev->movetype = MOVETYPE_NONE;
 
-	float flSpriteScale;
-	flSpriteScale = (m_iMagnitude - 50) * 0.6;
-
-	if (flSpriteScale < 10)
-		{
-		flSpriteScale = 10;
-		}
+	float flSpriteScale = (m_iMagnitude - 50) * 0.6;
+	if (flSpriteScale < 10.0)
+		flSpriteScale = 10.0;
 
 	m_spriteScale = (int)flSpriteScale;
 	}
@@ -149,29 +146,44 @@ void CEnvExplosion::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 	// Pull out of the wall a bit
 	if (tr.flFraction != 1.0)
-		{
 		pev->origin = tr.vecEndPos + (tr.vecPlaneNormal * (m_iMagnitude - 24) * 0.6);
-		}
 	else
-		{
 		pev->origin = pev->origin;
-		}
 
 	// draw decal
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODECAL))
 		{
 		if (RANDOM_FLOAT (0, 1) < 0.5)
-			{
 			UTIL_DecalTrace (&tr, DECAL_SCORCH1);
-			}
 		else
-			{
 			UTIL_DecalTrace (&tr, DECAL_SCORCH2);
-			}
 		}
 
-	// draw fireball
+	// Draw fireball
+	MESSAGE_BEGIN (MSG_PAS, SVC_TEMPENTITY, pev->origin);
+	WRITE_BYTE (TE_EXPLOSION);
+	WRITE_COORD (pev->origin.x);
+	WRITE_COORD (pev->origin.y);
+	WRITE_COORD (pev->origin.z);
+	WRITE_SHORT (g_sModelIndexFireball);
+
+	// ESHQ: самые мощные взрывы превышают ограничение типа byte
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NOFIREBALL))
+		{
+		if (m_spriteScale > 255)
+			m_spriteScale = 255;
+		WRITE_BYTE ((BYTE)m_spriteScale); // scale * 10
+		}
+	else
+		{
+		WRITE_BYTE (0); // no sprite
+		}
+
+	WRITE_BYTE (15); // framerate
+	WRITE_BYTE (TE_EXPLFLAG_NONE);
+	MESSAGE_END ();
+
+	/*if (!(pev->spawnflags & SF_ENVEXPLOSION_NOFIREBALL))
 		{
 		MESSAGE_BEGIN (MSG_PAS, SVC_TEMPENTITY, pev->origin);
 		WRITE_BYTE (TE_EXPLOSION);
@@ -180,6 +192,7 @@ void CEnvExplosion::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		WRITE_COORD (pev->origin.z);
 		WRITE_SHORT (g_sModelIndexFireball);
 		WRITE_BYTE ((BYTE)m_spriteScale); // scale * 10
+
 		WRITE_BYTE (15); // framerate
 		WRITE_BYTE (TE_EXPLFLAG_NONE);
 		MESSAGE_END ();
@@ -196,13 +209,11 @@ void CEnvExplosion::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		WRITE_BYTE (15); // framerate
 		WRITE_BYTE (TE_EXPLFLAG_NONE);
 		MESSAGE_END ();
-		}
+		}*/
 
-	// do damage
+	// Do damage
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE))
-		{
 		RadiusDamage (pev, pev, m_iMagnitude, CLASS_NONE, DMG_BLAST);
-		}
 
 	SetThink (&CEnvExplosion::Smoke);
 	pev->nextthink = gpGlobals->time + 0.3;
@@ -213,9 +224,7 @@ void CEnvExplosion::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		int sparkCount = RANDOM_LONG (0, 3);
 
 		for (int i = 0; i < sparkCount; i++)
-			{
 			Create ("spark_shower", pev->origin, tr.vecPlaneNormal, NULL);
-			}
 		}
 	}
 
@@ -235,9 +244,7 @@ void CEnvExplosion::Smoke (void)
 		}
 
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_REPEATABLE))
-		{
 		UTIL_Remove (this);
-		}
 	}
 
 // HACKHACK -- create one of these and fake a keyvalue to get the right explosion setup

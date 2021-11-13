@@ -525,12 +525,12 @@ void SV_TouchLinks (edict_t* ent, areanode_t* node)
 			if ((touch == ent) || (touch->v.solid != SOLID_TRIGGER)) // disabled ?
 				continue;
 
-			if (touch->v.groupinfo && ent->v.groupinfo)
+			if ((touch->v.groupinfo) && (ent->v.groupinfo))
 				{
-				if (svs.groupop == GROUP_OP_AND && !FBitSet (touch->v.groupinfo, ent->v.groupinfo))
+				if ((svs.groupop == GROUP_OP_AND) && !FBitSet (touch->v.groupinfo, ent->v.groupinfo))
 					continue;
 
-				if (svs.groupop == GROUP_OP_NAND && FBitSet (touch->v.groupinfo, ent->v.groupinfo))
+				if ((svs.groupop == GROUP_OP_NAND) && FBitSet (touch->v.groupinfo, ent->v.groupinfo))
 					continue;
 				}
 
@@ -540,7 +540,7 @@ void SV_TouchLinks (edict_t* ent, areanode_t* node)
 			mod = SV_ModelHandle (touch->v.modelindex);
 
 			// check brush triggers accuracy
-			if (mod && mod->type == mod_brush)
+			if (mod && (mod->type == mod_brush))
 				{
 				// force to select bsp-hull
 				hull = SV_HullForBsp (touch, ent->v.mins, ent->v.maxs, offset);
@@ -674,12 +674,15 @@ void SV_LinkEdict (edict_t* ent, qboolean touch_triggers)
 
 	while (1)
 		{
-		if (node->axis == -1) break;
+		if (node->axis == -1) 
+			break;
+
 		if (ent->v.absmin[node->axis] > node->dist)
 			node = node->children[0];
 		else if (ent->v.absmax[node->axis] < node->dist)
 			node = node->children[1];
-		else break; // crosses the node
+		else 
+			break; // crosses the node
 		}
 
 	// link it in	
@@ -687,7 +690,8 @@ void SV_LinkEdict (edict_t* ent, qboolean touch_triggers)
 		InsertLinkBefore (&ent->area, &node->trigger_edicts);
 	else if (ent->v.solid == SOLID_PORTAL)
 		InsertLinkBefore (&ent->area, &node->portal_edicts);
-	else InsertLinkBefore (&ent->area, &node->solid_edicts);
+	else 
+		InsertLinkBefore (&ent->area, &node->solid_edicts);
 
 	if (touch_triggers && !iTouchLinkSemaphore)
 		{

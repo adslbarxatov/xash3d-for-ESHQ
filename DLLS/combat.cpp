@@ -856,8 +856,8 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 
 	if (pev->deadflag == DEAD_NO)
 		{
-		// no pain sound during death animation.
-		PainSound ();// "Ouch!"
+		// no pain sound during death animation
+		PainSound ();
 		}
 
 	//!!!LATER - make armor consideration here!
@@ -866,8 +866,8 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 	// set damage type sustained
 	m_bitsDamageType |= bitsDamageType;
 
-	// grab the vector of the incoming attack. ( pretend that the inflictor is a little lower
-	// than it really is, so the body will tend to fly upward a bit).
+	// grab the vector of the incoming attack (pretend that the inflictor is a little lower
+	// than it really is, so the body will tend to fly upward a bit)
 	vecDir = Vector (0, 0, 0);
 	if (!FNullEnt (pevInflictor))
 		{
@@ -891,13 +891,11 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 
 		// check for godmode or invincibility
 		if (pev->flags & FL_GODMODE)
-			{
 			return 0;
-			}
 		}
 
-	// if this is a player, move him around!
-	if ((!FNullEnt (pevInflictor)) && (pev->movetype == MOVETYPE_WALK) && (!pevAttacker || pevAttacker->solid != SOLID_TRIGGER))
+	// If this is a player, move him around!
+	if ((!FNullEnt (pevInflictor)) && (pev->movetype == MOVETYPE_WALK) && (!pevAttacker || (pevAttacker->solid != SOLID_TRIGGER)))
 		{
 		pev->velocity = pev->velocity + vecDir * -DamageForce (flDamage);
 		}
@@ -905,8 +903,7 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 	// do the damage
 	pev->health -= flTake;
 
-
-	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
+	// HACKHACK Don't kill monsters in a script. Let them break their scripts first
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)
 		{
 		SetConditions (bits_COND_LIGHT_DAMAGE);
@@ -939,9 +936,9 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 	if ((pev->flags & FL_MONSTER) && !FNullEnt (pevAttacker))
 		{
 		if (pevAttacker->flags & (FL_MONSTER | FL_CLIENT))
-			{// only if the attack was a monster or client!
-
-				// enemy's last known position is somewhere down the vector that the attack came from.
+			{
+			// only if the attack was a monster or client!
+			// enemy's last known position is somewhere down the vector that the attack came from
 			if (pevInflictor)
 				{
 				if (m_hEnemy == NULL || pevInflictor == m_hEnemy->pev || !HasConditions (bits_COND_SEE_ENEMY))

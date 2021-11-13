@@ -92,15 +92,6 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 
 		pkvd->fHandled = TRUE;
 		}
-	/*else if (FStrEq (pkvd->szKeyName, "deadmodel"))
-		{
-		pkvd->fHandled = TRUE;
-		}
-	else if (FStrEq (pkvd->szKeyName, "shards"))
-		{
-		m_iShards = atof(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-		}*/
 	else if (FStrEq (pkvd->szKeyName, "gibmodel"))
 		{
 		m_iszGibModel = ALLOC_STRING (pkvd->szValue);
@@ -162,9 +153,7 @@ void CBreakable::Spawn (void)
 	// HACK: matGlass can receive decals, we need the client to know about this
 	// so use class to store the material flag
 	if (m_Material == matGlass)
-		{
 		pev->playerclass = 1;
-		}
 
 	SET_MODEL (ENT (pev), STRING (pev->model));	// set size and link into world
 
@@ -276,9 +265,7 @@ void CBreakable::MaterialSoundPrecache (Materials precacheMaterial)
 	pSoundList = MaterialSoundList (precacheMaterial, soundCount);
 
 	for (i = 0; i < soundCount; i++)
-		{
 		PRECACHE_SOUND ((char*)pSoundList[i]);
-		}
 	}
 
 void CBreakable::MaterialSoundRandom (edict_t* pEdict, Materials soundMaterial, float volume)
@@ -386,13 +373,6 @@ void CBreakable::DamageSound (void)
 	int i;
 	int material = m_Material;
 
-	/*if (RANDOM_LONG (0, 2))
-		pitch = PITCH_NORM;
-	else
-		pitch = 95 + RANDOM_LONG (0, 34);
-
-	fvol = RANDOM_FLOAT (0.75, 1.0);*/
-
 	// ESHQ: громкость и высота теперь зависят от размера объекта
 	fvol = GetVolume ();
 	pitch = GetPitch ();
@@ -477,10 +457,9 @@ void CBreakable::BreakTouch (CBaseEntity* pOther)
 			}
 		}
 
+	// can be broken when stood upon
 	if (FBitSet (pev->spawnflags, SF_BREAK_PRESSURE) && (pevToucher->absmin.z >= pev->maxs.z - 2))
 		{
-		// can be broken when stood upon
-
 		// play creaking sound here
 		DamageSound ();
 
@@ -513,9 +492,7 @@ void CBreakable::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vec
 	{
 	// ESHQ: принудительные искры при ударе по металлу
 	if (m_Material == matMetal)
-		{
 		UTIL_Sparks (ptr->vecEndPos);
-		}
 
 	// ESHQ: случайные искры при ударе по электронике
 	if (RANDOM_LONG (0, 1))
@@ -601,7 +578,6 @@ int CBreakable::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 
 	// Make a shard noise each time func_breakable is hit.
 	// Don't play shard noise if breakable actually died
-
 	DamageSound ();
 
 	return 1;
@@ -615,13 +591,6 @@ void CBreakable::Die (void)
 	char cFlag = 0;
 	int pitch;
 	float fvol;
-
-	/*pitch = 95 + RANDOM_LONG (0, 29);
-
-	if ((pitch > 97) && (pitch < 103))
-		pitch = 100;
-
-	fvol = RANDOM_FLOAT (0.85, 1.0) + (abs (pev->health) / 100.0);*/
 
 	// ESHQ: громкость и высота теперь зависят от размера объекта
 	fvol = GetVolume ();
@@ -799,13 +768,9 @@ void CBreakable::Die (void)
 		{
 		// ESHQ: эта правка позволяет создавать объекты при разрушении в настраиваемой позиции (высоту не учитываем)
 		if ((pev->origin.x == 0) && (pev->origin.y == 0) || !FClassnameIs (pev, "func_breakable"))
-			{
 			CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), VecBModelOrigin (pev), pev->angles, edict ());
-			}
 		else
-			{
 			CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), pev->origin, pev->angles, edict ());
-			}
 		}
 
 	if (Explodable ())

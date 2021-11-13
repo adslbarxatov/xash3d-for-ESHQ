@@ -17,7 +17,6 @@
 //=========================================================
 
 // UNDONE: Don't flinch every time you get hit
-
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
@@ -144,9 +143,10 @@ int CZombie::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 		flDamage *= 0.3;
 		}
 
-	// HACK HACK -- until we fix this.
+	// HACK HACK -- until we fix this
 	if (IsAlive ())
 		PainSound ();
+
 	return CBaseMonster::TakeDamage (pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}
 
@@ -186,7 +186,7 @@ void CZombie::AttackSound (void)
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
+// that occur when tagged animation frames are played
 //=========================================================
 void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 	{
@@ -194,8 +194,7 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 		{
 		case ZOMBIE_AE_ATTACK_RIGHT:
 			{
-			// do stuff for this event.
-	//		ALERT( at_console, "Slash right!\n" );
+			// do stuff for this event
 			CBaseEntity* pHurt = CheckTraceHullAttack (70, gSkillData.zombieDmgOneSlash, DMG_SLASH);
 			if (pHurt)
 				{
@@ -205,13 +204,16 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
 					}
+
 				// Play a random attack hit sound
 				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG (0,
 					HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 				}
 			else // Play a random attack miss sound
+				{
 				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0,
 					HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				}
 
 			if (RANDOM_LONG (0, 1))
 				AttackSound ();
@@ -220,8 +222,7 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 
 		case ZOMBIE_AE_ATTACK_LEFT:
 			{
-			// do stuff for this event.
-	//		ALERT( at_console, "Slash left!\n" );
+			// do stuff for this event
 			CBaseEntity* pHurt = CheckTraceHullAttack (70, gSkillData.zombieDmgOneSlash, DMG_SLASH);
 			if (pHurt)
 				{
@@ -235,8 +236,10 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 					HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 				}
 			else
+				{
 				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0,
 					HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				}
 
 			if (RANDOM_LONG (0, 1))
 				AttackSound ();
@@ -245,7 +248,7 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 
 		case ZOMBIE_AE_ATTACK_BOTH:
 			{
-			// do stuff for this event.
+			// do stuff for this event
 			CBaseEntity* pHurt = CheckTraceHullAttack (70, gSkillData.zombieDmgBothSlash, DMG_SLASH);
 			if (pHurt)
 				{
@@ -258,8 +261,10 @@ void CZombie::HandleAnimEvent (MonsterEvent_t* pEvent)
 					HLARRAYSIZE (pAttackHitSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
 				}
 			else
+				{
 				EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG (0,
 					HLARRAYSIZE (pAttackMissSounds) - 1)], 1.0, ATTN_MEDIUM, 0, 100 + RANDOM_LONG (-5, 5));
+				}
 
 			if (RANDOM_LONG (0, 1))
 				AttackSound ();
@@ -289,8 +294,8 @@ void CZombie::Spawn ()
 	m_bloodColor = BLOOD_COLOR_RED;
 
 	pev->health = gSkillData.zombieHealth;
-	pev->view_ofs = VEC_VIEW;// position of the eyes relative to monster's origin.
-	m_flFieldOfView = 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	pev->view_ofs = VEC_VIEW;	// position of the eyes relative to monster's origin
+	m_flFieldOfView = 0.5;		// indicates the width of this monster's forward view cone (as a dotproduct result)
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = bits_CAP_DOORS_GROUP;
 
@@ -357,7 +362,9 @@ void CZombie::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseMonster::KeyValue (pkvd);
+		}
 	}
 
 //=========================================================
@@ -367,7 +374,7 @@ class CDeadZombie: public CBaseMonster
 	{
 	public:
 		void Spawn (void);
-		int	Classify (void) { return	CLASS_HUMAN_ASSASSIN; }
+		int	Classify (void) { return CLASS_HUMAN_ASSASSIN; }
 
 		void KeyValue (KeyValueData* pkvd);
 
@@ -390,7 +397,9 @@ void CDeadZombie::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseMonster::KeyValue (pkvd);
+		}
 	}
 
 LINK_ENTITY_TO_CLASS (monster_zombie_dead, CDeadZombie);
@@ -445,7 +454,9 @@ void CBurnedZombie::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseMonster::KeyValue (pkvd);
+		}
 	}
 
 LINK_ENTITY_TO_CLASS (monster_zombie_burned, CBurnedZombie);

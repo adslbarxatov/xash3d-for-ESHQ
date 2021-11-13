@@ -308,7 +308,7 @@ void SV_ConnectClient (netadr_t from)
 	// if there is already a slot for this ip, reuse it
 	for (i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 		{
-		if (cl->state == cs_free || cl->state == cs_zombie)
+		if ((cl->state == cs_free) || (cl->state == cs_zombie))
 			continue;
 
 		if (NET_CompareBaseAdr (from, cl->netchan.remote_address) && (cl->netchan.qport == qport || from.port == cl->netchan.remote_address.port))

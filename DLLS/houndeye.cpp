@@ -450,9 +450,7 @@ void CHoundeye::AlertSound (void)
 	{
 
 	if (InSquad () && !IsLeader ())
-		{
-		return; // only leader makes ALERT sound.
-		}
+		return; // only leader makes ALERT sound
 
 	switch (RANDOM_LONG (0, 2))
 		{
@@ -515,14 +513,14 @@ void CHoundeye::PainSound (void)
 //=========================================================
 void CHoundeye::WriteBeamColor (void)
 	{
-	BYTE	bRed, bGreen, bBlue;
+	BYTE bRed, bGreen, bBlue;
 
 	if (InSquad ())
 		{
 		switch (SquadCount ())
 			{
 			case 2:
-				// no case for 0 or 1, cause those are impossible for monsters in Squads.
+				// no case for 0 or 1, cause those are impossible for monsters in Squads
 				bRed = 101;
 				bGreen = 133;
 				bBlue = 221;
@@ -619,7 +617,7 @@ void CHoundeye::SonicAttack (void)
 
 	WriteBeamColor ();
 
-	WRITE_BYTE (255);	//brightness
+	WRITE_BYTE (255);	// brightness
 	WRITE_BYTE (0);		// speed
 	MESSAGE_END ();
 
@@ -640,7 +638,8 @@ void CHoundeye::SonicAttack (void)
 				if (SquadCount () > 1)
 					{
 					// squad gets attack bonus.
-					flAdjustedDamage = gSkillData.houndeyeDmgBlast + gSkillData.houndeyeDmgBlast * (HOUNDEYE_SQUAD_BONUS * (SquadCount () - 1));
+					flAdjustedDamage = gSkillData.houndeyeDmgBlast + gSkillData.houndeyeDmgBlast * 
+						(HOUNDEYE_SQUAD_BONUS * (SquadCount () - 1));
 					}
 				else
 					{

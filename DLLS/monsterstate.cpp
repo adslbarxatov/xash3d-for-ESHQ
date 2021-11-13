@@ -33,13 +33,11 @@ void CBaseMonster::SetState (MONSTERSTATE State)
 	{
 	switch (State)
 		{
-
 		// Drop enemy pointers when going to idle
 		case MONSTERSTATE_IDLE:
-
 			if (m_hEnemy != NULL)
 				{
-				m_hEnemy = NULL;	// not allowed to have an enemy anymore.
+				m_hEnemy = NULL;	// not allowed to have an enemy anymore
 				ALERT (at_aiconsole, "Stripped\n");
 				}
 			break;

@@ -393,7 +393,7 @@ typedef struct
 
 typedef struct
 	{
-	// Initialize/shutdown the game (one-time call after loading of game .dll )
+	// Initialize/shutdown the game (one-time call after loading of game.dll)
 	void	(*pfnGameInit)(void);
 	int		(*pfnSpawn)(edict_t* pent);
 	void	(*pfnThink)(edict_t* pent);

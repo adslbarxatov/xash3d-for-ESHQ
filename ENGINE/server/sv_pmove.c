@@ -231,7 +231,7 @@ void SV_AddLinksToPmove (areanode_t* node, const vec3_t pmove_mins, const vec3_t
 				continue;
 			}
 
-		if (check->v.owner == pl || check->v.solid == SOLID_TRIGGER)
+		if ((check->v.owner == pl) || (check->v.solid == SOLID_TRIGGER))
 			continue; // player or player's own missile
 
 		if (svgame.pmove->numvisent < MAX_PHYSENTS)
@@ -241,11 +241,11 @@ void SV_AddLinksToPmove (areanode_t* node, const vec3_t pmove_mins, const vec3_t
 				svgame.pmove->numvisent++;
 			}
 
-		if (check->v.solid == SOLID_NOT && (check->v.skin == CONTENTS_NONE || check->v.modelindex == 0))
+		if ((check->v.solid == SOLID_NOT) && ((check->v.skin == CONTENTS_NONE) || (check->v.modelindex == 0)))
 			continue;
 
 		// ignore monsterclip brushes
-		if (FBitSet (check->v.flags, FL_MONSTERCLIP) && check->v.solid == SOLID_BSP)
+		if (FBitSet (check->v.flags, FL_MONSTERCLIP) && (check->v.solid == SOLID_BSP))
 			continue;
 
 		if (check == pl) continue;	// himself
@@ -1101,7 +1101,7 @@ void SV_RunCmd (sv_client_t* cl, usercmd_t* ucmd, int random_seed)
 	// copy results back to client
 	SV_FinishPMove (svgame.pmove, cl);
 
-	if (clent->v.solid != SOLID_NOT && !sv.playersonly)
+	if ((clent->v.solid != SOLID_NOT) && !sv.playersonly)
 		{
 		if (svgame.physFuncs.PM_PlayerTouch != NULL)
 			{

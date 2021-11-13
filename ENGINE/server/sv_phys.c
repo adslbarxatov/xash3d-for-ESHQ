@@ -791,7 +791,7 @@ trace_t SV_PushEntity (edict_t* ent, const vec3_t lpush, const vec3_t apush, int
 
 	if (ent->v.movetype == MOVETYPE_FLYMISSILE)
 		type = MOVE_MISSILE;
-	else if (ent->v.solid == SOLID_TRIGGER || ent->v.solid == SOLID_NOT)
+	else if ((ent->v.solid == SOLID_TRIGGER) || (ent->v.solid == SOLID_NOT))
 		type = MOVE_NOMONSTERS; // only clip against bmodels
 	else 
 		type = MOVE_NORMAL;
@@ -870,7 +870,7 @@ static qboolean SV_CanBlock (edict_t* ent)
 	if (ent->v.mins[0] == ent->v.maxs[0])
 		return false;
 
-	if (ent->v.solid == SOLID_NOT || ent->v.solid == SOLID_TRIGGER)
+	if ((ent->v.solid == SOLID_NOT) || (ent->v.solid == SOLID_TRIGGER))
 		{
 		// clear bounds for deadbody
 		ent->v.mins[0] = ent->v.mins[1] = 0;

@@ -132,7 +132,7 @@ int CBaseMonster::Restore (CRestore& restore)
 
 
 //=========================================================
-// Eat - makes a monster full for a little while.
+// Eat - makes a monster full for a little while
 //=========================================================
 void CBaseMonster::Eat (float flFullDuration)
 	{
@@ -140,14 +140,12 @@ void CBaseMonster::Eat (float flFullDuration)
 	}
 
 //=========================================================
-// FShouldEat - returns true if a monster is hungry.
+// FShouldEat - returns true if a monster is hungry
 //=========================================================
 BOOL CBaseMonster::FShouldEat (void)
 	{
 	if (m_flHungryTime > gpGlobals->time)
-		{
 		return FALSE;
-		}
 
 	return TRUE;
 	}
@@ -164,9 +162,7 @@ void CBaseMonster::BarnacleVictimBitten (entvars_t* pevBarnacle)
 	pNewSchedule = GetScheduleOfType (SCHED_BARNACLE_VICTIM_CHOMP);
 
 	if (pNewSchedule)
-		{
 		ChangeSchedule (pNewSchedule);
-		}
 	}
 
 //=========================================================
@@ -586,13 +582,11 @@ int CBaseMonster::IgnoreConditions (void)
 	{
 	int iIgnoreConditions = 0;
 
+	// Not hungry? Ignore food smell
 	if (!FShouldEat ())
-		{
-		// not hungry? Ignore food smell.
 		iIgnoreConditions |= bits_COND_SMELL_FOOD;
-		}
 
-	if (m_MonsterState == MONSTERSTATE_SCRIPT && m_pCine)
+	if ((m_MonsterState == MONSTERSTATE_SCRIPT) && m_pCine)
 		iIgnoreConditions |= m_pCine->IgnoreConditions ();
 
 	return iIgnoreConditions;
@@ -1067,7 +1061,9 @@ int CBaseMonster::CheckEnemy (CBaseEntity* pEnemy)
 		SetConditions (bits_COND_ENEMY_OCCLUDED);
 		}
 	else
+		{
 		ClearConditions (bits_COND_ENEMY_OCCLUDED);
+		}
 
 	if (!pEnemy->IsAlive ())
 		{
@@ -1077,13 +1073,17 @@ int CBaseMonster::CheckEnemy (CBaseEntity* pEnemy)
 		}
 
 	Vector vecEnemyPos = pEnemy->pev->origin;
+
 	// distance to enemy's origin
 	flDistToEnemy = (vecEnemyPos - pev->origin).Length ();
 	vecEnemyPos.z += pEnemy->pev->size.z * 0.5;
+	
 	// distance to enemy's head
 	float flDistToEnemy2 = (vecEnemyPos - pev->origin).Length ();
 	if (flDistToEnemy2 < flDistToEnemy)
+		{
 		flDistToEnemy = flDistToEnemy2;
+		}
 	else
 		{
 		// distance to enemy's feet
@@ -1105,9 +1105,7 @@ int CBaseMonster::CheckEnemy (CBaseEntity* pEnemy)
 		if (pEnemyMonster)
 			{
 			if (pEnemyMonster->FInViewCone (this))
-				{
 				SetConditions (bits_COND_ENEMY_FACING_ME);
-				}
 			else
 				ClearConditions (bits_COND_ENEMY_FACING_ME);
 			}
@@ -1132,17 +1130,13 @@ int CBaseMonster::CheckEnemy (CBaseEntity* pEnemy)
 		}
 
 	if (flDistToEnemy >= m_flDistTooFar)
-		{
 		// enemy is very far away from monster
 		SetConditions (bits_COND_ENEMY_TOOFAR);
-		}
 	else
 		ClearConditions (bits_COND_ENEMY_TOOFAR);
 
 	if (FCanCheckAttacks ())
-		{
 		CheckAttacks (m_hEnemy, flDistToEnemy);
-		}
 
 	if (m_movementGoal == MOVEGOAL_ENEMY)
 		{
@@ -1174,7 +1168,7 @@ void CBaseMonster::PushEnemy (CBaseEntity* pEnemy, Vector& vecLastKnownPos)
 	if (pEnemy == NULL)
 		return;
 
-	// UNDONE: blah, this is bad, we should use a stack but I'm too lazy to code one.
+	// UNDONE: blah, this is bad, we should use a stack but I'm too lazy to code one
 	for (i = 0; i < MAX_OLD_ENEMIES; i++)
 		{
 		if (m_hOldEnemy[i] == pEnemy)
@@ -1194,7 +1188,7 @@ void CBaseMonster::PushEnemy (CBaseEntity* pEnemy, Vector& vecLastKnownPos)
 //=========================================================
 BOOL CBaseMonster::PopEnemy ()
 	{
-	// UNDONE: blah, this is bad, we should use a stack but I'm too lazy to code one.
+	// UNDONE: blah, this is bad, we should use a stack but I'm too lazy to code one
 	for (int i = MAX_OLD_ENEMIES - 1; i >= 0; i--)
 		{
 		if (m_hOldEnemy[i] != NULL)
@@ -1212,6 +1206,7 @@ BOOL CBaseMonster::PopEnemy ()
 				}
 			}
 		}
+
 	return FALSE;
 	}
 
@@ -1227,7 +1222,7 @@ void CBaseMonster::SetActivity (Activity NewActivity)
 	// Set to the desired anim, or default anim if the desired is not present
 	if (iSequence > ACTIVITY_NOT_AVAILABLE)
 		{
-		if (pev->sequence != iSequence || !m_fSequenceLoops)
+		if ((pev->sequence != iSequence) || !m_fSequenceLoops)
 			{
 			// don't reset frame between walk and run
 			if (!(m_Activity == ACT_WALK || m_Activity == ACT_RUN) || !(NewActivity == ACT_WALK || NewActivity == ACT_RUN))
@@ -1244,6 +1239,7 @@ void CBaseMonster::SetActivity (Activity NewActivity)
 			{
 			ResetSequenceInfo (TRUE);
 			}
+
 		SetYawSpeed ();
 		}
 	else
@@ -1257,8 +1253,6 @@ void CBaseMonster::SetActivity (Activity NewActivity)
 
 	// In case someone calls this with something other than the ideal activity
 	m_IdealActivity = m_Activity;
-
-
 	}
 
 //=========================================================
@@ -2002,7 +1996,6 @@ void CBaseMonster::MonsterInit (void)
 	if (!g_pGameRules->FAllowMonsters ())
 		{
 		pev->flags |= FL_KILLME;		// Post this because some monster code modifies class data after calling this function
-//		REMOVE_ENTITY(ENT(pev));
 		return;
 		}
 
@@ -2012,8 +2005,8 @@ void CBaseMonster::MonsterInit (void)
 	pev->ideal_yaw = pev->angles.y;
 	pev->max_health = pev->health;
 	pev->deadflag = DEAD_NO;
+	
 	m_IdealMonsterState = MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
-
 	m_IdealActivity = ACT_IDLE;
 
 	SetBits (pev->flags, FL_MONSTER);
@@ -2025,9 +2018,7 @@ void CBaseMonster::MonsterInit (void)
 	InitBoneControllers (); // FIX: should be done in Spawn
 
 	m_iHintNode = NO_NODE;
-
 	m_afMemory = MEMORY_CLEAR;
-
 	m_hEnemy = NULL;
 
 	// ESHQ: увеличение дистанции видимости для врагов
@@ -2080,7 +2071,8 @@ void CBaseMonster::StartMonster (void)
 		{
 		pev->origin.z += 1;
 		DROP_TO_FLOOR (ENT (pev));
-		// Try to move the monster to make sure it's not stuck in a brush.
+
+		// Try to move the monster to make sure it's not stuck in a brush
 		if (!WALK_MOVE (ENT (pev), 0, 0, WALKMOVE_NORMAL))
 			{
 			ALERT (at_error, "Monster %s stuck in wall--level design error\n", STRING (pev->classname));
@@ -2093,7 +2085,7 @@ void CBaseMonster::StartMonster (void)
 		pev->flags &= ~FL_ONGROUND;
 		}
 
-	if (!FStringNull (pev->target))// this monster has a target
+	if (!FStringNull (pev->target))	// this monster has a target
 		{
 		// Find the monster's initial target entity, stash it
 		m_pGoalEnt = CBaseEntity::Instance (FIND_ENTITY_BY_TARGETNAME (NULL, STRING (pev->target)));
@@ -2106,15 +2098,6 @@ void CBaseMonster::StartMonster (void)
 			{
 			// Monster will start turning towards his destination
 			MakeIdealYaw (m_pGoalEnt->pev->origin);
-
-			// JAY: How important is this error message?  Big Momma doesn't obey this rule, so I took it out.
-#if 0
-			// At this point, we expect only a path_corner as initial goal
-			if (!FClassnameIs (m_pGoalEnt->pev, "path_corner"))
-				{
-				ALERT (at_warning, "ReadyMonster--monster's initial goal '%s' is not a path_corner", STRING (pev->target));
-				}
-#endif
 
 			// set the monster up to walk a path corner path. 
 			// !!!BUGBUG - this is a minor bit of a hack.
@@ -2138,9 +2121,9 @@ void CBaseMonster::StartMonster (void)
 	// Delay drop to floor to make sure each door in the level has had its chance to spawn
 	// Spread think times so that they don't all happen at the same time (Carmack)
 	SetThink (&CBaseMonster::CallMonsterThink);
-	pev->nextthink += RANDOM_FLOAT (0.1, 0.4); // spread think times.
+	pev->nextthink += RANDOM_FLOAT (0.1, 0.4); // spread think times
 
-	if (!FStringNull (pev->targetname))// wait until triggered
+	if (!FStringNull (pev->targetname))	// wait until triggered
 		{
 		SetState (MONSTERSTATE_IDLE);
 		// UNDONE: Some scripted sequence monsters don't have an idle?
@@ -2427,7 +2410,7 @@ CBaseEntity* CBaseMonster::BestVisibleEnemy (void)
 	int			iDist;
 	int			iBestRelationship;
 
-	iNearest = 8192;// so first visible entity will become the closest.
+	iNearest = 8192;	// so first visible entity will become the closest
 	pNextEnt = m_pLink;
 	pReturn = NULL;
 	iBestRelationship = R_NO;
@@ -2515,10 +2498,7 @@ float	CBaseMonster::FlYawDiff (void)
 	flCurrentYaw = UTIL_AngleMod (pev->angles.y);
 
 	if (flCurrentYaw == pev->ideal_yaw)
-		{
 		return 0;
-		}
-
 
 	return UTIL_AngleDiff (pev->ideal_yaw, flCurrentYaw);
 	}
@@ -2573,7 +2553,9 @@ float CBaseMonster::ChangeYaw (int yawSpeed)
 			}
 		}
 	else
+		{
 		move = 0;
+		}
 
 	return move;
 	}
@@ -2582,9 +2564,9 @@ float CBaseMonster::ChangeYaw (int yawSpeed)
 // VecToYaw - turns a directional vector into a yaw value
 // that points down that vector.
 //=========================================================
-float	CBaseMonster::VecToYaw (Vector vecDir)
+float CBaseMonster::VecToYaw (Vector vecDir)
 	{
-	if (vecDir.x == 0 && vecDir.y == 0 && vecDir.z == 0)
+	if ((vecDir.x == 0) && (vecDir.y == 0) && (vecDir.z == 0))
 		return pev->angles.y;
 
 	return UTIL_VecToYaw (vecDir);
@@ -2736,13 +2718,11 @@ void CBaseMonster::HandleAnimEvent (MonsterEvent_t* pEvent)
 		default:
 			ALERT (at_aiconsole, "Unhandled animation event %d for %s\n", pEvent->event, STRING (pev->classname));
 			break;
-
 		}
 	}
 
 
 // Combat
-
 Vector CBaseMonster::GetGunPosition ()
 	{
 	UTIL_MakeVectors (pev->angles);
@@ -2759,15 +2739,9 @@ Vector CBaseMonster::GetGunPosition ()
 	}
 
 
-
-
-
 //=========================================================
 // NODE GRAPH
 //=========================================================
-
-
-
 
 
 //=========================================================
@@ -2906,7 +2880,6 @@ int CBaseMonster::FindHintNode (void)
 	return NO_NODE;
 	}
 
-
 void CBaseMonster::ReportAIState (void)
 	{
 	ALERT_TYPE level = at_console;
@@ -2916,6 +2889,7 @@ void CBaseMonster::ReportAIState (void)
 	ALERT (level, "%s: ", STRING (pev->classname));
 	if ((int)m_MonsterState < HLARRAYSIZE (pStateNames))
 		ALERT (level, "State: %s, ", pStateNames[m_MonsterState]);
+
 	int i = 0;
 	while (activity_map[i].type != 0)
 		{
@@ -3128,13 +3102,13 @@ int CBaseMonster::CanPlaySequence (BOOL fDisregardMonsterState, int interruptLev
 		return TRUE;
 		}
 
-	if (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)
+	if ((m_MonsterState == MONSTERSTATE_NONE) || (m_MonsterState == MONSTERSTATE_IDLE) || (m_IdealMonsterState == MONSTERSTATE_IDLE))
 		{
 		// ok to go, but only in these states
 		return TRUE;
 		}
 
-	if (m_MonsterState == MONSTERSTATE_ALERT && interruptLevel >= SS_INTERRUPT_BY_NAME)
+	if ((m_MonsterState == MONSTERSTATE_ALERT) && (interruptLevel >= SS_INTERRUPT_BY_NAME))
 		return TRUE;
 
 	// unknown situation
@@ -3358,7 +3332,7 @@ BOOL CBaseMonster::BBoxFlat (void)
 	}
 
 //=========================================================
-// Get Enemy - tries to find the best suitable enemy for the monster.
+// Get Enemy - tries to find the best suitable enemy for the monster
 //=========================================================
 BOOL CBaseMonster::GetEnemy (void)
 	{
@@ -3408,7 +3382,7 @@ BOOL CBaseMonster::GetEnemy (void)
 
 	if (m_hEnemy != NULL)
 		{
-		// monster has an enemy.
+		// monster has an enemy
 		return TRUE;
 		}
 

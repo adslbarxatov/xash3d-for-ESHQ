@@ -545,9 +545,8 @@ void CBaseTrigger::InitTrigger ()
 	}
 
 //
-// Cache user-entity-field values until spawn is called.
+// Cache user-entity-field values until spawn is called
 //
-
 void CBaseTrigger::KeyValue (KeyValueData* pkvd)
 	{
 	if (FStrEq (pkvd->szKeyName, "damage"))
@@ -566,7 +565,9 @@ void CBaseTrigger::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseToggle::KeyValue (pkvd);
+		}
 	}
 
 class CTriggerHurt: public CBaseTrigger
@@ -808,7 +809,7 @@ void CTriggerHurt::Spawn (void)
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT (0.0, 0.5);
 		}
 
-	if (FBitSet (pev->spawnflags, SF_TRIGGER_HURT_START_OFF))// if flagged to Start Turned Off, make trigger nonsolid.
+	if (FBitSet (pev->spawnflags, SF_TRIGGER_HURT_START_OFF))	// if flagged to Start Turned Off, make trigger nonsolid
 		pev->solid = SOLID_NOT;
 
 	UTIL_SetOrigin (pev, pev->origin);		// Link into the list
@@ -884,6 +885,7 @@ void CBaseTrigger::ToggleUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 		{// turn the trigger off
 		pev->solid = SOLID_NOT;
 		}
+
 	UTIL_SetOrigin (pev, pev->origin);
 	}
 
@@ -897,7 +899,7 @@ void CBaseTrigger::HurtTouch (CBaseEntity* pOther)
 
 	if ((pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYTOUCH) && !pOther->IsPlayer ())
 		{
-		// this trigger is only allowed to touch clients, and this ain't a client.
+		// this trigger is only allowed to touch clients, and this ain't a client
 		return;
 		}
 
@@ -947,19 +949,15 @@ void CBaseTrigger::HurtTouch (CBaseEntity* pOther)
 		}
 	else	// Original code -- single player
 		{
-		if (pev->dmgtime > gpGlobals->time && gpGlobals->time != pev->pain_finished)
-			{// too early to hurt again, and not same frame with a different entity
+		if ((pev->dmgtime > gpGlobals->time) && (gpGlobals->time != pev->pain_finished))
+			// too early to hurt again, and not same frame with a different entity
 			return;
-			}
 		}
 
-
-
 	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
-	// default for the given damage type.  Monsters only take time-based damage
-	// while touching the trigger.  Player continues taking damage for a while after
+	// default for the given damage type. Monsters only take time-based damage
+	// while touching the trigger. Player continues taking damage for a while after
 	// leaving the trigger
-
 	fldmg = pev->dmg * 0.5;	// 0.5 seconds worth of damage, pev->dmg is damage/second
 
 	if (fldmg < 0)
@@ -971,18 +969,16 @@ void CBaseTrigger::HurtTouch (CBaseEntity* pOther)
 	pev->pain_finished = gpGlobals->time;
 
 	// Apply damage every half second
-	pev->dmgtime = gpGlobals->time + 0.5;// half second delay until this trigger can hurt toucher again
+	pev->dmgtime = gpGlobals->time + 0.5;	// half second delay until this trigger can hurt toucher again
 
 	if (pev->target)
 		{
-		// trigger has a target it wants to fire. 
+		// trigger has a target it wants to fire 
 		if (pev->spawnflags & SF_TRIGGER_HURT_CLIENTONLYFIRE)
 			{
 			// if the toucher isn't a client, don't fire the target!
 			if (!pOther->IsPlayer ())
-				{
 				return;
-				}
 			}
 
 		SUB_UseTargets (pOther, USE_TOGGLE, 0);
