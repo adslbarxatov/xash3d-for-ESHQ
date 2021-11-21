@@ -20,20 +20,20 @@ GNU General Public License for more details.
 #define MAX_DELAY		0.4f
 #define MAX_ROOM_TYPES	ARRAYSIZE( rgsxpre )
 
-#define MONODLY		0
+#define MONODLY			0
 #define MAX_MONO_DELAY	0.4f
 
-#define REVERBPOS		1
+#define REVERBPOS			1
 #define MAX_REVERB_DELAY	0.1f
 
-#define STEREODLY		3
+#define STEREODLY			3
 #define MAX_STEREO_DELAY	0.1f
 
 #define REVERB_XFADE	32
 
 #define MAXDLY		(STEREODLY + 1)
 #define MAXLP		10
-#define MAXPRESETS		29
+#define MAXPRESETS	29
 
 typedef struct sx_preset_s
 	{

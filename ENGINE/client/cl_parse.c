@@ -96,11 +96,15 @@ void CL_ParseSoundPacket (sizebuf_t* msg)
 
 		if (FBitSet (flags, SND_SEQUENCE))
 			Q_snprintf (sentenceName, sizeof (sentenceName), "!#%i", sound + MAX_SOUNDS);
-		else Q_snprintf (sentenceName, sizeof (sentenceName), "!%i", sound);
+		else 
+			Q_snprintf (sentenceName, sizeof (sentenceName), "!%i", sound);
 
 		handle = S_RegisterSound (sentenceName);
 		}
-	else handle = cl.sound_index[sound];	// see precached sound
+	else
+		{
+		handle = cl.sound_index[sound];	// see precached sound
+		}
 
 	if (!cl.audio_prepped)
 		return; // too early

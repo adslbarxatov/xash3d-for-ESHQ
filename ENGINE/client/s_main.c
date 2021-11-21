@@ -25,14 +25,14 @@ GNU General Public License for more details.
 dma_t		dma;
 byte* sndpool;
 static soundfade_t	soundfade;
-channel_t   	channels[MAX_CHANNELS];
+channel_t   channels[MAX_CHANNELS];
 sound_t		ambient_sfx[NUM_AMBIENTS];
-rawchan_t* raw_channels[MAX_RAW_CHANNELS];
-qboolean		snd_ambient = false;
-qboolean		snd_fade_sequence = false;
+rawchan_t*	raw_channels[MAX_RAW_CHANNELS];
+qboolean	snd_ambient = false;
+qboolean	snd_fade_sequence = false;
 listener_t	s_listener;
-int		total_channels;
-int		soundtime;	// sample PAIRS
+int			total_channels;
+int			soundtime;	// sample PAIRS
 int   		paintedtime; 	// sample PAIRS
 static int	trace_count = 0;
 static int	last_trace_chan = 0;
@@ -277,7 +277,7 @@ void SND_ChannelTraceReset (void)
 =================
 SND_FStreamIsPlaying
 
-Select a channel from the dynamic channel allocation area.  For the given entity,
+Select a channel from the dynamic channel allocation area. For the given entity,
 override any other sound playing on the same channel (see code comments below for
 exceptions).
 =================
@@ -470,9 +470,9 @@ int S_AlterChannel (int entnum, int channel, sfx_t* sfx, int vol, int pitch, int
 				return true;
 				}
 			}
+
 		// channel not found
 		return false;
-
 		}
 
 	// regular sound or streaming sound
@@ -837,8 +837,10 @@ void SND_Spatialize (channel_t* ch)
 
 	// source_vec is vector from listener to sound source
 	// player sounds come from 1' in front of player
-	if (fplayersound) VectorScale (s_listener.forward, 12.0f, source_vec);
-	else VectorSubtract (ch->origin, s_listener.origin, source_vec);
+	if (fplayersound) 
+		VectorScale (s_listener.forward, 12.0f, source_vec);
+	else 
+		VectorSubtract (ch->origin, s_listener.origin, source_vec);
 
 	// normalize source_vec and get distance from listener to source
 	dist = VectorNormalizeLength (source_vec);
@@ -876,7 +878,8 @@ void SND_Spatialize (channel_t* ch)
 	VOX_SetChanVol (ch);
 
 	// end of first time spatializing sound
-	if (CL_Active ()) ch->bfirstpass = false;
+	if (CL_Active ()) 
+		ch->bfirstpass = false;
 	}
 
 /*
@@ -897,10 +900,10 @@ SV_StartSound.
 */
 void S_StartSound (const vec3_t pos, int ent, int chan, sound_t handle, float fvol, float attn, int pitch, int flags)
 	{
-	wavdata_t* pSource;
-	sfx_t* sfx = NULL;
-	channel_t* target_chan, * check;
-	int	vol, ch_idx;
+	wavdata_t*	pSource;
+	sfx_t*		sfx = NULL;
+	channel_t*	target_chan, * check;
+	int			vol, ch_idx;
 	qboolean	bIgnore = false;
 
 	if (!dma.initialized) 
@@ -979,7 +982,8 @@ void S_StartSound (const vec3_t pos, int ent, int chan, sound_t handle, float fv
 		VOX_LoadSound (target_chan, S_SkipSoundChar (sfx->name));
 		Q_strncpy (target_chan->name, sfx->name, sizeof (target_chan->name));
 		sfx = target_chan->sfx;
-		if (sfx) pSource = sfx->cache;
+		if (sfx) 
+			pSource = sfx->cache;
 		}
 	else
 		{
@@ -1154,9 +1158,9 @@ S_AmbientSound
 Start playback of a sound, loaded into the static portion of the channel array.
 Currently, this should be used for looping ambient sounds, looping sounds
 that should not be interrupted until complete, non-creature sentences,
-and one-shot ambient streaming sounds.  Can also play 'regular' sounds one-shot,
+and one-shot ambient streaming sounds. Can also play 'regular' sounds one-shot,
 in case designers want to trigger regular game sounds.
-Pitch changes playback pitch of wave by % above or below 100.  Ignored if pitch == 100
+Pitch changes playback pitch of wave by % above or below 100. Ignored if pitch == 100
 
 NOTE: volume is 0.0 - 1.0 and attenuation is 0.0 - 1.0 when passed in.
 =================
@@ -1167,26 +1171,36 @@ void S_AmbientSound (const vec3_t pos, int ent, sound_t handle, float fvol, floa
 	wavdata_t* pSource = NULL;
 	sfx_t* sfx = NULL;
 	int	vol, fvox = 0;
-	float	radius = SND_RADIUS_MAX;
+	float radius = SND_RADIUS_MAX;
 
-	if (!dma.initialized) return;
+	if (!dma.initialized) 
+		return;
 	sfx = S_GetSfxByHandle (handle);
-	if (!sfx) return;
+	if (!sfx)
+		return;
 
 	vol = bound (0, fvol * 255, 255);
-	if (pitch <= 1) pitch = PITCH_NORM; // Invasion issues
+	if (pitch <= 1) 
+		pitch = PITCH_NORM; // Invasion issues
 
 	if (flags & (SND_STOP | SND_CHANGE_VOL | SND_CHANGE_PITCH))
 		{
 		if (S_AlterChannel (ent, CHAN_STATIC, sfx, vol, pitch, flags))
 			return;
-		if (flags & SND_STOP) 
+		if (flags & SND_STOP)
 			return;
 		}
 
 	// pick a channel to play on from the static area
 	ch = SND_PickStaticChannel (pos, sfx);
-	if (!ch) return;
+	if (!ch)
+		return;
+
+	// ESHQ: очистка канала перед использованием критична дл€ его функциональности.
+	// Ѕбез неЄ при быстром множественном обращении к фунцкии (например, при ударах
+	// монтировкой по текстурам, имеющим собственные звуки), часть ударов тер€ет
+	// озвучку материала
+	memset (ch, 0, sizeof (*ch));
 
 	VectorCopy (pos, ch->origin);
 	ch->entnum = ent;
@@ -1204,7 +1218,8 @@ void S_AmbientSound (const vec3_t pos, int ent, sound_t handle, float fvol, floa
 		VOX_LoadSound (ch, S_SkipSoundChar (sfx->name));
 		Q_strncpy (ch->name, sfx->name, sizeof (ch->name));
 		sfx = ch->sfx;
-		if (sfx) pSource = sfx->cache;
+		if (sfx) 
+			pSource = sfx->cache;
 		fvox = 1;
 		}
 	else

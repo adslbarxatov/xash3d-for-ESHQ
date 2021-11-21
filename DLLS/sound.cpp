@@ -1615,7 +1615,6 @@ char TEXTURETYPE_Find (char* name)
 float TEXTURETYPE_PlaySound (TraceResult* ptr, Vector vecSrc, Vector vecEnd, int iBulletType)
 	{
 	// hit the world, try to play sound based on texture material type
-
 	char chTextureType;
 	float fvol;
 	float fvolbar;
@@ -1634,15 +1633,16 @@ float TEXTURETYPE_PlaySound (TraceResult* ptr, Vector vecSrc, Vector vecEnd, int
 
 	chTextureType = 0;
 
-	if (pEntity && pEntity->Classify () != CLASS_NONE && pEntity->Classify () != CLASS_MACHINE)
+	if (pEntity && (pEntity->Classify () != CLASS_NONE) && (pEntity->Classify () != CLASS_MACHINE))
 		// hit body
+		{
 		chTextureType = CHAR_TEX_FLESH;
+		}
 	else
 		{
 		// hit world
 		// find texture under strike, get material type
 		// copy trace vector into array for trace_texture
-
 		vecSrc.CopyToArray (rgfl1);
 		vecEnd.CopyToArray (rgfl2);
 
@@ -1660,11 +1660,10 @@ float TEXTURETYPE_PlaySound (TraceResult* ptr, Vector vecSrc, Vector vecEnd, int
 
 			if (*pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ')
 				pTextureName++;
+
 			// '}}'
 			strcpy (szbuffer, pTextureName);
 			szbuffer[CBTEXTURENAMEMAX - 1] = 0;
-
-			// ALERT ( at_console, "texture hit: %s\n", szbuffer);
 
 			// get texture type
 			chTextureType = TEXTURETYPE_Find (szbuffer);

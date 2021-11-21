@@ -51,9 +51,9 @@ extern byte* sndpool;
 #define FIX_SCALE			(1 << FIX_BITS)
 #define FIX_MASK			((1 << FIX_BITS)-1)
 #define FIX_FLOAT(a)		((int)((a) * FIX_SCALE))
-#define FIX(a)			(((int)(a)) << FIX_BITS)
+#define FIX(a)				(((int)(a)) << FIX_BITS)
 #define FIX_INTPART(a)		(((int)(a)) >> FIX_BITS)
-#define FIX_FRACTION(a,b)		(FIX(a)/(b))
+#define FIX_FRACTION(a,b)	(FIX(a)/(b))
 #define FIX_FRACPART(a)		((a) & FIX_MASK)
 
 #define SNDLVL_TO_DIST_MULT( sndlvl ) \
@@ -66,9 +66,9 @@ extern byte* sndpool;
 #define CLIP( x )			(( x ) > 32760 ? 32760 : (( x ) < -32760 ? -32760 : ( x )))
 #define SWAP( a, b, t )		{(t) = (a); (a) = (b); (b) = (t);}
 #define AVG( a, b )			(((a) + (b)) >> 1 )
-#define AVG4( a, b, c, d )		(((a) + (b) + (c) + (d)) >> 2 )
+#define AVG4( a, b, c, d )	(((a) + (b) + (c) + (d)) >> 2 )
 
-#define PAINTBUFFER_SIZE		1024	// 44k: was 512
+#define PAINTBUFFER_SIZE	1024	// 44k: was 512
 #define PAINTBUFFER			(g_curpaintbuffer)
 #define CPAINTBUFFERS		3
 
@@ -76,17 +76,17 @@ extern byte* sndpool;
 #define CPAINTFILTERMEM		3
 #define CPAINTFILTERS		4	// maximum number of consecutive upsample passes per paintbuffer
 
-#define S_RAW_SOUND_IDLE_SEC		10	// time interval for idling raw sound before it's freed
-#define S_RAW_SOUND_BACKGROUNDTRACK	-2
-#define S_RAW_SOUND_SOUNDTRACK	-1
+#define S_RAW_SOUND_IDLE_SEC			10	// time interval for idling raw sound before it's freed
+#define S_RAW_SOUND_BACKGROUNDTRACK		-2
+#define S_RAW_SOUND_SOUNDTRACK			-1
 #define S_RAW_SAMPLES_PRECISION_BITS	14
 
 #define CIN_FRAMETIME		(1.0f / 30.0f)
 
 typedef struct
 	{
-	int			left;
-	int			right;
+	int	left;
+	int	right;
 	} portable_samplepair_t;
 
 typedef struct
@@ -99,7 +99,7 @@ typedef struct
 
 typedef struct sfx_s
 	{
-	char		name[MAX_QPATH];
+	char name[MAX_QPATH];
 	wavdata_t* cache;
 
 	int		servercount;
@@ -110,8 +110,8 @@ typedef struct sfx_s
 extern portable_samplepair_t	paintbuffer[];
 extern portable_samplepair_t	roombuffer[];
 extern portable_samplepair_t	temppaintbuffer[];
-extern portable_samplepair_t* g_curpaintbuffer;
-extern paintbuffer_t	paintbuffers[];
+extern portable_samplepair_t*	g_curpaintbuffer;
+extern paintbuffer_t			paintbuffers[];
 
 // structure used for fading in and out client sound volume.
 typedef struct
@@ -250,9 +250,9 @@ void SNDDMA_UnlockSound (void);
 //====================================================================
 
 #define MAX_DYNAMIC_CHANNELS	(60 + NUM_AMBIENTS)
-#define MAX_CHANNELS	(256 + 128)	// Принудительное увеличение
-#define MAX_RAW_CHANNELS	16
-#define MAX_RAW_SAMPLES	8192
+#define MAX_CHANNELS			384		// ESHQ: принудительное увеличение
+#define MAX_RAW_CHANNELS		16
+#define MAX_RAW_SAMPLES			8192
 
 extern sound_t	ambient_sfx[NUM_AMBIENTS];
 extern qboolean	snd_ambient;

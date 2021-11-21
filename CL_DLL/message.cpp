@@ -241,7 +241,9 @@ void CHudMessage::MessageDrawScan (client_textmessage_t* pMessage, float time)
 	{
 	int i, j, length, width;
 	const char* pText;
-	unsigned char line[80];
+
+	#define LINE_LENGTH	128
+	unsigned char line[LINE_LENGTH];
 
 	pText = pMessage->pMessage;
 	// Count lines
@@ -261,7 +263,9 @@ void CHudMessage::MessageDrawScan (client_textmessage_t* pMessage, float time)
 			width = 0;
 			}
 		else
+			{
 			width += gHUD.m_scrinfo.charWidths[*pText];
+			}
 		pText++;
 		length++;
 		}
@@ -279,7 +283,9 @@ void CHudMessage::MessageDrawScan (client_textmessage_t* pMessage, float time)
 		{
 		m_parms.lineLength = 0;
 		m_parms.width = 0;
-		while (*pText && *pText != '\n')
+
+		// ESHQ: отсутствие последнего ограничения позволяло выходить за границы массива
+		while (*pText && (*pText != '\n') && (m_parms.lineLength < LINE_LENGTH))	
 			{
 			unsigned char c = *pText;
 			line[m_parms.lineLength] = c;

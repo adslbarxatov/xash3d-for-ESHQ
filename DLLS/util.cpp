@@ -625,14 +625,16 @@ void UTIL_EmitAmbientSound (edict_t* entity, const Vector& vecOrigin, const char
 	float rgfl[3];
 	vecOrigin.CopyToArray (rgfl);
 
-	if (samp && *samp == '!')
+	if (samp && (*samp == '!'))
 		{
 		char name[32];
 		if (SENTENCEG_Lookup (samp, name) >= 0)
 			EMIT_AMBIENT_SOUND (entity, rgfl, name, vol, attenuation, fFlags, pitch);
 		}
 	else
+		{
 		EMIT_AMBIENT_SOUND (entity, rgfl, samp, vol, attenuation, fFlags, pitch);
+		}
 	}
 
 static unsigned short FixedUnsigned16 (float value, float scale)
