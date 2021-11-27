@@ -1902,7 +1902,7 @@ void CL_ParseUserMessage (sizebuf_t* msg, int svc_num)
 	int	i, iSize;
 
 	// NOTE: any user message is really parse at engine, not in client.dll
-	if (svc_num <= svc_lastmsg || svc_num > (MAX_USER_MESSAGES + svc_lastmsg))
+	if ((svc_num <= svc_lastmsg) || (svc_num > (MAX_USER_MESSAGES + svc_lastmsg)))
 		{
 		// out or range
 		Host_Error ("CL_ParseUserMessage: illegible server message %d\n", svc_num);

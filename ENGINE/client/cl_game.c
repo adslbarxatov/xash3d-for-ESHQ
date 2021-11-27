@@ -701,7 +701,7 @@ void CL_ParseTextMessage (sizebuf_t* msg)
 	// read channel ( 0 - auto)
 	channel = MSG_ReadByte (msg);
 
-	if (channel <= 0 || channel > (MAX_TEXTCHANNELS - 1))
+	if ((channel <= 0) || (channel > (MAX_TEXTCHANNELS - 1)))
 		{
 		channel = msgindex;
 		msgindex = (msgindex + 1) & (MAX_TEXTCHANNELS - 1);
@@ -1836,6 +1836,7 @@ client_textmessage_t* CL_TextMessageGet (const char* pName)
 		if (!Q_stricmp (pName, clgame.titles[i].pName))
 			return clgame.titles + i;
 		}
+
 	return NULL; // found nothing
 	}
 

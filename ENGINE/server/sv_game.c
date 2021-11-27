@@ -1817,9 +1817,10 @@ edict_t* pfnEntitiesInPVS (edict_t* pview)
 		if (!SV_IsValidEdict (pent))
 			continue;
 
-		if (pent->v.movetype == MOVETYPE_FOLLOW && SV_IsValidEdict (pent->v.aiment))
+		if ((pent->v.movetype == MOVETYPE_FOLLOW) && (SV_IsValidEdict (pent->v.aiment)))
 			ptest = pent->v.aiment;
-		else ptest = pent;
+		else 
+			ptest = pent;
 
 		if (SV_BoxInPVS (viewpoint, ptest->v.absmin, ptest->v.absmax))
 			{
@@ -4507,7 +4508,8 @@ static enginefuncs_t gEngfuncs =
 		pfnVoice_GetClientListening,
 		pfnVoice_SetClientListening,
 		pfnGetPlayerAuthId,
-		pfnEngineStub,
+		//pfnEngineStub,
+		CL_TextMessageGet,	// ESHQ: поддержка текста из titles.txt
 		pfnEngineStub,
 		pfnEngineStub,
 		pfnEngineStub,
@@ -4521,8 +4523,7 @@ static enginefuncs_t gEngfuncs =
 		pfnQueryClientCvarValue,
 		pfnQueryClientCvarValue2,
 		COM_CheckParm,
-		// ESHQ: поддержка собираемых объектов
-		FS_WriteAchievementsScript
+		FS_WriteAchievementsScript		// ESHQ: поддержка собираемых объектов
 	};
 
 /*

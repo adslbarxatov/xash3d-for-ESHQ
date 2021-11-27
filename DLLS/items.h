@@ -24,6 +24,7 @@ class CItem: public CBaseEntity
 		void	EXPORT ItemTouch (CBaseEntity* pOther);
 		void	EXPORT Materialize (void);
 		virtual int MyTouch (CBasePlayer* pPlayer) { return -1; };
+		char *DereferenceTextMessage (const char *MessageName);
 
 		// ESHQ: поддержка собираемых объектов
 		virtual int Save (CSave& save);

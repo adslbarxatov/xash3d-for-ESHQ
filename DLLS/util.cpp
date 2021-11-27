@@ -932,7 +932,6 @@ void UTIL_ShowMessageAll (const char* pString)
 	int		i;
 
 	// loop through all players
-
 	for (i = 1; i <= gpGlobals->maxClients; i++)
 		{
 		CBaseEntity* pPlayer = UTIL_PlayerByIndex (i);

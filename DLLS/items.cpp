@@ -102,6 +102,24 @@ void CWorldItem::Spawn (void)
 	REMOVE_ENTITY (edict ());
 	}
 
+// ESHQ: метод извлекает сообщение из titles.txt
+char* CItem::DereferenceTextMessage (const char *MessageName)
+	{
+	// Извлечение основано на размерах полей структуры client_textmessage_t
+	char *msg0 = g_engfuncs.pfnTextMessageGet (MessageName);
+	if (!msg0)
+		return NULL;
+
+	msg0 = msg0 + sizeof (int) + 8 * sizeof (byte) + 6 * sizeof (float) + sizeof (char *);
+
+	// В полученном указателе хранится адрес, а не строка - выполняем разыменовывание
+	__int32 *msg1 = (__int32 *)msg0;
+	msg0 = (char *)(msg1[0]);
+
+	return msg0;
+	}
+
+
 // ESHQ: поддержка скинов и свойств для собираемых документов
 #define SF_KEY_AS_CARD		0x0002
 
@@ -166,7 +184,7 @@ void CItem::ItemTouch (CBaseEntity* pOther)
 			}
 		SetTouch (NULL);
 
-		// player grabbed the item. 
+		// player grabbed the item
 		g_pGameRules->PlayerGotItem (pPlayer, this);
 		if (g_pGameRules->ItemShouldRespawn (this) == GR_ITEM_RESPAWN_YES)
 			{
@@ -188,7 +206,7 @@ CBaseEntity* CItem::Respawn (void)
 	SetTouch (NULL);
 	pev->effects |= EF_NODRAW;
 
-	UTIL_SetOrigin (pev, g_pGameRules->VecItemRespawnSpot (this));	// blip to whereever you should respawn.
+	UTIL_SetOrigin (pev, g_pGameRules->VecItemRespawnSpot (this));	// blip to whereever you should respawn
 
 	SetThink (&CItem::Materialize);
 	pev->nextthink = g_pGameRules->FlItemRespawnTime (this);
@@ -325,7 +343,6 @@ class CItemBattery: public CItem
 
 			sprintf (szcharge, "!HEV_%1dP", pct);
 
-			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
 			pPlayer->SetSuitUpdate (szcharge, FALSE, SUIT_NEXT_IN_30SEC);
 			return 0;
 			}
@@ -373,19 +390,23 @@ class CItemAntidote: public CItem
 		// Сообщение
 		if (minimumToTrigger == 0)
 			{
-			sprintf (getMessage, "Hidden containers found: %2u", pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF);
+			sprintf (getMessage, "%s: %2u", DereferenceTextMessage ("HCFOUND"),
+				pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF);
 			}
 
 		else if ((pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF) < minimumToTrigger)
 			{
-			sprintf (getMessage, "Hidden containers found: %u out of %u\nNot enough for now",
-				pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF, minimumToTrigger);
+			sprintf (getMessage, "%s: %u / %u\n%s", DereferenceTextMessage ("HCFOUND"),
+				pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF, minimumToTrigger,
+				DereferenceTextMessage ("HCFOUND1"));
 			}
 
 		else
 			{
-			sprintf (getMessage, "Hidden containers found: %u\n%s!", pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF,
-				(pev->spawnflags & SF_THELASTONE) ? ("YOU GOT THEM ALL") : ("Well done"));
+			sprintf (getMessage, "%s: %u\n%s!", DereferenceTextMessage ("HCFOUND"),
+				pPlayer->m_rgItems[ITEM_ANTIDOTE] & 0x03FF,
+				(pev->spawnflags & SF_THELASTONE) ? (DereferenceTextMessage ("HCFOUND4")) : 
+				(DereferenceTextMessage ("HCFOUND3")));
 
 			// Бонус
 			pPlayer->m_rgItems[ITEM_ANTIDOTE] += (1 << 10);
@@ -432,24 +453,39 @@ class CItemSecurity: public CItem
 		textParams.channel = 6;
 
 		// Сообщение
+		int lowestMinimumToTrigger = 95 * minimumToTrigger / 100;	// 95%
+
+		// Значение не задано - простой сбор
 		if (minimumToTrigger == 0)
 			{
-			sprintf (getMessage, "Documents found: %3u", pPlayer->m_rgItems[ITEM_SECURITY]);
+			sprintf (getMessage, "%s: %3u", DereferenceTextMessage ("HDFOUND"), pPlayer->m_rgItems[ITEM_SECURITY]);
 			}
 
+		// Значение меньше нижнего порога - этого недостаточно
+		else if ((lowestMinimumToTrigger != minimumToTrigger) && (pPlayer->m_rgItems[ITEM_SECURITY] < lowestMinimumToTrigger))
+			{
+			sprintf (getMessage, "%s: %u / %u\n%s", DereferenceTextMessage ("HDFOUND"),
+				pPlayer->m_rgItems[ITEM_SECURITY], minimumToTrigger, DereferenceTextMessage ("HCFOUND1"));
+			}
+
+		// Значение больше нижнего порога - этого достаточно, но это не круто
 		else if (pPlayer->m_rgItems[ITEM_SECURITY] < minimumToTrigger)
 			{
-			sprintf (getMessage, "Documents found: %u out of %u\nNot enough for now", pPlayer->m_rgItems[ITEM_SECURITY], minimumToTrigger);
+			sprintf (getMessage, "%s: %u / %u\n%s", DereferenceTextMessage ("HDFOUND"),
+				pPlayer->m_rgItems[ITEM_SECURITY], minimumToTrigger, DereferenceTextMessage ("HCFOUND2"));
 			}
 
+		// Собраны все документы на уровне
 		else
 			{
-			sprintf (getMessage, "Documents found: %u\n%s!", pPlayer->m_rgItems[ITEM_SECURITY],
-				(pev->spawnflags & SF_THELASTONE) ? ("YOU GOT THEM ALL") : ("Well done"));
+			sprintf (getMessage, "%s: %u\n%s!", DereferenceTextMessage ("HDFOUND"),
+				pPlayer->m_rgItems[ITEM_SECURITY],
+				(pev->spawnflags & SF_THELASTONE) ? (DereferenceTextMessage ("HCFOUND4")) :
+				(DereferenceTextMessage ("HCFOUND3")));
 			}
 		UTIL_HudMessageAll (textParams, getMessage);
 
-		if (pPlayer->m_rgItems[ITEM_SECURITY] < minimumToTrigger)
+		if (pPlayer->m_rgItems[ITEM_SECURITY] < lowestMinimumToTrigger)
 			return 1;	// Успешно, но цель срабатывать не должна
 
 		return 0;

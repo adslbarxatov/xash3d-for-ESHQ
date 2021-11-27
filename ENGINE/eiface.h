@@ -260,7 +260,8 @@ typedef struct enginefuncs_s
 
 	const char* (*pfnGetPlayerAuthId)		(edict_t* e);
 
-	void	(*pfnUnused1)(void);
+	//void	(*pfnUnused1)(void);
+	char*	(*pfnTextMessageGet)(const char *pName);	// ESHQ: поддержка извлечения текста из titles.txt
 	void	(*pfnUnused2)(void);
 	void	(*pfnUnused3)(void);
 	void	(*pfnUnused4)(void);
@@ -276,8 +277,8 @@ typedef struct enginefuncs_s
 	void	(*pfnQueryClientCvarValue)(const edict_t* player, const char* cvarName);
 	void	(*pfnQueryClientCvarValue2)(const edict_t* player, const char* cvarName, int requestID);
 	int	(*pfnCheckParm)(char* parm, char** ppnext);
-	// ESHQ: добавление поддержки для достижений
-	qboolean (*pfnWriteAchievementsScript)(int newLevel);
+
+	qboolean (*pfnWriteAchievementsScript)(int newLevel);	// ESHQ: добавление поддержки для достижений
 	} enginefuncs_t;
 // ONLY ADD NEW FUNCTIONS TO THE END OF THIS STRUCT.  INTERFACE VERSION IS FROZEN AT 138
 

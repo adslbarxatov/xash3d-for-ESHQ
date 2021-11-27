@@ -225,4 +225,7 @@ typedef struct playermove_s
 // Описана в sv_game, т.к. только там доступен запрос состояния IS_DUCKING
 int pfnGetCurrentDuckState (void);
 
+// ESHQ: поддержка извлечения сообщений из titles.txt для HL.DLL
+struct client_textmessage_s *CL_TextMessageGet (const char *pName);
+
 #endif//PM_DEFS_H

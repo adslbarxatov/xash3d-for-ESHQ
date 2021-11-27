@@ -71,7 +71,7 @@ extern "C" {
 
 	typedef struct client_textmessage_s
 		{
-		int		effect;
+		int			effect;
 		byte		r1, g1, b1, a1;	// 2 colors for effects
 		byte		r2, g2, b2, a2;
 		float		x;
