@@ -848,7 +848,8 @@ void R_BlendLightmaps (void)
 
 	if (!CVAR_TO_BOOL (r_lightmap))
 		pglEnable (GL_BLEND);
-	else pglDisable (GL_BLEND);
+	else 
+		pglDisable (GL_BLEND);
 
 	// lightmapped solid surfaces
 	pglDepthMask (GL_FALSE);

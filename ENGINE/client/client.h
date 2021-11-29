@@ -32,12 +32,12 @@ GNU General Public License for more details.
 #include "net_api.h"
 #include "world.h"
 
-#define MAX_DEMOS		32
-#define MAX_MOVIES		8
-#define MAX_CDTRACKS	32
-#define MAX_CLIENT_SPRITES	256	// SpriteTextures
-#define MAX_EFRAGS		8192	// Arcane Dimensions required
-#define MAX_REQUESTS	64
+#define MAX_DEMOS			32
+#define MAX_MOVIES			8
+#define MAX_CDTRACKS		32
+#define MAX_CLIENT_SPRITES	256		// SpriteTextures
+#define MAX_EFRAGS			8192	// Arcane Dimensions required
+#define MAX_REQUESTS		64
 
 // screenshot types
 #define VID_SCREENSHOT	0

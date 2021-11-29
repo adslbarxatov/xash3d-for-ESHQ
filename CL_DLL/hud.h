@@ -21,9 +21,10 @@
 //
 
 // ESHQ: изменённые цвета интерфейса
-#define RGB_YELLOWISH	0x0000FF80 // Главный цвет интерфейса
+#define RGB_MASTER		0x0000FF80 // Главный цвет интерфейса
 #define RGB_REDISH		0x00FF1010 // 255, 16, 16
 #define RGB_GREENISH	0x0010FF10 // 16, 255, 16
+#define RGB_YELLOWISH2	0x00FFFF10 // 255, 255, 16
 
 #include "wrect.h"
 #include "cl_dll.h"
@@ -350,12 +351,23 @@ class CHudFlashlight: public CHudBase
 		HLSPRITE m_hSprite1;
 		HLSPRITE m_hSprite2;
 		HLSPRITE m_hBeam;
+
+		// ESHQ: поддержка дополнительной индикации
+		HLSPRITE m_hSprite22;
+		HLSPRITE m_hSprite44;
+		HLSPRITE m_hSprite66;
+
 		wrect_t* m_prc1;
 		wrect_t* m_prc2;
 		wrect_t* m_prcBeam;
+
+		wrect_t *m_prc22;
+		wrect_t *m_prc44;
+		wrect_t *m_prc66;
+
 		float m_flBat;
 		int	  m_iBat;
-		int	  m_fOn;
+		int	  m_fOnFlags;
 		float m_fFade;
 		int	  m_iWidth;		// width of the battery innards
 	};
@@ -418,11 +430,11 @@ class CHudMessage: public CHudBase
 		void Reset (void);
 
 	private:
-		client_textmessage_t* m_pMessages[maxHUDMessages];
-		float						m_startTime[maxHUDMessages];
-		message_parms_t				m_parms;
-		float						m_gameTitleTime;
-		client_textmessage_t* m_pGameTitle;
+		client_textmessage_t*	m_pMessages[maxHUDMessages];
+		float					m_startTime[maxHUDMessages];
+		message_parms_t			m_parms;
+		float					m_gameTitleTime;
+		client_textmessage_t*	m_pGameTitle;
 
 		int m_HUD_title_life;
 		int m_HUD_title_half;
@@ -481,11 +493,10 @@ class CHud
 		int							m_iConcussionEffect;
 
 	public:
-
-		HLSPRITE					m_hsprCursor;
-		float m_flTime;				// the current client time
-		float m_fOldTime;			// the time at which the HUD was last redrawn
-		double m_flTimeDelta;		// the difference between flTime and fOldTime
+		HLSPRITE	m_hsprCursor;
+		float	m_flTime;			// the current client time
+		float	m_fOldTime;			// the time at which the HUD was last redrawn
+		double	m_flTimeDelta;		// the difference between flTime and fOldTime
 		Vector	m_vecOrigin;
 		Vector	m_vecAngles;
 		int		m_iKeyBits;
@@ -493,8 +504,8 @@ class CHud
 		int		m_iFOV;
 		int		m_Teamplay;
 		int		m_iRes;
-		cvar_t* m_pCvarStealMouse;
-		cvar_t* m_pCvarDraw;
+		cvar_t*	m_pCvarStealMouse;
+		cvar_t*	m_pCvarDraw;
 
 		int m_iFontHeight;
 		int DrawHudNumber (int x, int y, int iFlags, int iNumber, int r, int g, int b);
@@ -504,11 +515,12 @@ class CHud
 		int GetNumWidth (int iNumber, int iFlags);
 
 	private:
-		// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
+		// the memory for these arrays are allocated in the first call to CHud::VidInit(), 
+		// when the hud.txt and associated sprites are loaded.
 		// freed in ~CHud()
-		HLSPRITE* m_rghSprites;	/*[HUD_SPRITE_COUNT]*/			// the sprites loaded from hud.txt
-		wrect_t* m_rgrcRects;	/*[HUD_SPRITE_COUNT]*/
-		char* m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
+		HLSPRITE*	m_rghSprites;	/*[HUD_SPRITE_COUNT]*/			// the sprites loaded from hud.txt
+		wrect_t*	m_rgrcRects;	/*[HUD_SPRITE_COUNT]*/
+		char*		m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
 
 		struct cvar_s* default_fov;
 	public:
@@ -526,19 +538,19 @@ class CHud
 
 		CHudAmmo		m_Ammo;
 		CHudHealth		m_Health;
-		CHudSpectator		m_Spectator;
+		CHudSpectator	m_Spectator;
 		CHudGeiger		m_Geiger;
 		CHudBattery		m_Battery;
 		CHudTrain		m_Train;
 		CHudFlashlight	m_Flash;
 		CHudMessage		m_Message;
-		CHudStatusBar   m_StatusBar;
-		CHudDeathNotice m_DeathNotice;
+		CHudStatusBar	m_StatusBar;
+		CHudDeathNotice	m_DeathNotice;
 		CHudSayText		m_SayText;
 		CHudMenu		m_Menu;
 		CHudAmmoSecondary	m_AmmoSecondary;
-		CHudTextMessage m_TextMessage;
-		CHudStatusIcons m_StatusIcons;
+		CHudTextMessage	m_TextMessage;
+		CHudStatusIcons	m_StatusIcons;
 
 		void Init (void);
 		void VidInit (void);
@@ -572,7 +584,6 @@ class CHud
 		void AddHudElem (CHudBase* p);
 
 		float GetSensitivity ();
-
 	};
 
 class TeamFortressViewport;

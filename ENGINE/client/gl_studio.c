@@ -1644,7 +1644,8 @@ void R_StudioDynamicLight (cl_entity_t* ent, alight_t* plight)
 	// determine plane to get lightvalues from: ceil or floor
 	if (FBitSet (ent->curstate.effects, EF_INVLIGHT))
 		VectorSet (lightDir, 0.0f, 0.0f, 1.0f);
-	else VectorSet (lightDir, 0.0f, 0.0f, -1.0f);
+	else 
+		VectorSet (lightDir, 0.0f, 0.0f, -1.0f);
 
 	VectorCopy (ent->origin, origin);
 
@@ -2057,7 +2058,8 @@ static void R_StudioSetupSkin (studiohdr_t* ptexturehdr, int index)
 
 	if (r_lightmap->value && !r_fullbright->value)
 		GL_Bind (GL_TEXTURE0, tr.whiteTexture);
-	else GL_Bind (GL_TEXTURE0, ptexture[index].index);
+	else 
+		GL_Bind (GL_TEXTURE0, ptexture[index].index);
 	}
 
 /*

@@ -811,6 +811,8 @@ void Host_FreeCommon (void)
 Host_Main
 =================
 */
+#define ACHI_EXEC_STRING	"exec achi2.cfg\n"
+
 int EXPORT Host_Main (const char* progname, int bChangeGame, pfnChangeGame func)
 	{
 	static double	oldtime, newtime;
@@ -868,22 +870,26 @@ int EXPORT Host_Main (const char* progname, int bChangeGame, pfnChangeGame func)
 	host.errorframe = 0;
 
 	// post initializations
+	FS_UpdateAchievementsScript ();	// ESHQ: переход на новые команды
 	switch (host.type)
 		{
 		case HOST_NORMAL:
 			Con_ShowConsole (false); // hide console
+			
 			// execute startup config and cmdline
 			Cbuf_AddText (va ("exec %s.rc\n", SI.rcName));
 			Cbuf_Execute ();
+
 			if (!host.config_executed)
 				{
 				Cbuf_AddText ("exec config.cfg\n");
 				Cbuf_Execute ();
 
 				// ESHQ: поддержка достижений
-				Cbuf_AddText ("exec achi.cfg\n");
+				Cbuf_AddText (ACHI_EXEC_STRING);
 				}
 			break;
+
 		case HOST_DEDICATED:
 			// allways parse commandline in dedicated-mode
 			host.stuffcmds_pending = true;
@@ -894,8 +900,9 @@ int EXPORT Host_Main (const char* progname, int bChangeGame, pfnChangeGame func)
 	Cmd_RemoveCommand ("setgl");
 
 	Cbuf_ExecStuffCmds ();	// execute stuffcmds (commandline)
+
 	// ESHQ: поддержка достижений
-	Cbuf_AddText ("exec achi.cfg\n");
+	Cbuf_AddText (ACHI_EXEC_STRING);
 	Cbuf_Execute ();
 
 	SCR_CheckStartupVids ();	// must be last

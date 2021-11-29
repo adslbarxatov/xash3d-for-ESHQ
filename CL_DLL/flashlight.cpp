@@ -33,7 +33,7 @@ DECLARE_MESSAGE (m_Flash, Flashlight)
 int CHudFlashlight::Init (void)
 	{
 	m_fFade = 0;
-	m_fOn = 0;
+	m_fOnFlags = 0;
 
 	HOOK_MESSAGE (Flashlight);
 	HOOK_MESSAGE (FlashBat);
@@ -48,7 +48,7 @@ int CHudFlashlight::Init (void)
 void CHudFlashlight::Reset (void)
 	{
 	m_fFade = 0;
-	m_fOn = 0;
+	m_fOnFlags = 0;
 	}
 
 int CHudFlashlight::VidInit (void)
@@ -57,11 +57,26 @@ int CHudFlashlight::VidInit (void)
 	int HUD_flash_full = gHUD.GetSpriteIndex ("flash_full");
 	int HUD_flash_beam = gHUD.GetSpriteIndex ("flash_beam");
 
+	// ESHQ: поддержка дополнительной индикации
+	int HUD_achi_22 = gHUD.GetSpriteIndex ("achi_22");
+	int HUD_achi_44 = gHUD.GetSpriteIndex ("achi_44");
+	int HUD_achi_66 = gHUD.GetSpriteIndex ("achi_66");
+
 	m_hSprite1 = gHUD.GetSprite (HUD_flash_empty);
 	m_hSprite2 = gHUD.GetSprite (HUD_flash_full);
 	m_hBeam = gHUD.GetSprite (HUD_flash_beam);
+
+	m_hSprite22 = gHUD.GetSprite (HUD_achi_22);
+	m_hSprite44 = gHUD.GetSprite (HUD_achi_44);
+	m_hSprite66 = gHUD.GetSprite (HUD_achi_66);
+
 	m_prc1 = &gHUD.GetSpriteRect (HUD_flash_empty);
 	m_prc2 = &gHUD.GetSpriteRect (HUD_flash_full);
+
+	m_prc22 = &gHUD.GetSpriteRect (HUD_achi_22);
+	m_prc44 = &gHUD.GetSpriteRect (HUD_achi_44);
+	m_prc66 = &gHUD.GetSpriteRect (HUD_achi_66);
+
 	m_prcBeam = &gHUD.GetSpriteRect (HUD_flash_beam);
 	m_iWidth = m_prc2->right - m_prc2->left;
 
@@ -80,9 +95,8 @@ int CHudFlashlight::MsgFunc_FlashBat (const char* pszName, int iSize, void* pbuf
 
 int CHudFlashlight::MsgFunc_Flashlight (const char* pszName, int iSize, void* pbuf)
 	{
-
 	BEGIN_READ (pbuf, iSize);
-	m_fOn = READ_BYTE ();
+	m_fOnFlags = READ_BYTE ();
 	int x = READ_BYTE ();
 	m_iBat = x;
 	m_flBat = ((float)x) / 100.0;
@@ -101,26 +115,56 @@ int CHudFlashlight::Draw (float flTime)
 	if (!(gHUD.m_iWeaponBits & (1 << (WEAPON_SUIT))))
 		return 1;
 
-	if (m_fOn)
+	if (m_fOnFlags & 0x01)
 		a = 225;
 	else
 		a = MIN_ALPHA;
 
+	// ESHQ: отрисовка дополнительных состояний
+	UnpackRGB (r, g, b, RGB_MASTER);
+	ScaleColors (r, g, b, 225);
+
+	y = (m_prc1->bottom - m_prc2->top) / 2;
+	x = ScreenWidth - 2 * (3 * m_iWidth / 2);
+
+	if (m_fOnFlags & 0x02)
+		{
+		SPR_Set (m_hSprite22, r, g, b);
+		SPR_DrawAdditive (0, x, y, m_prc22);
+		}
+
+	x -= (3 * m_iWidth / 2);
+	if (m_fOnFlags & 0x04)
+		{
+		SPR_Set (m_hSprite44, r, g, b);
+		SPR_DrawAdditive (0, x, y, m_prc44);
+		}
+
+	x -= (3 * m_iWidth / 2);
+	if (m_fOnFlags & 0x08)
+		{
+		SPR_Set (m_hSprite66, r, g, b);
+		SPR_DrawAdditive (0, x, y, m_prc66);
+		}
+
+	// ESHQ: изменённые цвета фонарика
 	if (m_flBat < 0.20)
 		UnpackRGB (r, g, b, RGB_REDISH);
+	else if (m_flBat < 0.40)
+		UnpackRGB (r, g, b, RGB_YELLOWISH2);
 	else
-		UnpackRGB (r, g, b, RGB_YELLOWISH);
+		UnpackRGB (r, g, b, RGB_MASTER);
 
 	ScaleColors (r, g, b, a);
 
-	y = (m_prc1->bottom - m_prc2->top) / 2;
+	//y = (m_prc1->bottom - m_prc2->top) / 2;
 	x = ScreenWidth - m_iWidth - m_iWidth / 2;
 
 	// Draw the flashlight casing
 	SPR_Set (m_hSprite1, r, g, b);
 	SPR_DrawAdditive (0, x, y, m_prc1);
 
-	if (m_fOn)
+	if (m_fOnFlags & 0x01)
 		{  // draw the flashlight beam
 		x = ScreenWidth - m_iWidth / 2;
 

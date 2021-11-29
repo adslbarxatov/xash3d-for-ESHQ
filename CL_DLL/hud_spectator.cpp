@@ -1188,8 +1188,9 @@ void CHudSpectator::DrawOverviewEntities ()
 	float			zScale = (90.0f - v_angles[0]) / 90.0f;
 
 	z = m_OverviewData.layersHeights[0] * zScale;
+
 	// get yellow/brown HUD color
-	UnpackRGB (ir, ig, ib, RGB_YELLOWISH);
+	UnpackRGB (ir, ig, ib, RGB_MASTER);
 	r = (float)ir / 255.0f;
 	g = (float)ig / 255.0f;
 	b = (float)ib / 255.0f;

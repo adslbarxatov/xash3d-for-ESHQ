@@ -1735,11 +1735,13 @@ static qboolean SV_Godmode_f (sv_client_t* cl)
 	pEntity->v.flags = pEntity->v.flags ^ FL_GODMODE;
 	if (pEntity->v.takedamage == DAMAGE_AIM)
 		pEntity->v.takedamage = DAMAGE_NO;
-	else pEntity->v.takedamage = DAMAGE_AIM;
+	else 
+		pEntity->v.takedamage = DAMAGE_AIM;
 
 	if (!FBitSet (pEntity->v.flags, FL_GODMODE))
 		SV_ClientPrintf (cl, "godmode OFF\n");
-	else SV_ClientPrintf (cl, "godmode ON\n");
+	else 
+		SV_ClientPrintf (cl, "godmode ON\n");
 
 	return true;
 	}
@@ -1760,7 +1762,8 @@ static qboolean SV_Notarget_f (sv_client_t* cl)
 
 	if (!FBitSet (pEntity->v.flags, FL_NOTARGET))
 		SV_ClientPrintf (cl, "notarget OFF\n");
-	else SV_ClientPrintf (cl, "notarget ON\n");
+	else 
+		SV_ClientPrintf (cl, "notarget ON\n");
 
 	return true;
 	}

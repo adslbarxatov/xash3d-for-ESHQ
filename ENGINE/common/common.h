@@ -497,8 +497,10 @@ extern "C" {
 	int FS_Close (file_t* file);
 	int FS_Getc (file_t* file);
 	long FS_FileLength (file_t* f);
+
 	// ESHQ: поддержка достижений
-	qboolean FS_WriteAchievementsScript (void);
+	qboolean FS_WriteAchievementsScript (int NewLevel);
+	qboolean FS_UpdateAchievementsScript (void);
 
 	/*
 	========================================================================

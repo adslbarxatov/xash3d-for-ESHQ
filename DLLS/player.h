@@ -229,6 +229,7 @@ class CBasePlayer: public CBaseMonster
 		BOOL			FlashlightIsOn (void);
 		void			FlashlightTurnOn (void);
 		void			FlashlightTurnOff (void);
+		void			PassFlashlightStatus (void);
 
 		void UpdatePlayerSound (void);
 		void DeathSound (void);
@@ -310,6 +311,8 @@ class CBasePlayer: public CBaseMonster
 
 		float m_flNextChatTime;
 
+		// ESHQ: поддержка дополнительных состояний
+		byte m_flFlags;
 	};
 
 #define AUTOAIM_2DEGREES  0.0348994967025

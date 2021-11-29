@@ -3167,52 +3167,99 @@ static byte* W_LoadFile (const char* path, long* lumpsizeptr, qboolean gamediron
 /*
 ================
 ESHQ: поддержка достижений
-FS_WriteAchievementsScript
-
-Creates list of bonuses
 ================
 */
-#define ACHI_SCRIPT_FN	"achi.cfg"
-qboolean FS_WriteAchievementsScript (int newLevel)
+#define ACHI_OLD_SCRIPT_FN	"achi.cfg"
+#define ACHI_SCRIPT_FN		"achi2.cfg"
+#define ACHI_EXEC_STRING	"exec achi2.cfg\n"
+
+qboolean FS_UpdateAchievementsScript (void)
 	{
-	// ЏҐаҐ¬Ґ­­лҐ
-	file_t* f;
+	// Переменные
+	file_t *f;
 	unsigned int level = 0;
 	char temp[16];
 
-	// ЋЇаҐ¤Ґ«Ґ­ЁҐ а ­ҐҐ б®§¤ ­­®Ј® га®ў­п (®иЁЎЄЁ ЁЈ­®аЁаговбп)
-	f = FS_Open (ACHI_SCRIPT_FN, "r", false);
+	// Чтение предыдущего состояния (ошибки игнорируются)
+	f = FS_Open (ACHI_OLD_SCRIPT_FN, "r", false);
 	if (f)
 		{
 		FS_Getc (f); FS_Getc (f); FS_Getc (f);
 		level = ((unsigned int)FS_Getc (f)) & 0x0F;
 		FS_Close (f);
 		}
+	else
+		{
+		return true;
+		}
 
-	if ((newLevel <= level) || (level >= 3))
-		return true;	// ЏҐаҐ§ ЇЁбм ­Ґ ваҐЎгҐвбп (га®ўҐ­м г¦Ґ ¤®бвЁЈ­гв а ­ҐҐ Ё«Ё га®ўҐ­м ¬ ЄбЁ¬ «м­л©)
+	if (level < 1)
+		return true;
 
-	// ‡ ЇЁбм д ©« 
+	// Запись
 	f = FS_Open (ACHI_SCRIPT_FN, "w", false);
 	if (!f)
 		return false;
 
-	Q_sprintf (temp, "// %u\n", level + 1);	// ‘®§¤ св гб«®ўЁҐ ¤«п Ї®б«Ґ¤гойҐЈ® Ї®ўлиҐ­Ёп
+	Q_sprintf (temp, "//%c\\\\\n", level + 0x70);
 	FS_Print (f, temp);
-	FS_Print (f, "alias fullbrighton \"r_fullbright 1;bind 6 fullbrightoff\"\n");
-	FS_Print (f, "alias fullbrightoff \"r_fullbright 0;bind 6 fullbrighton\"\n");
-	FS_Print (f, "bind \"6\" fullbrighton\n");
+	FS_Print (f, "bind \"6\" \"impulse 211\"\n");
 
 	if (level > 0)
-		FS_Print (f, "bind \"7\" \"notarget\"\n");
+		FS_Print (f, "bind \"7\" \"impulse 219\"\n");
 
 	if (level > 1)
-		FS_Print (f, "bind \"8\" \"god\"\n");
+		FS_Print (f, "bind \"8\" \"impulse 228\"\n");
 
-	// ‡ ўҐаиҐ­®. ЏаЁ­г¤ЁвҐ«м­®Ґ ўлЇ®«­Ґ­ЁҐ
+	// Завершено
+	FS_Close (f);
+	FS_Delete (ACHI_OLD_SCRIPT_FN);
+	return true;
+	}
+
+qboolean FS_WriteAchievementsScript (int NewLevel)
+	{
+	// Переменные
+	file_t* f;
+	unsigned int level = 0;
+	char temp[16];
+
+	// Чтение предыдущего состояния (ошибки игнорируются)
+	f = FS_Open (ACHI_SCRIPT_FN, "r", false);
+	if (f)
+		{
+		FS_Getc (f); FS_Getc (f); //FS_Getc (f);
+		level = ((unsigned int)FS_Getc (f)) & 0x0F;
+		FS_Close (f);
+		}
+
+	if ((NewLevel <= level) || (level >= 3))
+		return true;	// Уровень уже достигнут или является максимальным
+
+	// Запись
+	f = FS_Open (ACHI_SCRIPT_FN, "w", false);
+	if (!f)
+		return false;
+
+	Q_sprintf (temp, "//%c\\\\\n", level + 1 + 0x70);	// Условие для последующего повышения
+	FS_Print (f, temp);
+	/*FS_Print (f, "alias fullbrighton \"r_fullbright 1;bind 6 fullbrightoff\"\n");
+	FS_Print (f, "alias fullbrightoff \"r_fullbright 0;bind 6 fullbrighton\"\n");
+	FS_Print (f, "bind \"6\" fullbrighton\n");*/
+	FS_Print (f, "bind \"6\" \"impulse 211\"\n");
+
+	if (level > 0)
+		/*FS_Print (f, "bind \"7\" \"notarget\"\n");*/
+		FS_Print (f, "bind \"7\" \"impulse 219\"\n");
+
+	if (level > 1)
+		/*FS_Print (f, "bind \"8\" \"god\"\n");*/
+		FS_Print (f, "bind \"8\" \"impulse 228\"\n");
+
+	// Завершено. Принудительное выполнение
 	FS_Close (f);
 
-	Cbuf_AddText ("exec achi.cfg\n");
+	Cbuf_AddText (ACHI_EXEC_STRING);
 	Cbuf_Execute ();
 
 	return true;

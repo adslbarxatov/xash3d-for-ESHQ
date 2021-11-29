@@ -64,8 +64,9 @@ extern CGraph	WorldGraph;
 #define TRAIN_FAST		0x04 
 #define TRAIN_BACK		0x05
 
-#define	FLASH_DRAIN_TIME	 1.2	// 100 units/3 minutes
-#define	FLASH_CHARGE_TIME	 0.2	// 100 units/20 seconds  (seconds per unit)
+// ESHQ: обновлены параметры фонарика
+#define	FLASH_DRAIN_TIME	 2.1	// 100 units/3.5 minutes
+#define	FLASH_CHARGE_TIME	 0.1	// 100 units/10 seconds  (seconds per unit)
 
 // ESHQ: поддержка флага самоликвидации при перезапуске игры
 #define LOADSAVED_KILL	0x01
@@ -120,6 +121,8 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 		DEFINE_FIELD (CBasePlayer, m_pTank, FIELD_EHANDLE),
 		DEFINE_FIELD (CBasePlayer, m_iHideHUD, FIELD_INTEGER),
 		DEFINE_FIELD (CBasePlayer, m_iFOV, FIELD_INTEGER),
+
+		DEFINE_FIELD (CBasePlayer, m_flFlags, FIELD_INTEGER),	// ESHQ: поддержка дополнительных состояний
 	};
 
 
@@ -449,9 +452,7 @@ int CBasePlayer::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	WRITE_LONG (5);   // eventflags (priority and flags)
 	MESSAGE_END ();
 
-
 	// how bad is it, doc?
-
 	ftrivial = (pev->health > 75 || m_lastDamageAmount < 5);
 	fmajor = (m_lastDamageAmount > 25);
 	fcritical = (pev->health < 30);
@@ -843,7 +844,6 @@ void CBasePlayer::Killed (entvars_t* pevAttacker, int iGib)
 	MESSAGE_BEGIN (MSG_ONE, gmsgSetFOV, NULL, pev);
 	WRITE_BYTE (0);
 	MESSAGE_END ();
-
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector(128,0,0), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
@@ -3181,21 +3181,22 @@ BOOL CBasePlayer::FlashlightIsOn (void)
 void CBasePlayer::FlashlightTurnOn (void)
 	{
 	if (!g_pGameRules->FAllowFlashlight ())
-		{
 		return;
-		}
 
 	if ((pev->weapons & (1 << WEAPON_SUIT)))
 		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_MEDIUM, 0, PITCH_NORM);
 		SetBits (pev->effects, EF_DIMLIGHT);
 		MESSAGE_BEGIN (MSG_ONE, gmsgFlashlight, NULL, pev);
-		WRITE_BYTE (1);
+
+		// ESHQ: передача дополнительных состояний вместе с флагом включения
+		m_flFlags |= 0x01;
+		WRITE_BYTE (m_flFlags);
+
 		WRITE_BYTE (m_iFlashBattery);
 		MESSAGE_END ();
 
 		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
-
 		}
 	}
 
@@ -3204,12 +3205,26 @@ void CBasePlayer::FlashlightTurnOff (void)
 	EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_MEDIUM, 0, PITCH_NORM);
 	ClearBits (pev->effects, EF_DIMLIGHT);
 	MESSAGE_BEGIN (MSG_ONE, gmsgFlashlight, NULL, pev);
-	WRITE_BYTE (0);
+
+	// ESHQ: передача дополнительных состояний вместе с флагом выключения
+	m_flFlags &= ~0x01;
+	WRITE_BYTE (m_flFlags);
+
 	WRITE_BYTE (m_iFlashBattery);
 	MESSAGE_END ();
 
 	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
+	}
 
+// ESHQ: поддержка дополнительных состояний
+void CBasePlayer::PassFlashlightStatus (void)
+	{
+	EMIT_SOUND_DYN (ENT (pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_MEDIUM, 0, PITCH_NORM);
+
+	MESSAGE_BEGIN (MSG_ONE, gmsgFlashlight, NULL, pev);
+	WRITE_BYTE (m_flFlags);
+	WRITE_BYTE (m_iFlashBattery);
+	MESSAGE_END ();
 	}
 
 /*
@@ -3276,20 +3291,16 @@ void CBasePlayer::ImpulseCommands ()
 				gmsgLogo = 0;
 			break;
 			}
+
 		case 100:
 			// temporary flashlight for level designers
 			if (FlashlightIsOn ())
-				{
 				FlashlightTurnOff ();
-				}
 			else
-				{
 				FlashlightTurnOn ();
-				}
 			break;
 
-		case	201:// paint decal
-
+		case 201:// paint decal
 			if (gpGlobals->time < m_flNextDecalTime)
 				{
 				// too early!
@@ -3307,6 +3318,55 @@ void CBasePlayer::ImpulseCommands ()
 				pCan->Spawn (pev);
 				}
 
+			break;
+
+		// ESHQ: поддержка достижений
+		case 211:
+			if (m_flFlags & 0x02)
+				{
+				pev->effects &= ~EF_BRIGHTLIGHT;
+				m_flFlags &= ~0x02;
+				//FlashlightTurnOn ();	// Не включать обычный фонарь
+				PassFlashlightStatus ();
+				}
+			else
+				{
+				pev->effects |= EF_BRIGHTLIGHT;
+				m_flFlags |= 0x02;
+				FlashlightTurnOff ();	// Выключить обычный фонарь
+				}
+			break;
+
+		case 219:
+			if (m_flFlags & 0x04)
+				{
+				pev->flags &= ~FL_NOTARGET;
+				m_flFlags &= ~0x04;
+				}
+			else
+				{
+				pev->flags |= FL_NOTARGET;
+				m_flFlags |= 0x04;
+				}
+
+			PassFlashlightStatus ();
+			break;
+
+		case 228:
+			if (m_flFlags & 0x08)
+				{
+				pev->takedamage = DAMAGE_AIM;
+				pev->flags &= ~FL_GODMODE;
+				m_flFlags &= ~0x08;
+				}
+			else
+				{
+				pev->takedamage = DAMAGE_NO;
+				pev->flags |= FL_GODMODE;
+				m_flFlags |= 0x08;
+				}
+
+			PassFlashlightStatus ();
 			break;
 
 		default:
@@ -3401,7 +3461,7 @@ void CBasePlayer::CheatImpulseCommands (int iImpulse)
 			gGlobalState.DumpGlobals ();
 			break;
 
-		case	105:// player makes no sound for monsters to hear.
+		case 105:// player makes no sound for monsters to hear.
 			{
 			if (m_fNoPlayerSound)
 				{
@@ -3417,7 +3477,7 @@ void CBasePlayer::CheatImpulseCommands (int iImpulse)
 			}
 
 		case 106:
-			// Give me the classname and targetname of this entity.
+			// Give me the classname and targetname of this entity
 			pEntity = FindEntityForward (this);
 			if (pEntity)
 				{
@@ -3477,7 +3537,8 @@ void CBasePlayer::CheatImpulseCommands (int iImpulse)
 			break;
 		case	202:// Random blood splatter
 			UTIL_MakeVectors (pev->v_angle);
-			UTIL_TraceLine (pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT (pev), &tr);
+			UTIL_TraceLine (pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, 
+				ignore_monsters, ENT (pev), &tr);
 
 			if (tr.flFraction != 1.0)
 				{// line hit something, so paint a decal
@@ -3897,7 +3958,9 @@ void CBasePlayer::UpdateClientData (void)
 				m_iFlashBattery++;
 				}
 			else
+				{
 				m_flFlashLightTime = 0;
+				}
 			}
 
 		MESSAGE_BEGIN (MSG_ONE, gmsgFlashBattery, NULL, pev);

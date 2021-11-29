@@ -403,7 +403,6 @@ void DLLEXPORT IN_Accumulate (void)
 			IN_ResetMouse ();
 			}
 		}
-
 	}
 
 /*
@@ -460,7 +459,7 @@ void IN_StartupJoystick (void)
 	// abort startup if we didn't find a valid joystick
 	if (mmr != JOYERR_NOERROR)
 		{
-		gEngfuncs.Con_DPrintf ("joystick not found -- no valid joysticks (%x)\n\n", mmr);
+		gEngfuncs.Con_DPrintf ("joystick not found - no valid joysticks (%x)\n\n", mmr);
 		return;
 		}
 
@@ -469,7 +468,7 @@ void IN_StartupJoystick (void)
 	memset (&jc, 0, sizeof (jc));
 	if ((mmr = joyGetDevCaps (joy_id, &jc, sizeof (jc))) != JOYERR_NOERROR)
 		{
-		gEngfuncs.Con_DPrintf ("joystick not found -- invalid joystick capabilities (%x)\n\n", mmr);
+		gEngfuncs.Con_DPrintf ("joystick not found - invalid joystick capabilities (%x)\n\n", mmr);
 		return;
 		}
 
@@ -598,7 +597,6 @@ void IN_Commands (void)
 		{
 		return;
 		}
-
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change

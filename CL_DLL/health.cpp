@@ -148,13 +148,15 @@ void CHudHealth::GetPainColor (int& r, int& g, int& b)
 
 	if (m_iHealth > 25)
 		{
-		UnpackRGB (r, g, b, RGB_YELLOWISH);
+		UnpackRGB (r, g, b, RGB_MASTER);
+		}
+	else if (m_iHealth > 10)
+		{
+		UnpackRGB (r, g, b, RGB_YELLOWISH2);
 		}
 	else
 		{
-		r = 250;
-		g = 0;
-		b = 0;
+		UnpackRGB (r, g, b, RGB_REDISH);
 		}
 	}
 
@@ -306,7 +308,9 @@ int CHudHealth::DrawPain (float flTime)
 		m_fAttackFront = max (0, m_fAttackFront - fFade);
 		}
 	else
+		{
 		m_fAttackFront = 0;
+		}
 
 	if (m_fAttackRight > 0.4)
 		{
@@ -321,7 +325,9 @@ int CHudHealth::DrawPain (float flTime)
 		m_fAttackRight = max (0, m_fAttackRight - fFade);
 		}
 	else
+		{
 		m_fAttackRight = 0;
+		}
 
 	if (m_fAttackRear > 0.4)
 		{
@@ -336,7 +342,9 @@ int CHudHealth::DrawPain (float flTime)
 		m_fAttackRear = max (0, m_fAttackRear - fFade);
 		}
 	else
+		{
 		m_fAttackRear = 0;
+		}
 
 	if (m_fAttackLeft > 0.4)
 		{
@@ -352,7 +360,9 @@ int CHudHealth::DrawPain (float flTime)
 		m_fAttackLeft = max (0, m_fAttackLeft - fFade);
 		}
 	else
+		{
 		m_fAttackLeft = 0;
+		}
 
 	return 1;
 	}
@@ -365,7 +375,7 @@ int CHudHealth::DrawDamage (float flTime)
 	if (!m_bitsDamage)
 		return 1;
 
-	UnpackRGB (r, g, b, RGB_YELLOWISH);
+	UnpackRGB (r, g, b, RGB_MASTER);
 
 	a = (int)(fabs (sin (flTime * 2)) * 256.0);
 
@@ -392,7 +402,7 @@ int CHudHealth::DrawDamage (float flTime)
 			pdmg->fExpire = min (flTime + DMG_IMAGE_LIFE, pdmg->fExpire);
 
 			if (pdmg->fExpire <= flTime		// when the time has expired
-				&& a < 40)						// and the flash is at the low point of the cycle
+				&& a < 40)					// and the flash is at the low point of the cycle
 				{
 				pdmg->fExpire = 0;
 

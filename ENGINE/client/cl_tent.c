@@ -32,9 +32,9 @@ TEMPENTS MANAGEMENT
 
 ==============================================================
 */
-#define FLASHLIGHT_DISTANCE		2000	// in units
-#define SHARD_VOLUME		12.0f	// on shard ever n^3 units
-#define MAX_MUZZLEFLASH		3
+#define FLASHLIGHT_DISTANCE		1700	// ESHQ: дистанция фонарика уменьшена
+#define SHARD_VOLUME			12.0f	// on shard ever n^3 units
+#define MAX_MUZZLEFLASH			3
 
 TEMPENTITY* cl_active_tents;
 TEMPENTITY* cl_free_tents;
@@ -2779,7 +2779,8 @@ void CL_UpdateFlashlight (cl_entity_t* ent)
 		// FIXME: these values are hardcoded ...
 		if (ent->curstate.usehull == 1)
 			view_ofs[2] = 12.0f;	// VEC_DUCK_VIEW;
-		else view_ofs[2] = 28.0f;		// DEFAULT_VIEWHEIGHT
+		else 
+			view_ofs[2] = 28.0f;	// DEFAULT_VIEWHEIGHT
 		}
 
 	VectorAdd (ent->origin, view_ofs, vecSrc);
@@ -2789,18 +2790,18 @@ void CL_UpdateFlashlight (cl_entity_t* ent)
 
 	// update flashlight endpos
 	dl = CL_AllocDlight (ent->index);
-#if 1
+
 	hit = CL_GetEntityByIndex (clgame.pmove->visents[trace->ent].info);
 	if (hit && hit->model && (hit->model->type == mod_alias || hit->model->type == mod_studio))
 		VectorCopy (hit->origin, dl->origin);
 	else VectorCopy (trace->endpos, dl->origin);
-#else
-	VectorCopy (trace->endpos, dl->origin);
-#endif
+
 	// compute falloff
 	falloff = trace->fraction * FLASHLIGHT_DISTANCE;
-	if (falloff < 500.0f) falloff = 1.0f;
-	else falloff = 500.0f / falloff;
+	if (falloff < 500.0f) 
+		falloff = 1.0f;
+	else 
+		falloff = 500.0f / falloff;
 	falloff *= falloff;
 
 	// apply brigthness to dlight			
@@ -2808,7 +2809,7 @@ void CL_UpdateFlashlight (cl_entity_t* ent)
 	dl->color.g = bound (0, falloff * 255, 255);
 	dl->color.b = bound (0, falloff * 255, 255);
 	dl->die = cl.time + 0.01f; // die on next frame
-	dl->radius = 80;
+	dl->radius = 110;	// ESHQ: улучшение фонарика
 	}
 
 /*

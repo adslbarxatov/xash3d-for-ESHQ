@@ -390,7 +390,8 @@ void Key_Bind_f (void)
 		{
 		if (keys[b].binding)
 			Con_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv (1), keys[b].binding);
-		else Con_Printf ("\"%s\" is not bound\n", Cmd_Argv (1));
+		else 
+			Con_Printf ("\"%s\" is not bound\n", Cmd_Argv (1));
 		return;
 		}
 
@@ -474,7 +475,8 @@ void Key_Init (void)
 	Cmd_AddCommand ("makehelp", Key_EnumCmds_f, "write help.txt that contains all console cvars and cmds");
 
 	// setup default binding. "unbindall" from config.cfg will be reset it
-	for (kn = keynames; kn->name; kn++) Key_SetBinding (kn->keynum, kn->binding);
+	for (kn = keynames; kn->name; kn++) 
+		Key_SetBinding (kn->keynum, kn->binding);
 	}
 
 /*

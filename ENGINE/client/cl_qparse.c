@@ -452,7 +452,8 @@ void CL_ParseQuakeEntityData (sizebuf_t* msg, int bits)
 
 	if (FBitSet (bits, U_LONGENTITY))
 		newnum = MSG_ReadWord (msg);
-	else newnum = MSG_ReadByte (msg);
+	else
+		newnum = MSG_ReadByte (msg);
 
 	memset (state, 0, sizeof (*state));
 	SetBits (state->entityType, ENTITY_NORMAL);
@@ -470,11 +471,13 @@ void CL_ParseQuakeEntityData (sizebuf_t* msg, int bits)
 
 	if (FBitSet (bits, U_MODEL))
 		state->modelindex = MSG_ReadByte (msg);
-	else state->modelindex = ent->baseline.modelindex;
+	else 
+		state->modelindex = ent->baseline.modelindex;
 
 	if (FBitSet (bits, U_FRAME))
 		state->frame = MSG_ReadByte (msg);
-	else state->frame = ent->baseline.frame;
+	else 
+		state->frame = ent->baseline.frame;
 
 	if (FBitSet (bits, U_COLORMAP))
 		state->colormap = MSG_ReadByte (msg);
@@ -486,11 +489,13 @@ void CL_ParseQuakeEntityData (sizebuf_t* msg, int bits)
 
 	if (FBitSet (bits, U_EFFECTS))
 		state->effects = MSG_ReadByte (msg);
-	else state->effects = ent->baseline.effects;
+	else 
+		state->effects = ent->baseline.effects;
 
 	if (FBitSet (bits, U_ORIGIN1))
 		state->origin[0] = MSG_ReadCoord (msg);
-	else state->origin[0] = ent->baseline.origin[0];
+	else 
+		state->origin[0] = ent->baseline.origin[0];
 
 	if (FBitSet (bits, U_ANGLE1))
 		state->angles[0] = MSG_ReadAngle (msg);
@@ -498,19 +503,23 @@ void CL_ParseQuakeEntityData (sizebuf_t* msg, int bits)
 
 	if (FBitSet (bits, U_ORIGIN2))
 		state->origin[1] = MSG_ReadCoord (msg);
-	else state->origin[1] = ent->baseline.origin[1];
+	else 
+		state->origin[1] = ent->baseline.origin[1];
 
 	if (FBitSet (bits, U_ANGLE2))
 		state->angles[1] = MSG_ReadAngle (msg);
-	else state->angles[1] = ent->baseline.angles[1];
+	else
+		state->angles[1] = ent->baseline.angles[1];
 
 	if (FBitSet (bits, U_ORIGIN3))
 		state->origin[2] = MSG_ReadCoord (msg);
-	else state->origin[2] = ent->baseline.origin[2];
+	else 
+		state->origin[2] = ent->baseline.origin[2];
 
 	if (FBitSet (bits, U_ANGLE3))
 		state->angles[2] = MSG_ReadAngle (msg);
-	else state->angles[2] = ent->baseline.angles[2];
+	else 
+		state->angles[2] = ent->baseline.angles[2];
 
 	if (FBitSet (bits, U_TRANS))
 		{
@@ -525,13 +534,14 @@ void CL_ParseQuakeEntityData (sizebuf_t* msg, int bits)
 			state->renderamt = (int)(alpha * 255.0f);
 			}
 
-		if (temp == 2 && MSG_ReadFloat (msg))
+		if ((temp == 2) && MSG_ReadFloat (msg))
 			SetBits (state->effects, EF_FULLBRIGHT);
 		}
 
 	if (FBitSet (bits, U_NOLERP))
 		state->movetype = MOVETYPE_STEP;
-	else state->movetype = MOVETYPE_NOCLIP;
+	else 
+		state->movetype = MOVETYPE_NOCLIP;
 
 	if (CL_QuakeEntityTeleported (ent, state))
 		{

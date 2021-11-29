@@ -1751,7 +1751,8 @@ int SV_LightForEntity (edict_t* pEdict)
 
 	if (FBitSet (pEdict->v.effects, EF_INVLIGHT))
 		end[2] = start[2] + world.size[2];
-	else end[2] = start[2] - world.size[2];
+	else 
+		end[2] = start[2] - world.size[2];
 	VectorSet (sv_pointColor, 1.0f, 1.0f, 1.0f);
 
 	SV_RecursiveLightPoint (sv.worldmodel, sv.worldmodel->nodes, start, end);

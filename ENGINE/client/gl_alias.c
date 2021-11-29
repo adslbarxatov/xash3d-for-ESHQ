@@ -803,7 +803,8 @@ void R_AliasDynamicLight (cl_entity_t* ent, alight_t* plight)
 	// determine plane to get lightvalues from: ceil or floor
 	if (FBitSet (ent->curstate.effects, EF_INVLIGHT))
 		VectorSet (lightDir, 0.0f, 0.0f, 1.0f);
-	else VectorSet (lightDir, 0.0f, 0.0f, -1.0f);
+	else 
+		VectorSet (lightDir, 0.0f, 0.0f, -1.0f);
 
 	VectorCopy (ent->origin, origin);
 
