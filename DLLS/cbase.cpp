@@ -740,7 +740,7 @@ int	CBaseEntity::DamageDecal (int bitsDamageType)
 	}
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
-// will keep a pointer to it after this call.
+// will keep a pointer to it after this call
 CBaseEntity* CBaseEntity::Create (char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner)
 	{
 	edict_t* pent;
@@ -752,6 +752,7 @@ CBaseEntity* CBaseEntity::Create (char* szName, const Vector& vecOrigin, const V
 		ALERT (at_console, "NULL Ent in Create!\n");
 		return NULL;
 		}
+
 	pEntity = Instance (pent);
 	pEntity->pev->owner = pentOwner;
 	pEntity->pev->origin = vecOrigin;

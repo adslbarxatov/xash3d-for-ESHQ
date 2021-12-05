@@ -360,7 +360,9 @@ void CBaseToggle::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseDelay::KeyValue (pkvd);
+		}
 	}
 
 /*

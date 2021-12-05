@@ -85,7 +85,8 @@ TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE (CSqueakGrenade, CGrenade);
 
-#define SQUEEK_DETONATE_DELAY	15.0
+// ESHQ: 10 секунд достаточно
+#define SQUEEK_DETONATE_DELAY	10.0
 
 int CSqueakGrenade::Classify (void)
 	{
@@ -170,8 +171,8 @@ void CSqueakGrenade::Killed (entvars_t* pevAttacker, int iGib)
 	// continue to call this function unless we acknowledge the Squeak's death now. (sjb)
 	pev->takedamage = DAMAGE_NO;
 
-	// play squeek blast
-	EMIT_SOUND_DYN (ENT (pev), CHAN_ITEM, "squeek/sqk_blast1.wav", 1, 0.5, 0, PITCH_NORM);
+	// ESHQ: исправляем расстояние слышимости
+	EMIT_SOUND_DYN (ENT (pev), CHAN_ITEM, "squeek/sqk_blast1.wav", 1, ATTN_MEDIUM, 0, PITCH_NORM);
 
 	CSoundEnt::InsertSound (bits_SOUND_COMBAT, pev->origin, SMALL_EXPLOSION_VOLUME, 3.0);
 
@@ -193,8 +194,6 @@ void CSqueakGrenade::GibMonster (void)
 	{
 	EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "common/bodysplat.wav", 0.75, ATTN_MEDIUM, 0, 200);
 	}
-
-
 
 void CSqueakGrenade::HuntThink (void)
 	{
@@ -314,7 +313,6 @@ void CSqueakGrenade::HuntThink (void)
 	pev->angles.z = 0;
 	pev->angles.x = 0;
 	}
-
 
 void CSqueakGrenade::SuperBounceTouch (CBaseEntity* pOther)
 	{
@@ -456,8 +454,6 @@ int CSqueak::GetItemInfo (ItemInfo* p)
 
 	return 1;
 	}
-
-
 
 BOOL CSqueak::Deploy ()
 	{

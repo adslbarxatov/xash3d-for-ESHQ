@@ -94,6 +94,8 @@ Modification based on old (from 2019) version of engine and may contain some bug
 
 42. Breakables now have sounds that depend on their sizes.
 
+43. HUD now can display extra abilities (superflashlight, invisibility for enemies, damageproof).
+
 &nbsp;
 
 

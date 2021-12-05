@@ -591,6 +591,7 @@ void CBreakable::Die (void)
 	char cFlag = 0;
 	int pitch;
 	float fvol;
+	CBaseEntity *pOnBreak;
 
 	// ESHQ: громкость и высота теперь зависят от размера объекта
 	fvol = GetVolume ();
@@ -764,13 +765,18 @@ void CBreakable::Die (void)
 
 	SetThink (&CBaseEntity::SUB_Remove);
 	pev->nextthink = pev->ltime + 0.1;
+
 	if (m_iszSpawnObject)
 		{
 		// ESHQ: эта правка позволяет создавать объекты при разрушении в настраиваемой позиции (высоту не учитываем)
 		if ((pev->origin.x == 0) && (pev->origin.y == 0) || !FClassnameIs (pev, "func_breakable"))
-			CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), VecBModelOrigin (pev), pev->angles, edict ());
+			pOnBreak = CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), VecBModelOrigin (pev), pev->angles, edict ());
 		else
-			CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), pev->origin, pev->angles, edict ());
+			pOnBreak = CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), pev->origin, pev->angles, edict ());
+
+		/*// А эта манипуляция призвана "подбрасывать" создаваемые объекты
+		pOnBreak->pev->velocity = Vector (0, 0, RANDOM_FLOAT (30, 100));
+		pOnBreak->pev->avelocity = Vector (0, RANDOM_FLOAT (100, 300), 0);*/
 		}
 
 	if (Explodable ())

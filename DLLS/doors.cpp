@@ -187,12 +187,12 @@ void PlayLockSounds (entvars_t* pev, locksound_t* pls, int flocked, int fbutton)
 	}
 
 //
-// Cache user-entity-field values until spawn is called.
+// Cache user-entity-field values until spawn is called
 //
 void CBaseDoor::KeyValue (KeyValueData* pkvd)
 	{
 
-	if (FStrEq (pkvd->szKeyName, "skin"))//skin is used for content type
+	if (FStrEq (pkvd->szKeyName, "skin"))	//skin is used for content type
 		{
 		pev->skin = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
@@ -244,7 +244,9 @@ void CBaseDoor::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseToggle::KeyValue (pkvd);
+		}
 	}
 
 /*QUAKED func_door (0 .5 .8) ? START_OPEN x DOOR_DONT_LINK TOGGLE
@@ -274,7 +276,7 @@ touch or takedamage doors).
 
 LINK_ENTITY_TO_CLASS (func_door, CBaseDoor);
 //
-// func_water - same as a door. 
+// func_water - same as a door
 //
 LINK_ENTITY_TO_CLASS (func_water, CBaseDoor);
 
@@ -482,32 +484,31 @@ void CBaseDoor::Precache (void)
 		}
 
 	// get sentence group names, for doors which are directly 'touched' to open
-
 	switch (m_bLockedSentence)
 		{
-		case 1: m_ls.sLockedSentence = ALLOC_STRING ("NA"); break; // access denied
-		case 2: m_ls.sLockedSentence = ALLOC_STRING ("ND"); break; // security lockout
-		case 3: m_ls.sLockedSentence = ALLOC_STRING ("NF"); break; // blast door
-		case 4: m_ls.sLockedSentence = ALLOC_STRING ("NFIRE"); break; // fire door
-		case 5: m_ls.sLockedSentence = ALLOC_STRING ("NCHEM"); break; // chemical door
-		case 6: m_ls.sLockedSentence = ALLOC_STRING ("NRAD"); break; // radiation door
-		case 7: m_ls.sLockedSentence = ALLOC_STRING ("NCON"); break; // gen containment
-		case 8: m_ls.sLockedSentence = ALLOC_STRING ("NH"); break; // maintenance door
-		case 9: m_ls.sLockedSentence = ALLOC_STRING ("NG"); break; // broken door
+		case 1: m_ls.sLockedSentence = ALLOC_STRING ("NA"); break;		// access denied
+		case 2: m_ls.sLockedSentence = ALLOC_STRING ("ND"); break;		// security lockout
+		case 3: m_ls.sLockedSentence = ALLOC_STRING ("NF"); break;		// blast door
+		case 4: m_ls.sLockedSentence = ALLOC_STRING ("NFIRE"); break;	// fire door
+		case 5: m_ls.sLockedSentence = ALLOC_STRING ("NCHEM"); break;	// chemical door
+		case 6: m_ls.sLockedSentence = ALLOC_STRING ("NRAD"); break;	// radiation door
+		case 7: m_ls.sLockedSentence = ALLOC_STRING ("NCON"); break;	// gen containment
+		case 8: m_ls.sLockedSentence = ALLOC_STRING ("NH"); break;		// maintenance door
+		case 9: m_ls.sLockedSentence = ALLOC_STRING ("NG"); break;		// broken door
 
 		default: m_ls.sLockedSentence = 0; break;
 		}
 
 	switch (m_bUnlockedSentence)
 		{
-		case 1: m_ls.sUnlockedSentence = ALLOC_STRING ("EA"); break; // access granted
-		case 2: m_ls.sUnlockedSentence = ALLOC_STRING ("ED"); break; // security door
-		case 3: m_ls.sUnlockedSentence = ALLOC_STRING ("EF"); break; // blast door
-		case 4: m_ls.sUnlockedSentence = ALLOC_STRING ("EFIRE"); break; // fire door
-		case 5: m_ls.sUnlockedSentence = ALLOC_STRING ("ECHEM"); break; // chemical door
-		case 6: m_ls.sUnlockedSentence = ALLOC_STRING ("ERAD"); break; // radiation door
-		case 7: m_ls.sUnlockedSentence = ALLOC_STRING ("ECON"); break; // gen containment
-		case 8: m_ls.sUnlockedSentence = ALLOC_STRING ("EH"); break; // maintenance door
+		case 1: m_ls.sUnlockedSentence = ALLOC_STRING ("EA"); break;	// access granted
+		case 2: m_ls.sUnlockedSentence = ALLOC_STRING ("ED"); break;	// security door
+		case 3: m_ls.sUnlockedSentence = ALLOC_STRING ("EF"); break;	// blast door
+		case 4: m_ls.sUnlockedSentence = ALLOC_STRING ("EFIRE"); break;	// fire door
+		case 5: m_ls.sUnlockedSentence = ALLOC_STRING ("ECHEM"); break;	// chemical door
+		case 6: m_ls.sUnlockedSentence = ALLOC_STRING ("ERAD"); break;	// radiation door
+		case 7: m_ls.sUnlockedSentence = ALLOC_STRING ("ECON"); break;	// gen containment
+		case 8: m_ls.sUnlockedSentence = ALLOC_STRING ("EH"); break;	// maintenance door
 
 		default: m_ls.sUnlockedSentence = 0; break;
 		}
@@ -526,7 +527,6 @@ void CBaseDoor::DoorTouch (CBaseEntity* pOther)
 
 	// If door has master, and it's not ready to trigger, 
 	// play 'locked' sound
-
 	if (m_sMaster && !UTIL_IsMasterTriggered (m_sMaster, pOther))
 		PlayLockSounds (pev, &m_ls, TRUE, FALSE);
 
@@ -573,6 +573,7 @@ void CBaseDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 			// Открытие замка
 			if (pev->body == 0)
 				pev->body = 1;
+			// Закрытие при повторном вызове?
 
 			return;
 			}
@@ -757,9 +758,7 @@ void CBaseDoor::DoorHitBottom (void)
 
 	// Re-instate touch method, cycle is complete
 	if (FBitSet (pev->spawnflags, SF_DOOR_USE_ONLY))
-		{// use only door
 		SetTouch (NULL);
-		}
 	else // touchable door
 		SetTouch (&CBaseDoor::DoorTouch);
 
@@ -781,7 +780,7 @@ void CBaseDoor::Blocked (CBaseEntity* pOther)
 		STOP_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving));
 		}
 
-	// Hurt the blocker a little.
+	// Hurt the blocker a little
 	if (pev->dmg)
 		pOther->TakeDamage (pev, pev, pev->dmg, DMG_CRUSH);
 
@@ -791,13 +790,9 @@ void CBaseDoor::Blocked (CBaseEntity* pOther)
 	if (m_flWait >= 0)
 		{
 		if (m_toggle_state == TS_GOING_DOWN)
-			{
 			DoorGoUp ();
-			}
 		else
-			{
 			DoorGoDown ();
-			}
 		}
 
 	/* ESHQ: блок удалён за ненадобностью
@@ -952,7 +947,6 @@ void CRotDoor::Spawn (void)
 		}
 	}
 
-
 void CRotDoor::SetToggleState (int state)
 	{
 	if (state == TS_AT_TOP)
@@ -1010,8 +1004,10 @@ void CMomentaryDoor::Spawn (void)
 		pev->dmg = 2;
 
 	m_vecPosition1 = pev->origin;
+
 	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x - 2)) + fabs (pev->movedir.y * (pev->size.y - 2)) + fabs (pev->movedir.z * (pev->size.z - 2)) - m_flLip));
+	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x - 2)) + 
+		fabs (pev->movedir.y * (pev->size.y - 2)) + fabs (pev->movedir.z * (pev->size.z - 2)) - m_flLip));
 	ASSERTSZ (m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
 
 	if (FBitSet (pev->spawnflags, SF_DOOR_START_OPEN))
@@ -1111,13 +1107,15 @@ void CMomentaryDoor::KeyValue (KeyValueData* pkvd)
 		m_bStopSnd = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
-	else if (FStrEq (pkvd->szKeyName, "healthvalue"))
+	/*else if (FStrEq (pkvd->szKeyName, "healthvalue"))
 		{
-		//		m_bHealthValue = atof(pkvd->szValue);
+		m_bHealthValue = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
-		}
+		}*/
 	else
+		{
 		CBaseToggle::KeyValue (pkvd);
+		}
 	}
 
 void CMomentaryDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

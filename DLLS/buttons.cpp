@@ -376,7 +376,9 @@ void CBaseButton::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseToggle::KeyValue (pkvd);
+		}
 	}
 
 //
@@ -388,7 +390,8 @@ int CBaseButton::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 
 	if (code == BUTTON_NOTHING)
 		return 0;
-	// Temporarily disable the touch function, until movement is finished.
+
+	// Temporarily disable the touch function, until movement is finished
 	SetTouch (NULL);
 
 	m_hActivator = CBaseEntity::Instance (pevAttacker);
@@ -405,7 +408,9 @@ int CBaseButton::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		ButtonReturn ();
 		}
 	else // code == BUTTON_ACTIVATE
+		{
 		ButtonActivate ();
+		}
 
 	return 0;
 	}
@@ -459,19 +464,20 @@ void CBaseButton::Spawn ()
 		pev->speed = 40;
 
 	if (pev->health > 0)
-		{
 		pev->takedamage = DAMAGE_YES;
-		}
 
 	if (m_flWait == 0)
 		m_flWait = 1;
+
 	if (m_flLip == 0)
 		m_flLip = 4;
 
 	m_toggle_state = TS_AT_BOTTOM;
 	m_vecPosition1 = pev->origin;
+
 	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x - 2)) + fabs (pev->movedir.y * (pev->size.y - 2)) + fabs (pev->movedir.z * (pev->size.z - 2)) - m_flLip));
+	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x - 2)) + 
+		fabs (pev->movedir.y * (pev->size.y - 2)) + fabs (pev->movedir.z * (pev->size.z - 2)) - m_flLip));
 
 
 	// Is this a non-moving button?
@@ -527,10 +533,12 @@ char* ButtonSound (int sound)
 				pszSound = "buttons/latchunlocked1.wav";
 			else
 				pszSound = "buttons/latchunlocked3.wav";
-		break;		case 14: pszSound = "buttons/lightswitch2.wav"; break;
+		break;		
+		
+		case 14: pszSound = "buttons/lightswitch2.wav"; 
+			break;
 
-						   // next 6 slots reserved for any additional sliding button sounds we may add
-
+		// next 6 slots reserved for any additional sliding button sounds we may add
 		case 21: pszSound = "buttons/lever1.wav";	break;
 		case 22: pszSound = "buttons/lever2.wav";	break;
 		case 23: pszSound = "buttons/lever3.wav";	break;
@@ -605,7 +613,9 @@ void CBaseButton::ButtonUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 			}
 		}
 	else
+		{
 		ButtonActivate ();
+		}
 	}
 
 CBaseButton::BUTTON_CODE CBaseButton::ButtonResponseToTouch (void)
@@ -624,7 +634,9 @@ CBaseButton::BUTTON_CODE CBaseButton::ButtonResponseToTouch (void)
 			}
 		}
 	else
+		{
 		return BUTTON_ACTIVATE;
+		}
 
 	return BUTTON_NOTHING;
 	}
@@ -662,7 +674,9 @@ void CBaseButton::ButtonTouch (CBaseEntity* pOther)
 		ButtonReturn ();
 		}
 	else	// code == BUTTON_ACTIVATE
+		{
 		ButtonActivate ();
+		}
 	}
 
 //
@@ -732,7 +746,7 @@ void CBaseButton::TriggerAndWait (void)
 	}
 
 //
-// Starts the button moving "out/down".
+// Starts the button moving "out/down"
 //
 void CBaseButton::ButtonReturn (void)
 	{
@@ -782,10 +796,7 @@ void CBaseButton::ButtonBackHome (void)
 
 	// Re-instate touch method, movement cycle is complete.
 	if (!FBitSet (pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // this button only works if USED, not touched!
-		{
-		// All buttons are now use only	
 		SetTouch (NULL);
-		}
 	else
 		SetTouch (&CBaseButton::ButtonTouch);
 
@@ -971,7 +982,9 @@ void CMomentaryRotButton::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseToggle::KeyValue (pkvd);
+		}
 	}
 
 void CMomentaryRotButton::PlaySound (void)
@@ -979,9 +992,9 @@ void CMomentaryRotButton::PlaySound (void)
 	EMIT_SOUND (ENT (pev), CHAN_VOICE, (char*)STRING (pev->noise), 1, ATTN_MEDIUM);
 	}
 
-// BUGBUG: This design causes a latentcy.  When the button is retriggered, the first impulse
+// BUGBUG: This design causes a latentcy. When the button is retriggered, the first impulse
 // will send the target in the wrong direction because the parameter is calculated based on the
-// current, not future position.
+// current, not future position
 void CMomentaryRotButton::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
 	pev->ideal_yaw = CBaseToggle::AxisDelta (pev->spawnflags, pev->angles, m_start) / m_flMoveDistance;
@@ -1064,11 +1077,10 @@ void CMomentaryRotButton::UpdateTarget (float value)
 			pentTarget = FIND_ENTITY_BY_TARGETNAME (pentTarget, STRING (pev->target));
 			if (FNullEnt (pentTarget))
 				break;
+
 			CBaseEntity* pEntity = CBaseEntity::Instance (pentTarget);
 			if (pEntity)
-				{
 				pEntity->Use (this, this, USE_SET, value);
-				}
 			}
 		}
 	}
