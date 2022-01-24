@@ -45,8 +45,6 @@ Vector VecBModelOrigin (entvars_t* pevBModel)
 	// ESHQ: из-за функции SetObjectCollisionBox, вносящей дефект в absmin и absmax, 
 	// будем пересчитывать это значение здесь
 	return pevBModel->origin + pevBModel->mins + pevBModel->size * 0.5;
-
-	/*return pevBModel->absmin + (pevBModel->size * 0.5);*/
 	}
 
 // =================== FUNC_WALL ==============================================

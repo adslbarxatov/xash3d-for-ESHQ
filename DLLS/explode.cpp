@@ -183,34 +183,6 @@ void CEnvExplosion::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	WRITE_BYTE (TE_EXPLFLAG_NONE);
 	MESSAGE_END ();
 
-	/*if (!(pev->spawnflags & SF_ENVEXPLOSION_NOFIREBALL))
-		{
-		MESSAGE_BEGIN (MSG_PAS, SVC_TEMPENTITY, pev->origin);
-		WRITE_BYTE (TE_EXPLOSION);
-		WRITE_COORD (pev->origin.x);
-		WRITE_COORD (pev->origin.y);
-		WRITE_COORD (pev->origin.z);
-		WRITE_SHORT (g_sModelIndexFireball);
-		WRITE_BYTE ((BYTE)m_spriteScale); // scale * 10
-
-		WRITE_BYTE (15); // framerate
-		WRITE_BYTE (TE_EXPLFLAG_NONE);
-		MESSAGE_END ();
-		}
-	else
-		{
-		MESSAGE_BEGIN (MSG_PAS, SVC_TEMPENTITY, pev->origin);
-		WRITE_BYTE (TE_EXPLOSION);
-		WRITE_COORD (pev->origin.x);
-		WRITE_COORD (pev->origin.y);
-		WRITE_COORD (pev->origin.z);
-		WRITE_SHORT (g_sModelIndexFireball);
-		WRITE_BYTE (0); // no sprite
-		WRITE_BYTE (15); // framerate
-		WRITE_BYTE (TE_EXPLFLAG_NONE);
-		MESSAGE_END ();
-		}*/
-
 	// Do damage
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE))
 		RadiusDamage (pev, pev, m_iMagnitude, CLASS_NONE, DMG_BLAST);

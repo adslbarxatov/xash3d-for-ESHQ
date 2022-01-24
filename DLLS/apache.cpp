@@ -334,6 +334,10 @@ void CApache::DyingThink (void)
 		WRITE_BYTE (0);		// speed
 		MESSAGE_END ();
 
+		// ESHQ: shake
+		UTIL_ScreenShake (VecBModelOrigin (pev), 12.0f, 60.0f, 4.0f, 1000.0f);
+
+		// Sound
 		EMIT_SOUND (ENT (pev), CHAN_STATIC, "weapons/mortarhit.wav", 1.0, 0.3);
 
 		RadiusDamage (pev->origin, pev, pev, 300, CLASS_NONE, DMG_BLAST);

@@ -1483,7 +1483,8 @@ Go to the trouble of combining multiple pellets into a single damage call.
 This version is used by Players, uses the random seed generator to sync client and server side shots.
 ================
 */
-Vector CBaseEntity::FireBulletsPlayer (ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker, int shared_rand)
+Vector CBaseEntity::FireBulletsPlayer (ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, 
+	float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker, int shared_rand)
 	{
 	static int tracerCount;
 	TraceResult tr;
@@ -1499,10 +1500,11 @@ Vector CBaseEntity::FireBulletsPlayer (ULONG cShots, Vector vecSrc, Vector vecDi
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 		{
-		//Use player's random seed.
-		// get circular gaussian spread
-		x = UTIL_SharedRandomFloat (shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat (shared_rand + (1 + iShot), -0.5, 0.5);
-		y = UTIL_SharedRandomFloat (shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat (shared_rand + (3 + iShot), -0.5, 0.5);
+		// Use player's random seed. Get circular gaussian spread
+		x = UTIL_SharedRandomFloat (shared_rand + iShot, -0.5, 0.5) + 
+			UTIL_SharedRandomFloat (shared_rand + (1 + iShot), -0.5, 0.5);
+		y = UTIL_SharedRandomFloat (shared_rand + (2 + iShot), -0.5, 0.5) + 
+			UTIL_SharedRandomFloat (shared_rand + (3 + iShot), -0.5, 0.5);
 		z = x * x + y * y;
 
 		Vector vecDir = vecDirShooting +

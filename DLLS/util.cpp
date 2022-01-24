@@ -700,7 +700,7 @@ void UTIL_ScreenShake (const Vector& center, float amplitude, float frequency, f
 
 			// Had to get rid of this falloff - it didn't work well
 			if (distance < radius)
-				localAmplitude = amplitude;//radius - distance;
+				localAmplitude = amplitude;	//radius - distance;
 			}
 		if (localAmplitude)
 			{

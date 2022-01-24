@@ -171,6 +171,7 @@
 #define TE_EXPLFLAG_NOPARTICLES	8	// do not draw particles
 #define TE_EXPLFLAG_DRAWALPHA	16	// sprite will be drawn alpha
 #define TE_EXPLFLAG_ROTATE		32	// rotate the sprite randomly
+#define TE_EXPLFLAG_WEAPON		64	// ESHQ: использовать двойную силу эффекта для оружия
 
 #define	TE_TAREXPLOSION			4	// Quake1 "tarbaby" explosion with sound
 // coord coord coord (position) 

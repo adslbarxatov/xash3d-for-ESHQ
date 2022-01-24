@@ -620,6 +620,9 @@ void COsprey::DyingThink (void)
 
 		RadiusDamage (pev->origin, pev, pev, 300, CLASS_NONE, DMG_BLAST);
 
+		// ESHQ: shake
+		UTIL_ScreenShake (VecBModelOrigin (pev), 12.0f, 60.0f, 4.0f, 1000.0f);
+
 		// gibs
 		vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
 		MESSAGE_BEGIN (MSG_PAS, SVC_TEMPENTITY, vecSpot);

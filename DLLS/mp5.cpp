@@ -167,14 +167,14 @@ void CMP5::PrimaryAttack ()
 	if (!g_pGameRules->IsMultiplayer ())
 #endif
 		{
-		// optimized multiplayer. Widened to make it easier to hit a moving player
-		vecDir = m_pPlayer->FireBulletsPlayer (1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 
+		// Optimized multiplayer. Widened to make it easier to hit a moving player
+		vecDir = m_pPlayer->FireBulletsPlayer (1, vecSrc, vecAiming, VECTOR_CONE_4DEGREES, 8192, BULLET_PLAYER_MP5, 
 			2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 		}
 	else
 		{
-		// single player spread
-		vecDir = m_pPlayer->FireBulletsPlayer (1, vecSrc, vecAiming, VECTOR_CONE_3DEGREES, 8192, BULLET_PLAYER_MP5, 
+		// Single player spread
+		vecDir = m_pPlayer->FireBulletsPlayer (1, vecSrc, vecAiming, VECTOR_CONE_2DEGREES, 8192, BULLET_PLAYER_MP5, 
 			2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 		}
 
@@ -241,7 +241,7 @@ void CMP5::SecondaryAttack (void)
 
 	UTIL_MakeVectors (m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 
-	// we don't add in player velocity anymore.
+	// We don't add in player velocity anymore
 	CGrenade::ShootContact (m_pPlayer->pev,
 		m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16,
 		gpGlobals->v_forward * 800);

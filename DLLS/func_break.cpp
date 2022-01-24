@@ -83,8 +83,6 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 		{
 		int i = atoi (pkvd->szValue);
 
-		// 0:glass, 1:metal, 2:flesh, 3:wood
-
 		if ((i < 0) || (i >= matLastMaterial))
 			m_Material = matMetal;
 		else
@@ -592,6 +590,7 @@ void CBreakable::Die (void)
 	int pitch;
 	float fvol;
 	CBaseEntity *pOnBreak;
+	float ampl, freq, duration;
 
 	// ESHQ: громкость и высота теперь зависят от размера объекта
 	fvol = GetVolume ();
@@ -780,7 +779,21 @@ void CBreakable::Die (void)
 		}
 
 	if (Explodable ())
+		{
 		ExplosionCreate (Center (), pev->angles, edict (), ExplosionMagnitude (), TRUE);
+
+		// ESHQ: добавление дрожи к эффекту взрыва
+		ampl = ExplosionMagnitude () / 20.0f;
+		if (ampl > 16.0f) ampl = 16.0f;
+
+		freq = ExplosionMagnitude () / 10.0f;
+		if (freq > 60.0f) freq = 60.0f;
+		
+		duration = ExplosionMagnitude () / 75.0f;
+		if (duration > 4.0f) duration = 4.0f;
+
+		UTIL_ScreenShake (VecBModelOrigin (pev), ampl, freq, duration, ExplosionMagnitude () * 3.0f);
+		}
 	}
 
 BOOL CBreakable::IsBreakable (void)

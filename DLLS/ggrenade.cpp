@@ -43,21 +43,19 @@ void CGrenade::Explode (Vector vecSrc, Vector vecAim)
 	Explode (&tr, DMG_BLAST);
 	}
 
-// UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
+// UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution
 void CGrenade::Explode (TraceResult* pTrace, int bitsDamageType)
 	{
-	float		flRndSound;// sound randomizer
+	float		flRndSound;		// sound randomizer
 
-	pev->model = iStringNull;//invisible
-	pev->solid = SOLID_NOT;// intangible
+	pev->model = iStringNull;	// invisible
+	pev->solid = SOLID_NOT;		// intangible
 
 	pev->takedamage = DAMAGE_NO;
 
 	// Pull out of the wall a bit
 	if (pTrace->flFraction != 1.0)
-		{
 		pev->origin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.6);
-		}
 
 	int iContents = UTIL_PointContents (pev->origin);
 
@@ -66,17 +64,15 @@ void CGrenade::Explode (TraceResult* pTrace, int bitsDamageType)
 	WRITE_COORD (pev->origin.x);	// Send to PAS because of the sound
 	WRITE_COORD (pev->origin.y);
 	WRITE_COORD (pev->origin.z);
+
 	if (iContents != CONTENTS_WATER)
-		{
 		WRITE_SHORT (g_sModelIndexFireball);
-		}
 	else
-		{
 		WRITE_SHORT (g_sModelIndexWExplosion);
-		}
+
 	WRITE_BYTE ((pev->dmg - 50) * .60); // scale * 10
 	WRITE_BYTE (15); // framerate
-	WRITE_BYTE (TE_EXPLFLAG_NONE);
+	WRITE_BYTE (TE_EXPLFLAG_WEAPON);
 	MESSAGE_END ();
 
 	CSoundEnt::InsertSound (bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0);
@@ -88,16 +84,15 @@ void CGrenade::Explode (TraceResult* pTrace, int bitsDamageType)
 
 	pev->owner = NULL; // can't traceline attack owner if this is set
 
+	// ESHQ: shake
+	UTIL_ScreenShake (VecBModelOrigin (pev), 6.0f, 40.0f, 1.0f, 200.0f);
+
 	RadiusDamage (pev, pevOwner, pev->dmg, CLASS_NONE, bitsDamageType);
 
 	if (RANDOM_FLOAT (0, 1) < 0.5)
-		{
 		UTIL_DecalTrace (pTrace, DECAL_SCORCH1);
-		}
 	else
-		{
 		UTIL_DecalTrace (pTrace, DECAL_SCORCH2);
-		}
 
 	flRndSound = RANDOM_FLOAT (0, 1);
 
@@ -120,7 +115,6 @@ void CGrenade::Explode (TraceResult* pTrace, int bitsDamageType)
 			Create ("spark_shower", pev->origin, pTrace->vecPlaneNormal, NULL);
 		}
 	}
-
 
 void CGrenade::Smoke (void)
 	{
@@ -148,7 +142,6 @@ void CGrenade::Killed (entvars_t* pevAttacker, int iGib)
 	Detonate ();
 	}
 
-
 // Timed grenade, this think is called when time runs out.
 void CGrenade::DetonateUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
@@ -164,7 +157,6 @@ void CGrenade::PreDetonate (void)
 	pev->nextthink = gpGlobals->time + 1;
 	}
 
-
 void CGrenade::Detonate (void)
 	{
 	TraceResult tr;
@@ -175,7 +167,6 @@ void CGrenade::Detonate (void)
 
 	Explode (&tr, DMG_BLAST);
 	}
-
 
 //
 // Contact grenade, explode when it touches something
@@ -193,7 +184,6 @@ void CGrenade::ExplodeTouch (CBaseEntity* pOther)
 	Explode (&tr, DMG_BLAST);
 	}
 
-
 void CGrenade::DangerSoundThink (void)
 	{
 	if (!IsInWorld ())
@@ -210,7 +200,6 @@ void CGrenade::DangerSoundThink (void)
 		pev->velocity = pev->velocity * 0.5;
 		}
 	}
-
 
 void CGrenade::BounceTouch (CBaseEntity* pOther)
 	{

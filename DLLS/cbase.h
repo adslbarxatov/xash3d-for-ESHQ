@@ -326,9 +326,9 @@ class CBaseEntity
 		EOFFSET eoffset () { return OFFSET (pev); };
 		int	  entindex () { return ENTINDEX (edict ()); };
 
-		virtual Vector Center () { return (pev->absmax + pev->absmin) * 0.5; }; // center point of entity
-		virtual Vector EyePosition () { return pev->origin + pev->view_ofs; };			// position of eyes
-		virtual Vector EarPosition () { return pev->origin + pev->view_ofs; };			// position of ears
+		virtual Vector Center () { return (pev->absmax + pev->absmin) * 0.5; };		// center point of entity
+		virtual Vector EyePosition () { return pev->origin + pev->view_ofs; };		// position of eyes
+		virtual Vector EarPosition () { return pev->origin + pev->view_ofs; };		// position of ears
 		virtual Vector BodyTarget (const Vector& posSrc) { return Center (); };		// position to shoot at
 
 		virtual int Illumination () { return GETENTITYILLUM (ENT (pev)); };
