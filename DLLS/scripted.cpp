@@ -1015,11 +1015,9 @@ void CScriptedSentence::FindThink (void)
 		SetThink (&CScriptedSentence::DelayThink);
 		pev->nextthink = gpGlobals->time + m_flDuration + m_flRepeat;
 		m_active = FALSE;
-		//		ALERT( at_console, "%s: found monster %s\n", STRING(m_iszSentence), STRING(m_iszEntity) );
 		}
 	else
 		{
-		//		ALERT( at_console, "%s: can't find monster %s\n", STRING(m_iszSentence), STRING(m_iszEntity) );
 		pev->nextthink = gpGlobals->time + m_flRepeat + 0.5;
 		}
 	}
@@ -1041,14 +1039,17 @@ BOOL CScriptedSentence::AcceptableSpeaker (CBaseMonster* pMonster)
 			if (pMonster->m_hTargetEnt == NULL || !FClassnameIs (pMonster->m_hTargetEnt->pev, "player"))
 				return FALSE;
 			}
+
 		BOOL override;
 		if (pev->spawnflags & SF_SENTENCE_INTERRUPT)
 			override = TRUE;
 		else
 			override = FALSE;
+		
 		if (pMonster->CanPlaySentence (override))
 			return TRUE;
 		}
+
 	return FALSE;
 	}
 
@@ -1067,7 +1068,6 @@ CBaseMonster* CScriptedSentence::FindEntity (void)
 			{
 			if (AcceptableSpeaker (pMonster))
 				return pMonster;
-			//			ALERT( at_console, "%s (%s), not acceptable\n", STRING(pMonster->pev->classname), STRING(pMonster->pev->targetname) );
 			}
 		pentTarget = FIND_ENTITY_BY_TARGETNAME (pentTarget, STRING (m_iszEntity));
 		}

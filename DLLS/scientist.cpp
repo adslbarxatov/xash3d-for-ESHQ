@@ -691,6 +691,8 @@ void CScientist::Precache (void)
 	PRECACHE_SOUND ("scientist/sci_pain3.wav");
 	PRECACHE_SOUND ("scientist/sci_pain4.wav");
 	PRECACHE_SOUND ("scientist/sci_pain5.wav");
+	PRECACHE_SOUND ("scientist/sci_pain6.wav");
+	PRECACHE_SOUND ("scientist/sci_pain7.wav");
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -780,7 +782,7 @@ void CScientist::PainSound (void)
 
 	m_painTime = gpGlobals->time + RANDOM_FLOAT (0.5, 0.75);
 
-	switch (RANDOM_LONG (0, 4))
+	switch (RANDOM_LONG (0, 6))
 		{
 		case 0: 
 			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
@@ -796,6 +798,12 @@ void CScientist::PainSound (void)
 			break;
 		case 4:
 			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ()); 
+			break;
+		case 5:
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain6.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ());
+			break;
+		case 6:
+			EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "scientist/sci_pain7.wav", 1, ATTN_MEDIUM, 0, GetVoicePitch ());
 			break;
 		}
 	}

@@ -1774,13 +1774,13 @@ void R_Explosion (vec3_t pos, int model, float scale, float framerate, int flags
 	float volume, pitch;
 
 	// ESHQ: звук взрыва теперь зависит от его мощности
+	if (FBitSet (flags, TE_EXPLFLAG_WEAPON))
+		sizeFactor *= 2.5f;
+
 	if (sizeFactor > 1.0)
 		sizeFactor = 1.0;
 	else if (sizeFactor < 0.01)
 		sizeFactor = 0.01;
-
-	if (FBitSet (flags, TE_EXPLFLAG_WEAPON))
-		sizeFactor *= 2.5f;
 
 	volume = sizeFactor + 0.2;
 	pitch = COM_RandomLong (125, 135) - (int)(45 * sizeFactor);
