@@ -27,7 +27,8 @@
 #include	"animation.h"
 #include	"soundent.h"
 
-#define		NUM_SCIENTIST_HEADS		4 // four heads available for scientist model
+#define		NUM_SCIENTIST_HEADS		4	// four heads available for scientist model
+#define		NUM_SCIENTIST_BODIES	5	// ESHQ: пятое - обгоревшее
 enum { HEAD_GLASSES = 0, HEAD_EINSTEIN = 1, HEAD_LUTHER = 2, HEAD_SLICK = 3 };
 
 enum
@@ -149,8 +150,8 @@ Schedule_t	slFollow[] =
 
 Task_t	tlFollowScared[] =
 	{
-		{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_TARGET_CHASE },// If you fail, follow normally
-		{ TASK_MOVE_TO_TARGET_RANGE_SCARED,(float)128		},	// Move within 128 of target ent (client)
+		{ TASK_SET_FAIL_SCHEDULE, (float)SCHED_TARGET_CHASE },	// If you fail, follow normally
+		{ TASK_MOVE_TO_TARGET_RANGE_SCARED, (float)128		},	// Move within 128 of target ent (client)
 	};
 
 Schedule_t	slFollowScared[] =
@@ -205,7 +206,7 @@ Schedule_t	slStopFollowing[] =
 
 Task_t	tlHeal[] =
 	{
-		{ TASK_MOVE_TO_TARGET_RANGE,(float)50		},	// Move within 60 of target ent (client)
+		{ TASK_MOVE_TO_TARGET_RANGE, (float)50	},	// Move within 60 of target ent (client)
 		{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_TARGET_CHASE },	// If you fail, catch up with that guy! (change this to put syringe away and then chase)
 		{ TASK_FACE_IDEAL,			(float)0		},
 		{ TASK_SAY_HEAL,			(float)0		},
@@ -322,8 +323,6 @@ Schedule_t	slScientistCover[] =
 		},
 	};
 
-
-
 Task_t	tlScientistHide[] =
 	{
 		{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_PANIC },		// If you fail, just panic!
@@ -375,8 +374,6 @@ Schedule_t	slScientistStartle[] =
 			"ScientistStartle"
 		},
 	};
-
-
 
 Task_t	tlFear[] =
 	{
@@ -629,13 +626,14 @@ void CScientist::HandleAnimEvent (MonsterEvent_t* pEvent)
 		case SCIENTIST_AE_NEEDLEON:
 			{
 			int oldBody = pev->body;
-			pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 1;
+			pev->body = (oldBody % NUM_SCIENTIST_BODIES) + NUM_SCIENTIST_BODIES * 1;	
+			// Видимо, список parts достигается путём переволнения списка body
 			}
 			break;
 		case SCIENTIST_AE_NEEDLEOFF:
 			{
 			int oldBody = pev->body;
-			pev->body = (oldBody % NUM_SCIENTIST_HEADS) + NUM_SCIENTIST_HEADS * 0;
+			pev->body = (oldBody % NUM_SCIENTIST_BODIES) + NUM_SCIENTIST_BODIES * 0;
 			}
 			break;
 
@@ -735,7 +733,7 @@ void CScientist::TalkInit ()
 	m_szGrp[TLK_MORTAL] = "SC_MORTAL";
 
 	// get voice for head
-	switch (pev->body % 3)
+	switch (pev->body % NUM_SCIENTIST_HEADS)
 		{
 		default:
 		case HEAD_GLASSES:	m_voicePitch = 105; break;	// glasses
@@ -962,7 +960,7 @@ Schedule_t* CScientist::GetSchedule (void)
 					relationship = IRelationship (pEnemy);
 
 				// UNDONE: Model fear properly, fix R_FR and add multiple levels of fear
-				if (relationship != R_DL && relationship != R_HT)
+				if ((relationship != R_DL) && (relationship != R_HT))
 					{
 					// If I'm already close enough to my target
 					if (TargetDistance () <= 128)
@@ -988,6 +986,7 @@ Schedule_t* CScientist::GetSchedule (void)
 			// try to say something about smells
 			TrySmellTalk ();
 			break;
+
 		case MONSTERSTATE_COMBAT:
 			if (HasConditions (bits_COND_NEW_ENEMY))
 				return slFear;					// Point and scream!

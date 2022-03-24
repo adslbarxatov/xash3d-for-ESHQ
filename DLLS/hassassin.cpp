@@ -169,6 +169,7 @@ void CHAssassin::SetYawSpeed (void)
 		case ACT_TURN_RIGHT:
 			ys = 360;
 			break;
+
 		default:
 			ys = 360;
 			break;
@@ -243,16 +244,18 @@ void CHAssassin::HandleAnimEvent (MonsterEvent_t* pEvent)
 		case ASSASSIN_AE_SHOOT1:
 			Shoot ();
 			break;
+
 		case ASSASSIN_AE_TOSS1:
 			{
 			UTIL_MakeVectors (pev->angles);
 			CGrenade::ShootTimed (pev, pev->origin + gpGlobals->v_forward * 34 + Vector (0, 0, 32), m_vecTossVelocity, 2.0);
 
-			m_flNextGrenadeCheck = gpGlobals->time + 6;// wait six seconds before even looking again to see if a grenade can be thrown.
+			m_flNextGrenadeCheck = gpGlobals->time + 6;	// wait six seconds before even looking again to see if a grenade can be thrown
 			m_fThrowGrenade = FALSE;
-			// !!!LATER - when in a group, only try to throw grenade if ordered.
+			// !!!LATER - when in a group, only try to throw grenade if ordered
 			}
 			break;
+
 		case ASSASSIN_AE_JUMP:
 			{
 			// ALERT( at_console, "jumping");
@@ -263,6 +266,7 @@ void CHAssassin::HandleAnimEvent (MonsterEvent_t* pEvent)
 			m_flNextJump = gpGlobals->time + 3.0;
 			}
 			return;
+
 		default:
 			CBaseMonster::HandleAnimEvent (pEvent);
 			break;
@@ -272,11 +276,18 @@ void CHAssassin::HandleAnimEvent (MonsterEvent_t* pEvent)
 //=========================================================
 // Spawn
 //=========================================================
+#define HASSN_MALE		8	// ESHQ: мужская модель для сущности
+
 void CHAssassin::Spawn ()
 	{
 	Precache ();
 
-	SET_MODEL (ENT (pev), "models/hassassin.mdl");
+	// ESHQ: мужская модель
+	if (pev->spawnflags & HASSN_MALE)
+		SET_MODEL (ENT (pev), "models/massn.mdl");
+	else
+		SET_MODEL (ENT (pev), "models/hassassin.mdl");
+
 	UTIL_SetSize (pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -284,7 +295,7 @@ void CHAssassin::Spawn ()
 	m_bloodColor = BLOOD_COLOR_RED;
 	pev->effects = 0;
 	pev->health = gSkillData.hassassinHealth;
-	m_flFieldOfView = VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_flFieldOfView = VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone (as a dotproduct result)
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = bits_CAP_MELEE_ATTACK1 | bits_CAP_DOORS_GROUP;
 	pev->friction = 1;
@@ -303,17 +314,19 @@ void CHAssassin::Spawn ()
 //=========================================================
 void CHAssassin::Precache ()
 	{
-	PRECACHE_MODEL ("models/hassassin.mdl");
+	// ESHQ: мужская модель
+	if (pev->spawnflags & HASSN_MALE)
+		PRECACHE_MODEL ("models/massn.mdl");
+	else
+		PRECACHE_MODEL ("models/hassassin.mdl");
 
 	PRECACHE_SOUND ("weapons/pl_gun1.wav");
 	PRECACHE_SOUND ("weapons/pl_gun2.wav");
 
 	PRECACHE_SOUND ("debris/beamstart1.wav");
 
-	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
+	m_iShell = PRECACHE_MODEL ("models/shell.mdl");	// brass shell
 	}
-
-
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -327,7 +340,6 @@ Task_t	tlAssassinFail[] =
 		{ TASK_STOP_MOVING,			0				},
 		{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
 		{ TASK_WAIT_FACE_ENEMY,		(float)2		},
-		// { TASK_WAIT_PVS,			(float)0		},
 		{ TASK_SET_SCHEDULE,		(float)SCHED_CHASE_ENEMY },
 	};
 
@@ -568,7 +580,6 @@ Schedule_t	slAssassinJumpAttack[] =
 Task_t	tlAssassinJumpLand[] =
 	{
 		{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_ASSASSIN_EXPOSED	},
-		// { TASK_SET_FAIL_SCHEDULE,		(float)SCHED_MELEE_ATTACK1	},
 		{ TASK_SET_ACTIVITY,			(float)ACT_IDLE				},
 		{ TASK_REMEMBER,				(float)bits_MEMORY_BADJUMP	},
 		{ TASK_FIND_NODE_COVER_FROM_ENEMY,	(float)0					},
@@ -619,9 +630,10 @@ BOOL CHAssassin::CheckMeleeAttack1 (float flDot, float flDist)
 
 		Vector vecDest = pev->origin + Vector (RANDOM_FLOAT (-64, 64), RANDOM_FLOAT (-64, 64), 160);
 
-		UTIL_TraceHull (pev->origin + Vector (0, 0, 36), vecDest + Vector (0, 0, 36), dont_ignore_monsters, human_hull, ENT (pev), &tr);
+		UTIL_TraceHull (pev->origin + Vector (0, 0, 36), vecDest + Vector (0, 0, 36), dont_ignore_monsters, 
+			human_hull, ENT (pev), &tr);
 
-		if (tr.fStartSolid || tr.flFraction < 1.0)
+		if (tr.fStartSolid || (tr.flFraction < 1.0))
 			{
 			return FALSE;
 			}
@@ -643,7 +655,7 @@ BOOL CHAssassin::CheckMeleeAttack1 (float flDot, float flDist)
 //=========================================================
 BOOL CHAssassin::CheckRangeAttack1 (float flDot, float flDist)
 	{
-	if (!HasConditions (bits_COND_ENEMY_OCCLUDED) && flDist > 64 && flDist <= 2048 /* && flDot >= 0.5 */ /* && NoFriendlyFire() */)
+	if (!HasConditions (bits_COND_ENEMY_OCCLUDED) && (flDist > 64) && (flDist <= 2048))
 		{
 		TraceResult	tr;
 
@@ -652,11 +664,12 @@ BOOL CHAssassin::CheckRangeAttack1 (float flDot, float flDist)
 		// verify that a bullet fired from the gun will hit the enemy before the world.
 		UTIL_TraceLine (vecSrc, m_hEnemy->BodyTarget (vecSrc), dont_ignore_monsters, ENT (pev), &tr);
 
-		if (tr.flFraction == 1 || tr.pHit == m_hEnemy->edict ())
+		if ((tr.flFraction == 1) || (tr.pHit == m_hEnemy->edict ()))
 			{
 			return TRUE;
 			}
 		}
+
 	return FALSE;
 	}
 
@@ -676,9 +689,10 @@ BOOL CHAssassin::CheckRangeAttack2 (float flDot, float flDist)
 	if (m_iFrustration <= 2)
 		return FALSE;
 
-	if (m_flNextGrenadeCheck < gpGlobals->time && !HasConditions (bits_COND_ENEMY_OCCLUDED) && flDist <= 512 /* && flDot >= 0.5 */ /* && NoFriendlyFire() */)
+	if ((m_flNextGrenadeCheck < gpGlobals->time) && !HasConditions (bits_COND_ENEMY_OCCLUDED) && (flDist <= 512))
 		{
-		Vector vecToss = VecCheckThrow (pev, GetGunPosition (), m_hEnemy->Center (), flDist, 0.5); // use dist as speed to get there in 1 second
+		Vector vecToss = VecCheckThrow (pev, GetGunPosition (), m_hEnemy->Center (), 
+			flDist, 0.5);	// use dist as speed to get there in 1 second
 
 		if (vecToss != g_vecZero)
 			{
@@ -703,8 +717,8 @@ void CHAssassin::RunAI (void)
 
 	// always visible if moving
 	// always visible is not on hard
-	if (g_iSkillLevel != SKILL_HARD || m_hEnemy == NULL || pev->deadflag != DEAD_NO || m_Activity == ACT_RUN || 
-		m_Activity == ACT_WALK || !(pev->flags & FL_ONGROUND))
+	if ((g_iSkillLevel != SKILL_HARD) || (m_hEnemy == NULL) || (pev->deadflag != DEAD_NO) || (m_Activity == ACT_RUN) || 
+		(m_Activity == ACT_WALK) || !(pev->flags & FL_ONGROUND))
 		m_iTargetRanderamt = 255;
 	else
 		m_iTargetRanderamt = 20;
@@ -726,7 +740,7 @@ void CHAssassin::RunAI (void)
 			pev->rendermode = kRenderNormal;
 		}
 
-	if (m_Activity == ACT_RUN || m_Activity == ACT_WALK)
+	if ((m_Activity == ACT_RUN) || (m_Activity == ACT_WALK))
 		{
 		static int iStep = 0;
 		iStep = !iStep;
@@ -760,8 +774,10 @@ void CHAssassin::StartTask (Task_t* pTask)
 				CBaseMonster::StartTask (pTask);
 				}
 			break;
+
 		case TASK_ASSASSIN_FALL_TO_GROUND:
 			break;
+
 		default:
 			CBaseMonster::StartTask (pTask);
 			break;
@@ -957,20 +973,25 @@ Schedule_t* CHAssassin::GetScheduleOfType (int Type)
 				return slAssassinTakeCoverFromEnemy;
 			else
 				return slAssassinTakeCoverFromEnemy2;
+
 		case SCHED_TAKE_COVER_FROM_BEST_SOUND:
 			return slAssassinTakeCoverFromBestSound;
+
 		case SCHED_ASSASSIN_EXPOSED:
 			return slAssassinExposed;
+
 		case SCHED_FAIL:
 			if (m_MonsterState == MONSTERSTATE_COMBAT)
 				return slAssassinFail;
 			break;
+
 		case SCHED_ALERT_STAND:
 			if (m_MonsterState == MONSTERSTATE_COMBAT)
 				return slAssassinHide;
 			break;
 		case SCHED_CHASE_ENEMY:
 			return slAssassinHunt;
+
 		case SCHED_MELEE_ATTACK1:
 			if (pev->flags & FL_ONGROUND)
 				{
@@ -988,9 +1009,11 @@ Schedule_t* CHAssassin::GetScheduleOfType (int Type)
 				{
 				return slAssassinJumpAttack;
 				}
+
 		case SCHED_ASSASSIN_JUMP:
 		case SCHED_ASSASSIN_JUMP_ATTACK:
 			return slAssassinJumpAttack;
+
 		case SCHED_ASSASSIN_JUMP_LAND:
 			return slAssassinJumpLand;
 		}
