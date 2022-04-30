@@ -72,15 +72,15 @@ Modification based on old (from 2019) version of engine and may contain some bug
 
 31. Fixed “gag” flag’s behavior: now all scientists with “gag” will be silent.
 
-32. “Credits” section added to main menu; map for it may be selected by game configuration.
+32. “Credits” section added to main menu; map for it can be specified in the game configuration.
 
-33. Added “Locked sequence” flag for all monsters. When set, engine will loop the sequence that is specified in monster’s settings before its first damage, death or “scripted_sequence” call. This feature works without “scripted_sequence” entities.
+33. Added “Locked sequence” flag for all monsters. When set, engine will loop the sequence that is specified in monster’s settings before its first damage, death or before the call from the `scripted_sequence` entity. This feature works without additional `scripted_sequence` entities.
 
-34. Behavior of sounds of momentary doors reviewed: sounds of moving and stop will work properly now.
+34. Behavior of sounds of momentary doors reviewed: sounds of moving and stop work’s properly now.
 
-35. Fixed bug with stuck weapons that can be dropped by dead h_grunts.
+35. Fixed bug with stuck weapons that can be dropped by dead human grunts.
 
-36. “Use only” flag for doors will now work as lock. Triggering these doors by their names will unlock them without opening. If no name specified, the door will be initially unlocked.
+36. “Use only” flag for doors will now work as a lock. Triggering these doors by their names will unlock them without opening. If no name specified, the door will be initially unlocked.
 
 37. Added replacements for entities from *HL: blue shift* and *Afraid of monsters*.
 
@@ -88,7 +88,7 @@ Modification based on old (from 2019) version of engine and may contain some bug
 
 39. Fixed too long time stuck on jumping from the water.
 
-40. Switching between walk and run modes now works as well as in HL2 (run requires “/” key holding by default; this behavior may be disabled by setting cl_movespeedkey and cl_anglespeedkey to 1)
+40. Switching between walk and run modes now works as well as in HL2 (run requires “/” key holding by default). “Always run” flag has been added to Advanced controls menu (disables this behavior).
 
 41. Fixed mapping for additive textures: now they are able to be transparent and semitransparent conveyors.
 
@@ -98,7 +98,7 @@ Modification based on old (from 2019) version of engine and may contain some bug
 
 44. Pushables are now react on explosions, shooting and hitting by a crowbar.
 
-45. Walking and running player will now sound properly. “Always run” flag has been added to Advanced controls menu.
+
 
 &nbsp;
 
