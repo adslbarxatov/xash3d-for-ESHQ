@@ -583,7 +583,7 @@ void PM_UpdateStepSound (void)
 	else
 		{
 		velwalk = 120;
-		velrun = 210;
+		velrun = 300;	// ESHQ: корректировка для соответствия настройкам «ходьба-бег» в интерфейсе
 		flduck = 0;
 		}
 

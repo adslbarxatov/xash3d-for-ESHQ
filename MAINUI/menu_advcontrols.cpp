@@ -37,7 +37,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define ID_MOUSELOOK		6
 #define ID_LOOKSPRING		7
 #define ID_LOOKSTRAFE		8
-#define ID_MOUSEFILTER		9
+
+// ESHQ: замена параметра
+/*#define ID_MOUSEFILTER		9*/
+#define ID_INFINITERUN		9
+
 #define ID_AUTOAIM			10
 
 typedef struct
@@ -54,7 +58,8 @@ typedef struct
 	menuCheckBox_s	mouseLook;
 	menuCheckBox_s	lookSpring;
 	menuCheckBox_s	lookStrafe;
-	menuCheckBox_s	mouseFilter;
+	/*menuCheckBox_s	mouseFilter;*/
+	menuCheckBox_s	infiniteRun;	// ESHQ: новый параметр - бесконечный бег
 	menuCheckBox_s	autoaim;
 	menuSlider_s	sensitivity;
 	} uiAdvControls_t;
@@ -76,7 +81,20 @@ static void UI_AdvControls_UpdateConfig (void)
 	CVAR_SET_FLOAT ("crosshair", uiAdvControls.crosshair.enabled);
 	CVAR_SET_FLOAT ("lookspring", uiAdvControls.lookSpring.enabled);
 	CVAR_SET_FLOAT ("lookstrafe", uiAdvControls.lookStrafe.enabled);
-	CVAR_SET_FLOAT ("m_filter", uiAdvControls.mouseFilter.enabled);
+	
+	// ESHQ: замена параметра
+	/*CVAR_SET_FLOAT ("m_filter", uiAdvControls.mouseFilter.enabled);*/
+	if (uiAdvControls.infiniteRun.enabled)
+		{
+		CVAR_SET_FLOAT ("cl_movespeedkey", 0.95f);
+		CVAR_SET_FLOAT ("cl_anglespeedkey", 0.95f);
+		}
+	else 
+		{
+		CVAR_SET_FLOAT ("cl_movespeedkey", 0.55f);
+		CVAR_SET_FLOAT ("cl_anglespeedkey", 0.55f);
+		}
+	
 	CVAR_SET_FLOAT ("sv_aim", uiAdvControls.autoaim.enabled);
 	CVAR_SET_FLOAT ("sensitivity", (uiAdvControls.sensitivity.curValue * 20.0f) + 0.2f);
 
@@ -119,8 +137,13 @@ static void UI_AdvControls_GetConfig (void)
 	if (CVAR_GET_FLOAT ("lookstrafe"))
 		uiAdvControls.lookStrafe.enabled = 1;
 
-	if (CVAR_GET_FLOAT ("m_filter"))
-		uiAdvControls.mouseFilter.enabled = 1;
+	// ESHQ: замена параметра
+	/*if (CVAR_GET_FLOAT ("m_filter"))
+		uiAdvControls.mouseFilter.enabled = 1;*/
+	if (CVAR_GET_FLOAT ("cl_movespeedkey") > 0.7f)
+		uiAdvControls.infiniteRun.enabled = 1;
+	else
+		uiAdvControls.infiniteRun.enabled = 0;
 
 	if (CVAR_GET_FLOAT ("sv_aim"))
 		uiAdvControls.autoaim.enabled = 1;
@@ -155,7 +178,11 @@ static void UI_AdvControls_Callback (void *self, int event)
 		case ID_MOUSELOOK:
 		case ID_LOOKSPRING:
 		case ID_LOOKSTRAFE:
-		case ID_MOUSEFILTER:
+		
+		// ESHQ: замена параметра
+		/*case ID_MOUSEFILTER:*/
+		case ID_INFINITERUN:
+
 		case ID_AUTOAIM:
 			if (event == QM_PRESSED)
 				((menuCheckBox_s *)self)->focusPic = UI_CHECKBOX_PRESSED;
@@ -294,7 +321,8 @@ static void UI_AdvControls_Init (void)
 	uiAdvControls.lookStrafe.generic.statusText = "In combination with your mouse look modifier, causes left-right\nmovements to strafe instead of turn";
 #endif
 
-	uiAdvControls.mouseFilter.generic.id = ID_MOUSEFILTER;
+	// ESHQ: замена параметра на бесконечный бег
+/*	uiAdvControls.mouseFilter.generic.id = ID_MOUSEFILTER;
 	uiAdvControls.mouseFilter.generic.type = QMTYPE_CHECKBOX;
 	uiAdvControls.mouseFilter.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_NOTIFY | QMF_ACT_ONRELEASE | QMF_MOUSEONLY | QMF_DROPSHADOW;
 	uiAdvControls.mouseFilter.generic.x = 72;
@@ -306,6 +334,20 @@ static void UI_AdvControls_Init (void)
 #else
 	uiAdvControls.mouseFilter.generic.name = "Mouse filter";
 	uiAdvControls.mouseFilter.generic.statusText = "Average mouse inputs over the last two frames\nto smooth out movements";
+#endif*/
+
+	uiAdvControls.infiniteRun.generic.id = ID_INFINITERUN;
+	uiAdvControls.infiniteRun.generic.type = QMTYPE_CHECKBOX;
+	uiAdvControls.infiniteRun.generic.flags = QMF_HIGHLIGHTIFFOCUS | QMF_NOTIFY | QMF_ACT_ONRELEASE | QMF_MOUSEONLY | QMF_DROPSHADOW;
+	uiAdvControls.infiniteRun.generic.x = 72;
+	uiAdvControls.infiniteRun.generic.y = 480;
+	uiAdvControls.infiniteRun.generic.callback = UI_AdvControls_Callback;
+#ifdef RU
+	uiAdvControls.infiniteRun.generic.name = "Постоянный бег";
+	uiAdvControls.infiniteRun.generic.statusText = "Постоянный бег игрока, не требующий нажатия\nотдельной клавиши";
+#else
+	uiAdvControls.infiniteRun.generic.name = "Permanent run";
+	uiAdvControls.infiniteRun.generic.statusText = "Constantly running player without special keys";
 #endif
 
 	uiAdvControls.autoaim.generic.id = ID_AUTOAIM;
@@ -348,7 +390,11 @@ static void UI_AdvControls_Init (void)
 	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.mouseLook);
 	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.lookSpring);
 	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.lookStrafe);
-	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.mouseFilter);
+	
+	// ESHQ: замена параметра
+	/*UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.mouseFilter);*/
+	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.infiniteRun);
+
 	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.autoaim);
 	UI_AddItem (&uiAdvControls.menu, (void *)&uiAdvControls.sensitivity);
 	}

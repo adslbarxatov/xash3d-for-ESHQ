@@ -203,14 +203,14 @@ extern "C" {
 		{
 		// filesystem info
 		char		gamefolder[MAX_QPATH];	// used for change game '-game x'
-		char		basedir[MAX_QPATH];	// base game directory (like 'id1' for Quake or 'valve' for Half-Life)
-		char		gamedir[MAX_QPATH];	// game directory (can be match with basedir, used as game dir and as write path)
-		char		falldir[MAX_QPATH];	// used as second basedir 
-		char		startmap[MAX_QPATH];// map to start singleplayer game
-		char		trainmap[MAX_QPATH];// map to start hazard course (if specified)
-		// ESHQ: добавлено для поддержки титров
+		char		basedir[MAX_QPATH];		// base game directory (like 'id1' for Quake or 'valve' for Half-Life)
+		char		gamedir[MAX_QPATH];		// game directory (can be match with basedir, used as game dir and as write path)
+		char		falldir[MAX_QPATH];		// used as second basedir 
+		char		startmap[MAX_QPATH];	// map to start singleplayer game
+		char		trainmap[MAX_QPATH];	// map to start hazard course (if specified)
+		// ESHQ: яюффхЁцър ЄшЄЁют
 		char		creditsmap[MAX_QPATH];
-		char		title[64];	// Game Main Title
+		char		title[64];		// Game Main Title
 		float		version;		// game version (optional)
 
 		// .dll pathes

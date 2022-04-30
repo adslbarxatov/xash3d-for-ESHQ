@@ -845,6 +845,8 @@ class CPushable: public CBreakable
 		int		m_lastSound;
 		float	m_maxSpeed;
 		float	m_soundTime;
+		Vector	shoot_dir;
+
 	};
 
 TYPEDESCRIPTION	CPushable::m_SaveData[] =
@@ -873,10 +875,11 @@ char* CPushable::m_soundNames[PUSH_SOUND_NAMES] =
 
 void CPushable::Spawn (void)
 	{
-	if (pev->spawnflags & SF_PUSH_BREAKABLE)
-		CBreakable::Spawn ();
-	else
-		Precache ();
+	// ESHQ: включена обязательная обработка методом TakeDamage
+	/*if (pev->spawnflags & SF_PUSH_BREAKABLE)*/
+	CBreakable::Spawn ();
+	/*else
+		Precache ();*/
 
 	pev->movetype = MOVETYPE_PUSHSTEP;
 	pev->solid = SOLID_BBOX;
@@ -908,33 +911,7 @@ void CPushable::Precache (void)
 
 void CPushable::KeyValue (KeyValueData* pkvd)
 	{
-	// ESHQ: удалено за ненадобностью
-	/*if (FStrEq (pkvd->szKeyName, "size"))
-		{
-		int bbox = atoi (pkvd->szValue);
-		pkvd->fHandled = TRUE;
-
-		switch (bbox)
-			{
-			case 0:	// Point
-				UTIL_SetSize (pev, Vector (-8, -8, -8), Vector (8, 8, 8));
-				break;
-
-			case 2: // Big Hull!?!?	!!!BUGBUG Figure out what this hull really is
-				UTIL_SetSize (pev, VEC_DUCK_HULL_MIN * 2, VEC_DUCK_HULL_MAX * 2);
-				break;
-
-			case 3: // Player duck
-				UTIL_SetSize (pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
-				break;
-
-			default:
-			case 1: // Player
-				UTIL_SetSize (pev, VEC_HULL_MIN, VEC_HULL_MAX);
-				break;
-			}
-		}
-	else*/ 
+	// ESHQ: size удалён за ненадобностью
 	if (FStrEq (pkvd->szKeyName, "buoyancy"))
 		{
 		pev->skin = atof (pkvd->szValue);
@@ -968,12 +945,13 @@ void CPushable::Touch (CBaseEntity* pOther)
 	Move (pOther, 1);
 	}
 
+// ESHQ: подстройка для реакции на выстрелы
 void CPushable::Move (CBaseEntity* pOther, int push)
 	{
 	entvars_t* pevToucher = pOther->pev;
 	int playerTouch = 0;
 
-	// Is entity standing on this pushable ?
+	// Is entity standing on this pushable?
 	if (FBitSet (pevToucher->flags, FL_ONGROUND) && pevToucher->groundentity && (VARS (pevToucher->groundentity) == pev))
 		{
 		// Only push if floating
@@ -987,9 +965,9 @@ void CPushable::Move (CBaseEntity* pOther, int push)
 	if (pOther->IsPlayer ())
 		{
 		// Don't push unless the player is pushing forward and NOT use (pull)
-		if (push && !(pevToucher->button & (IN_FORWARD | IN_MOVERIGHT | IN_MOVELEFT | IN_BACK)))
+		if ((push == 1) && !(pevToucher->button & (IN_FORWARD | IN_MOVERIGHT | IN_MOVELEFT | IN_BACK)))
 			return;
-		if (!push && !(pevToucher->button & (IN_BACK)))
+		if ((push == 0) && !(pevToucher->button & (IN_BACK)))
 			return;
 
 		playerTouch = 1;
@@ -1016,11 +994,21 @@ void CPushable::Move (CBaseEntity* pOther, int push)
 		factor = 0.25;
 		}
 
-	pev->velocity.x += pevToucher->velocity.x * factor;
-	pev->velocity.y += pevToucher->velocity.y * factor;
+	if (push < 2)
+		{
+		pev->velocity.x += pevToucher->velocity.x * factor;
+		pev->velocity.y += pevToucher->velocity.y * factor;
+		}
+	else
+		{
+		pev->velocity.x += shoot_dir.x * factor;
+		pev->velocity.y += shoot_dir.y * factor;
+		}
 
 	float length = sqrt (pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y);
-	if (push && (length > MaxSpeed ()))
+
+	// ESHQ: исправление агрессивной тяги предметов
+	if (push && (length > (MaxSpeed () * push * push)))
 		{
 		pev->velocity.x = (pev->velocity.x * MaxSpeed () / length);
 		pev->velocity.y = (pev->velocity.y * MaxSpeed () / length);
@@ -1028,14 +1016,18 @@ void CPushable::Move (CBaseEntity* pOther, int push)
 
 	if (playerTouch)
 		{
-		pevToucher->velocity.x = pev->velocity.x;
-		pevToucher->velocity.y = pev->velocity.y;
+		if (push == 1)
+			{
+			pevToucher->velocity.x = pev->velocity.x;
+			pevToucher->velocity.y = pev->velocity.y;
+			}
+
 		if ((gpGlobals->time - m_soundTime) > 0.7)
 			{
 			m_soundTime = gpGlobals->time;
 
-			// ESHQ: обработка материала
-			if ((length > 0) && FBitSet (pev->flags, FL_ONGROUND))
+			// ESHQ: обработка материала (с контролем разрушения объекта)
+			if ((pev->health > 0) && (length > 0) && FBitSet (pev->flags, FL_ONGROUND))
 				{
 				switch (m_Material)
 					{
@@ -1087,8 +1079,24 @@ void CPushable::StopSound (void)
 
 int CPushable::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
+	// Стандартная обработка
+	int res = 1;
 	if (pev->spawnflags & SF_PUSH_BREAKABLE)
-		return CBreakable::TakeDamage (pevInflictor, pevAttacker, flDamage, bitsDamageType);
+		res = CBreakable::TakeDamage (pevInflictor, pevAttacker, flDamage, bitsDamageType);
 
-	return 1;
+	// ESHQ: добавление реакции на выстрел
+	if (!FNullEnt (pevInflictor))
+		{
+		CBaseEntity *pInflictor = CBaseEntity::Instance (pevInflictor);
+		
+		if (pInflictor)
+			{
+			shoot_dir = (pInflictor->Center () - Vector (0, 0, 10) - Center ()).Normalize ();
+			shoot_dir = shoot_dir.Normalize () * -flDamage * 50.0f;
+
+			Move (pInflictor, 2);
+			}
+		}
+
+	return res;
 	}

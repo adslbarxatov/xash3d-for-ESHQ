@@ -951,11 +951,16 @@ void Host_WriteConfig (void)
 			FS_Printf (f, "+jlook\n");
 
 		// ESHQ: не нужен
-		//FS_Printf( f, "exec userconfig.cfg" );
+		// FS_Printf( f, "exec userconfig.cfg" );
+		// ESHQ: зато имеет смысл добавить автозагрузку последнего сохранения
+		FS_Printf (f, "\nload quick\n");
 
 		FS_Close (f);
 		}
-	else Con_DPrintf (S_ERROR "Couldn't write config.cfg.\n");
+	else
+		{
+		Con_DPrintf (S_ERROR "Couldn't write config.cfg.\n");
+		}
 	}
 
 /*

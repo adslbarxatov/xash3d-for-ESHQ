@@ -364,7 +364,10 @@ void SV_HazardCourse_f (void)
 		Cbuf_AddText (va ("wait; movie %s\n", GI->trainmap));
 		Host_EndGame (true, DEFAULT_ENDGAME_MESSAGE);
 		}
-	else COM_NewGame (GI->trainmap);
+	else
+		{
+		COM_NewGame (GI->trainmap);
+		}
 	}
 
 /*
@@ -970,8 +973,6 @@ void SV_KillOperatorCommands (void)
 	Cmd_RemoveCommand ("clientinfo");
 	Cmd_RemoveCommand ("playersonly");
 	Cmd_RemoveCommand ("restart");
-	// ESHQ: добавлено для поддержки титров
-	Cmd_RemoveCommand ("credits");
 	Cmd_RemoveCommand ("entpatch");
 	Cmd_RemoveCommand ("edict_usage");
 	Cmd_RemoveCommand ("entity_info");

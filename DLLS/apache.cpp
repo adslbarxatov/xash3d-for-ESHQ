@@ -876,12 +876,8 @@ int CApache::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	return CBaseEntity::TakeDamage (pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}
 
-
-
 void CApache::TraceAttack (entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 	{
-	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
-
 	// ignore blades
 	if (ptr->iHitgroup == 6 && (bitsDamageType & (DMG_ENERGYBEAM | DMG_BULLET | DMG_CLUB)))
 		return;

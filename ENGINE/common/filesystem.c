@@ -1364,7 +1364,8 @@ void FS_LoadGameInfo (const char* rootfolder)
 	// lock uplevel of gamedir for read\write
 	fs_ext_path = false;
 
-	if (rootfolder) Q_strcpy (fs_gamedir, rootfolder);
+	if (rootfolder) 
+		Q_strcpy (fs_gamedir, rootfolder);
 	Con_Reportf ("FS_LoadGameInfo( %s )\n", fs_gamedir);
 
 	// clear any old pathes

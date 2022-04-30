@@ -590,8 +590,11 @@ void Cmd_AddCommand (const char* cmd_name, xcommand_t function, const char* cmd_
 	// insert it at the right alphanumeric position
 	for (prev = NULL, cur = cmd_functions; cur && Q_strcmp (cur->name, cmd_name) < 0; prev = cur, cur = cur->next);
 
-	if (prev) prev->next = cmd;
-	else cmd_functions = cmd;
+	if (prev) 
+		prev->next = cmd;
+	else 
+		cmd_functions = cmd;
+
 	cmd->next = cur;
 	}
 
