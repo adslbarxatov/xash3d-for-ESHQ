@@ -3295,9 +3295,21 @@ void CBasePlayer::ImpulseCommands ()
 		case 100:
 			// temporary flashlight for level designers
 			if (FlashlightIsOn ())
+				{
 				FlashlightTurnOff ();
+				}
 			else
+				{
+				// ESHQ: выключение суперфонаря
+				if (m_flFlags & 0x02)
+					{
+					pev->effects &= ~EF_BRIGHTLIGHT;
+					m_flFlags &= ~0x02;
+					PassFlashlightStatus ();
+					}
+
 				FlashlightTurnOn ();
+				}
 			break;
 
 		case 201:// paint decal
