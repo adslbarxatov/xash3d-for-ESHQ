@@ -63,17 +63,17 @@ const char* CBreakable::pSpawnObjects[] =
 		"weapon_crowbar",	// 22 
 		"weapon_gauss",		// 23
 		"weapon_egon",		// 24
+		"ammo_9mmbox"		// 25
 	};
 
 void CBreakable::KeyValue (KeyValueData* pkvd)
 	{
-	// UNDONE_WC: explicitly ignoring these fields, but they shouldn't be in the map file!
 	if (FStrEq (pkvd->szKeyName, "explosion"))
 		{
 		if (!stricmp (pkvd->szValue, "directed"))
 			m_Explosion = expDirected;
-		else if (!stricmp (pkvd->szValue, "random"))
-			m_Explosion = expRandom;
+		/*else if (!stricmp (pkvd->szValue, "random"))
+			m_Explosion = expRandom;*/
 		else
 			m_Explosion = expRandom;
 
@@ -98,7 +98,7 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 	else if (FStrEq (pkvd->szKeyName, "spawnobject"))
 		{
 		int object = atoi (pkvd->szValue);
-		if (object > 0 && object < HLARRAYSIZE (pSpawnObjects))
+		if ((object > 0) && (object < HLARRAYSIZE (pSpawnObjects)))
 			m_iszSpawnObject = MAKE_STRING (pSpawnObjects[object]);
 		pkvd->fHandled = TRUE;
 		}

@@ -3091,7 +3091,7 @@ void CSprayCan::Think (void)
 	// ESHQ: исправление логики для отсутствующих собственных граффити
 	if (nFrames < 1)
 		{
-		UTIL_DecalTrace (&tr, DECAL_RDAAOW);
+		UTIL_DecalTrace (&tr, DECAL_FDL);
 		UTIL_Remove (this);
 		}
 	else
@@ -3312,7 +3312,7 @@ void CBasePlayer::ImpulseCommands ()
 				}
 			break;
 
-		case 201:// paint decal
+		case 201:	// paint decal
 			if (gpGlobals->time < m_flNextDecalTime)
 				{
 				// too early!
