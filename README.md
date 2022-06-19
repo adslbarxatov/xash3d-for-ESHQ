@@ -1,6 +1,7 @@
 # Xash3d adaptation
 ### for mods **ESHQ** v 12 (and newer) and **ES: Randomaze** v 1.0 (and newer)
 
+#
 
 This engine modification created especially for [ESHQ mod](http://moddb.com/mods/eshq) for Half-Life part 1.
 
