@@ -3,7 +3,7 @@
 
 #
 
-This engine modification created especially for [ESHQ mod](http://moddb.com/mods/eshq) for Half-Life part 1.
+This engine modification created especially for [ESHQ mod](https://moddb.com/mods/eshq) for Half-Life part 1.
 
 Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, rev 4529)](https://github.com/FWGS/xash3d) and may contain some bugs
 
