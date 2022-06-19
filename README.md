@@ -108,10 +108,8 @@ Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, 
 ## Known bugs
 
 Unfortunately, we cannot fix some bugs yet:
-
-1. ```func_pushable``` bug: incorrect collision box.
-
-2. ```func_door_rotating``` bug: incorrect collision if door has “Ox” and/or “Oy” flags.
+- ```func_pushable``` bug: incorrect collision box.
+- ```func_door_rotating``` bug: incorrect collision if door has “Ox” and/or “Oy” flags.
 
 But we believe that it is not serious problem for now.
 
@@ -121,11 +119,9 @@ But we believe that it is not serious problem for now.
 
 ## Other notes
 
-This assembly completely adapted for building with Visual studio 19.0 and newer (some fixes for type declarations and headers syntax added).
-
-This assembly is enough to launch Half-Life (WON) and some compatible mods.
-
-This assembly is a fork of original Xash3D engine with the same license.
+- This assembly completely adapted for building with Visual studio 19.0 and newer (some fixes for type declarations and headers syntax added).
+- This assembly is enough to launch Half-Life (WON) and some compatible mods.
+- This assembly is a fork of original Xash3D engine with the same license.
 
 &nbsp;
 
