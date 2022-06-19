@@ -912,7 +912,10 @@ void SV_FinalMessage (const char* message, qboolean reconnect)
 			MSG_BeginServerCmd (&msg, svc_changing);
 			MSG_WriteOneBit (&msg, GameState->loadGame);
 			}
-		else SV_BuildReconnect (&msg);
+		else
+			{
+			SV_BuildReconnect (&msg);
+			}
 		}
 	else
 		{

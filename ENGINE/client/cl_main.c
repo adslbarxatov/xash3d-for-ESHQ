@@ -186,7 +186,7 @@ with new cls.state
 void CL_CheckClientState (void)
 	{
 	// first update is the pre-final signon stage
-	if ((cls.state == ca_connected || cls.state == ca_validate) && (cls.signon == SIGNONS))
+	if (((cls.state == ca_connected) || (cls.state == ca_validate)) && (cls.signon == SIGNONS))
 		{
 		cls.state = ca_active;
 		cls.changelevel = false;		// changelevel is done

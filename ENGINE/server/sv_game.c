@@ -684,7 +684,8 @@ void SV_QueueChangeLevel (const char* level, const char* landname)
 	// determine spawn entity classname
 	if (svs.maxclients == 1)
 		spawn_entity = GI->sp_entity;
-	else spawn_entity = GI->mp_entity;
+	else 
+		spawn_entity = GI->mp_entity;
 
 	flags = SV_MapIsValid (mapname, spawn_entity, landname);
 
@@ -742,8 +743,10 @@ void SV_QueueChangeLevel (const char* level, const char* landname)
 	SV_SkipUpdates ();
 
 	// changelevel will be executed on a next frame
-	if (smooth) COM_ChangeLevel (mapname, landname, sv.background);	// Smoothed Half-Life changelevel
-	else COM_ChangeLevel (mapname, NULL, sv.background);		// Classic Quake changlevel
+	if (smooth) 
+		COM_ChangeLevel (mapname, landname, sv.background);	// Smoothed Half-Life changelevel
+	else 
+		COM_ChangeLevel (mapname, NULL, sv.background);		// Classic Quake changlevel
 	}
 
 /*

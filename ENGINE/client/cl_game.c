@@ -1030,6 +1030,7 @@ void CL_DrawHUD (int state)
 			clgame.dllFuncs.pfnRedraw (cl.time, cl.intermission);
 			if (cl.intermission) CL_DrawScreenFade ();
 			break;
+
 		case CL_PAUSED:
 			CL_DrawScreenFade ();
 			CL_DrawCrosshair ();
@@ -1037,9 +1038,11 @@ void CL_DrawHUD (int state)
 			clgame.dllFuncs.pfnRedraw (cl.time, cl.intermission);
 			CL_DrawPause ();
 			break;
+		
 		case CL_LOADING:
 			CL_DrawLoading (scr_loading->value);
 			break;
+
 		case CL_CHANGELEVEL:
 			if (cls.draw_changelevel)
 				{

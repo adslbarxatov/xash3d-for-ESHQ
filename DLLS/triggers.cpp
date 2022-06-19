@@ -1379,7 +1379,9 @@ void CChangeLevel::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseTrigger::KeyValue (pkvd);
+		}
 	}
 
 
@@ -1396,13 +1398,11 @@ void CChangeLevel::Spawn (void)
 		ALERT (at_console, "trigger_changelevel to %s doesn't have a landmark\n", m_szMapName);
 
 	if (!FStringNull (pev->targetname))
-		{
 		SetUse (&CChangeLevel::UseChangeLevel);
-		}
+
 	InitTrigger ();
 	if (!(pev->spawnflags & SF_CHANGELEVEL_USEONLY))
 		SetTouch (&CChangeLevel::TouchChangeLevel);
-	//	ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
 	}
 
 void CChangeLevel::ExecuteChangeLevel (void)
@@ -1432,6 +1432,7 @@ edict_t* CChangeLevel::FindLandmark (const char* pLandmarkName)
 		else
 			pentLandmark = FIND_ENTITY_BY_STRING (pentLandmark, "targetname", pLandmarkName);
 		}
+
 	ALERT (at_error, "Can't find landmark %s\n", pLandmarkName);
 	return NULL;
 	}
@@ -1463,7 +1464,6 @@ void CChangeLevel::ChangeLevelNow (CBaseEntity* pActivator)
 
 	pev->dmgtime = gpGlobals->time;
 
-
 	CBaseEntity* pPlayer = CBaseEntity::Instance (g_engfuncs.pfnPEntityOfEntIndex (1));
 	if (!InTransitionVolume (pPlayer, m_szLandmarkName))
 		{
@@ -1485,6 +1485,7 @@ void CChangeLevel::ChangeLevelNow (CBaseEntity* pActivator)
 			DispatchSpawn (pFireAndDie->edict ());
 			}
 		}
+
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
 	strcpy (st_szNextMap, m_szMapName);
 
@@ -1499,6 +1500,7 @@ void CChangeLevel::ChangeLevelNow (CBaseEntity* pActivator)
 		strcpy (st_szNextSpot, m_szLandmarkName);
 		gpGlobals->vecLandmarkOffset = VARS (pentLandmark)->origin;
 		}
+
 	//	ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT (at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot);
 	CHANGE_LEVEL (st_szNextMap, st_szNextSpot);
@@ -1518,7 +1520,8 @@ void CChangeLevel::TouchChangeLevel (CBaseEntity* pOther)
 
 // Add a transition to the list, but ignore duplicates 
 // (a designer may have placed multiple trigger_changelevels with the same landmark)
-int CChangeLevel::AddTransitionToList (LEVELLIST* pLevelList, int listCount, const char* pMapName, const char* pLandmarkName, edict_t* pentLandmark)
+int CChangeLevel::AddTransitionToList (LEVELLIST* pLevelList, int listCount, const char* pMapName, 
+	const char* pLandmarkName, edict_t* pentLandmark)
 	{
 	int i;
 
@@ -1530,6 +1533,7 @@ int CChangeLevel::AddTransitionToList (LEVELLIST* pLevelList, int listCount, con
 		if (pLevelList[i].pentLandmark == pentLandmark && strcmp (pLevelList[i].mapName, pMapName) == 0)
 			return 0;
 		}
+
 	strcpy (pLevelList[listCount].mapName, pMapName);
 	strcpy (pLevelList[listCount].landmarkName, pLandmarkName);
 	pLevelList[listCount].pentLandmark = pentLandmark;
@@ -1543,11 +1547,9 @@ int BuildChangeList (LEVELLIST* pLevelList, int maxList)
 	return CChangeLevel::ChangeList (pLevelList, maxList);
 	}
 
-
 int CChangeLevel::InTransitionVolume (CBaseEntity* pEntity, char* pVolumeName)
 	{
 	edict_t* pentVolume;
-
 
 	if (pEntity->ObjectCaps () & FCAP_FORCE_TRANSITION)
 		return 1;
@@ -1578,7 +1580,6 @@ int CChangeLevel::InTransitionVolume (CBaseEntity* pEntity, char* pVolumeName)
 
 	return inVolume;
 	}
-
 
 // We can only ever move 512 entities across a transition
 #define MAX_ENTITY 512
@@ -1640,7 +1641,6 @@ int CChangeLevel::ChangeList (LEVELLIST* pLevelList, int maxList)
 				CBaseEntity* pEntity = CBaseEntity::Instance (pent);
 				if (pEntity)
 					{
-					//					ALERT( at_console, "Trying %s\n", STRING(pEntity->pev->classname) );
 					int caps = pEntity->ObjectCaps ();
 					if (!(caps & FCAP_DONT_SAVE))
 						{
@@ -1659,11 +1659,7 @@ int CChangeLevel::ChangeList (LEVELLIST* pLevelList, int maxList)
 							if (entityCount > MAX_ENTITY)
 								ALERT (at_error, "Too many entities across a transition!");
 							}
-						//						else
-						//							ALERT( at_console, "Failed %s\n", STRING(pEntity->pev->classname) );
 						}
-					//					else
-					//						ALERT( at_console, "DON'T SAVE %s\n", STRING(pEntity->pev->classname) );
 					}
 				pent = pent->v.chain;
 				}
@@ -1678,9 +1674,6 @@ int CChangeLevel::ChangeList (LEVELLIST* pLevelList, int maxList)
 					// Flag it with the level number
 					saveHelper.EntityFlagsSet (index, entityFlags[j] | (1 << i));
 					}
-				//				else
-				//					ALERT( at_console, "Screened out %s\n", STRING(pEntList[j]->pev->classname) );
-
 				}
 			}
 		}
@@ -1708,7 +1701,9 @@ void NextLevel (void)
 		strcpy (pChange->m_szMapName, "start");
 		}
 	else
-		pChange = GetClassPtr ((CChangeLevel*)VARS (pent));
+		{
+		pChange = GetClassPtr ((CChangeLevel *)VARS (pent));
+		}
 
 	strcpy (st_szNextMap, pChange->m_szMapName);
 	g_fGameOver = TRUE;

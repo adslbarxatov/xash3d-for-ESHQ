@@ -386,9 +386,9 @@ INTERNAL RESOURCE
 void SV_CreateBaseline (void)
 	{
 	entity_state_t	nullstate, * base;
-	int		playermodel;
-	int		delta_type;
-	int		entnum;
+	int playermodel;
+	int delta_type;
+	int entnum;
 
 	if (FBitSet (host.features, ENGINE_QUAKE_COMPATIBLE))
 		playermodel = SV_ModelIndex (DEFAULT_PLAYER_PATH_QUAKE);
@@ -404,7 +404,7 @@ void SV_CreateBaseline (void)
 		if (!SV_IsValidEdict (pEdict))
 			continue;
 
-		if (entnum != 0 && entnum <= svs.maxclients)
+		if ((entnum != 0) && (entnum <= svs.maxclients))
 			{
 			delta_type = DELTA_PLAYER;
 			}
@@ -423,7 +423,8 @@ void SV_CreateBaseline (void)
 		// set entity type
 		if (FBitSet (pEdict->v.flags, FL_CUSTOMENTITY))
 			base->entityType = ENTITY_BEAM;
-		else base->entityType = ENTITY_NORMAL;
+		else 
+			base->entityType = ENTITY_NORMAL;
 
 		svgame.dllFuncs.pfnCreateBaseline (delta_type, entnum, base, pEdict, playermodel, 
 			host.player_mins[0], host.player_maxs[0]);
@@ -462,6 +463,16 @@ void SV_CreateBaseline (void)
 
 	MSG_WriteUBitLong (&sv.signon, LAST_EDICT, MAX_ENTITY_BITS); // end of baselines
 	MSG_WriteUBitLong (&sv.signon, sv.num_instanced, 6);
+
+	// ESHQ: поддержка для системы ES: Randomaze
+	if (strstr (sv.name, "ESRM"))
+		{
+		char mName[32];
+		mName[0] = '\0';
+
+		sprintf (mName, "-m %s -go", sv.name);
+		ShellExecute (NULL, "open", "esrm\\randomaze.exe", mName, NULL, SW_SHOWNOACTIVATE);
+		}
 
 	for (entnum = 0; entnum < sv.num_instanced; entnum++)
 		{
@@ -573,7 +584,8 @@ void SV_ActivateServer (int runPhysics)
 	// tell what kind of server has been started.
 	if (svs.maxclients > 1)
 		Con_Printf ("%i player server started\n", svs.maxclients);
-	else Con_Printf ("Game started\n");
+	else
+		Con_Printf ("Game started\n");
 
 	Log_Printf ("Started map \"%s\" (CRC \"%i\")\n", sv.name, sv.worldmapCRC);
 
@@ -804,7 +816,8 @@ qboolean SV_SpawnServer (const char* mapname, const char* startspot, qboolean ba
 	memset (svs.baselines, 0, sizeof (entity_state_t) * GI->max_edicts);
 
 	// make cvars consistant
-	if (coop.value) Cvar_SetValue ("deathmatch", 0);
+	if (coop.value) 
+		Cvar_SetValue ("deathmatch", 0);
 	current_skill = Q_rint (skill.value);
 	current_skill = bound (0, current_skill, 3);
 	Cvar_SetValue ("skill", (float)current_skill);
@@ -842,7 +855,8 @@ qboolean SV_SpawnServer (const char* mapname, const char* startspot, qboolean ba
 
 	if (startspot)
 		Q_strncpy (sv.startspot, startspot, sizeof (sv.startspot));
-	else sv.startspot[0] = '\0';
+	else 
+		sv.startspot[0] = '\0';
 
 	Q_snprintf (sv.model_precache[WORLD_INDEX], sizeof (sv.model_precache[0]), "maps/%s.bsp", sv.name);
 	SetBits (sv.model_precache_flags[WORLD_INDEX], RES_FATALIFMISSING);

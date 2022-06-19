@@ -823,27 +823,31 @@ LINK_ENTITY_TO_CLASS (monster_barney_dead, CDeadBarney);
 //=========================================================
 void CDeadBarney::Spawn ()
 	{
-	PRECACHE_MODEL ("models/barney.mdl");
-	SET_MODEL (ENT (pev), "models/barney.mdl");
+	// ESHQ: поддержка дополнительных моделей
+	if (pev->skin == 2)
+		{
+		PRECACHE_MODEL ("models/construction.mdl");
+		SET_MODEL (ENT (pev), "models/construction.mdl");
+		}
+	else
+		{
+		PRECACHE_MODEL ("models/barney.mdl");
+		SET_MODEL (ENT (pev), "models/barney.mdl");
+		}
+
+	if ((pev->skin < 0) || (pev->skin > 1))
+		{
+		pev->skin = 0;
+		}
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;
 	pev->sequence = 0;
 	m_bloodColor = BLOOD_COLOR_RED;
 
-	// ESHQ: поддержка горелых тел
-	if ((pev->skin < 0) || (pev->skin > 1))
-		{
-		pev->skin = 0;
-		}
-
 	pev->sequence = LookupSequence (m_szPoses[m_iPose]);
 	if (pev->sequence == -1)
-		{
 		ALERT (at_console, "Dead barney with bad pose\n");
-		}
-
-	// Corpses have less health
 	pev->health = 20;
 
 	MonsterInitDead ();
@@ -874,7 +878,9 @@ void CBurnedBarney::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBaseMonster::KeyValue (pkvd);
+		}
 	}
 
 LINK_ENTITY_TO_CLASS (monster_barney_burned, CBurnedBarney);

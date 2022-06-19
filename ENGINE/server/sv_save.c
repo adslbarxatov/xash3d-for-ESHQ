@@ -1939,9 +1939,9 @@ SV_ChangeLevel
 */
 void SV_ChangeLevel (qboolean loadfromsavedgame, const char* mapname, const char* start, qboolean background)
 	{
-	char		level[MAX_QPATH];
-	char		oldlevel[MAX_QPATH];
-	char		_startspot[MAX_QPATH];
+	char level[MAX_QPATH];
+	char oldlevel[MAX_QPATH];
+	char _startspot[MAX_QPATH];
 	char* startspot = NULL;
 	SAVERESTOREDATA* pSaveData = NULL;
 
@@ -2005,10 +2005,10 @@ SV_LoadGame
 */
 qboolean SV_LoadGame (const char* pPath)
 	{
-	qboolean		validload = false;
-	GAME_HEADER	gameHeader;
+	qboolean validload = false;
+	GAME_HEADER gameHeader;
 	file_t* pFile;
-	int		flags;
+	int flags;
 
 	if (host.type == HOST_DEDICATED)
 		return false;

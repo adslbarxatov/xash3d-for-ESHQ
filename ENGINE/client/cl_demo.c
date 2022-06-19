@@ -915,15 +915,17 @@ qboolean CL_DemoReadMessage (byte* buffer, size_t* length)
 		CL_ReadDemoCmdHeader (&cmd, &demo.timestamp);
 
 		fElapsedTime = CL_GetDemoPlaybackClock () - demo.starttime;
-		if (!cls.timedemo) bSkipMessage = ((demo.timestamp - cl_serverframetime ()) >= fElapsedTime) ? true : false;
-		if (cls.changelevel) demo.framecount = 1;
+		if (!cls.timedemo) 
+			bSkipMessage = ((demo.timestamp - cl_serverframetime ()) >= fElapsedTime) ? true : false;
+		if (cls.changelevel) 
+			demo.framecount = 1;
 
 		// changelevel issues
-		if (demo.framecount <= 2 && (fElapsedTime - demo.timestamp) > host.frametime)
+		if ((demo.framecount <= 2) && ((fElapsedTime - demo.timestamp) > host.frametime))
 			demo.starttime = CL_GetDemoPlaybackClock ();
 
 		// not ready for a message yet, put it back on the file.
-		if (cmd != dem_norewind && cmd != dem_stop && bSkipMessage)
+		if ((cmd != dem_norewind) && (cmd != dem_stop) && bSkipMessage)
 			{
 			// never skip first message
 			if (demo.framecount != 0)

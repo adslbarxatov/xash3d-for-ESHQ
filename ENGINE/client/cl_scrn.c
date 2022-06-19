@@ -298,7 +298,8 @@ void SCR_DrawPlaque (void)
 		int levelshot = GL_LoadTexture (cl_levelshot_name->string, NULL, 0, TF_IMAGE);
 		GL_SetRenderMode (kRenderNormal);
 		R_DrawStretchPic (0, 0, glState.width, glState.height, 0, 0, 1, 1, levelshot);
-		if (!cl.background) CL_DrawHUD (CL_LOADING);
+		if (!cl.background) 
+			CL_DrawHUD (CL_LOADING);
 		}
 	}
 

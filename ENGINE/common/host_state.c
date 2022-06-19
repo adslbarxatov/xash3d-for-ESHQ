@@ -126,6 +126,7 @@ void Host_ShutdownGame (void)
 		case STATE_LOAD_LEVEL:
 			Host_SetState (GameState->nextstate, true);
 			break;
+
 		default:
 			Host_SetState (STATE_RUNFRAME, true);
 			break;
@@ -141,17 +142,21 @@ void Host_RunFrame (float time)
 		{
 		case STATE_RUNFRAME:
 			break;
+
 		case STATE_LOAD_GAME:
 		case STATE_LOAD_LEVEL:
 			SCR_BeginLoadingPlaque (GameState->backgroundMap);
 			// intentionally fallthrough
+
 		case STATE_GAME_SHUTDOWN:
 			Host_SetState (STATE_GAME_SHUTDOWN, false);
 			break;
+
 		case STATE_CHANGELEVEL:
 			SCR_BeginLoadingPlaque (GameState->backgroundMap);
 			Host_SetState (GameState->nextstate, true);
 			break;
+
 		default:
 			Host_SetState (STATE_RUNFRAME, true);
 			break;
@@ -176,17 +181,21 @@ void COM_Frame (float time)
 				SV_ExecLoadLevel ();
 				Host_SetState (STATE_RUNFRAME, true);
 				break;
+
 			case STATE_LOAD_GAME:
 				SV_ExecLoadGame ();
 				Host_SetState (STATE_RUNFRAME, true);
 				break;
+
 			case STATE_CHANGELEVEL:
 				SV_ExecChangeLevel ();
 				Host_SetState (STATE_RUNFRAME, true);
 				break;
+
 			case STATE_RUNFRAME:
 				Host_RunFrame (time);
 				break;
+
 			case STATE_GAME_SHUTDOWN:
 				Host_ShutdownGame ();
 				break;
