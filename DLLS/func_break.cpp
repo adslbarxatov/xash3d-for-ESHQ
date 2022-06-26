@@ -27,7 +27,7 @@
 #include "decals.h"
 #include "explode.h"
 
-extern DLL_GLOBAL Vector		g_vecAttackDir;
+extern DLL_GLOBAL Vector g_vecAttackDir;
 
 // =================== FUNC_Breakable ==============================================
 
@@ -63,7 +63,10 @@ const char* CBreakable::pSpawnObjects[] =
 		"weapon_crowbar",	// 22 
 		"weapon_gauss",		// 23
 		"weapon_egon",		// 24
-		"ammo_9mmbox"		// 25
+		"ammo_9mmbox",		// 25
+		"monster_snark",	// 26
+		"monster_babycrab",	// 27
+		"monster_headcrab",	// 28
 	};
 
 void CBreakable::KeyValue (KeyValueData* pkvd)
