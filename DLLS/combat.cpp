@@ -558,7 +558,7 @@ void CBaseMonster::CallGibMonster (void)
 		}
 
 	pev->takedamage = DAMAGE_NO;
-	pev->solid = SOLID_NOT;// do something with the body. while monster blows up
+	pev->solid = SOLID_NOT;	// do something with the body. while monster blows up
 
 	if (fade)
 		{
@@ -977,7 +977,7 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 //=========================================================
 int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
-	Vector			vecDir;
+	Vector vecDir;
 
 	// grab the vector of the incoming attack. ( pretend that the inflictor is a little lower
 	// than it really is, so the body will tend to fly upward a bit).
@@ -992,7 +992,7 @@ int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacke
 			}
 		}
 
-#if 0// turn this back on when the bounding box issues are resolved.
+#if 0	// turn this back on when the bounding box issues are resolved
 
 	pev->flags &= ~FL_ONGROUND;
 	pev->origin.z += 1;
@@ -1009,12 +1009,14 @@ int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacke
 	// is of a type that is allowed to destroy the corpse.
 	if (bitsDamageType & DMG_GIB_CORPSE)
 		{
-		if (pev->health <= flDamage)
+		// ESHQ: моментальное разрушение трупа монтировкой
+		if ((pev->health <= flDamage) || (bitsDamageType & DMG_CLUB))
 			{
 			pev->health = -50;
 			Killed (pevAttacker, GIB_ALWAYS);
 			return 0;
 			}
+
 		// Accumulate corpse gibbing damage, so you can gib with multiple hits
 		pev->health -= flDamage * 0.1;
 		}

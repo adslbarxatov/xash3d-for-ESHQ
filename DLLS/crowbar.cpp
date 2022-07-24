@@ -254,6 +254,7 @@ int CCrowbar::Swing (int fFirst)
 					case 2:
 						EMIT_SOUND (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hitbod3.wav", 1, ATTN_MEDIUM); break;
 					}
+
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if (!pEntity->IsAlive ())
 					return TRUE;
@@ -283,10 +284,12 @@ int CCrowbar::Swing (int fFirst)
 			switch (RANDOM_LONG (0, 1))
 				{
 				case 0:
-					EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_MEDIUM, 0, 98 + RANDOM_LONG (0, 3));
+					EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit1.wav", fvolbar, ATTN_MEDIUM, 0, 
+						98 + RANDOM_LONG (0, 3));
 					break;
 				case 1:
-					EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_MEDIUM, 0, 98 + RANDOM_LONG (0, 3));
+					EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/cbar_hit2.wav", fvolbar, ATTN_MEDIUM, 0, 
+						98 + RANDOM_LONG (0, 3));
 					break;
 				}
 
