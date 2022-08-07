@@ -75,8 +75,6 @@ void CBreakable::KeyValue (KeyValueData* pkvd)
 		{
 		if (!stricmp (pkvd->szValue, "directed"))
 			m_Explosion = expDirected;
-		/*else if (!stricmp (pkvd->szValue, "random"))
-			m_Explosion = expRandom;*/
 		else
 			m_Explosion = expRandom;
 
@@ -776,7 +774,12 @@ void CBreakable::Die (void)
 		else
 			pOnBreak = CBaseEntity::Create ((char*)STRING (m_iszSpawnObject), pev->origin, pev->angles, edict ());
 
-		/*// А эта манипуляция призвана "подбрасывать" создаваемые объекты
+		/*if (pOnBreak && strstr (STRING (m_iszSpawnObject), "monster"))
+			{
+			pOnBreak->edict ()->v.spawnflags = 0x80000000;	// Принудительное падение на поверхность + сброс всех остальных флагов
+			}
+
+		// А эта манипуляция призвана "подбрасывать" создаваемые объекты
 		pOnBreak->pev->velocity = Vector (0, 0, RANDOM_FLOAT (30, 100));
 		pOnBreak->pev->avelocity = Vector (0, RANDOM_FLOAT (100, 300), 0);*/
 		}
@@ -787,13 +790,16 @@ void CBreakable::Die (void)
 
 		// ESHQ: добавление дрожи к эффекту взрыва
 		ampl = ExplosionMagnitude () / 20.0f;
-		if (ampl > 16.0f) ampl = 16.0f;
+		if (ampl > 16.0f) 
+			ampl = 16.0f;
 
 		freq = ExplosionMagnitude () / 10.0f;
-		if (freq > 60.0f) freq = 60.0f;
+		if (freq > 60.0f) 
+			freq = 60.0f;
 		
 		duration = ExplosionMagnitude () / 75.0f;
-		if (duration > 4.0f) duration = 4.0f;
+		if (duration > 4.0f) 
+			duration = 4.0f;
 
 		UTIL_ScreenShake (VecBModelOrigin (pev), ampl, freq, duration, ExplosionMagnitude () * 3.0f);
 		}

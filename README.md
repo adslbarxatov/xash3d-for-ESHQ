@@ -67,7 +67,7 @@ Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, 
 
 28. The `scripted_sentence` entity now can play single sound (it must be prefixed with “!!”). Also you can add text message from `titles.txt` in addition to the sound sentence.
 
-29. Some speed improvements applied to shotgun and mp5.
+29. Some speed improvements applied to shotgun, mp5, hornetgun, 357 and other.
 
 30. Fixed mouse wheel’s behavior and some inconveniences in the keyboard settings interface.
 

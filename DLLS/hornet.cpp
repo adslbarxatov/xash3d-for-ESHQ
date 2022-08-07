@@ -141,9 +141,7 @@ void CHornet::Precache ()
 int CHornet::IRelationship (CBaseEntity* pTarget)
 	{
 	if (pTarget->pev->modelindex == pev->modelindex)
-		{
 		return R_NO;
-		}
 
 	return CBaseMonster::IRelationship (pTarget);
 	}
@@ -153,11 +151,8 @@ int CHornet::IRelationship (CBaseEntity* pTarget)
 //=========================================================
 int CHornet::Classify (void)
 	{
-
 	if (pev->owner && pev->owner->v.flags & FL_CLIENT)
-		{
 		return CLASS_PLAYER_BIOWEAPON;
-		}
 
 	return	CLASS_ALIEN_BIOWEAPON;
 	}
@@ -205,6 +200,7 @@ void CHornet::IgniteTrail (void)
 			WRITE_BYTE (39);	// r, g, b
 			WRITE_BYTE (14);	// r, g, b
 			break;
+
 		case HORNET_TYPE_ORANGE:
 			WRITE_BYTE (255);	// r, g, b
 			WRITE_BYTE (128);	// r, g, b
@@ -213,7 +209,6 @@ void CHornet::IgniteTrail (void)
 		}
 
 	WRITE_BYTE (128);	// brightness
-
 	MESSAGE_END ();
 	}
 
@@ -266,9 +261,17 @@ void CHornet::TrackTarget (void)
 		{// hafta turn wide again. play sound
 		switch (RANDOM_LONG (0, 2))
 			{
-			case 0:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-			case 1:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-			case 2:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
+			case 0:	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_SMALL);	
+				break;
+
+			case 1:	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_SMALL);
+				break;
+
+			case 2:	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_SMALL);
+				break;
 			}
 		}
 
@@ -282,7 +285,6 @@ void CHornet::TrackTarget (void)
 	if (pev->owner && (pev->owner->v.flags & FL_MONSTER))
 		{
 		// random pattern only applies to hornets fired by monsters, not players. 
-
 		pev->velocity.x += RANDOM_FLOAT (-0.10, 0.10);// scramble the flight dir a bit.
 		pev->velocity.y += RANDOM_FLOAT (-0.10, 0.10);
 		pev->velocity.z += RANDOM_FLOAT (-0.10, 0.10);
@@ -294,6 +296,7 @@ void CHornet::TrackTarget (void)
 			pev->velocity = pev->velocity * (m_flFlySpeed * flDelta);// scale the dir by the ( speed * width of turn )
 			pev->nextthink = gpGlobals->time + RANDOM_FLOAT (0.1, 0.3);
 			break;
+
 		case HORNET_TYPE_ORANGE:
 			pev->velocity = pev->velocity * m_flFlySpeed;// do not have to slow down to turn.
 			pev->nextthink = gpGlobals->time + 0.1;// fixed think time
@@ -323,9 +326,17 @@ void CHornet::TrackTarget (void)
 
 			switch (RANDOM_LONG (0, 2))
 				{
-				case 0:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-				case 1:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
-				case 2:	EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_MEDIUM);	break;
+				case 0:	
+					EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_SMALL);
+					break;
+
+				case 1:	
+					EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_SMALL);
+					break;
+
+				case 2:	
+					EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_SMALL);
+					break;
 				}
 			pev->velocity = pev->velocity * 2;
 			pev->nextthink = gpGlobals->time + 1.0;
@@ -340,7 +351,7 @@ void CHornet::TrackTarget (void)
 //=========================================================
 void CHornet::TrackTouch (CBaseEntity* pOther)
 	{
-	if (pOther->edict () == pev->owner || pOther->pev->modelindex == pev->modelindex)
+	if ((pOther->edict () == pev->owner) || (pOther->pev->modelindex == pev->modelindex))
 		{// bumped into the guy that shot it.
 		pev->solid = SOLID_NOT;
 		return;
@@ -376,13 +387,15 @@ void CHornet::DieTouch (CBaseEntity* pOther)
 		switch (RANDOM_LONG (0, 2))
 			{// buzz when you plug someone
 			case 0:	
-				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_MEDIUM);	
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_SMALL);
 				break;
-			case 1:	
-				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_MEDIUM);	
+			case 1:
+
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_SMALL);
 				break;
-			case 2:	
-				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_MEDIUM);	
+			case 2:
+
+				EMIT_SOUND (ENT (pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_SMALL);
 				break;
 			}
 
