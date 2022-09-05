@@ -86,15 +86,13 @@ void CRoach::Touch (CBaseEntity* pOther)
 	Vector		vecSpot;
 	TraceResult	tr;
 
-	if (pOther->pev->velocity == g_vecZero || !pOther->IsPlayer ())
-		{
+	if ((pOther->pev->velocity == g_vecZero) || !pOther->IsPlayer ())
 		return;
-		}
 
 	vecSpot = pev->origin + Vector (0, 0, 8);//move up a bit, and trace down.
 	UTIL_TraceLine (vecSpot, vecSpot + Vector (0, 0, -24), ignore_monsters, ENT (pev), &tr);
 
-	// This isn't really blood.  So you don't have to screen it out based on violence levels (UTIL_ShouldShowBlood())
+	// This isn't really blood. So you don't have to screen it out based on violence levels (UTIL_ShouldShowBlood())
 	UTIL_DecalTrace (&tr, DECAL_YBLOOD1 + RANDOM_LONG (0, 5));
 
 	TakeDamage (pOther->pev, pOther->pev, pev->health, DMG_CRUSH);
@@ -164,21 +162,16 @@ void CRoach::Killed (entvars_t* pevAttacker, int iGib)
 
 	//random sound
 	if (RANDOM_LONG (0, 4) == 1)
-		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "roach/rch_die.wav", 0.8, ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 39));
-		}
 	else
-		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_BODY, "roach/rch_smash.wav", 0.7, ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 39));
-		}
 
 	CSoundEnt::InsertSound (bits_SOUND_WORLD, pev->origin, 128, 1);
 
 	CBaseEntity* pOwner = CBaseEntity::Instance (pev->owner);
 	if (pOwner)
-		{
 		pOwner->DeathNotice (pev);
-		}
+
 	UTIL_Remove (this);
 	}
 

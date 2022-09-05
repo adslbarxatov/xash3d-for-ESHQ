@@ -162,7 +162,7 @@ const char* CHeadCrab::pBiteSounds[] =
 //=========================================================
 int	CHeadCrab::Classify (void)
 	{
-	return	CLASS_ALIEN_PREY;
+	return CLASS_ALIEN_PREY;
 	}
 
 //=========================================================
@@ -324,7 +324,6 @@ void CHeadCrab::RunTask (Task_t* pTask)
 		{
 		case TASK_RANGE_ATTACK1:
 		case TASK_RANGE_ATTACK2:
-			{
 			if (m_fSequenceFinished)
 				{
 				TaskComplete ();
@@ -332,11 +331,10 @@ void CHeadCrab::RunTask (Task_t* pTask)
 				m_IdealActivity = ACT_IDLE;
 				}
 			break;
-			}
+
 		default:
-			{
 			CBaseMonster::RunTask (pTask);
-			}
+			break;
 		}
 	}
 
@@ -347,19 +345,16 @@ void CHeadCrab::RunTask (Task_t* pTask)
 void CHeadCrab::LeapTouch (CBaseEntity* pOther)
 	{
 	if (!pOther->pev->takedamage)
-		{
 		return;
-		}
 
 	if (pOther->Classify () == Classify ())
-		{
 		return;
-		}
 
 	// Don't hit if back on ground
 	if (!FBitSet (pev->flags, FL_ONGROUND))
 		{
-		EMIT_SOUND_DYN (edict (), CHAN_WEAPON, RANDOM_SOUND_ARRAY (pBiteSounds), GetSoundVolue (), ATTN_SMALL, 0, GetVoicePitch ());
+		EMIT_SOUND_DYN (edict (), CHAN_WEAPON, RANDOM_SOUND_ARRAY (pBiteSounds), GetSoundVolue (), 
+			ATTN_SMALL, 0, GetVoicePitch ());
 
 		pOther->TakeDamage (pev, pev, GetDamageAmount (), DMG_SLASH);
 		}
@@ -373,10 +368,8 @@ void CHeadCrab::LeapTouch (CBaseEntity* pOther)
 void CHeadCrab::PrescheduleThink (void)
 	{
 	// make the crab coo a little bit in combat state
-	if (m_MonsterState == MONSTERSTATE_COMBAT && RANDOM_FLOAT (0, 5) < 0.1)
-		{
+	if ((m_MonsterState == MONSTERSTATE_COMBAT) && (RANDOM_FLOAT (0, 5) < 0.1))
 		IdleSound ();
-		}
 	}
 
 void CHeadCrab::StartTask (Task_t* pTask)
@@ -386,16 +379,13 @@ void CHeadCrab::StartTask (Task_t* pTask)
 	switch (pTask->iTask)
 		{
 		case TASK_RANGE_ATTACK1:
-			{
 			EMIT_SOUND_DYN (edict (), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue (), ATTN_SMALL, 0, GetVoicePitch ());
 			m_IdealActivity = ACT_RANGE_ATTACK1;
 			SetTouch (&CHeadCrab::LeapTouch);
 			break;
-			}
+
 		default:
-			{
 			CBaseMonster::StartTask (pTask);
-			}
 		}
 	}
 
@@ -404,10 +394,9 @@ void CHeadCrab::StartTask (Task_t* pTask)
 //=========================================================
 BOOL CHeadCrab::CheckRangeAttack1 (float flDot, float flDist)
 	{
-	if (FBitSet (pev->flags, FL_ONGROUND) && flDist <= 256 && flDot >= 0.65)
-		{
+	if (FBitSet (pev->flags, FL_ONGROUND) && (flDist <= 256) && (flDot >= 0.65))
 		return TRUE;
-		}
+
 	return FALSE;
 	}
 
@@ -465,9 +454,7 @@ Schedule_t* CHeadCrab::GetScheduleOfType (int Type)
 	switch (Type)
 		{
 		case SCHED_RANGE_ATTACK1:
-			{
 			return &slHCRangeAttack1[0];
-			}
 			break;
 		}
 
@@ -518,14 +505,14 @@ BOOL CBabyCrab::CheckRangeAttack1 (float flDot, float flDist)
 			return TRUE;
 
 		// A little less accurate, but jump from closer
-		if (flDist <= 180 && flDot >= 0.55)
+		if ((flDist <= 180) && (flDot >= 0.55))
 			return TRUE;
 		}
 
 	return FALSE;
 	}
 
-Schedule_t* CBabyCrab::GetScheduleOfType (int Type)
+Schedule_t *CBabyCrab::GetScheduleOfType (int Type)
 	{
 	switch (Type)
 		{
@@ -535,9 +522,7 @@ Schedule_t* CBabyCrab::GetScheduleOfType (int Type)
 			break;
 
 		case SCHED_RANGE_ATTACK1:
-			{
 			return slHCRangeAttack1Fast;
-			}
 			break;
 		}
 

@@ -426,6 +426,9 @@ extern convar_t		hostname;
 extern convar_t		skill;
 extern convar_t		coop;
 
+// ESHQ: meat mode
+extern convar_t		meat_mode;
+
 extern	convar_t* sv_pausable;		// allows pause in multiplayer
 extern	convar_t* sv_check_errors;
 extern	convar_t* sv_reconnect_limit;

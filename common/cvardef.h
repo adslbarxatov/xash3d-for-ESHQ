@@ -34,12 +34,12 @@
 #define FCVAR_CHEAT			(1<<15)	// can not be changed if cheats are disabled
 		
 typedef struct cvar_s
-{
-	char		*name;
-	char		*string;
+	{
+	char *name;
+	char *string;
 	int		flags;
 	float		value;
-	struct cvar_s	*next;
-} cvar_t;
+	struct cvar_s *next;
+	} cvar_t;
 
 #endif//CVARDEF_H

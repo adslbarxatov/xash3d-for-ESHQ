@@ -170,7 +170,6 @@ int DispatchSpawn (edict_t* pent)
 				{
 				// Spawned entities default to 'On'
 				gGlobalState.EntityAdd (pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON);
-				//				ALERT( at_console, "Added global entity %s (%s)\n", STRING(pEntity->pev->classname), STRING(pEntity->pev->globalname) );
 				}
 			}
 		}

@@ -65,6 +65,9 @@ CVAR_DEFINE_AUTO (teamplay, "0", 0, "team mode in multiplayer game");
 CVAR_DEFINE_AUTO (skill, "1", 0, "skill level in singleplayer game");
 CVAR_DEFINE_AUTO (temp1, "0", 0, "temporary cvar that used by some mods");
 
+// ESHQ: meat mode
+CVAR_DEFINE_AUTO (meat_mode, "0", 0, "allows bullets to squash corpses");
+
 // physic-related variables
 CVAR_DEFINE_AUTO (sv_gravity, "800", FCVAR_MOVEVARS, "world gravity value");
 CVAR_DEFINE_AUTO (sv_stopspeed, "100", FCVAR_MOVEVARS, "how fast you come to a complete stop");
@@ -813,6 +816,9 @@ void SV_Init (void)
 	Cvar_RegisterVariable (&teamplay);
 	Cvar_RegisterVariable (&skill);
 	Cvar_RegisterVariable (&temp1);
+
+	// ESHQ: meat mode
+	Cvar_RegisterVariable (&meat_mode);
 
 	Cvar_RegisterVariable (&rcon_password);
 	Cvar_RegisterVariable (&sv_stepsize);

@@ -320,7 +320,7 @@ void CBaseMonster::GibMonster (void)
 		if (CVAR_GET_FLOAT ("violence_hgibs") != 0)	// Only the player will ever get here
 			{
 			CGib::SpawnHeadGib (pev);
-			CGib::SpawnRandomGibs (pev, 4, 1);	// throw some human gibs.
+			CGib::SpawnRandomGibs (pev, 4, 1);	// throw some human gibs
 			}
 		gibbed = TRUE;
 		}
@@ -575,9 +575,7 @@ void CBaseMonster::CallGibMonster (void)
 
 	// don't let the status bar glitch for players.with <0 health.
 	if (pev->health < -99)
-		{
 		pev->health = 0;
-		}
 
 	if (ShouldFadeOnDeath () && !fade)
 		UTIL_Remove (this);
@@ -603,7 +601,7 @@ void CBaseMonster::Killed (entvars_t* pevAttacker, int iGib)
 
 	Remember (bits_MEMORY_KILLED);
 
-	// clear the deceased's sound channels.(may have been firing or reloading when killed)
+	// clear the deceased's sound channels (may have been firing or reloading when killed)
 	EMIT_SOUND (ENT (pev), CHAN_WEAPON, "common/null.wav", 1, ATTN_MEDIUM);
 	m_IdealMonsterState = MONSTERSTATE_DEAD;
 
@@ -613,9 +611,7 @@ void CBaseMonster::Killed (entvars_t* pevAttacker, int iGib)
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
 	CBaseEntity* pOwner = CBaseEntity::Instance (pev->owner);
 	if (pOwner)
-		{
 		pOwner->DeathNotice (pev);
-		}
 
 	if (ShouldGibMonster (iGib))
 		{
@@ -630,9 +626,7 @@ void CBaseMonster::Killed (entvars_t* pevAttacker, int iGib)
 
 	// don't let the status bar glitch for players.with <0 health.
 	if (pev->health < -99)
-		{
 		pev->health = 0;
-		}
 
 	m_IdealMonsterState = MONSTERSTATE_DEAD;
 	}
@@ -961,9 +955,7 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 				SetConditions (bits_COND_LIGHT_DAMAGE);
 
 				if (flDamage >= 20)
-					{
 					SetConditions (bits_COND_HEAVY_DAMAGE);
-					}
 				}
 			}
 		}
@@ -978,6 +970,7 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
 	Vector vecDir;
+	char meat_mode = (bitsDamageType & DMG_BULLET) && (CVAR_GET_FLOAT ("meat_mode") != 0);
 
 	// grab the vector of the incoming attack. ( pretend that the inflictor is a little lower
 	// than it really is, so the body will tend to fly upward a bit).
@@ -992,25 +985,14 @@ int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacke
 			}
 		}
 
-#if 0	// turn this back on when the bounding box issues are resolved
-
-	pev->flags &= ~FL_ONGROUND;
-	pev->origin.z += 1;
-
-	// let the damage scoot the corpse around a bit.
-	if (!FNullEnt (pevInflictor) && (pevAttacker->solid != SOLID_TRIGGER))
-		{
-		pev->velocity = pev->velocity + vecDir * -DamageForce (flDamage);
-		}
-
-#endif
-
 	// kill the corpse if enough damage was done to destroy the corpse and the damage
-	// is of a type that is allowed to destroy the corpse.
-	if (bitsDamageType & DMG_GIB_CORPSE)
+	// is of a type that is allowed to destroy the corpse
+
+	// ESHQ: meat mode
+	if ((bitsDamageType & DMG_GIB_CORPSE) || meat_mode)
 		{
-		// ESHQ: моментальное разрушение трупа монтировкой
-		if ((pev->health <= flDamage) || (bitsDamageType & DMG_CLUB))
+		// ESHQ: моментальное разрушение трупа монтировкой или звуковой волной
+		if ((pev->health <= flDamage) || (bitsDamageType & DMG_CLUB) || (bitsDamageType & DMG_SONIC) || meat_mode)
 			{
 			pev->health = -50;
 			Killed (pevAttacker, GIB_ALWAYS);
@@ -1524,7 +1506,8 @@ Vector CBaseEntity::FireBulletsPlayer (ULONG cShots, Vector vecSrc, Vector vecDi
 
 			if (iDamage)
 				{
-				pEntity->TraceAttack (pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
+				pEntity->TraceAttack (pevAttacker, iDamage, vecDir, &tr, 
+					DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
 
 				TEXTURETYPE_PlaySound (&tr, vecSrc, vecEnd, iBulletType);
 				DecalGunshot (&tr, iBulletType);
