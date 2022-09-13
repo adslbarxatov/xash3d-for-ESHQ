@@ -663,8 +663,8 @@ void R_DecalSurface (msurface_t* surf, decalinfo_t* decalinfo)
 	w = (float)(fabs (decalinfo->m_decalWidth * DotProduct (textureU, decalinfo->m_Basis[0])) +
 		fabs (decalinfo->m_decalHeight * DotProduct (textureU, decalinfo->m_Basis[1])));
 
-	h = fabs (decalinfo->m_decalWidth * DotProduct (textureV, decalinfo->m_Basis[0])) +
-		fabs (decalinfo->m_decalHeight * DotProduct (textureV, decalinfo->m_Basis[1]));
+	h = (float)(fabs (decalinfo->m_decalWidth * DotProduct (textureV, decalinfo->m_Basis[0])) +
+		fabs (decalinfo->m_decalHeight * DotProduct (textureV, decalinfo->m_Basis[1])));
 
 	// move s,t to upper left corner
 	s -= (w * 0.5f);
