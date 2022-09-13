@@ -341,21 +341,17 @@ float CLeech::ObstacleDistance (CBaseEntity* pTarget)
 	UTIL_TraceLine (pev->origin, vecTest, missile, edict (), &tr);
 
 	if (tr.fStartSolid)
-		{
 		pev->speed = -LEECH_SWIM_SPEED * 0.5;
-		//		ALERT( at_console, "Stuck from (%f %f %f) to (%f %f %f)\n", pev->oldorigin.x, pev->oldorigin.y, pev->oldorigin.z, pev->origin.x, pev->origin.y, pev->origin.z );
-		//		UTIL_SetOrigin( pev, pev->oldorigin );
-		}
 
 	if (tr.flFraction != 1.0)
 		{
-		if ((pTarget == NULL || tr.pHit != pTarget->edict ()))
+		if ((pTarget == NULL) || (tr.pHit != pTarget->edict ()))
 			{
 			return tr.flFraction;
 			}
 		else
 			{
-			if (fabs (m_height - pev->origin.z) > 10)
+			if (fabs (m_height - pev->origin.z) > 10.0)
 				return tr.flFraction;
 			}
 		}

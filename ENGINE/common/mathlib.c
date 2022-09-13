@@ -330,11 +330,11 @@ VectorCompareEpsilon
 */
 qboolean VectorCompareEpsilon (const vec3_t vec1, const vec3_t vec2, vec_t epsilon)
 	{
-	vec_t	ax, ay, az;
+	vec_t ax, ay, az;
 
-	ax = fabs (vec1[0] - vec2[0]);
-	ay = fabs (vec1[1] - vec2[1]);
-	az = fabs (vec1[2] - vec2[2]);
+	ax = (vec_t)fabs ((double)(vec1[0] - vec2[0]));
+	ay = (vec_t)fabs ((double)(vec1[1] - vec2[1]));
+	az = (vec_t)fabs ((double)(vec1[2] - vec2[2]));
 
 	if ((ax <= epsilon) && (ay <= epsilon) && (az <= epsilon))
 		return true;
@@ -460,7 +460,7 @@ void VectorsAngles (const vec3_t forward, const vec3_t right, const vec3_t up, v
 	pitch = -asin (forward[2]);
 	cpitch = cos (pitch);
 
-	if (fabs (cpitch) > EQUAL_EPSILON)	// gimball lock?
+	if (fabs (cpitch) > (double)EQUAL_EPSILON)	// gimball lock?
 		{
 		cpitch = 1.0f / cpitch;
 		pitch = RAD2DEG (pitch);
@@ -602,13 +602,12 @@ RadiusFromBounds
 */
 float RadiusFromBounds (const vec3_t mins, const vec3_t maxs)
 	{
-	vec3_t	corner;
+	vec3_t corner;
 	int	i;
 
 	for (i = 0; i < 3; i++)
-		{
-		corner[i] = fabs (mins[i]) > fabs (maxs[i]) ? fabs (mins[i]) : fabs (maxs[i]);
-		}
+		corner[i] = (float)((fabs (mins[i]) > fabs (maxs[i])) ? fabs (mins[i]) : fabs (maxs[i]));
+
 	return VectorLength (corner);
 	}
 

@@ -423,7 +423,7 @@ void CNihilanth::DyingThink (void)
 		{
 		Flight ();
 
-		if (fabs (pev->origin.z - m_flMaxZ) < 16)
+		if (fabs (pev->origin.z - m_flMaxZ) < 16.0)
 			{
 			pev->velocity = Vector (0, 0, 0);
 			FireTargets (m_szDeadUse, this, this, USE_ON, 1.0);
@@ -470,17 +470,20 @@ void CNihilanth::DyingThink (void)
 				vecDir.z = fabs (vecDir.z) * 0.5;
 				vecDir = vecDir + 2 * gpGlobals->v_up;
 				break;
+
 			case 2: // eyes
 				if (DotProduct (vecDir, gpGlobals->v_forward) < 0)
 					vecDir = vecDir * -1;
 
 				vecDir = vecDir + 2 * gpGlobals->v_forward;
 				break;
+
 			case 3: // left hand
 				if (DotProduct (vecDir, gpGlobals->v_right) > 0)
 					vecDir = vecDir * -1;
 				vecDir = vecDir - 2 * gpGlobals->v_right;
 				break;
+
 			case 4: // right hand
 				if (DotProduct (vecDir, gpGlobals->v_right) < 0)
 					vecDir = vecDir * -1;
@@ -935,11 +938,11 @@ void CNihilanth::Flight (void)
 	m_velocity = m_velocity * 0.995;
 
 	// apply power to stay correct height
-	if (m_flForce < 100 && vecEst.z < m_posDesired.z)
+	if ((m_flForce < 100) && (vecEst.z < m_posDesired.z))
 		{
 		m_flForce += 10;
 		}
-	else if (m_flForce > -100 && vecEst.z > m_posDesired.z)
+	else if ((m_flForce > -100) && (vecEst.z > m_posDesired.z))
 		{
 		if (vecEst.z > m_posDesired.z)
 			m_flForce -= 10;
@@ -947,8 +950,6 @@ void CNihilanth::Flight (void)
 
 	UTIL_SetOrigin (pev, pev->origin + m_velocity * 0.1);
 	pev->angles = pev->angles + m_avelocity * 0.1;
-
-	// ALERT( at_console, "%5.0f %5.0f : %4.0f : %3.0f : %2.0f\n", m_posDesired.z, pev->origin.z, m_velocity.z, m_avelocity.y, m_flForce ); 
 	}
 
 

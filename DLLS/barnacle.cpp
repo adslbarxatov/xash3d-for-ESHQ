@@ -209,14 +209,17 @@ void CBarnacle::BarnacleThink (void)
 
 			if (fabs (pev->origin.z - (vecNewEnemyOrigin.z + m_hEnemy->pev->view_ofs.z - 8)) < BARNACLE_BODY_HEIGHT)
 				{
-				// prey has just been lifted into position ( if the victim origin + eye height + 8 is higher than the bottom of the barnacle, it is assumed that the head is within barnacle's body )
+				// prey has just been lifted into position (if the victim origin + eye height + 8
+				// is higher than the bottom of the barnacle, it is assumed that the head is within
+				// barnacle's body)
 				m_fLiftingPrey = FALSE;
 
 				EMIT_SOUND (ENT (pev), CHAN_WEAPON, "barnacle/bcl_bite1.wav", 1, ATTN_MEDIUM);
 
 				pVictim = m_hEnemy->MyMonsterPointer ();
 
-				m_flKillVictimTime = gpGlobals->time + 10;// now that the victim is in place, the killing bite will be administered in 10 seconds.
+				m_flKillVictimTime = gpGlobals->time + 10;
+				// now that the victim is in place, the killing bite will be administered in 10 seconds
 
 				if (pVictim)
 					{
@@ -425,9 +428,7 @@ CBaseEntity* CBarnacle::TongueTouchEnt (float* pflLength)
 	UTIL_TraceLine (pev->origin, pev->origin - Vector (0, 0, 2048), ignore_monsters, ENT (pev), &tr);
 	length = fabs (pev->origin.z - tr.vecEndPos.z);
 	if (pflLength)
-		{
 		*pflLength = length;
-		}
 
 	Vector delta = Vector (BARNACLE_CHECK_SPACING, BARNACLE_CHECK_SPACING, 0);
 	Vector mins = pev->origin - delta;

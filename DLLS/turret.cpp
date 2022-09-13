@@ -1043,22 +1043,20 @@ int CBaseTurret::MoveTurret (void)
 
 	if (m_vecCurAngles.y != m_vecGoalAngles.y)
 		{
-		float flDir = m_vecGoalAngles.y > m_vecCurAngles.y ? 1 : -1;
-		float flDist = fabs (m_vecGoalAngles.y - m_vecCurAngles.y);
+		float flDir = (m_vecGoalAngles.y > m_vecCurAngles.y) ? 1 : -1;
+		float flDist = (float)fabs (m_vecGoalAngles.y - m_vecCurAngles.y);
 
-		if (flDist > 180)
+		if (flDist > 180.0f)
 			{
-			flDist = 360 - flDist;
+			flDist = 360.0f - flDist;
 			flDir = -flDir;
 			}
-		if (flDist > 30)
+		if (flDist > 30.0f)
 			{
 			if (m_fTurnRate < m_iBaseTurnRate * 10)
-				{
 				m_fTurnRate += m_iBaseTurnRate;
-				}
 			}
-		else if (m_fTurnRate > 45)
+		else if (m_fTurnRate > 45.0f)
 			{
 			m_fTurnRate -= m_iBaseTurnRate;
 			}

@@ -62,7 +62,7 @@ class CCycler: public CBaseMonster
 
 // ESHQ: контроль корректности задани€ параметров
 #define CHECK_CYCLER_SIZE(coord)	\
-	if (abs (pev->startpos.coord - pev->endpos.coord) < 2.0f)	\
+	if (fabs ((double)(pev->startpos.coord - pev->endpos.coord)) < 2.0)	\
 		{	\
 		pev->startpos.coord -= 1.0f;	\
 		pev->endpos.coord += 1.0f;	\

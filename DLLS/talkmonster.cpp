@@ -862,7 +862,6 @@ int CTalkMonster::GetVoicePitch (void)
 	return m_voicePitch + RANDOM_LONG (0, 3);
 	}
 
-
 void CTalkMonster::Touch (CBaseEntity* pOther)
 	{
 	// Did the player touch me?
@@ -877,8 +876,8 @@ void CTalkMonster::Touch (CBaseEntity* pOther)
 			return;
 
 		// Heuristic for determining if the player is pushing me away
-		float speed = fabs (pOther->pev->velocity.x) + fabs (pOther->pev->velocity.y);
-		if (speed > 50)
+		float speed = (float)(fabs (pOther->pev->velocity.x) + fabs (pOther->pev->velocity.y));
+		if (speed > 50.0f)
 			{
 			SetConditions (bits_COND_CLIENT_PUSH);
 			MakeIdealYaw (pOther->pev->origin);

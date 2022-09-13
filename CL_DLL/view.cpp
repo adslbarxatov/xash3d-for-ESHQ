@@ -181,13 +181,10 @@ float V_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float rollspe
 
 	value = rollangle;
 	if (side < rollspeed)
-		{
 		side = side * value / rollspeed;
-		}
 	else
-		{
 		side = value;
-		}
+
 	return side * sign;
 	}
 
@@ -235,7 +232,7 @@ mlook and mouse, or klook and keyboard, pitch drifting is constantly stopped.
 */
 void V_DriftPitch (struct ref_params_s* pparams)
 	{
-	float		delta, move;
+	float delta, move;
 
 	if (gEngfuncs.IsNoClipping () || !pparams->onground || pparams->demoplayback || pparams->spectator)
 		{
@@ -253,9 +250,8 @@ void V_DriftPitch (struct ref_params_s* pparams)
 			pd.driftmove += pparams->frametime;
 
 		if (pd.driftmove > v_centermove->value)
-			{
 			V_StartPitchDrift ();
-			}
+
 		return;
 		}
 

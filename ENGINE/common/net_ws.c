@@ -651,8 +651,8 @@ adjust time to next fake lag
 static void NET_AdjustLag (void)
 	{
 	static double	lasttime = 0.0;
-	float		diff, converge;
-	double		dt;
+	float	diff, converge;
+	double	dt;
 
 	dt = host.realtime - lasttime;
 	dt = bound (0.0, dt, 0.1);
@@ -664,9 +664,9 @@ static void NET_AdjustLag (void)
 			{
 			diff = net_fakelag->value - net.fakelag;
 			converge = dt * 200.0f;
-			if (fabs (diff) < converge)
-				converge = fabs (diff);
-			if (diff < 0.0)
+			if (fabs (diff) < (double)converge)
+				converge = (float)fabs (diff);
+			if (diff < 0.0f)
 				converge = -converge;
 			net.fakelag += converge;
 			}
@@ -710,8 +710,9 @@ static qboolean NET_LagPacket (qboolean newdata, netsrc_t sock, netadr_t* from, 
 				net.losscount[sock]++;
 				if (net_fakeloss->value <= 0.0f)
 					{
-					ninterval = fabs (net_fakeloss->value);
-					if (ninterval < 2) ninterval = 2;
+					ninterval = (int)fabs ((double)(net_fakeloss->value));
+					if (ninterval < 2) 
+						ninterval = 2;
 
 					if ((net.losscount[sock] % ninterval) == 0)
 						return false;

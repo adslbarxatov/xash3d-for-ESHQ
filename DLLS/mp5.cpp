@@ -135,14 +135,14 @@ void CMP5::PrimaryAttack ()
 	if (m_pPlayer->pev->waterlevel == 3)
 		{
 		PlayEmptySound ();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 		}
 
 	if (m_iClip <= 0)
 		{
 		PlayEmptySound ();
-		m_flNextPrimaryAttack = 0.15;
+		m_flNextPrimaryAttack = 0.15f;
 		return;
 		}
 
@@ -150,7 +150,6 @@ void CMP5::PrimaryAttack ()
 	m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
 
 	m_iClip--;
-
 
 	m_pPlayer->pev->effects = (int)(m_pPlayer->pev->effects) | EF_MUZZLEFLASH;
 
@@ -304,7 +303,8 @@ void CMP5::WeaponIdle (void)
 
 	SendWeaponAnim (iAnim);
 
-	m_flTimeWeaponIdle = UTIL_SharedRandomFloat (m_pPlayer->random_seed, 10, 15); // how long till we do this again.
+	// how long till we do this again
+	m_flTimeWeaponIdle = UTIL_SharedRandomFloat (m_pPlayer->random_seed, 10, 15);
 	}
 
 
@@ -326,9 +326,8 @@ class CMP5AmmoClip: public CBasePlayerAmmo
 		{
 		int bResult = (pOther->GiveAmmo (AMMO_MP5CLIP_GIVE, "9mm", _9MM_MAX_CARRY) != -1);
 		if (bResult)
-			{
 			EMIT_SOUND (ENT (pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_MEDIUM);
-			}
+
 		return bResult;
 		}
 	};
@@ -354,9 +353,8 @@ class CMP5Chainammo: public CBasePlayerAmmo
 		{
 		int bResult = (pOther->GiveAmmo (AMMO_CHAINBOX_GIVE, "9mm", _9MM_MAX_CARRY) != -1);
 		if (bResult)
-			{
 			EMIT_SOUND (ENT (pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_MEDIUM);
-			}
+
 		return bResult;
 		}
 	};
@@ -379,11 +377,9 @@ class CMP5AmmoGrenade: public CBasePlayerAmmo
 	BOOL AddAmmo (CBaseEntity* pOther)
 		{
 		int bResult = (pOther->GiveAmmo (AMMO_M203BOX_GIVE, "ARgrenades", M203_GRENADE_MAX_CARRY) != -1);
-
 		if (bResult)
-			{
 			EMIT_SOUND (ENT (pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_MEDIUM);
-			}
+
 		return bResult;
 		}
 	};

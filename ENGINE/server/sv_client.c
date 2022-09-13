@@ -1007,7 +1007,7 @@ float SV_CalcClientTime (sv_client_t* cl)
 			maxping = frame->ping_time;
 		}
 
-	if (maxping < minping || fabs (maxping - minping) <= 0.2f)
+	if ((maxping < minping) || (fabs (maxping - minping) <= 0.2))
 		return ping;
 
 	return 0.0f;

@@ -577,9 +577,8 @@ void CBasePlayerItem::DefaultTouch (CBaseEntity* pOther)
 	if (!g_pGameRules->CanHavePlayerItem (pPlayer, this))
 		{
 		if (gEvilImpulse101)
-			{
 			UTIL_Remove (this);
-			}
+
 		return;
 		}
 
@@ -629,6 +628,7 @@ float CBasePlayerWeapon::GetNextAttackDelay (float delay)
 	m_flLastFireTime = gpGlobals->time;
 
 	float flNextAttack = UTIL_WeaponTimeBase () + delay - flCreep;
+
 	// we need to remember what the m_flNextPrimaryAttack time is set to for each shot, 
 	// store it as m_flPrevPrimaryAttack.
 	m_flPrevPrimaryAttack = flNextAttack;
@@ -639,7 +639,7 @@ void CBasePlayerWeapon::ItemPostFrame (void)
 	{
 	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase ()))
 		{
-		// complete the reload. 
+		// complete the reload
 		int j = min (iMaxClip () - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 		// Add them to the clip
@@ -653,16 +653,12 @@ void CBasePlayerWeapon::ItemPostFrame (void)
 
 	// ESHQ: совместимость с клиентской частью
 	if (!(m_pPlayer->pev->button & IN_ATTACK))
-		{
 		m_flLastFireTime = 0.0f;
-		}
 
 	if ((m_pPlayer->pev->button & IN_ATTACK2) && CanAttack (m_flNextSecondaryAttack, gpGlobals->time, UseDecrement ()))
 		{
 		if (pszAmmo2 () && !m_pPlayer->m_rgAmmo[SecondaryAmmoIndex ()])
-			{
 			m_fFireOnEmpty = TRUE;
-			}
 
 		m_pPlayer->TabulateAmmo ();
 		SecondaryAttack ();
@@ -670,15 +666,13 @@ void CBasePlayerWeapon::ItemPostFrame (void)
 		}
 	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack (m_flNextPrimaryAttack, gpGlobals->time, UseDecrement ()))
 		{
-		if ((m_iClip == 0 && pszAmmo1 ()) || (iMaxClip () == -1 && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex ()]))
-			{
+		if (((m_iClip == 0) && pszAmmo1 ()) || ((iMaxClip () == -1) && !m_pPlayer->m_rgAmmo[PrimaryAmmoIndex ()]))
 			m_fFireOnEmpty = TRUE;
-			}
 
 		m_pPlayer->TabulateAmmo ();
 		PrimaryAttack ();
 		}
-	else if (m_pPlayer->pev->button & IN_RELOAD && iMaxClip () != WEAPON_NOCLIP && !m_fInReload)
+	else if ((m_pPlayer->pev->button & IN_RELOAD) && (iMaxClip () != WEAPON_NOCLIP) && !m_fInReload)
 		{
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
 		Reload ();
@@ -686,7 +680,6 @@ void CBasePlayerWeapon::ItemPostFrame (void)
 	else if (!(m_pPlayer->pev->button & (IN_ATTACK | IN_ATTACK2)))
 		{
 		// no fire buttons down
-
 		m_fFireOnEmpty = FALSE;
 
 		if (!IsUseable () && m_flNextPrimaryAttack < (UseDecrement () ? 0.0 : gpGlobals->time))
@@ -701,7 +694,8 @@ void CBasePlayerWeapon::ItemPostFrame (void)
 		else
 			{
 			// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-			if (m_iClip == 0 && !(iFlags () & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < (UseDecrement () ? 0.0 : gpGlobals->time))
+			if ((m_iClip == 0) && !(iFlags () & ITEM_FLAG_NOAUTORELOAD) && 
+				(m_flNextPrimaryAttack < (UseDecrement () ? 0.0 : gpGlobals->time)))
 				{
 				Reload ();
 				return;
@@ -714,18 +708,14 @@ void CBasePlayerWeapon::ItemPostFrame (void)
 
 	// catch all
 	if (ShouldWeaponIdle ())
-		{
 		WeaponIdle ();
-		}
 	}
 
 void CBasePlayerItem::DestroyItem (void)
 	{
+	// if attached to a player, remove
 	if (m_pPlayer)
-		{
-		// if attached to a player, remove. 
 		m_pPlayer->RemovePlayerItem (this);
-		}
 
 	Kill ();
 	}
@@ -741,7 +731,7 @@ void CBasePlayerItem::Drop (void)
 	{
 	SetTouch (NULL);
 	SetThink (&CBaseEntity::SUB_Remove);
-	pev->nextthink = gpGlobals->time + .1;
+	pev->nextthink = gpGlobals->time + 0.1f;
 	}
 
 void CBasePlayerItem::Kill (void)
@@ -772,19 +762,14 @@ void CBasePlayerItem::AttachToPlayer (CBasePlayer* pPlayer)
 	}
 
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal
-int CBasePlayerWeapon::AddDuplicate (CBasePlayerItem* pOriginal)
+int CBasePlayerWeapon::AddDuplicate (CBasePlayerItem *pOriginal)
 	{
 	if (m_iDefaultAmmo)
-		{
-		return ExtractAmmo ((CBasePlayerWeapon*)pOriginal);
-		}
-	else
-		{
-		// a dead player dropped this.
-		return ExtractClipAmmo ((CBasePlayerWeapon*)pOriginal);
-		}
-	}
+		return ExtractAmmo ((CBasePlayerWeapon *)pOriginal);
 
+	// a dead player dropped this
+	return ExtractClipAmmo ((CBasePlayerWeapon *)pOriginal);
+	}
 
 int CBasePlayerWeapon::AddToPlayer (CBasePlayer* pPlayer)
 	{
@@ -798,9 +783,9 @@ int CBasePlayerWeapon::AddToPlayer (CBasePlayer* pPlayer)
 		m_iSecondaryAmmoType = pPlayer->GetAmmoIndex (pszAmmo2 ());
 		}
 
-
 	if (bResult)
 		return AddWeapon ();
+
 	return FALSE;
 	}
 
@@ -818,27 +803,19 @@ int CBasePlayerWeapon::UpdateClientData (CBasePlayer* pPlayer)
 
 	// Forcing send of all data!
 	if (!pPlayer->m_fWeapon)
-		{
 		bSend = TRUE;
-		}
 
 	// This is the current or last weapon, so the state will need to be updated
-	if (this == pPlayer->m_pActiveItem ||
-		this == pPlayer->m_pClientActiveItem)
+	if ((this == pPlayer->m_pActiveItem) || (this == pPlayer->m_pClientActiveItem))
 		{
 		if (pPlayer->m_pActiveItem != pPlayer->m_pClientActiveItem)
-			{
 			bSend = TRUE;
-			}
 		}
 
 	// If the ammo, state, or fov has changed, update the weapon
-	if (m_iClip != m_iClientClip ||
-		state != m_iClientWeaponState ||
-		pPlayer->m_iFOV != pPlayer->m_iClientFOV)
-		{
+	if ((m_iClip != m_iClientClip) || (state != m_iClientWeaponState) ||
+		(pPlayer->m_iFOV != pPlayer->m_iClientFOV))
 		bSend = TRUE;
-		}
 
 	if (bSend)
 		{
@@ -858,7 +835,6 @@ int CBasePlayerWeapon::UpdateClientData (CBasePlayer* pPlayer)
 
 	return 1;
 	}
-
 
 void CBasePlayerWeapon::SendWeaponAnim (int iAnim, int skiplocal, int body)
 	{
@@ -901,8 +877,6 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo (int iCount, char* szName, int iMaxClip, 
 		iIdAmmo = m_pPlayer->GiveAmmo (iCount, szName, iMaxCarry);
 		}
 
-	// m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = iMaxCarry; // hack for testing
-
 	if (iIdAmmo > 0)
 		{
 		m_iPrimaryAmmoType = iIdAmmo;
@@ -914,9 +888,8 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo (int iCount, char* szName, int iMaxClip, 
 			}
 		}
 
-	return iIdAmmo > 0 ? TRUE : FALSE;
+	return (iIdAmmo > 0) ? TRUE : FALSE;
 	}
-
 
 BOOL CBasePlayerWeapon::AddSecondaryAmmo (int iCount, char* szName, int iMax)
 	{
@@ -924,19 +897,18 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo (int iCount, char* szName, int iMax)
 
 	iIdAmmo = m_pPlayer->GiveAmmo (iCount, szName, iMax);
 
-	//m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] = iMax; // hack for testing
-
 	if (iIdAmmo > 0)
 		{
 		m_iSecondaryAmmoType = iIdAmmo;
 		EMIT_SOUND (ENT (pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_MEDIUM);
 		}
-	return iIdAmmo > 0 ? TRUE : FALSE;
+
+	return (iIdAmmo > 0) ? TRUE : FALSE;
 	}
 
 //=========================================================
 // IsUseable - this function determines whether or not a 
-// weapon is useable by the player in its current state. 
+// weapon is useable by the player in its current state
 // (does it have ammo loaded? do I have any ammo for the 
 // weapon?, etc)
 //=========================================================
@@ -944,11 +916,9 @@ BOOL CBasePlayerWeapon::IsUseable (void)
 	{
 	if (m_iClip <= 0)
 		{
-		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex ()] <= 0 && iMaxAmmo1 () != -1)
-			{
-			// clip is empty (or nonexistant) and the player has no more ammo of this type. 
+		// clip is empty (or nonexistant) and the player has no more ammo of this type
+		if ((m_pPlayer->m_rgAmmo[PrimaryAmmoIndex ()] <= 0) && (iMaxAmmo1 () != -1))
 			return FALSE;
-			}
 		}
 
 	return TRUE;
@@ -958,33 +928,24 @@ BOOL CBasePlayerWeapon::CanDeploy (void)
 	{
 	BOOL bHasAmmo = 0;
 
+	// this weapon doesn't use ammo, can always deploy
 	if (!pszAmmo1 ())
-		{
-		// this weapon doesn't use ammo, can always deploy.
 		return TRUE;
-		}
 
 	if (pszAmmo1 ())
-		{
 		bHasAmmo |= (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] != 0);
-		}
 	if (pszAmmo2 ())
-		{
 		bHasAmmo |= (m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] != 0);
-		}
 	if (m_iClip > 0)
-		{
 		bHasAmmo |= 1;
-		}
 	if (!bHasAmmo)
-		{
 		return FALSE;
-		}
 
 	return TRUE;
 	}
 
-BOOL CBasePlayerWeapon::DefaultDeploy (char* szViewModel, char* szWeaponModel, int iAnim, char* szAnimExt, int skiplocal /* = 0 */, int body)
+BOOL CBasePlayerWeapon::DefaultDeploy (char* szViewModel, char* szWeaponModel, int iAnim, char* szAnimExt, 
+	int skiplocal /* = 0 */, int body)
 	{
 	if (!CanDeploy ())
 		return FALSE;
@@ -1101,9 +1062,7 @@ void CBasePlayerAmmo::Materialize (void)
 void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 	{
 	if (!pOther->IsPlayer ())
-		{
 		return;
-		}
 
 	if (AddAmmo (pOther))
 		{
@@ -1115,7 +1074,7 @@ void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 			{
 			SetTouch (NULL);
 			SetThink (&CBaseEntity::SUB_Remove);
-			pev->nextthink = gpGlobals->time + .1;
+			pev->nextthink = gpGlobals->time + 0.1f;
 			}
 		}
 	else if (gEvilImpulse101)
@@ -1123,7 +1082,7 @@ void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 		// evil impulse 101 hack, kill always
 		SetTouch (NULL);
 		SetThink (&CBaseEntity::SUB_Remove);
-		pev->nextthink = gpGlobals->time + .1;
+		pev->nextthink = gpGlobals->time + 0.1f;
 		}
 	}
 
@@ -1137,20 +1096,21 @@ void CBasePlayerAmmo::DefaultTouch (CBaseEntity* pOther)
 //=========================================================
 int CBasePlayerWeapon::ExtractAmmo (CBasePlayerWeapon* pWeapon)
 	{
-	int iReturn;
+	int iReturn = 0;
 
 	if (pszAmmo1 () != NULL)
 		{
 		// blindly call with m_iDefaultAmmo. It's either going to be a value or zero. If it is zero,
-		// we only get the ammo in the weapon's clip, which is what we want. 
+		// we only get the ammo in the weapon's clip, which is what we want
 		iReturn = pWeapon->AddPrimaryAmmo (m_iDefaultAmmo, (char*)pszAmmo1 (), iMaxClip (), iMaxAmmo1 ());
 		m_iDefaultAmmo = 0;
+
+		// ESHQ: исправление дл€ неисчезающих своевременно пустых MP5
+		return iReturn;
 		}
 
 	if (pszAmmo2 () != NULL)
-		{
 		iReturn = pWeapon->AddSecondaryAmmo (0, (char*)pszAmmo2 (), iMaxAmmo2 ());
-		}
 
 	return iReturn;
 	}
@@ -1162,12 +1122,13 @@ int CBasePlayerWeapon::ExtractClipAmmo (CBasePlayerWeapon* pWeapon)
 	{
 	int iAmmo;
 
+	// guns with no clips always come empty if they are second-hand
 	if (m_iClip == WEAPON_NOCLIP)
-		iAmmo = 0;// guns with no clips always come empty if they are second-hand
+		iAmmo = 0;
 	else
 		iAmmo = m_iClip;
 
-	return pWeapon->m_pPlayer->GiveAmmo (iAmmo, (char*)pszAmmo1 (), iMaxAmmo1 ()); // , &m_iPrimaryAmmoType
+	return pWeapon->m_pPlayer->GiveAmmo (iAmmo, (char*)pszAmmo1 (), iMaxAmmo1 ());
 	}
 
 //=========================================================
@@ -1175,10 +1136,9 @@ int CBasePlayerWeapon::ExtractClipAmmo (CBasePlayerWeapon* pWeapon)
 //=========================================================
 void CBasePlayerWeapon::RetireWeapon (void)
 	{
-	// first, no viewmodel at all.
+	// first, no viewmodel at all
 	m_pPlayer->pev->viewmodel = iStringNull;
 	m_pPlayer->pev->weaponmodel = iStringNull;
-	//m_pPlayer->pev->viewmodelindex = NULL;
 
 	g_pGameRules->GetNextBestWeapon (m_pPlayer, this);
 	}
@@ -1272,21 +1232,15 @@ void CWeaponBox::Kill (void)
 void CWeaponBox::Touch (CBaseEntity* pOther)
 	{
 	if (!(pev->flags & FL_ONGROUND))
-		{
 		return;
-		}
 
+	// only players may touch a weaponbox
 	if (!pOther->IsPlayer ())
-		{
-		// only players may touch a weaponbox.
 		return;
-		}
 
+	// no dead guys
 	if (!pOther->IsAlive ())
-		{
-		// no dead guys.
 		return;
-		}
 
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
 	int i;
@@ -1298,8 +1252,6 @@ void CWeaponBox::Touch (CBaseEntity* pOther)
 			{
 			// there's some ammo of this type. 
 			pPlayer->GiveAmmo (m_rgAmmo[i], (char*)STRING (m_rgiszAmmo[i]), MaxAmmoCarry (m_rgiszAmmo[i]));
-
-			//ALERT ( at_console, "Gave %d rounds of %s\n", m_rgAmmo[i], STRING(m_rgiszAmmo[i]) );
 
 			// now empty the ammo from the weaponbox since we just gave it to the player
 			m_rgiszAmmo[i] = iStringNull;
@@ -1507,7 +1459,6 @@ void CWeaponBox::SetObjectCollisionBox (void)
 	pev->absmax = pev->origin + Vector (16, 16, 16);
 	}
 
-
 void CBasePlayerWeapon::PrintState (void)
 	{
 	ALERT (at_console, "primary:  %f\n", m_flNextPrimaryAttack);
@@ -1515,9 +1466,10 @@ void CBasePlayerWeapon::PrintState (void)
 
 	//	ALERT( at_console, "nextrl :  %f\n", m_flNextReload );
 	//	ALERT( at_console, "nextpum:  %f\n", m_flPumpTime );
-
 	//	ALERT( at_console, "m_frt  :  %f\n", m_fReloadTime );
+
 	ALERT (at_console, "m_finre:  %i\n", m_fInReload);
+
 	//	ALERT( at_console, "m_finsr:  %i\n", m_fInSpecialReload );
 
 	ALERT (at_console, "m_iclip:  %i\n", m_iClip);

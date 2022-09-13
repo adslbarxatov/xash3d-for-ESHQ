@@ -1213,7 +1213,8 @@ void CGargantua::RunTask (Task_t* pTask)
 					if (dir.Length () > 400)
 						cancel = TRUE;
 					}
-				if (fabs (angles.y) > 60)
+
+				if (fabs (angles.y) > 60.0)
 					cancel = TRUE;
 
 				if (cancel)
@@ -1221,7 +1222,7 @@ void CGargantua::RunTask (Task_t* pTask)
 					m_flWaitFinished -= 0.5;
 					m_flameTime -= 0.5;
 					}
-				// FlameControls( angles.x + 2 * sin(gpGlobals->time*8), angles.y + 28 * sin(gpGlobals->time*8.5) );
+
 				FlameControls (angles.x, angles.y);
 				}
 			break;

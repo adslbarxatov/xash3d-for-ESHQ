@@ -213,10 +213,13 @@ void Mod_SetStudioHullPlane (int planenum, int bone, int axis, float offset, con
 	pl->normal[1] = studio_bones[bone][1][axis];
 	pl->normal[2] = studio_bones[bone][2][axis];
 
-	pl->dist = (pl->normal[0] * studio_bones[bone][0][3]) + (pl->normal[1] * studio_bones[bone][1][3]) + (pl->normal[2] * studio_bones[bone][2][3]) + offset;
+	pl->dist = (pl->normal[0] * studio_bones[bone][0][3]) + (pl->normal[1] * studio_bones[bone][1][3]) + 
+		(pl->normal[2] * studio_bones[bone][2][3]) + offset;
 
-	if (planenum & 1) pl->dist -= DotProductFabs (pl->normal, size);
-	else pl->dist += DotProductFabs (pl->normal, size);
+	if (planenum & 1) 
+		pl->dist -= DotProductFabs (pl->normal, size);
+	else 
+		pl->dist += DotProductFabs (pl->normal, size);
 
 	}
 

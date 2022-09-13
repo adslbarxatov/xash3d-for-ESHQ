@@ -952,37 +952,25 @@ void CIchthyosaur::Swim ()
 	if (pev->angles.x > 80) pev->angles.x = 80;
 
 	// Smooth Yaw and generate Roll
-	//
 	float turn = 360;
-	// ALERT( at_console, "Y %.0f %.0f\n", Angles.y, pev->angles.y );
 
 	if (fabs (Angles.y - pev->angles.y) < fabs (turn))
-		{
 		turn = Angles.y - pev->angles.y;
-		}
 	if (fabs (Angles.y - pev->angles.y + 360) < fabs (turn))
-		{
 		turn = Angles.y - pev->angles.y + 360;
-		}
 	if (fabs (Angles.y - pev->angles.y - 360) < fabs (turn))
-		{
 		turn = Angles.y - pev->angles.y - 360;
-		}
 
 	float speed = m_flightSpeed * 0.1;
 
-	// ALERT( at_console, "speed %.0f %f\n", turn, speed );
 	if (fabs (turn) > speed)
 		{
 		if (turn < 0.0)
-			{
 			turn = -speed;
-			}
 		else
-			{
 			turn = speed;
-			}
 		}
+
 	pev->angles.y += turn;
 	pev->angles.z -= turn;
 	pev->angles.y = fmod ((pev->angles.y + 360.0), 360.0);
@@ -991,26 +979,19 @@ void CIchthyosaur::Swim ()
 
 	yaw_adj = yaw_adj * 0.8 + turn;
 
-	// ALERT( at_console, "yaw %f : %f\n", turn, yaw_adj );
-
 	SetBoneController (0, -yaw_adj / 4.0);
 
 	// Roll Smoothing
-	//
 	turn = 360;
 	if (fabs (Angles.z - pev->angles.z) < fabs (turn))
-		{
 		turn = Angles.z - pev->angles.z;
-		}
 	if (fabs (Angles.z - pev->angles.z + 360) < fabs (turn))
-		{
 		turn = Angles.z - pev->angles.z + 360;
-		}
 	if (fabs (Angles.z - pev->angles.z - 360) < fabs (turn))
-		{
 		turn = Angles.z - pev->angles.z - 360;
-		}
+	
 	speed = m_flightSpeed / 2 * 0.1;
+	
 	if (fabs (turn) < speed)
 		{
 		pev->angles.z += turn;
@@ -1018,19 +999,15 @@ void CIchthyosaur::Swim ()
 	else
 		{
 		if (turn < 0.0)
-			{
 			pev->angles.z -= speed;
-			}
 		else
-			{
 			pev->angles.z += speed;
-			}
 		}
+
 	if (pev->angles.z < -20) pev->angles.z = -20;
 	if (pev->angles.z > 20) pev->angles.z = 20;
 
 	UTIL_MakeVectorsPrivate (Vector (-Angles.x, Angles.y, Angles.z), Forward, Right, Up);
-	// UTIL_MoveToOrigin ( ENT(pev), pev->origin + Forward * speed, speed, MOVE_STRAFE );
 	}
 
 Vector CIchthyosaur::DoProbe (const Vector& Probe)

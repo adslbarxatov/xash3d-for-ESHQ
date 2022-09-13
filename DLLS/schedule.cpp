@@ -1343,21 +1343,15 @@ Schedule_t* CBaseMonster::GetSchedule (void)
 			}
 		case MONSTERSTATE_ALERT:
 			{
-			if (HasConditions (bits_COND_ENEMY_DEAD) && LookupActivity (ACT_VICTORY_DANCE) != ACTIVITY_NOT_AVAILABLE)
-				{
+			if (HasConditions (bits_COND_ENEMY_DEAD) && (LookupActivity (ACT_VICTORY_DANCE) != ACTIVITY_NOT_AVAILABLE))
 				return GetScheduleOfType (SCHED_VICTORY_DANCE);
-				}
 
 			if (HasConditions (bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE))
 				{
 				if (fabs (FlYawDiff ()) < (1.0 - m_flFieldOfView) * 60) // roughly in the correct direction
-					{
 					return GetScheduleOfType (SCHED_TAKE_COVER_FROM_ORIGIN);
-					}
 				else
-					{
 					return GetScheduleOfType (SCHED_ALERT_SMALL_FLINCH);
-					}
 				}
 
 			else if (HasConditions (bits_COND_HEAR_SOUND))

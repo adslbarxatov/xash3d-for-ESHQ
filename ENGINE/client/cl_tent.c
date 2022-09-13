@@ -2605,8 +2605,8 @@ DLIGHT MANAGEMENT
 
 ==============================================================
 */
-dlight_t	cl_dlights[MAX_DLIGHTS];
-dlight_t	cl_elights[MAX_ELIGHTS];
+dlight_t cl_dlights[MAX_DLIGHTS];
+dlight_t cl_elights[MAX_ELIGHTS];
 
 /*
 ================

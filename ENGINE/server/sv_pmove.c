@@ -812,6 +812,7 @@ entity_state_t* SV_FindEntInPack (int index, client_frame_t* frame)
 		if (state->number == index)
 			return state;
 		}
+
 	return NULL;
 	}
 
@@ -821,9 +822,10 @@ qboolean SV_UnlagCheckTeleport (vec3_t old_pos, vec3_t new_pos)
 
 	for (i = 0; i < 3; i++)
 		{
-		if (fabs (old_pos[i] - new_pos[i]) > 64.0f)
+		if (fabs (old_pos[i] - new_pos[i]) > 64.0)
 			return true;
 		}
+
 	return false;
 	}
 

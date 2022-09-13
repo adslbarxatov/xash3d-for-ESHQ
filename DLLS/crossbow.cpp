@@ -134,14 +134,16 @@ void CCrossbowBolt::BoltTouch (CBaseEntity* pOther)
 		}
 	else
 		{
-		EMIT_SOUND_DYN (ENT (pev), CHAN_BODY, "weapons/xbow_hit1.wav", RANDOM_FLOAT (0.95, 1.0), ATTN_MEDIUM, 0, 98 + RANDOM_LONG (0, 7));
+		EMIT_SOUND_DYN (ENT (pev), CHAN_BODY, "weapons/xbow_hit1.wav", RANDOM_FLOAT (0.95, 1.0), 
+			ATTN_MEDIUM, 0, 98 + RANDOM_LONG (0, 7));
 
 		SetThink (&CBaseEntity::SUB_Remove);
-		pev->nextthink = gpGlobals->time;// this will get changed below if the bolt is allowed to stick in what it hit.
+		pev->nextthink = gpGlobals->time;
+		// this will get changed below if the bolt is allowed to stick in what it hit
 
 		if (FClassnameIs (pOther->pev, "worldspawn"))
 			{
-			// if what we hit is static architecture, can stay around for a while.
+			// if what we hit is static architecture, can stay around for a while
 			Vector vecDir = pev->velocity.Normalize ();
 			UTIL_SetOrigin (pev, pev->origin - vecDir * 12);
 			pev->angles = UTIL_VecToAngles (vecDir);
@@ -152,7 +154,7 @@ void CCrossbowBolt::BoltTouch (CBaseEntity* pOther)
 			pev->angles.z = RANDOM_LONG (0, 360);
 			pev->nextthink = gpGlobals->time + 60.0;
 			}
-		else if (pOther->pev->movetype == MOVETYPE_PUSH || pOther->pev->movetype == MOVETYPE_PUSHSTEP)
+		else if ((pOther->pev->movetype == MOVETYPE_PUSH) || (pOther->pev->movetype == MOVETYPE_PUSHSTEP))
 			{
 			Vector vecDir = pev->velocity.Normalize ();
 			UTIL_SetOrigin (pev, pev->origin - vecDir * 12);
@@ -169,9 +171,7 @@ void CCrossbowBolt::BoltTouch (CBaseEntity* pOther)
 			}
 
 		if (UTIL_PointContents (pev->origin) != CONTENTS_WATER)
-			{
 			UTIL_Sparks (pev->origin);
-			}
 		}
 
 	if (g_pGameRules->IsMultiplayer ())
@@ -306,17 +306,17 @@ BOOL CCrossbow::Deploy ()
 	{
 	if (m_iClip)
 		return DefaultDeploy ("models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow");
+
 	return DefaultDeploy ("models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW2, "bow");
 	}
 
 void CCrossbow::Holster (int skiplocal /* = 0 */)
 	{
-	m_fInReload = FALSE;// cancel any reload in progress.
+	m_fInReload = FALSE;
+	// cancel any reload in progress
 
 	if (m_fInZoom)
-		{
 		SecondaryAttack ();
-		}
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase () + 0.5;
 	if (m_iClip)
@@ -364,7 +364,8 @@ void CCrossbow::FireSniperBolt ()
 	flags = 0;
 #endif
 
-	PLAYBACK_EVENT_FULL (flags, m_pPlayer->edict (), m_usCrossbow2, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0, 0, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0);
+	PLAYBACK_EVENT_FULL (flags, m_pPlayer->edict (), m_usCrossbow2, 0.0, (float*)&g_vecZero, 
+		(float*)&g_vecZero, 0, 0, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0);
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation (PLAYER_ATTACK1);
@@ -407,7 +408,8 @@ void CCrossbow::FireBolt ()
 	flags = 0;
 #endif
 
-	PLAYBACK_EVENT_FULL (flags, m_pPlayer->edict (), m_usCrossbow, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0, 0, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0);
+	PLAYBACK_EVENT_FULL (flags, m_pPlayer->edict (), m_usCrossbow, 0.0, (float*)&g_vecZero, 
+		(float*)&g_vecZero, 0, 0, m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType], 0, 0);
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation (PLAYER_ATTACK1);
@@ -475,13 +477,12 @@ void CCrossbow::Reload (void)
 		return;
 
 	if (m_pPlayer->pev->fov != 0)
-		{
 		SecondaryAttack ();
-		}
 
-	if (DefaultReload (5, CROSSBOW_RELOAD, 4.5))
+	if (DefaultReload (5, CROSSBOW_RELOAD, 3.7))
 		{
-		EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/xbow_reload2.wav", RANDOM_FLOAT (0.95, 1.0), ATTN_MEDIUM, 0, 93 + RANDOM_LONG (0, 0xF));
+		EMIT_SOUND_DYN (ENT (m_pPlayer->pev), CHAN_ITEM, "weapons/xbow_reload2.wav", RANDOM_FLOAT (0.95, 1.0), 
+			ATTN_MEDIUM, 0, 93 + RANDOM_LONG (0, 0xF));
 		}
 	}
 
@@ -497,13 +498,10 @@ void CCrossbow::WeaponIdle (void)
 		if (flRand <= 0.75)
 			{
 			if (m_iClip)
-				{
 				SendWeaponAnim (CROSSBOW_IDLE1);
-				}
 			else
-				{
 				SendWeaponAnim (CROSSBOW_IDLE2);
-				}
+
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase () + UTIL_SharedRandomFloat (m_pPlayer->random_seed, 10, 15);
 			}
 		else

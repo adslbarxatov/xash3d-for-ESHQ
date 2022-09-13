@@ -170,20 +170,9 @@ void CFuncConveyor::Spawn (void)
 	UpdateSpeed (pev->speed);
 	}
 
-// ESHQ: fuck it!
-// HACKHACK -- This is ugly, but encode the speed in the rendercolor to avoid adding more data to the network stream
+// ESHQ: создан заново для корректной передачи скорости
 void CFuncConveyor::UpdateSpeed (float speed)
 	{
-	/*// Encode it as an integer with 4 fractional bits
-	int speedCode = (int)(fabs (speed) * 16.0);
-
-	if (speed < 0)
-		pev->rendercolor.x = 1;
-	else
-		pev->rendercolor.x = 0;
-
-	pev->rendercolor.y = (speedCode >> 8);
-	pev->rendercolor.z = (speedCode & 0xFF);*/
 	pev->renderfx = (int)speed / 10 + kRenderFxClampMinScale;
 	}
 
@@ -544,19 +533,16 @@ void CFuncRotating::RampPitchVol (int fUp)
 	int pitch;
 
 	// get current angular velocity
-	vecCur = abs (vecAVel.x != 0 ? vecAVel.x : (vecAVel.y != 0 ? vecAVel.y : vecAVel.z));
+	vecCur = (vec_t)fabs ((double)(vecAVel.x != 0 ? vecAVel.x : (vecAVel.y != 0 ? vecAVel.y : vecAVel.z)));
 
 	// get target angular velocity
 	vecFinal = (pev->movedir.x != 0 ? pev->movedir.x : (pev->movedir.y != 0 ? pev->movedir.y : pev->movedir.z));
 	vecFinal *= pev->speed;
-	vecFinal = abs (vecFinal);
+	vecFinal = fabs (vecFinal);
 
 	// calc volume and pitch as % of final vol and pitch
 	fpct = vecCur / vecFinal;
-	//	if (fUp)
-	//		fvol = m_flVolume * (0.5 + fpct/2.0); // spinup volume ramps up from 50% max vol
-	//	else
-	fvol = m_flVolume * fpct;			  // slowdown volume ramps down to 0
+	fvol = m_flVolume * fpct;	// slowdown volume ramps down to 0
 
 	fpitch = FANPITCHMIN + (FANPITCHMAX - FANPITCHMIN) * fpct;
 
@@ -582,9 +568,9 @@ void CFuncRotating::SpinUp (void)
 	vecAVel = pev->avelocity;	// cache entity's rotational velocity
 
 	// if we've met or exceeded target speed, set target speed and stop thinking
-	if (abs (vecAVel.x) >= abs (pev->movedir.x * pev->speed) &&
-		abs (vecAVel.y) >= abs (pev->movedir.y * pev->speed) &&
-		abs (vecAVel.z) >= abs (pev->movedir.z * pev->speed))
+	if (fabs ((double)(vecAVel.x)) >= fabs ((double)(pev->movedir.x * pev->speed)) &&
+		fabs ((double)(vecAVel.y)) >= fabs ((double)(pev->movedir.y * pev->speed)) &&
+		fabs ((double)(vecAVel.z)) >= fabs ((double)(pev->movedir.z * pev->speed)))
 		{
 		pev->avelocity = pev->movedir * pev->speed;// set speed in case we overshot
 		EMIT_SOUND_DYN (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseRunning),
@@ -790,7 +776,8 @@ void CPendulum::Spawn (void)
 	if (pev->speed == 0)
 		pev->speed = 100;
 
-	m_accel = (pev->speed * pev->speed) / (2 * fabs (m_distance));	// Calculate constant acceleration from speed and distance
+	// Calculate constant acceleration from speed and distance
+	m_accel = ((double)(pev->speed * pev->speed)) / (2.0 * fabs ((double)m_distance));
 	m_maxSpeed = pev->speed;
 	m_start = pev->angles;
 	m_center = pev->angles + (m_distance * 0.5) * pev->movedir;

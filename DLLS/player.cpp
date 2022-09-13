@@ -1040,7 +1040,7 @@ void CBasePlayer::SetAnimation (PLAYER_ANIM playerAnim)
 ===========
 TabulateAmmo
 This function is used to find and store
-all the ammo we have into the ammo vars.
+all the ammo we have into the ammo vars
 ============
 */
 void CBasePlayer::TabulateAmmo ()
@@ -1880,7 +1880,7 @@ void CBasePlayer::CheckTimeBasedDamage ()
 		return;
 
 	// only check for time based damage approx. every 2 seconds
-	if (abs (gpGlobals->time - m_tbdPrev) < 2.0)
+	if (fabs (gpGlobals->time - m_tbdPrev) < 2.0)
 		return;
 
 	m_tbdPrev = gpGlobals->time;
@@ -3600,11 +3600,12 @@ int CBasePlayer::AddPlayerItem (CBasePlayerItem* pItem)
 				// FIXME: remove anyway for deathmatch testing
 				pItem->Kill ();
 				}
+
 			return FALSE;
 			}
+
 		pInsert = pInsert->m_pNext;
 		}
-
 
 	if (pItem->AddToPlayer (this))
 		{
@@ -3675,23 +3676,18 @@ int CBasePlayer::RemovePlayerItem (CBasePlayerItem* pItem)
 //
 int CBasePlayer::GiveAmmo (int iCount, char* szName, int iMax)
 	{
+	// no ammo
 	if (!szName)
-		{
-		// no ammo.
 		return -1;
-		}
 
+	// game rules say I can't have any more of this ammo type
 	if (!g_pGameRules->CanHaveAmmo (this, szName, iMax))
-		{
-		// game rules say I can't have any more of this ammo type.
 		return -1;
-		}
 
 	int i = 0;
-
 	i = GetAmmoIndex (szName);
 
-	if (i < 0 || i >= MAX_AMMO_SLOTS)
+	if ((i < 0) || (i >= MAX_AMMO_SLOTS))
 		return -1;
 
 	int iAdd = min (iCount, iMax - m_rgAmmo[i]);
@@ -3699,7 +3695,6 @@ int CBasePlayer::GiveAmmo (int iCount, char* szName, int iMax)
 		return i;
 
 	m_rgAmmo[i] += iAdd;
-
 
 	if (gmsgAmmoPickup)  // make sure the ammo messages have been linked first
 		{

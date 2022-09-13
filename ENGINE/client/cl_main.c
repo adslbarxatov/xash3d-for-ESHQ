@@ -2711,7 +2711,7 @@ void CL_AdjustClock (void)
 	if (cl_fixtimerate->value < 0.0f)
 		Cvar_SetValue ("cl_fixtimerate", 7.5f);
 
-	if (fabs (cl.timedelta) >= 0.001f)
+	if (fabs (cl.timedelta) >= 0.001)
 		{
 		double	msec, adjust, sign;
 

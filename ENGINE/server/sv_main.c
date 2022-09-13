@@ -66,7 +66,7 @@ CVAR_DEFINE_AUTO (skill, "1", 0, "skill level in singleplayer game");
 CVAR_DEFINE_AUTO (temp1, "0", 0, "temporary cvar that used by some mods");
 
 // ESHQ: meat mode
-CVAR_DEFINE_AUTO (meat_mode, "0", 0, "allows bullets to squash corpses");
+CVAR_DEFINE_AUTO (meat_mode, "0", FCVAR_ARCHIVE, "allows bullets and electrical shocks to squash corpses");
 
 // physic-related variables
 CVAR_DEFINE_AUTO (sv_gravity, "800", FCVAR_MOVEVARS, "world gravity value");

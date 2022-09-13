@@ -660,8 +660,8 @@ void R_DecalSurface (msurface_t* surf, decalinfo_t* decalinfo)
 	// (decalWidth * decalBasis[0], decalHeight * decalBasis[1])
 	// in texture coordinates:
 
-	w = fabs (decalinfo->m_decalWidth * DotProduct (textureU, decalinfo->m_Basis[0])) +
-		fabs (decalinfo->m_decalHeight * DotProduct (textureU, decalinfo->m_Basis[1]));
+	w = (float)(fabs (decalinfo->m_decalWidth * DotProduct (textureU, decalinfo->m_Basis[0])) +
+		fabs (decalinfo->m_decalHeight * DotProduct (textureU, decalinfo->m_Basis[1])));
 
 	h = fabs (decalinfo->m_decalWidth * DotProduct (textureV, decalinfo->m_Basis[0])) +
 		fabs (decalinfo->m_decalHeight * DotProduct (textureV, decalinfo->m_Basis[1]));
@@ -671,10 +671,8 @@ void R_DecalSurface (msurface_t* surf, decalinfo_t* decalinfo)
 	t -= (h * 0.5f);
 
 	// Is this rect within the surface? -- tex width & height are unsigned
-	if (s <= -w || t <= -h || s > (surf->extents[0] + w) || t > (surf->extents[1] + h))
-		{
+	if ((s <= -w) || (t <= -h) || (s > (surf->extents[0] + w)) || (t > (surf->extents[1] + h)))
 		return; // nope
-		}
 
 	// stamp it
 	R_DecalCreate (decalinfo, surf, s, t);

@@ -289,7 +289,7 @@ int CHudHealth::DrawPain (float flTime)
 	int r, g, b;
 	int x, y, a, shade;
 
-	// TODO:  get the shift value of the health
+	// TODO: get the shift value of the health
 	a = 255;	// max brightness until then
 
 	float fFade = gHUD.m_flTimeDelta * 2;

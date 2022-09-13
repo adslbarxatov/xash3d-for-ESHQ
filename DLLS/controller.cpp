@@ -564,7 +564,7 @@ int CController::LookupFloat ()
 	float y = DotProduct (gpGlobals->v_right, m_velocity);
 	float z = DotProduct (gpGlobals->v_up, m_velocity);
 
-	if (fabs (x) > fabs (y) && fabs (x) > fabs (z))
+	if ((fabs (x) > fabs (y)) && (fabs (x) > fabs (z)))
 		{
 		if (x > 0)
 			return LookupSequence ("forward");

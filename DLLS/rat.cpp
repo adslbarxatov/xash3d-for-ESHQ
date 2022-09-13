@@ -261,8 +261,8 @@ void CRat::MonsterThink (void)
 
 					pSound = CSoundEnt::SoundPointerForIndex (m_iAudibleList);
 
-					// rat smells food and is just standing around. Go to food unless food isn't on same z-plane.
-					if (pSound && abs (pSound->m_vecOrigin.z - pev->origin.z) <= 3)
+					// rat smells food and is just standing around. Go to food unless food isn't on same z-plane
+					if (pSound && (fabs (pSound->m_vecOrigin.z - pev->origin.z) <= 3.0))
 						{
 						PickNewDest (RAT_SMELL_FOOD);
 						SetActivity (ACT_WALK);

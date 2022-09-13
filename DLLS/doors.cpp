@@ -1006,8 +1006,9 @@ void CMomentaryDoor::Spawn (void)
 	m_vecPosition1 = pev->origin;
 
 	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
-	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x - 2)) + 
+	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs (pev->movedir.x * (pev->size.x - 2)) +
 		fabs (pev->movedir.y * (pev->size.y - 2)) + fabs (pev->movedir.z * (pev->size.z - 2)) - m_flLip));
+
 	ASSERTSZ (m_vecPosition1 != m_vecPosition2, "door start/end positions are equal");
 
 	if (FBitSet (pev->spawnflags, SF_DOOR_START_OPEN))
@@ -1096,7 +1097,6 @@ void CMomentaryDoor::Precache (void)
 
 void CMomentaryDoor::KeyValue (KeyValueData* pkvd)
 	{
-
 	if (FStrEq (pkvd->szKeyName, "movesnd"))
 		{
 		m_bMoveSnd = atof (pkvd->szValue);
@@ -1107,11 +1107,6 @@ void CMomentaryDoor::KeyValue (KeyValueData* pkvd)
 		m_bStopSnd = atof (pkvd->szValue);
 		pkvd->fHandled = TRUE;
 		}
-	/*else if (FStrEq (pkvd->szKeyName, "healthvalue"))
-		{
-		m_bHealthValue = atof(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-		}*/
 	else
 		{
 		CBaseToggle::KeyValue (pkvd);
@@ -1129,18 +1124,18 @@ void CMomentaryDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	// ESHQ: обработка реверса
 	if (value < -1.0)
 		value = -1.0;
-	Vector move = m_vecPosition1 + (abs (value) * (m_vecPosition2 - m_vecPosition1));
+	Vector move = m_vecPosition1 + ((float)fabs ((double)value) * (m_vecPosition2 - m_vecPosition1));
 
 	Vector delta = move - pev->origin;
 	float speed = delta.Length () * 10;
 
 	// ESHQ: новое поведение
-	if ((value != 0) && (abs (value) < 1.0))
+	if ((value != 0) && (fabs ((double)value) < 1.0))
 		{
 		// oldSoundValue, равное нулю, означает, что движение начато только что.
 		// Разные знаки означают, что изменено направление движения.
 		// В обоих случаях звук нужно перезапустить
-		if ((oldSoundValue == 0.0f) || (abs (oldSoundValue) == 1.0f) || (oldSoundValue * value < 0))
+		if ((oldSoundValue == 0.0f) || (fabs ((double)oldSoundValue) == 1.0) || (oldSoundValue * value < 0))
 			{
 			STOP_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving));
 			EMIT_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving), 1, ATTN_MEDIUM);
@@ -1149,7 +1144,7 @@ void CMomentaryDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		LinearMove (move, speed);
 		}
 	// Звук остановки невозможен в начале движения
-	else if ((oldSoundValue != 0) && (abs (oldSoundValue) < 1.0))	
+	else if ((oldSoundValue != 0) && (fabs ((double)oldSoundValue) < 1.0))
 		{
 		STOP_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseMoving));
 		EMIT_SOUND (ENT (pev), CHAN_STATIC, (char*)STRING (pev->noiseArrived), 1, ATTN_MEDIUM);

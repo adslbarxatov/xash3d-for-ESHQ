@@ -492,17 +492,17 @@ void SV_NewChaseDir (edict_t* actor, vec3_t destination, float dist)
 		}
 
 	// try other directions
-	if (COM_RandomLong (0, 1) != 0 || fabs (deltay) > fabs (deltax))
+	if ((COM_RandomLong (0, 1) != 0) || (fabs (deltay) > fabs (deltax)))
 		{
 		tempdir = d[1];
 		d[1] = d[2];
 		d[2] = tempdir;
 		}
 
-	if (d[1] != -1.0f && d[1] != turnaround && SV_StepDirection (actor, d[1], dist))
+	if ((d[1] != -1.0f) && (d[1] != turnaround) && SV_StepDirection (actor, d[1], dist))
 		return;
 
-	if (d[2] != -1.0f && d[2] != turnaround && SV_StepDirection (actor, d[2], dist))
+	if ((d[2] != -1.0f) && (d[2] != turnaround) && SV_StepDirection (actor, d[2], dist))
 		return;
 
 	// there is no direct path to the player, so pick another direction

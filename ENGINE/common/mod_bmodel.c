@@ -957,16 +957,17 @@ static void Mod_MakeNormalAxial (vec3_t normal)
 
 	for (type = 0; type < 3; type++)
 		{
-		if (fabs (normal[type]) > 0.9999f)
+		if (fabs (normal[type]) > 0.9999)
 			break;
 		}
 
 	// make positive and pure axial
-	for (i = 0; i < 3 && type != 3; i++)
+	for (i = 0; (i < 3) && (type != 3); i++)
 		{
 		if (i == type)
 			normal[i] = 1.0f;
-		else normal[i] = 0.0f;
+		else 
+			normal[i] = 0.0f;
 		}
 	}
 

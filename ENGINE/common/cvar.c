@@ -575,11 +575,12 @@ void Cvar_Set (const char *var_name, const char *value)
 	*/
 void Cvar_SetValue (const char *var_name, float value)
 	{
-	char	val[32];
+	char val[32];
 
 	if (fabs (value - (int)value) < 0.000001)
 		Q_snprintf (val, sizeof (val), "%d", (int)value);
-	else Q_snprintf (val, sizeof (val), "%f", value);
+	else
+		Q_snprintf (val, sizeof (val), "%f", value);
 
 	Cvar_Set (var_name, val);
 	}

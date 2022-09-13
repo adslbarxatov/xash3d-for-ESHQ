@@ -744,16 +744,16 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 				// y=ax^b; where a = 300 and b = 1.3
 				// also x values are in increments of 800 (so this is factored out)
 				// then bounds check result to level out excessively high spin rates
-				fTemp = 300.0 * pow (abs (fAxisValue) / 800.0, 1.3);
-				if (fTemp > 14000.0)
-					fTemp = 14000.0;
+				fTemp = (float)(300.0 * pow (fabs ((double)fAxisValue) / 800.0, 1.3));
+				if (fTemp > 14000.0f)
+					fTemp = 14000.0f;
 				// restore direction information
 				fAxisValue = (fAxisValue > 0.0) ? fTemp : -fTemp;
 				}
 			}
 
 		// convert range from -32768..32767 to -1..1 
-		fAxisValue /= 32768.0;
+		fAxisValue /= 32768.0f;
 
 		switch (dwAxisMap[i])
 			{
@@ -782,26 +782,20 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 						// *** this code can be removed when the lookspring bug is fixed
 						// *** the bug always has the lookspring feature on
 						if (lookspring->value == 0.0)
-							{
 							V_StopPitchDrift ();
-							}
 						}
 					}
 				else
 					{
 					// user wants forward control to be forward control
 					if (fabs (fAxisValue) > joy_forwardthreshold->value)
-						{
 						cmd->forwardmove += (fAxisValue * joy_forwardsensitivity->value) * speed * cl_forwardspeed->value;
-						}
 					}
 				break;
 
 			case AxisSide:
 				if (fabs (fAxisValue) > joy_sidethreshold->value)
-					{
 					cmd->sidemove += (fAxisValue * joy_sidesensitivity->value) * speed * cl_sidespeed->value;
-					}
 				break;
 
 			case AxisTurn:
@@ -809,9 +803,7 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 					{
 					// user wants turn control to become side control
 					if (fabs (fAxisValue) > joy_sidethreshold->value)
-						{
 						cmd->sidemove -= (fAxisValue * joy_sidesensitivity->value) * speed * cl_sidespeed->value;
-						}
 					}
 				else
 					{
@@ -819,14 +811,9 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 					if (fabs (fAxisValue) > joy_yawthreshold->value)
 						{
 						if (dwControlMap[i] == JOY_ABSOLUTE_AXIS)
-							{
 							viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value) * aspeed * cl_yawspeed->value;
-							}
 						else
-							{
 							viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value) * speed * 180.0;
-							}
-
 						}
 					}
 				break;
@@ -838,13 +825,10 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 						{
 						// pitch movement detected and pitch movement desired by user
 						if (dwControlMap[i] == JOY_ABSOLUTE_AXIS)
-							{
 							viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * aspeed * cl_pitchspeed->value;
-							}
 						else
-							{
 							viewangles[PITCH] += (fAxisValue * joy_pitchsensitivity->value) * speed * 180.0;
-							}
+
 						V_StopPitchDrift ();
 						}
 					else
@@ -854,9 +838,7 @@ void IN_JoyMove (float frametime, usercmd_t* cmd)
 						// *** this code can be removed when the lookspring bug is fixed
 						// *** the bug always has the lookspring feature on
 						if (lookspring->value == 0.0)
-							{
 							V_StopPitchDrift ();
-							}
 						}
 					}
 				break;

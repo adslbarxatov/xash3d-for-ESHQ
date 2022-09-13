@@ -2683,7 +2683,7 @@ void PM_CheckWaterJump (void)
 	savehull = pmove->usehull;
 	pmove->usehull = 2;
 	tr = pmove->PM_PlayerTrace (vecStart, vecEnd, PM_NORMAL, -1);
-	if (tr.fraction < 1.0 && fabs (tr.plane.normal[2]) < 0.1f)  // Facing a near vertical wall?
+	if ((tr.fraction < 1.0) && (fabs (tr.plane.normal[2]) < 0.1))  // Facing a near vertical wall?
 		{
 		vecStart[2] += pmove->player_maxs[savehull][2] - WJ_HEIGHT;
 		VectorMA (vecStart, 24, flatforward, vecEnd);
@@ -2771,8 +2771,8 @@ PM_PlayWaterSounds
 void PM_PlayWaterSounds (void)
 	{
 	// Did we enter or leave water?
-	if ((pmove->oldwaterlevel == 0 && pmove->waterlevel != 0) ||
-		(pmove->oldwaterlevel != 0 && pmove->waterlevel == 0))
+	if (((pmove->oldwaterlevel == 0) && (pmove->waterlevel != 0)) ||
+		((pmove->oldwaterlevel != 0) && (pmove->waterlevel == 0)))
 		{
 		switch (pmove->RandomLong (0, 3))
 			{
@@ -2816,13 +2816,9 @@ float PM_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float rollsp
 	value = rollangle;
 
 	if (side < rollspeed)
-		{
 		side = side * value / rollspeed;
-		}
 	else
-		{
 		side = value;
-		}
 
 	return side * sign;
 	}

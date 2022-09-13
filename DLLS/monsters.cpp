@@ -1336,15 +1336,16 @@ int CBaseMonster::CheckLocalMove (const Vector& vecStart, const Vector& vecEnd, 
 			}
 		}
 
-	if (iReturn == LOCALMOVE_VALID && !(pev->flags & (FL_FLY | FL_SWIM)) && (!pTarget || (pTarget->pev->flags & FL_ONGROUND)))
+	if ((iReturn == LOCALMOVE_VALID) && !(pev->flags & (FL_FLY | FL_SWIM)) && (!pTarget || (pTarget->pev->flags & FL_ONGROUND)))
 		{
 		// The monster can move to a spot UNDER the target, but not to it. Don't try to triangulate, go directly to the node graph.
 		// UNDONE: Magic # 64 -- this used to be pev->size.z but that won't work for small creatures like the headcrab
-		if (fabs (vecEnd.z - pev->origin.z) > 64)
+		if (fabs (vecEnd.z - pev->origin.z) > 64.0)
 			iReturn = LOCALMOVE_INVALID_DONT_TRIANGULATE;
 		}
+
 	/*
-	// uncommenting this block will draw a line representing the nearest legal move.
+	// uncommenting this block will draw a line representing the nearest legal move
 	WRITE_BYTE(MSG_BROADCAST, SVC_TEMPENTITY);
 	WRITE_BYTE(MSG_BROADCAST, TE_SHOWLINE);
 	WRITE_COORD(MSG_BROADCAST, pev->origin.x);
@@ -1360,7 +1361,6 @@ int CBaseMonster::CheckLocalMove (const Vector& vecStart, const Vector& vecEnd, 
 
 	return iReturn;
 	}
-
 
 float CBaseMonster::OpenDoorAndWait (entvars_t* pevDoor)
 	{

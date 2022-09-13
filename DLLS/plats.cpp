@@ -983,21 +983,26 @@ void CFuncTrackTrain::Blocked (CBaseEntity* pOther)
 	entvars_t* pevOther = pOther->pev;
 
 	// Blocker is on-ground on the train
-	if (FBitSet (pevOther->flags, FL_ONGROUND) && VARS (pevOther->groundentity) == pev)
+	if (FBitSet (pevOther->flags, FL_ONGROUND) && (VARS (pevOther->groundentity) == pev))
 		{
-		float deltaSpeed = fabs (pev->speed);
-		if (deltaSpeed > 50)
-			deltaSpeed = 50;
+		float deltaSpeed = (float)fabs (pev->speed);
+		if (deltaSpeed > 50.0f)
+			deltaSpeed = 50.0f;
 		if (!pevOther->velocity.z)
 			pevOther->velocity.z += deltaSpeed;
+
 		return;
 		}
 	else
+		{
 		pevOther->velocity = (pevOther->origin - pev->origin).Normalize () * pev->dmg;
+		}
 
-	ALERT (at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", STRING (pev->targetname), STRING (pOther->pev->classname), pev->dmg);
+	ALERT (at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", STRING (pev->targetname), 
+		STRING (pOther->pev->classname), pev->dmg);
 	if (pev->dmg <= 0)
 		return;
+
 	// we can't hurt this thing, so we're not concerned with it
 	pOther->TakeDamage (pev, pev, pev->dmg, DMG_CRUSH);
 	}
@@ -1098,7 +1103,7 @@ void CFuncTrackTrain::UpdateSound (void)
 	if (!pev->noise)
 		return;
 
-	flpitch = TRAIN_STARTPITCH + (abs (pev->speed) * (TRAIN_MAXPITCH - TRAIN_STARTPITCH) / TRAIN_MAXSPEED);
+	flpitch = TRAIN_STARTPITCH + (fabs (pev->speed) * (TRAIN_MAXPITCH - TRAIN_STARTPITCH) / TRAIN_MAXSPEED);
 
 	if (!m_soundPlaying)
 		{
@@ -1109,10 +1114,6 @@ void CFuncTrackTrain::UpdateSound (void)
 		}
 	else
 		{
-		/*
-				// update pitch
-				EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise), m_flVolume, ATTN_MEDIUM, SND_CHANGE_PITCH, (int) flpitch);
-		*/
 		// volume 0.0 - 1.0 - 6 bits
 		// m_sounds 3 bits
 		// flpitch = 6 bits

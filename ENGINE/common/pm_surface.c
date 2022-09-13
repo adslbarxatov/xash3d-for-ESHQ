@@ -38,8 +38,10 @@ converts the reletive tex coords to absolute
 */
 static uint fix_coord (vec_t in, uint width)
 	{
-	if (in > 0) return (uint)in % width;
-	return width - ((uint)fabs (in) % width);
+	if (in > 0) 
+		return (uint)in % width;
+
+	return width - ((uint)fabs ((double)in) % width);
 	}
 
 /*

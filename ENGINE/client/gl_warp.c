@@ -115,9 +115,9 @@ void DrawSkyPolygon (int nump, vec3_t vecs)
 	for (i = 0, vp = vecs; i < nump; i++, vp += 3)
 		VectorAdd (vp, v, v);
 
-	av[0] = fabs (v[0]);
-	av[1] = fabs (v[1]);
-	av[2] = fabs (v[2]);
+	av[0] = (float)fabs ((double)v[0]);
+	av[1] = (float)fabs ((double)v[1]);
+	av[2] = (float)fabs ((double)v[2]);
 
 	if (av[0] > av[1] && av[0] > av[2])
 		axis = (v[0] < 0) ? 1 : 0;

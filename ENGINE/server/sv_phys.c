@@ -301,12 +301,13 @@ may use friction for smooth stopping
 void SV_AngularMove (edict_t* ent, float frametime, float friction)
 	{
 	float	adjustment;
-	int	i;
+	int		i;
 
 	VectorMA (ent->v.angles, frametime, ent->v.avelocity, ent->v.angles);
-	if (friction == 0.0f) return;
+	if (friction == 0.0f)
+		return;
 
-	adjustment = frametime * (sv_stopspeed.value / 10.0f) * sv_friction.value * fabs (friction);
+	adjustment = (float)(frametime * (sv_stopspeed.value / 10.0f) * sv_friction.value * fabs (friction));
 
 	for (i = 0; i < 3; i++)
 		{
@@ -334,13 +335,14 @@ use friction for smooth stopping
 */
 void SV_LinearMove (edict_t* ent, float frametime, float friction)
 	{
-	int	i;
+	int		i;
 	float	adjustment;
 
 	VectorMA (ent->v.origin, frametime, ent->v.velocity, ent->v.origin);
-	if (friction == 0.0f) return;
+	if (friction == 0.0f)
+		return;
 
-	adjustment = frametime * (sv_stopspeed.value / 10.0f) * sv_friction.value * fabs (friction);
+	adjustment = (float)(frametime * (sv_stopspeed.value / 10.0f) * sv_friction.value * fabs (friction));
 
 	for (i = 0; i < 3; i++)
 		{

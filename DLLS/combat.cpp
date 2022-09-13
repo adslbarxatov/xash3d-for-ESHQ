@@ -732,7 +732,7 @@ void CGib::BounceGibTouch (CBaseEntity* pOther)
 			float volume;
 			float zvel = fabs (pev->velocity.z);
 
-			volume = 0.8 * min (1.0, ((float)zvel) / 450.0);
+			volume = 0.8 * min (1.0, (double)zvel / 450.0);
 
 			CBreakable::MaterialSoundRandom (edict (), (Materials)m_material, volume);
 			}
@@ -965,15 +965,16 @@ int CBaseMonster::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, f
 
 //=========================================================
 // DeadTakeDamage - takedamage function called when a monster's
-// corpse is damaged.
+// corpse is damaged
 //=========================================================
 int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
 	Vector vecDir;
-	char meat_mode = (bitsDamageType & DMG_BULLET) && (CVAR_GET_FLOAT ("meat_mode") != 0);
+	char meat_mode = ((bitsDamageType & DMG_BULLET) || (bitsDamageType & DMG_CLUB) || (bitsDamageType & DMG_SHOCK)) &&
+		(CVAR_GET_FLOAT ("meat_mode") != 0);
 
-	// grab the vector of the incoming attack. ( pretend that the inflictor is a little lower
-	// than it really is, so the body will tend to fly upward a bit).
+	// Grab the vector of the incoming attack (pretend that the inflictor is a little lower
+	// than it really is, so the body will tend to fly upward a bit)
 	vecDir = Vector (0, 0, 0);
 	if (!FNullEnt (pevInflictor))
 		{
@@ -992,7 +993,7 @@ int CBaseMonster::DeadTakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacke
 	if ((bitsDamageType & DMG_GIB_CORPSE) || meat_mode)
 		{
 		// ESHQ: моментальное разрушение трупа монтировкой или звуковой волной
-		if ((pev->health <= flDamage) || (bitsDamageType & DMG_CLUB) || (bitsDamageType & DMG_SONIC) || meat_mode)
+		if ((pev->health <= flDamage) || (bitsDamageType & DMG_SONIC) || meat_mode)
 			{
 			pev->health = -50;
 			Killed (pevAttacker, GIB_ALWAYS);

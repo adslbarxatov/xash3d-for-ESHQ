@@ -515,7 +515,7 @@ float SND_FadeToNewGain (channel_t* ch, float gain_new)
 
 	// if first time updating, store new gain into gain & target, return
 	// if gain_new is close to existing gain, store new gain into gain & target, return
-	if (ch->bfirstpass || (fabs (gain_new - ch->ob_gain) < 0.01f))
+	if (ch->bfirstpass || (fabs (gain_new - ch->ob_gain) < 0.01))
 		{
 		ch->ob_gain = gain_new;
 		ch->ob_gain_target = gain_new;
@@ -527,21 +527,16 @@ float SND_FadeToNewGain (channel_t* ch, float gain_new)
 	frametime = s_listener.frametime;
 	speed = (frametime / SND_GAIN_FADE_TIME) * (gain_new - ch->ob_gain);
 
-	ch->ob_gain_inc = fabs (speed);
-
-	// ch->ob_gain_inc = fabs( gain_new - ch->ob_gain ) / 10.0f;
+	ch->ob_gain_inc = (float)fabs (speed);
 	ch->ob_gain_target = gain_new;
 
 	// if not hit target, keep approaching
-	if (fabs (ch->ob_gain - ch->ob_gain_target) > 0.01f)
-		{
+	if (fabs (ch->ob_gain - ch->ob_gain_target) > 0.01)
 		ch->ob_gain = ApproachVal (ch->ob_gain_target, ch->ob_gain, ch->ob_gain_inc);
-		}
+
+	// close enough, set gain = target
 	else
-		{
-		// close enough, set gain = target
 		ch->ob_gain = ch->ob_gain_target;
-		}
 
 	return ch->ob_gain;
 	}
@@ -1650,7 +1645,7 @@ void S_StreamAviSamples (void* Avi, int entnum, float fvol, float attn, float sy
 		ch->s_rawend = soundtime;
 
 	// position is changed, synchronization is lost etc
-	if (fabs (ch->oldtime - synctime) > s_mixahead->value)
+	if (fabs (ch->oldtime - synctime) > (double)(s_mixahead->value))
 		ch->sound_info.loopStart = AVI_TimeToSoundPosition (Avi, synctime * 1000);
 	ch->oldtime = synctime; // keep actual time
 

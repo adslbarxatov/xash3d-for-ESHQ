@@ -373,7 +373,8 @@ void GL_BuildPolygonFromSurface (model_t* mod, msurface_t* fa)
 			VectorNormalize (v2);
 
 			// skip co-linear points
-			if ((fabs (v1[0] - v2[0]) <= 0.001f) && (fabs (v1[1] - v2[1]) <= 0.001f) && (fabs (v1[2] - v2[2]) <= 0.001f))
+			if ((fabs (v1[0] - v2[0]) <= 0.001) && (fabs (v1[1] - v2[1]) <= 0.001) &&
+				(fabs (v1[2] - v2[2]) <= 0.001))
 				{
 				int	j, k;
 
@@ -496,7 +497,7 @@ void R_AddDynamicLights (msurface_t* surf)
 
 		rad = dl->radius;
 		dist = PlaneDiff (origin_l, surf->plane);
-		rad -= fabs (dist);
+		rad -= (float)fabs (dist);
 
 		// rad is now the highest intensity on the plane
 		minlight = dl->minlight;
@@ -1706,7 +1707,7 @@ qboolean R_CullNodeTopView (mnode_t* node)
 	VectorAverage (node->minmaxs, node->minmaxs + 3, center);
 	VectorSubtract (node->minmaxs + 3, center, half);
 
-	// cull against the screen frustum or the appropriate area's frustum.
+	// cull against the screen frustum or the appropriate area's frustum
 	Vector2Subtract (center, world_orthocenter, delta);
 	Vector2Add (half, world_orthohalf, size);
 

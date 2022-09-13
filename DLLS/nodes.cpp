@@ -3082,9 +3082,7 @@ void CGraph::TestRoutingTables (void)
 						//
 						if (cPathSize2 == MAX_PATH_SIZE) continue;
 
-						// Compare distances.
-						//
-#if 1
+						// Compare distances
 						float flDistance1 = 0.0;
 						for (int i = 0; i < cPathSize1 - 1; i++)
 							{
@@ -3127,17 +3125,13 @@ void CGraph::TestRoutingTables (void)
 									break;
 									}
 								}
+
 							if (!bFound)
-								{
 								ALERT (at_aiconsole, "No link.\n");
-								}
 							}
+
 						if (fabs (flDistance1 - flDistance2) > 0.10)
 							{
-#else
-						if (cPathSize1 != cPathSize2 || memcmp (pMyPath, pMyPath2, sizeof (int) * cPathSize1) != 0)
-							{
-#endif
 							ALERT (at_aiconsole, "Routing is inconsistent!!!\n");
 							ALERT (at_aiconsole, "(%d to %d |%d/%d)1:", iFrom, iTo, iHull, iCap);
 							for (i = 0; i < cPathSize1; i++)

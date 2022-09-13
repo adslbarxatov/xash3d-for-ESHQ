@@ -2350,9 +2350,12 @@ void Con_RunConsole (void)
 			con.showlines = glState.height;	// full screen
 		else con.showlines = (glState.height >> 1);	// half screen	
 		}
-	else con.showlines = 0; // none visible
+	else
+		{
+		con.showlines = 0; // none visible
+		}
 
-	lines_per_frame = fabs (scr_conspeed->value) * host.realframetime;
+	lines_per_frame = (float)(fabs (scr_conspeed->value) * host.realframetime);
 
 	if (con.showlines < con.vislines)
 		{

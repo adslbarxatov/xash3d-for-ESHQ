@@ -185,8 +185,8 @@ void V_RefApplyOverview (ref_viewpass_t* rvp)
 	// NOTE: Xash3D may use 16:9 or 16:10 aspects
 	aspect = (float)glState.width / (float)glState.height;
 
-	size_x = fabs (8192.0f / ov->flZoom);
-	size_y = fabs (8192.0f / (ov->flZoom * aspect));
+	size_x = (float)fabs ((double)(8192.0f / ov->flZoom));
+	size_y = (float)fabs ((double)(8192.0f / (ov->flZoom * aspect)));
 
 	// compute rectangle
 	ov->xLeft = -(size_x / 2);

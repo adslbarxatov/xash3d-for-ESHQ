@@ -47,11 +47,9 @@ BOOL CGameRules::CanHaveAmmo (CBasePlayer* pPlayer, const char* pszAmmoName, int
 
 		if (iAmmoIndex > -1)
 			{
+			// player has room for more of this type of ammo
 			if (pPlayer->AmmoInventory (iAmmoIndex) < iMaxCarry)
-				{
-				// player has room for more of this type of ammo
 				return TRUE;
-				}
 			}
 		}
 

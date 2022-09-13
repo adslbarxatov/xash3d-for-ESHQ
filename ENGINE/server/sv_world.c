@@ -143,7 +143,7 @@ qboolean SV_CheckSphereIntersection (edict_t* ent, const vec3_t start, const vec
 	radiusSquared = 0.0f;
 
 	for (i = 0; i < 3; i++)
-		radiusSquared += Q_max (fabs (pseqdesc->bbmin[i]), fabs (pseqdesc->bbmax[i]));
+		radiusSquared += (float)(Q_max (fabs (pseqdesc->bbmin[i]), fabs (pseqdesc->bbmax[i])));
 
 	return SphereIntersect (ent->v.origin, radiusSquared, traceOrg, traceDir);
 	}
@@ -187,8 +187,8 @@ hull_t* SV_HullAutoSelect (model_t* model, const vec3_t mins, const vec3_t maxs,
 	for (i = 0; i < MAX_MAP_HULLS; i++)
 		{
 		VectorSubtract (model->hulls[i].clip_maxs, model->hulls[i].clip_mins, clip_size);
-		curdiff = floor (VectorAvg (size)) - floor (VectorAvg (clip_size));
-		curdiff = fabs (curdiff);
+		curdiff = (float)(floor (VectorAvg (size)) - floor (VectorAvg (clip_size)));
+		curdiff = (float)fabs (curdiff);
 
 		if (curdiff < lastdiff)
 			{
