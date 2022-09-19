@@ -87,7 +87,7 @@ void CRat::Touch (CBaseEntity* pOther)
 	Vector		vecSpot;
 	TraceResult	tr;
 
-	if (pOther->pev->velocity == g_vecZero || !pOther->IsPlayer ())
+	if ((pOther->pev->velocity == g_vecZero) || !pOther->IsPlayer ())
 		return;
 
 	vecSpot = pev->origin + Vector (0, 0, 8);	// move up a bit, and trace down
@@ -162,23 +162,22 @@ void CRat::Killed (entvars_t* pevAttacker, int iGib)
 	{
 	pev->solid = SOLID_NOT;
 
-	//random sound
 	if (RANDOM_LONG (0, 2) != 1)	// Чаще, чем у такарана
-		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_VOICE, "roach/rch_die.wav", 0.9, ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 39));
-		}
 	else
-		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_BODY, "roach/rch_smash.wav", 0.9, ATTN_MEDIUM, 0, 80 + RANDOM_LONG (0, 39));
-		}
 
 	CSoundEnt::InsertSound (bits_SOUND_WORLD, pev->origin, 128, 1);
 
 	CBaseEntity* pOwner = CBaseEntity::Instance (pev->owner);
 	if (pOwner)
-		{
 		pOwner->DeathNotice (pev);
-		}
+
+	// ESHQ: поддержка trigger_target
+	pev->deadflag = DEAD_DYING;
+	FCheckAITrigger ();
+	pev->deadflag = DEAD_NO;
+
 	UTIL_Remove (this);
 	}
 

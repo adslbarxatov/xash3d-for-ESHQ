@@ -17,13 +17,13 @@ GNU General Public License for more details.
 #define LIGHTSTYLE_H
 
 typedef struct
-{
+	{
 	char		pattern[256];
 	float		map[256];
-	int		length;
+	int			length;
 	float		value;
-	qboolean		interp;		// allow to interpolate this lightstyle
-	float		time;		// local time is gurantee what new style begins from the start, not mid or end of the sequence
-} lightstyle_t;
+	qboolean	interp;		// allow to interpolate this lightstyle
+	float		time;		// local time is gurantee that new style begins from the start, not mid or end of the sequence
+	} lightstyle_t;
 
 #endif//LIGHTSTYLE_H

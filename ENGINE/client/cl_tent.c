@@ -320,6 +320,21 @@ int CL_FxBlend (cl_entity_t* e)
 				blend += COM_RandomLong (-32, 31);
 				}
 			break;
+
+		// ESHQ: поддержка мигалок
+		case kRenderFxLeftPoliceLight:
+		case kRenderFxRightPoliceLight:
+			blend = 20 * sin (cl.time * 60);
+			blend *= ((20 * sin (cl.time * 3) >= 0) ?
+				(e->curstate.renderfx == kRenderFxRightPoliceLight) :
+				(e->curstate.renderfx != kRenderFxRightPoliceLight));
+
+			if (blend <= 0)
+				blend = 0;
+			else
+				blend = e->curstate.renderamt;
+			break;
+
 		default:
 			blend = e->curstate.renderamt;
 			break;
@@ -2582,7 +2597,7 @@ void CL_SetLightstyle (int style, const char* s, float f)
 	ls->interp = (ls->length <= 1) ? false : true;
 
 	// check for allow interpolate
-	// NOTE: fast flickering styles looks ugly when interpolation is running
+	// NOTE: fast flickering styles look ugly when interpolation is running
 	for (k = 0; k < (ls->length - 1); k++)
 		{
 		val1 = ls->map[(k + 0) % ls->length];

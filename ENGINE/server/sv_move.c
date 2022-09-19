@@ -96,16 +96,17 @@ realcheck:
 
 			if (trace.fraction != 1.0f && trace.endpos[2] > bottom)
 				bottom = trace.endpos[2];
-			if (trace.fraction == 1.0f || mid - trace.endpos[2] > svgame.movevars.stepsize)
+			if ((trace.fraction == 1.0f) || (mid - trace.endpos[2] > svgame.movevars.stepsize))
 				return false;
 			}
 		}
+
 	return true;
 	}
 
 void SV_WaterMove (edict_t* ent)
 	{
-	float	drownlevel;
+	float drownlevel;
 	int	waterlevel;
 	int	watertype;
 	int	flags;
@@ -265,7 +266,7 @@ qboolean SV_MoveStep (edict_t* ent, vec3_t move, qboolean relink)
 	VectorAdd (ent->v.origin, move, neworg);
 	monsterClip = FBitSet (ent->v.flags, FL_MONSTERCLIP) ? true : false;
 
-	// well, try it.  Flying and swimming monsters are easiest.
+	// well, try it. Flying and swimming monsters are easiest
 	if (ent->v.flags & (FL_SWIM | FL_FLY))
 		{
 		// try one move with vertical motion, then one without

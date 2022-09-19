@@ -575,27 +575,20 @@ void CFuncPlatRot::HitBottom (void)
 	pev->angles = m_start;
 	}
 
-
-//
 // Platform is at bottom, now starts moving up
-//
 void CFuncPlatRot::GoUp (void)
 	{
 	CFuncPlat::GoUp ();
 	RotMove (m_end, pev->nextthink - pev->ltime);
 	}
 
-
-//
-// Platform has hit top.  Pauses, then starts back down again.
-//
+// Platform has hit top.  Pauses, then starts back down again
 void CFuncPlatRot::HitTop (void)
 	{
 	CFuncPlat::HitTop ();
 	pev->avelocity = g_vecZero;
 	pev->angles = m_end;
 	}
-
 
 void CFuncPlatRot::RotMove (Vector& destAngle, float time)
 	{
@@ -604,7 +597,9 @@ void CFuncPlatRot::RotMove (Vector& destAngle, float time)
 
 	// Travel time is so short, we're practically there already;  so make it so.
 	if (time >= 0.1)
+		{
 		pev->avelocity = vecDestDelta / time;
+		}
 	else
 		{
 		pev->avelocity = vecDestDelta;

@@ -324,8 +324,12 @@ TYPEDESCRIPTION	CBaseToggle::m_SaveData[] =
 		DEFINE_FIELD (CBaseToggle, m_flTLength, FIELD_FLOAT),
 		DEFINE_FIELD (CBaseToggle, m_vecPosition1, FIELD_POSITION_VECTOR),
 		DEFINE_FIELD (CBaseToggle, m_vecPosition2, FIELD_POSITION_VECTOR),
-		DEFINE_FIELD (CBaseToggle, m_vecAngle1, FIELD_VECTOR),		// UNDONE: Position could go through transition, but also angle?
-		DEFINE_FIELD (CBaseToggle, m_vecAngle2, FIELD_VECTOR),		// UNDONE: Position could go through transition, but also angle?
+		DEFINE_FIELD (CBaseToggle, m_vecAngle1, FIELD_VECTOR),		
+		// UNDONE: Position could go through transition, but also angle?
+		
+		DEFINE_FIELD (CBaseToggle, m_vecAngle2, FIELD_VECTOR),	
+		// UNDONE: Position could go through transition, but also angle?
+
 		DEFINE_FIELD (CBaseToggle, m_cTriggersLeft, FIELD_INTEGER),
 		DEFINE_FIELD (CBaseToggle, m_flHeight, FIELD_FLOAT),
 		DEFINE_FIELD (CBaseToggle, m_hActivator, FIELD_EHANDLE),
@@ -373,10 +377,9 @@ calculate pev->velocity and pev->nextthink to reach vecDest from
 pev->origin traveling at flSpeed
 ===============
 */
-void CBaseToggle::LinearMove (Vector	vecDest, float flSpeed)
+void CBaseToggle::LinearMove (Vector vecDest, float flSpeed)
 	{
 	ASSERTSZ (flSpeed != 0, "LinearMove:  no speed is defined!");
-	//	ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "LinearMove: no post-move function defined");
 
 	m_vecFinalDest = vecDest;
 
@@ -434,9 +437,7 @@ Just like LinearMove, but rotational.
 */
 void CBaseToggle::AngularMove (Vector vecDestAngle, float flSpeed)
 	{
-	ASSERTSZ (flSpeed != 0, "AngularMove:  no speed is defined!");
-	//	ASSERTSZ(m_pfnCallWhenMoveDone != NULL, "AngularMove: no post-move function defined");
-
+	ASSERTSZ (flSpeed != 0, "AngularMove: no speed is defined!");
 	m_vecFinalAngle = vecDestAngle;
 
 	// Already there?

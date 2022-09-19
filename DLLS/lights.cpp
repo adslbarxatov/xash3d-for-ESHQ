@@ -83,14 +83,14 @@ If targeted, it will toggle between on or off.
 void CLight::Spawn (void)
 	{
 	if (FStringNull (pev->targetname))
-		{       // inert light
+		{
+		// inert light
 		REMOVE_ENTITY (ENT (pev));
 		return;
 		}
 
 	if (m_iStyle >= 32)
 		{
-		//		CHANGE_METHOD(ENT(pev), em_use, light_use);
 		if (FBitSet (pev->spawnflags, SF_LIGHT_START_OFF))
 			LIGHT_STYLE (m_iStyle, "a");
 		else if (m_iszPattern)
@@ -100,26 +100,27 @@ void CLight::Spawn (void)
 		}
 	}
 
-void CLight::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+void CLight::Use (CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 	{
-	if (m_iStyle >= 32)
-		{
-		if (!ShouldToggle (useType, !FBitSet (pev->spawnflags, SF_LIGHT_START_OFF)))
-			return;
+	if (m_iStyle < 32)
+		return;
 
-		if (FBitSet (pev->spawnflags, SF_LIGHT_START_OFF))
-			{
-			if (m_iszPattern)
-				LIGHT_STYLE (m_iStyle, (char*)STRING (m_iszPattern));
-			else
-				LIGHT_STYLE (m_iStyle, "m");
-			ClearBits (pev->spawnflags, SF_LIGHT_START_OFF);
-			}
+	if (!ShouldToggle (useType, !FBitSet (pev->spawnflags, SF_LIGHT_START_OFF)))
+		return;
+
+	if (FBitSet (pev->spawnflags, SF_LIGHT_START_OFF))
+		{
+		if (m_iszPattern)
+			LIGHT_STYLE (m_iStyle, (char *)STRING (m_iszPattern));
 		else
-			{
-			LIGHT_STYLE (m_iStyle, "a");
-			SetBits (pev->spawnflags, SF_LIGHT_START_OFF);
-			}
+			LIGHT_STYLE (m_iStyle, "m");
+
+		ClearBits (pev->spawnflags, SF_LIGHT_START_OFF);
+		}
+	else
+		{
+		LIGHT_STYLE (m_iStyle, "a");
+		SetBits (pev->spawnflags, SF_LIGHT_START_OFF);
 		}
 	}
 

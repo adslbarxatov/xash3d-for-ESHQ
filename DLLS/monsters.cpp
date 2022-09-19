@@ -2837,11 +2837,9 @@ BOOL CBaseMonster::FCheckAITrigger (void)
 	{
 	BOOL fFireTarget;
 
+	// no conditions, so this trigger is never fired
 	if (m_iTriggerCondition == AITRIGGER_NONE)
-		{
-		// no conditions, so this trigger is never fired.
 		return FALSE;
-		}
 
 	fFireTarget = FALSE;
 

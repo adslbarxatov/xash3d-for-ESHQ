@@ -1158,9 +1158,13 @@ void SV_Physics_Pusher (edict_t* ent)
 	if (thinktime < oldtime + sv.frametime)
 		{
 		movetime = thinktime - oldtime;
-		if (movetime < 0.0f) movetime = 0.0f;
+		if (movetime < 0.0f) 
+			movetime = 0.0f;
 		}
-	else movetime = sv.frametime;
+	else
+		{
+		movetime = sv.frametime;
+		}
 
 	if (movetime)
 		{
@@ -1196,10 +1200,12 @@ void SV_Physics_Pusher (edict_t* ent)
 	// otherwise, just stay in place until the obstacle is gone
 	if (pBlocker) svgame.dllFuncs.pfnBlocked (ent, pBlocker);
 
+	// ESHQ: исправление для десятиоборотных rot_button и mom_rot_button
+	// (± младшие разряды float, ± инерция дефектного кода mom_rot_button)
 	for (i = 0; i < 3; i++)
 		{
-		if (ent->v.angles[i] < -3600.0f || ent->v.angles[i] > 3600.0f)
-			ent->v.angles[i] = fmod (ent->v.angles[i], 3600.0f);
+		if ((ent->v.angles[i] < -3960.0f) || (ent->v.angles[i] > 3960.0f))
+			ent->v.angles[i] = fmod (ent->v.angles[i], 3960.0f);
 		}
 
 	if (thinktime > oldtime && ((ent->v.flags & FL_ALWAYSTHINK) || thinktime <= ent->v.ltime))

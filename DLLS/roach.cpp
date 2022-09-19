@@ -172,6 +172,11 @@ void CRoach::Killed (entvars_t* pevAttacker, int iGib)
 	if (pOwner)
 		pOwner->DeathNotice (pev);
 
+	// ESHQ: поддержка trigger_target
+	pev->deadflag = DEAD_DYING;
+	FCheckAITrigger ();
+	pev->deadflag = DEAD_NO;
+
 	UTIL_Remove (this);
 	}
 

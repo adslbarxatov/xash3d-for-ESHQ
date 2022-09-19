@@ -313,7 +313,6 @@ void CCineMonster::PossessEntity (void)
 				//			pTarget->pev->flags &= ~FL_ONGROUND;
 				break;
 			}
-		//		ALERT( at_aiconsole, "\"%s\" found and used (INT: %s)\n", STRING( pTarget->pev->targetname ), FBitSet(pev->spawnflags, SF_SCRIPT_NOINTERRUPT)?"No":"Yes" );
 
 		pTarget->m_IdealMonsterState = MONSTERSTATE_SCRIPT;
 		if (m_iszIdle)

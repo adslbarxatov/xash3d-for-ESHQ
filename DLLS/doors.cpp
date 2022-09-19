@@ -794,52 +794,6 @@ void CBaseDoor::Blocked (CBaseEntity* pOther)
 		else
 			DoorGoDown ();
 		}
-
-	/* ESHQ: блок удалён за ненадобностью
-	
-	// Block all door pieces with the same targetname here.
-	if (!FStringNull (pev->targetname))
-		{
-		for (;;)
-			{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME (pentTarget, STRING (pev->targetname));
-
-			if (VARS (pentTarget) != pev)
-				{
-				if (FNullEnt (pentTarget))
-					break;
-
-				if (FClassnameIs (pentTarget, "func_door") || FClassnameIs (pentTarget, "func_door_rotating"))
-					{
-
-					pDoor = GetClassPtr ((CBaseDoor*)VARS (pentTarget));
-
-					if (pDoor->m_flWait >= 0)
-						{
-						if (pDoor->pev->velocity == pev->velocity && pDoor->pev->avelocity == pev->velocity)
-							{
-							// this is the most hacked, evil, bastardized thing I've ever seen. kjb
-							if (FClassnameIs (pentTarget, "func_door"))
-								{// set origin to realign normal doors
-								pDoor->pev->origin = pev->origin;
-								pDoor->pev->velocity = g_vecZero;// stop!
-								}
-							else
-								{// set angles to realign rotating doors
-								pDoor->pev->angles = pev->angles;
-								pDoor->pev->avelocity = g_vecZero;
-								}
-							}
-
-						if (pDoor->m_toggle_state == TS_GOING_DOWN)
-							pDoor->DoorGoUp ();
-						else
-							pDoor->DoorGoDown ();
-						}
-					}
-				}
-			}
-		}*/
 	}
 
 
@@ -900,7 +854,6 @@ void CRotDoor::Spawn (void)
 	if (FBitSet (pev->spawnflags, SF_DOOR_ROTATE_BACKWARDS))
 		pev->movedir = pev->movedir * -1;
 
-	//m_flWait			= 2; who the hell did this? (sjb)
 	m_vecAngle1 = pev->angles;
 	m_vecAngle2 = pev->angles + pev->movedir * m_flMoveDistance;
 
@@ -1129,7 +1082,7 @@ void CMomentaryDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	Vector delta = move - pev->origin;
 	float speed = delta.Length () * 10;
 
-	// ESHQ: новое поведение
+	// ESHQ: новое поведение звуковых эффектов
 	if ((value != 0) && (fabs ((double)value) < 1.0))
 		{
 		// oldSoundValue, равное нулю, означает, что движение начато только что.
@@ -1143,6 +1096,7 @@ void CMomentaryDoor::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 
 		LinearMove (move, speed);
 		}
+
 	// Звук остановки невозможен в начале движения
 	else if ((oldSoundValue != 0) && (fabs ((double)oldSoundValue) < 1.0))
 		{

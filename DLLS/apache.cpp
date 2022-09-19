@@ -171,14 +171,11 @@ void CApache::Precache (void)
 	UTIL_PrecacheOther ("hvr_rocket");
 	}
 
-
-
 void CApache::NullThink (void)
 	{
 	StudioFrameAdvance ();
 	pev->nextthink = gpGlobals->time + 0.5;
 	}
-
 
 void CApache::StartupUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
@@ -203,13 +200,9 @@ void CApache::Killed (entvars_t* pevAttacker, int iGib)
 	pev->takedamage = DAMAGE_NO;
 
 	if (pev->spawnflags & SF_NOWRECKAGE)
-		{
 		m_flNextRocket = gpGlobals->time + 4.0;
-		}
 	else
-		{
 		m_flNextRocket = gpGlobals->time + 15.0;
-		}
 	}
 
 void CApache::DyingThink (void)
@@ -595,16 +588,12 @@ void CApache::Flight (void)
 	if (flSide < 0)
 		{
 		if (pev->avelocity.y < 60)
-			{
 			pev->avelocity.y += 8; // 9 * (3.0/2.0);
-			}
 		}
 	else
 		{
 		if (pev->avelocity.y > -60)
-			{
 			pev->avelocity.y -= 8; // 9 * (3.0/2.0);
-			}
 		}
 	pev->avelocity.y *= 0.98;
 
@@ -634,7 +623,7 @@ void CApache::Flight (void)
 	// fly sideways
 	if (flSlip > 0)
 		{
-		if (pev->angles.z > -30 && pev->avelocity.z > -15)
+		if ((pev->angles.z > -30) && (pev->avelocity.z > -15))
 			pev->avelocity.z -= 4;
 		else
 			pev->avelocity.z += 2;
@@ -642,7 +631,7 @@ void CApache::Flight (void)
 	else
 		{
 
-		if (pev->angles.z < 30 && pev->avelocity.z < 15)
+		if ((pev->angles.z < 30) && (pev->avelocity.z < 15))
 			pev->avelocity.z += 4;
 		else
 			pev->avelocity.z -= 2;
@@ -668,37 +657,29 @@ void CApache::Flight (void)
 		}
 
 	// pitch forward or back to get to target
-	if (flDist > 0 && flSpeed < m_flGoalSpeed /* && flSpeed < flDist */ && pev->angles.x + pev->avelocity.x > -40)
+	if ((flDist > 0) && (flSpeed < m_flGoalSpeed) && (pev->angles.x + pev->avelocity.x > -40))
 		{
-		// ALERT( at_console, "F " );
 		// lean forward
 		pev->avelocity.x -= 12.0;
 		}
-	else if (flDist < 0 && flSpeed > -50 && pev->angles.x + pev->avelocity.x < 20)
+	else if ((flDist < 0) && (flSpeed > -50) && (pev->angles.x + pev->avelocity.x < 20))
 		{
-		// ALERT( at_console, "B " );
 		// lean backward
 		pev->avelocity.x += 12.0;
 		}
 	else if (pev->angles.x + pev->avelocity.x > 0)
 		{
-		// ALERT( at_console, "f " );
 		pev->avelocity.x -= 4.0;
 		}
 	else if (pev->angles.x + pev->avelocity.x < 0)
 		{
-		// ALERT( at_console, "b " );
 		pev->avelocity.x += 4.0;
 		}
-
-	// ALERT( at_console, "%.0f %.0f : %.0f %.0f : %.0f %.0f : %.0f\n", pev->origin.x, pev->velocity.x, flDist, flSpeed, pev->angles.x, pev->avelocity.x, m_flForce ); 
-	// ALERT( at_console, "%.0f %.0f : %.0f %0.f : %.0f\n", pev->origin.z, pev->velocity.z, vecEst.z, m_posDesired.z, m_flForce ); 
 
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 		{
 		EMIT_SOUND_DYN (ENT (pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110);
-		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", 0.5, 0.2, 0, 110 );
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 		}

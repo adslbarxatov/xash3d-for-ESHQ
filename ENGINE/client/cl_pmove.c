@@ -877,7 +877,8 @@ static float pfnTraceModel (physent_t* pe, float* start, float* end, trace_t* tr
 
 	if (pe->solid == SOLID_BSP && !VectorIsNull (pe->angles))
 		rotated = true;
-	else rotated = false;
+	else 
+		rotated = false;
 
 	if (rotated)
 		{

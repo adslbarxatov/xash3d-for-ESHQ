@@ -826,7 +826,6 @@ void CLightning::RandomArea (void)
 		}
 	}
 
-
 void CLightning::RandomPoint (Vector& vecSrc)
 	{
 	int iLoops = 0;
@@ -848,8 +847,6 @@ void CLightning::RandomPoint (Vector& vecSrc)
 		break;
 		}
 	}
-
-
 
 void CLightning::BeamUpdateVars (void)
 	{
@@ -882,6 +879,7 @@ void CLightning::BeamUpdateVars (void)
 			pointStart = pointEnd;
 			pointEnd = swap;
 			}
+
 		if (!pointEnd)
 			beamType = BEAM_ENTPOINT;
 		else
@@ -889,10 +887,10 @@ void CLightning::BeamUpdateVars (void)
 		}
 
 	SetType (beamType);
-	if (beamType == BEAM_POINTS || beamType == BEAM_ENTPOINT || beamType == BEAM_HOSE)
+	if ((beamType == BEAM_POINTS) || (beamType == BEAM_ENTPOINT) || (beamType == BEAM_HOSE))
 		{
 		SetStartPos (pStart->v.origin);
-		if (beamType == BEAM_POINTS || beamType == BEAM_HOSE)
+		if ((beamType == BEAM_POINTS) || (beamType == BEAM_HOSE))
 			SetEndPos (pEnd->v.origin);
 		else
 			SetEndEntity (ENTINDEX (pEnd));
@@ -914,6 +912,7 @@ void CLightning::BeamUpdateVars (void)
 	else if (pev->spawnflags & SF_BEAM_SHADEOUT)
 		SetFlags (BEAM_FSHADEOUT);
 	}
+
 
 
 LINK_ENTITY_TO_CLASS (env_laser, CLaser);
@@ -964,7 +963,6 @@ void CLaser::Precache (void)
 		PRECACHE_MODEL ((char*)STRING (m_iszSpriteName));
 	}
 
-
 void CLaser::KeyValue (KeyValueData* pkvd)
 	{
 	if (FStrEq (pkvd->szKeyName, "LaserTarget"))
@@ -1008,36 +1006,37 @@ void CLaser::KeyValue (KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 		}
 	else
+		{
 		CBeam::KeyValue (pkvd);
+		}
 	}
-
 
 int CLaser::IsOn (void)
 	{
 	if (pev->effects & EF_NODRAW)
 		return 0;
+
 	return 1;
 	}
-
 
 void CLaser::TurnOff (void)
 	{
 	pev->effects |= EF_NODRAW;
 	pev->nextthink = 0;
+
 	if (m_pSprite)
 		m_pSprite->TurnOff ();
 	}
-
 
 void CLaser::TurnOn (void)
 	{
 	pev->effects &= ~EF_NODRAW;
 	if (m_pSprite)
 		m_pSprite->TurnOn ();
+
 	pev->dmgtime = gpGlobals->time;
 	pev->nextthink = gpGlobals->time;
 	}
-
 
 void CLaser::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
@@ -1045,16 +1044,12 @@ void CLaser::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTyp
 
 	if (!ShouldToggle (useType, active))
 		return;
-	if (active)
-		{
-		TurnOff ();
-		}
-	else
-		{
-		TurnOn ();
-		}
-	}
 
+	if (active)
+		TurnOff ();
+	else
+		TurnOn ();
+	}
 
 void CLaser::FireAtPoint (TraceResult& tr)
 	{
@@ -1078,9 +1073,9 @@ void CLaser::StrikeThink (void)
 		m_firePosition = pEnd->pev->origin;
 
 	TraceResult tr;
-
 	UTIL_TraceLine (pev->origin, m_firePosition, dont_ignore_monsters, NULL, &tr);
 	FireAtPoint (tr);
+
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
 
@@ -1092,12 +1087,12 @@ class CGlow: public CPointEntity
 		void Spawn (void);
 		void Think (void);
 		void Animate (float frames);
-		virtual int		Save (CSave& save);
-		virtual int		Restore (CRestore& restore);
-		static	TYPEDESCRIPTION m_SaveData[];
+		virtual int Save (CSave& save);
+		virtual int Restore (CRestore& restore);
+		static TYPEDESCRIPTION m_SaveData[];
 
-		float		m_lastTime;
-		float		m_maxFrame;
+		float m_lastTime;
+		float m_maxFrame;
 	};
 
 LINK_ENTITY_TO_CLASS (env_glow, CGlow);
@@ -1121,12 +1116,11 @@ void CGlow::Spawn (void)
 	SET_MODEL (ENT (pev), STRING (pev->model));
 
 	m_maxFrame = (float)MODEL_FRAMES (pev->modelindex) - 1;
-	if (m_maxFrame > 1.0 && pev->framerate != 0)
+	if ((m_maxFrame > 1.0) && (pev->framerate != 0))
 		pev->nextthink = gpGlobals->time + 0.1;
 
 	m_lastTime = gpGlobals->time;
 	}
-
 
 void CGlow::Think (void)
 	{
@@ -1135,7 +1129,6 @@ void CGlow::Think (void)
 	pev->nextthink = gpGlobals->time + 0.1;
 	m_lastTime = gpGlobals->time;
 	}
-
 
 void CGlow::Animate (float frames)
 	{
@@ -1170,30 +1163,18 @@ void CSprite::Spawn (void)
 	else
 		TurnOn ();
 
-	// Worldcraft only sets y rotation, copy to Z
-	// ESHQ: исключено, т.к. не позволяет корректно работать с mdl
-	/*if ( pev->angles.y != 0 && pev->angles.z == 0 )
-	{
-		pev->angles.z = pev->angles.y;
-		pev->angles.y = 0;
-	}*/
+	// ESHQ: исключено переназначение осей, т.к. не позволяет корректно работать с mdl
 	}
 
 void CSprite::Precache (void)
 	{
-	PRECACHE_MODEL ((char*)STRING (pev->model));
+	PRECACHE_MODEL ((char *)STRING (pev->model));
 
 	// Reset attachment after save/restore
 	if (pev->aiment)
-		{
 		SetAttachment (pev->aiment, pev->body);
-		}
-	else
-		{
-		// ESHQ: исключено, т.к. не позволяет корректно работать с mdl
-		//pev->skin = 0;
-		//pev->body = 0;
-		}
+
+	// ESHQ: исключено переназначение осей, т.к. не позволяет корректно работать с mdl
 	}
 
 void CSprite::SpriteInit (const char* pSpriteName, const Vector& origin)
@@ -1210,6 +1191,7 @@ CSprite* CSprite::SpriteCreate (const char* pSpriteName, const Vector& origin, B
 	pSprite->pev->classname = MAKE_STRING ("env_sprite");
 	pSprite->pev->solid = SOLID_NOT;
 	pSprite->pev->movetype = MOVETYPE_NOCLIP;
+
 	if (animate)
 		pSprite->TurnOn ();
 
@@ -1227,7 +1209,9 @@ void CSprite::AnimateThink (void)
 void CSprite::AnimateUntilDead (void)
 	{
 	if (gpGlobals->time > pev->dmgtime)
+		{
 		UTIL_Remove (this);
+		}
 	else
 		{
 		AnimateThink ();
@@ -1294,6 +1278,7 @@ void CSprite::TurnOn (void)
 		pev->nextthink = gpGlobals->time;
 		m_lastTime = gpGlobals->time;
 		}
+
 	pev->frame = 0;
 	}
 
@@ -2014,29 +1999,19 @@ void CMessage::Use (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	else
 		{
 		if (pActivator && pActivator->IsPlayer ())
-			{
 			pPlayer = pActivator;
-			}
 		else
-			{
 			pPlayer = CBaseEntity::Instance (g_engfuncs.pfnPEntityOfEntIndex (1));
-			}
 
 		if (pPlayer)
-			{
 			UTIL_ShowMessage (STRING (pev->message), pPlayer);
-			}
 		}
 
 	if (pev->noise)
-		{
 		EMIT_SOUND (edict (), CHAN_BODY, STRING (pev->noise), pev->scale, pev->speed);
-		}
 
 	if (pev->spawnflags & SF_MESSAGE_ONCE)
-		{
 		UTIL_Remove (this);
-		}
 
 	SUB_UseTargets (this, USE_TOGGLE, 0);
 	}

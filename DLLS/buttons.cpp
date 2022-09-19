@@ -272,7 +272,6 @@ TYPEDESCRIPTION CBaseButton::m_SaveData[] =
 		DEFINE_FIELD (CBaseButton, m_bUnlockedSound, FIELD_CHARACTER),
 		DEFINE_FIELD (CBaseButton, m_bUnlockedSentence, FIELD_CHARACTER),
 		DEFINE_FIELD (CBaseButton, m_strChangeTarget, FIELD_STRING),
-		//	DEFINE_FIELD( CBaseButton, m_ls, FIELD_??? ),   // This is restored in Precache()
 	};
 
 IMPLEMENT_SAVERESTORE (CBaseButton, CBaseToggle);
@@ -292,7 +291,6 @@ void CBaseButton::Precache (void)
 		}
 
 	// get door button sounds, for doors which require buttons to open
-
 	if (m_bLockedSound)
 		{
 		pszSound = ButtonSound ((int)m_bLockedSound);
@@ -339,10 +337,7 @@ void CBaseButton::Precache (void)
 		}
 	}
 
-//
-// Cache user-entity-field values until spawn is called.
-//
-
+// Cache user-entity-field values until spawn is called
 void CBaseButton::KeyValue (KeyValueData* pkvd)
 	{
 	if (FStrEq (pkvd->szKeyName, "changetarget"))
@@ -381,9 +376,7 @@ void CBaseButton::KeyValue (KeyValueData* pkvd)
 		}
 	}
 
-//
 // ButtonShot
-//
 int CBaseButton::TakeDamage (entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 	{
 	BUTTON_CODE code = ButtonResponseToTouch ();
@@ -501,7 +494,6 @@ void CBaseButton::Spawn ()
 
 // Button sound table. 
 // Also used by CBaseDoor to get 'touched' door lock/unlock sounds
-
 char* ButtonSound (int sound)
 	{
 	char* pszSound;
@@ -544,15 +536,13 @@ char* ButtonSound (int sound)
 		case 24: pszSound = "buttons/lever4.wav";	break;
 		case 25: pszSound = "buttons/lever5.wav";	break;
 
-		default:pszSound = "buttons/button9.wav";	break;
+		default: pszSound = "buttons/button9.wav";	break;
 		}
 
 	return pszSound;
 	}
 
-//
 // Makes flagged buttons spark when turned off
-//
 void DoSpark (entvars_t* pev, const Vector& location)
 	{
 	Vector tmp = location + pev->size * 0.5;
@@ -590,14 +580,12 @@ void CBaseButton::ButtonSpark (void)
 	DoSpark (pev, pev->mins);
 	}
 
-//
 // Button's Use function
-//
 void CBaseButton::ButtonUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 	{
 	// Ignore touches if button is moving, or pushed-in and waiting to auto-come-out.
 	// UNDONE: Should this use ButtonResponseToTouch() too?
-	if (m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN)
+	if ((m_toggle_state == TS_GOING_UP) || (m_toggle_state == TS_GOING_DOWN))
 		return;
 
 	m_hActivator = pActivator;
@@ -619,18 +607,15 @@ void CBaseButton::ButtonUse (CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 
 CBaseButton::BUTTON_CODE CBaseButton::ButtonResponseToTouch (void)
 	{
-	// Ignore touches if button is moving, or pushed-in and waiting to auto-come-out.
-	if (m_toggle_state == TS_GOING_UP ||
-		m_toggle_state == TS_GOING_DOWN ||
-		(m_toggle_state == TS_AT_TOP && !m_fStayPushed && !FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE)))
+	// Ignore touches if button is moving, or pushed-in and waiting to auto-come-out
+	if ((m_toggle_state == TS_GOING_UP) || (m_toggle_state == TS_GOING_DOWN) ||
+		(m_toggle_state == TS_AT_TOP) && !m_fStayPushed && !FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE))
 		return BUTTON_NOTHING;
 
 	if (m_toggle_state == TS_AT_TOP)
 		{
 		if ((FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE)) && !m_fStayPushed)
-			{
 			return BUTTON_RETURN;
-			}
 		}
 	else
 		{
@@ -640,9 +625,7 @@ CBaseButton::BUTTON_CODE CBaseButton::ButtonResponseToTouch (void)
 	return BUTTON_NOTHING;
 	}
 
-//
-// Touching a button simply "activates" it.
-//
+// Touching a button simply "activates" it
 void CBaseButton::ButtonTouch (CBaseEntity* pOther)
 	{
 	// Ignore touches by anything but players
@@ -678,9 +661,7 @@ void CBaseButton::ButtonTouch (CBaseEntity* pOther)
 		}
 	}
 
-//
-// Starts the button moving "in/up".
-//
+// Starts the button moving "in/up"
 void CBaseButton::ButtonActivate ()
 	{
 	EMIT_SOUND (ENT (pev), CHAN_VOICE, (char*)STRING (pev->noise), 1, ATTN_MEDIUM);
@@ -707,9 +688,7 @@ void CBaseButton::ButtonActivate ()
 		AngularMove (m_vecAngle2, pev->speed);
 	}
 
-//
-// Button has reached the "in/up" position.  Activate its "targets", and pause before "popping out".
-//
+// Button has reached the "in/up" position.  Activate its "targets", and pause before "popping out"
 void CBaseButton::TriggerAndWait (void)
 	{
 	ASSERT (m_toggle_state == TS_GOING_UP);
@@ -724,14 +703,9 @@ void CBaseButton::TriggerAndWait (void)
 	if (m_fStayPushed || FBitSet (pev->spawnflags, SF_BUTTON_TOGGLE))
 		{
 		if (!FBitSet (pev->spawnflags, SF_BUTTON_TOUCH_ONLY)) // this button only works if USED, not touched!
-			{
-			// ALL buttons are now use only
-			SetTouch (NULL);
-			}
+			SetTouch (NULL);	// ALL buttons are now use only
 		else
-			{
 			SetTouch (&CBaseButton::ButtonTouch);
-			}
 		}
 	else
 		{
@@ -740,13 +714,10 @@ void CBaseButton::TriggerAndWait (void)
 		}
 
 	pev->frame = 1;			// use alternate textures
-
 	SUB_UseTargets (m_hActivator, USE_TOGGLE, 0);
 	}
 
-//
 // Starts the button moving "out/down"
-//
 void CBaseButton::ButtonReturn (void)
 	{
 	ASSERT (m_toggle_state == TS_AT_TOP);
@@ -939,6 +910,12 @@ void CMomentaryRotButton::Spawn (void)
 	if (pev->speed == 0)
 		pev->speed = 100;
 
+	// ESHQ: отсечение больших значений из-за ограничений со стороны движка
+	if (m_flMoveDistance > 3600.0f)
+		m_flMoveDistance = 3600.0f;
+	else if (m_flMoveDistance < -3600.0f)
+		m_flMoveDistance = -3600.0f;
+
 	if (m_flMoveDistance < 0)
 		{
 		m_start = pev->angles + pev->movedir * m_flMoveDistance;
@@ -1008,7 +985,6 @@ void CMomentaryRotButton::UpdateAllButtons (float value, int start)
 	edict_t* pentTarget = NULL;
 	for (;;)
 		{
-
 		pentTarget = FIND_ENTITY_BY_STRING (pentTarget, "target", STRING (pev->target));
 		if (FNullEnt (pentTarget))
 			break;
@@ -1068,19 +1044,19 @@ void CMomentaryRotButton::UpdateSelf (float value)
 
 void CMomentaryRotButton::UpdateTarget (float value)
 	{
-	if (!FStringNull (pev->target))
-		{
-		edict_t* pentTarget = NULL;
-		for (;;)
-			{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME (pentTarget, STRING (pev->target));
-			if (FNullEnt (pentTarget))
-				break;
+	if (FStringNull (pev->target))
+		return;
 
-			CBaseEntity* pEntity = CBaseEntity::Instance (pentTarget);
-			if (pEntity)
-				pEntity->Use (this, this, USE_SET, value);
-			}
+	edict_t *pentTarget = NULL;
+	for (;;)
+		{
+		pentTarget = FIND_ENTITY_BY_TARGETNAME (pentTarget, STRING (pev->target));
+		if (FNullEnt (pentTarget))
+			break;
+
+		CBaseEntity *pEntity = CBaseEntity::Instance (pentTarget);
+		if (pEntity)
+			pEntity->Use (this, this, USE_SET, value);
 		}
 	}
 
@@ -1088,6 +1064,7 @@ void CMomentaryRotButton::Off (void)
 	{
 	pev->avelocity = g_vecZero;
 	m_lastUsed = 0;
+
 	if (FBitSet (pev->spawnflags, SF_PENDULUM_AUTO_RETURN) && (m_returnSpeed > 0))
 		{
 		SetThink (&CMomentaryRotButton::Return);
@@ -1106,7 +1083,8 @@ void CMomentaryRotButton::Return (void)
 	{
 	float value = CBaseToggle::AxisDelta (pev->spawnflags, pev->angles, m_start) / m_flMoveDistance;
 
-	UpdateAllButtons (value, 0);	// This will end up calling UpdateSelfReturn () n times, but it still works right
+	// This will end up calling UpdateSelfReturn() n times, but it still works right
+	UpdateAllButtons (value, 0);
 
 	// ESHQ: отрицательное значение будет использоваться как индикатор возврата
 	if (value > 0)
@@ -1177,10 +1155,14 @@ void CEnvSpark::Spawn (void)
 			SetUse (&CEnvSpark::SparkStop);		// set up +USE to stop sparking
 			}
 		else
+			{
 			SetUse (&CEnvSpark::SparkStart);
+			}
 		}
 	else
+		{
 		SetThink (&CEnvSpark::SparkThink);
+		}
 
 	pev->nextthink = gpGlobals->time + (0.1 + RANDOM_FLOAT (0, 1.5));
 

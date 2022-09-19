@@ -633,13 +633,9 @@ void CFlockingFlyer::FlockLeaderThink (void)
 			m_fTurning = TRUE;
 
 			if (RANDOM_LONG (0, 1) == 0)
-				{
 				pev->avelocity.y = AFLOCK_TURN_RATE;
-				}
 			else
-				{
 				pev->avelocity.y = -AFLOCK_TURN_RATE;
-				}
 			}
 		}
 	SpreadFlock ();

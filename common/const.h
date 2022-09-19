@@ -731,6 +731,10 @@ enum
 	kRenderFxExplode,			// Scale up really big!
 	kRenderFxGlowShell,			// Glowing Shell
 	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
+
+	// ESHQ: мигалки
+	kRenderFxLeftPoliceLight,
+	kRenderFxRightPoliceLight,
 	};
 
 typedef int		func_t;

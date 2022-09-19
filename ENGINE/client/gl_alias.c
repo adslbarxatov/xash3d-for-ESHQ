@@ -1403,7 +1403,8 @@ void R_DrawAliasModel (cl_entity_t* e)
 		e->angles[PITCH] = -e->angles[PITCH]; // stupid quake bug
 
 	// don't rotate clients, only aim
-	if (e->player) e->angles[PITCH] = 0.0f;
+	if (e->player) 
+		e->angles[PITCH] = 0.0f;
 
 	//
 	// get lighting information
@@ -1414,10 +1415,7 @@ void R_DrawAliasModel (cl_entity_t* e)
 	r_stats.c_alias_polys += m_pAliasHeader->numtris;
 	r_stats.c_alias_models_drawn++;
 
-	//
 	// draw all the triangles
-	//
-
 	R_RotateForEntity (e);
 
 	// model and frame independant

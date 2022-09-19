@@ -893,7 +893,7 @@ void SV_ClipMoveToEntity (edict_t* ent, const vec3_t start, vec3_t mins, vec3_t 
 		}
 
 	// rotate start and end into the models frame of reference
-	if ((ent->v.solid == SOLID_BSP || ent->v.solid == SOLID_PORTAL) && !VectorIsNull (ent->v.angles))
+	if (((ent->v.solid == SOLID_BSP) || (ent->v.solid == SOLID_PORTAL)) && !VectorIsNull (ent->v.angles))
 		rotated = true;
 	else 
 		rotated = false;
@@ -1546,7 +1546,8 @@ trace_t SV_MoveToss (edict_t* tossent, edict_t* ignore)
 		VectorAdd (tossent->v.origin, move, end);
 		trace = SV_Move (tossent->v.origin, tossent->v.mins, tossent->v.maxs, end, MOVE_NORMAL, tossent, false);
 		VectorCopy (trace.endpos, tossent->v.origin);
-		if (trace.fraction < 1.0f) break;
+		if (trace.fraction < 1.0f) 
+			break;
 		}
 
 	VectorCopy (original_origin, tossent->v.origin);
