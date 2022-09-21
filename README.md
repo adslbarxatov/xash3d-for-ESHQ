@@ -108,8 +108,8 @@ Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, 
 ## Known bugs
 
 Unfortunately, we cannot fix some bugs yet:
-- ```func_pushable``` bug: incorrect collision box.
-- ```func_door_rotating``` bug: incorrect collision if door has “Ox” and/or “Oy” flags.
+- `func_pushable` bug: incorrect collision box.
+- `func_door_rotating` bug: incorrect collision if door has “Ox” and/or “Oy” flags.
 
 But we believe that it is not serious problem for now.
 
@@ -127,7 +127,7 @@ But we believe that it is not serious problem for now.
 
 
 
-## [Development policy and EULA / Политика разработки и EULA](https://adslbarxatov.github.io/ADP)
+## [Development policy and EULA](https://adslbarxatov.github.io/ADP)
 
 This Policy (ADP), its positions, conclusion, EULA and application methods
 describes general rules that we follow in all of our development processes, released applications and implemented ideas.
