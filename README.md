@@ -99,6 +99,8 @@ Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, 
 
 44. Pushables are now react on explosions, shooting and hitting by a crowbar.
 
+45. Implemented the “meat mode”: corpses can now be destroyed by bullets and crowbar in ome hit. Requires line `meat_mode "1"` in file `config.cfg`.
+
 
 
 &nbsp;
