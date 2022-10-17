@@ -93,7 +93,7 @@ void CLaserSpot::Suspend (float flSuspendTime)
 	}
 
 //=========================================================
-// Revive - bring a suspended laser sight back.
+// Revive - bring a suspended laser sight back
 //=========================================================
 void CLaserSpot::Revive (void)
 	{
@@ -110,6 +110,7 @@ void CLaserSpot::Killed (entvars_t* pevAttacker, int iGib)
 	// tell the owner about laserspot
 	if (!FNullEnt (pev->owner))
 		pev->owner->v.flags &= ~FL_LASERDOT;
+
 	CBaseEntity::Killed (pevAttacker, iGib);
 	}
 
@@ -130,14 +131,13 @@ CRpgRocket* CRpgRocket::CreateRpgRocket (Vector vecOrigin, Vector vecAngles, CBa
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn ();
 	pRocket->SetTouch (&CRpgRocket::RocketTouch);
-	pRocket->m_pLauncher = pLauncher;// remember what RPG fired me. 
-	pRocket->m_pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
+	pRocket->m_pLauncher = pLauncher;			// remember what RPG fired me
+	pRocket->m_pLauncher->m_cActiveRockets++;	// register this missile as active for the launcher
 	pRocket->pev->owner = pOwner->edict ();
 
 	return pRocket;
 	}
 
-//=========================================================
 //=========================================================
 void CRpgRocket::Spawn (void)
 	{
@@ -171,11 +171,9 @@ void CRpgRocket::Spawn (void)
 //=========================================================
 void CRpgRocket::RocketTouch (CBaseEntity* pOther)
 	{
+	// my launcher is still around, tell it I'm dead
 	if (m_pLauncher)
-		{
-		// my launcher is still around, tell it I'm dead.
 		m_pLauncher->m_cActiveRockets--;
-		}
 
 	STOP_SOUND (edict (), CHAN_VOICE, "weapons/rocket1.wav");
 	ExplodeTouch (pOther);
@@ -240,7 +238,7 @@ void CRpgRocket::FollowThink (void)
 	while ((pOther = UTIL_FindEntityByClassname (pOther, "laser_spot")) != NULL)
 		{
 		UTIL_TraceLine (pev->origin, pOther->pev->origin, dont_ignore_monsters, ENT (pev), &tr);
-		// ALERT( at_console, "%f\n", tr.flFraction );
+
 		if (tr.flFraction >= 0.90)
 			{
 			vecDir = pOther->pev->origin - pev->origin;
@@ -257,7 +255,7 @@ void CRpgRocket::FollowThink (void)
 
 	pev->angles = UTIL_VecToAngles (vecTarget);
 
-	// this acceleration and turning math is totally wrong, but it seems to respond well so don't change it.
+	// this acceleration and turning math is totally wrong, but it seems to respond well so don't change it
 	float flSpeed = pev->velocity.Length ();
 	if (gpGlobals->time - m_flIgniteTime < 1.0)
 		{
@@ -296,24 +294,21 @@ void CRpgRocket::FollowThink (void)
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	}
+
 #endif
-
-
 
 void CRpg::Reload (void)
 	{
-	int iResult;
+	int iResult = 0;
 
+	// don't bother with any of this if don't need to reload
 	if (m_iClip == 1)
-		{
-		// don't bother with any of this if don't need to reload.
 		return;
-		}
 
 	if (m_pPlayer->ammo_rockets <= 0)
 		return;
 
-	// because the RPG waits to autoreload when no missiles are active while  the LTD is on, the
+	// because the RPG waits to autoreload when no missiles are active while the LTD is on, the
 	// weapons code is constantly calling into this function, but is often denied because 
 	// a) missiles are in flight, but the LTD is on
 	// or
@@ -325,12 +320,10 @@ void CRpg::Reload (void)
 
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase () + 0.5;
 
+	// no reloading when there are active missiles tracking the designator.
+	// ward off future autoreload attempts by setting next attack time into the future for a bit
 	if (m_cActiveRockets && m_fSpotActive)
-		{
-		// no reloading when there are active missiles tracking the designator.
-		// ward off future autoreload attempts by setting next attack time into the future for a bit. 
 		return;
-		}
 
 #ifndef CLIENT_DLL
 	if (m_pSpot && m_fSpotActive)
@@ -400,7 +393,7 @@ int CRpg::GetItemInfo (ItemInfo* p)
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = RPG_MAX_CLIP;
 	p->iSlot = 3;
-	p->iPosition = 0;
+	p->iPosition = 3;	// ESHQ: перемещена в самый конец
 	p->iId = m_iId = WEAPON_RPG;
 	p->iFlags = 0;
 	p->iWeight = RPG_WEIGHT;
