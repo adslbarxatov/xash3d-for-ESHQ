@@ -3,12 +3,14 @@
 
 #
 
+:warning: ***This engine has been replaced with [Xash3D FWGS Engine adaptation](https://github.com/adslbarxatov/Xash3d-FWGS-for-ESHQ).
+This repository is no longer updated***
+
+#
+
 This engine modification created especially for [ESHQ mod](https://moddb.com/mods/eshq) for Half-Life part 1.
 
 Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, rev 4529)](https://github.com/FWGS/xash3d) and may contain some bugs.
-
-:warning: ***This engine type has been replaced with [Xash3D FWGS Engine adaptation](https://github.com/adslbarxatov/Xash3d-FWGS-for-ESHQ).
-This repository is no longer updated***
 
 #
 
