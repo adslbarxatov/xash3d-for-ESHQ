@@ -1,12 +1,17 @@
 # Xash3d Engine adaptation
-### for mods **ESHQ** v 12.7 (and older) and **ES: Randomaze** v 3.7 (and older)
 
 #
+
+&nbsp;
 
 :warning: ***This engine has been replaced with [Xash3D FWGS Engine adaptation](https://github.com/adslbarxatov/Xash3d-FWGS-for-ESHQ).
 This repository is no longer updated***
 
 #
+
+&nbsp;
+
+
 
 This engine modification created especially for [ESHQ mod](https://moddb.com/mods/eshq) for Half-Life part 1.
 
@@ -105,8 +110,6 @@ Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, 
 44. Pushables are now react on explosions, shooting and hitting by a crowbar.
 
 45. Implemented the “meat mode”: corpses can now be destroyed by bullets and crowbar in ome hit. Requires line `meat_mode "1"` in file `config.cfg`.
-
-
 
 &nbsp;
 
