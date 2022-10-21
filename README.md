@@ -1,11 +1,14 @@
-# Xash3d adaptation
-### for mods **ESHQ** v 12 (and newer) and **ES: Randomaze** v 1.0 (and newer)
+# Xash3d Engine adaptation
+### for mods **ESHQ** v 12.7 (and older) and **ES: Randomaze** v 3.7 (and older)
 
 #
 
 This engine modification created especially for [ESHQ mod](https://moddb.com/mods/eshq) for Half-Life part 1.
 
-Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, rev 4529)](https://github.com/FWGS/xash3d) and may contain some bugs
+Modification based on one of old (from 2019) versions of [Xash3d engine (v0.99, rev 4529)](https://github.com/FWGS/xash3d) and may contain some bugs.
+
+:warning: ***This engine type has been replaced with [Xash3D FWGS Engine adaptation](https://github.com/adslbarxatov/Xash3d-FWGS-for-ESHQ).
+This repository is no longer updated***
 
 #
 
